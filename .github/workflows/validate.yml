@@ -1,0 +1,18 @@
+name: validate-demo-safety
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check every demo
+        shell: bash
+        run: |
+          failed=0
+          while IFS= read -r -d '' f; do
+            grep -Eqi 'noindex[^>]*nofollow|nofollow[^>]*noindex' "$f" || { echo "$f missing noindex,nofollow"; failed=1; }
+            grep -Eqi 'not affiliated.*(endorsed|endorsement)' "$f" || { echo "$f missing disclaimer"; failed=1; }
+          done < <(find . -name index.html -print0)
+          exit "$failed"
