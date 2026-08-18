@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Review showcase: working example for George's Concrete Pumping</title>
+<style>
+  :root {
+    --ground: #F5F3EE; --surface: #FFFFFF; --surface-2: #ECE7DB;
+    --ink: #201E19; --ink-2: #494439; --muted: #7A7466;
+    --rule: #DCD5C4; --rule-soft: #E8E2D2;
+    --accent: #A6491F; --accent-ink: #FFFFFF; --accent-soft: #F3E3D8;
+    --star: #C8862B;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+    --measure: 62ch; --pad: clamp(1rem, 4vw, 2.5rem);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #17150F; --surface: #211E17; --surface-2: #2B2720;
+      --ink: #EFEBE0; --ink-2: #CDC7B7; --muted: #9C9583;
+      --rule: #38311F; --rule-soft: #2D2819;
+      --accent: #E08752; --accent-ink: #17130B; --accent-soft: #33251A;
+      --star: #E0AC4E;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #17150F; --surface: #211E17; --surface-2: #2B2720;
+    --ink: #EFEBE0; --ink-2: #CDC7B7; --muted: #9C9583;
+    --rule: #38311F; --rule-soft: #2D2819;
+    --accent: #E08752; --accent-ink: #17130B; --accent-soft: #33251A;
+    --star: #E0AC4E;
+  }
+  :root[data-theme="light"] {
+    --ground: #F5F3EE; --surface: #FFFFFF; --surface-2: #ECE7DB;
+    --ink: #201E19; --ink-2: #494439; --muted: #7A7466;
+    --rule: #DCD5C4; --rule-soft: #E8E2D2;
+    --accent: #A6491F; --accent-ink: #FFFFFF; --accent-soft: #F3E3D8;
+    --star: #C8862B;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: var(--pad); display: flex; flex-direction: column; gap: clamp(2rem, 5vw, 3rem); }
+  .eyebrow { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0; }
+  h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); line-height: 1.15; letter-spacing: -0.02em; font-weight: 660; margin: 0.5rem 0 0; max-width: 26ch; }
+  h2 { font-size: 1.1rem; font-weight: 640; margin: 0; }
+  p { margin: 0; max-width: var(--measure); }
+  .lede { font-size: 1.02rem; color: var(--ink-2); margin-top: 0.9rem; }
+  .notice { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 1rem 1.15rem; border-radius: 2px; font-size: 0.9rem; color: var(--ink-2); }
+  .notice p { max-width: 78ch; }
+  .notice + .notice { margin-top: -0.5rem; }
+
+  .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 2px; overflow: hidden; }
+  .stat { background: var(--surface); padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .stat-n { font-family: var(--mono); font-size: 1.6rem; font-variant-numeric: tabular-nums; line-height: 1; letter-spacing: -0.02em; }
+  .stat-l { font-size: 0.75rem; color: var(--muted); line-height: 1.35; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .filter { font: inherit; color: inherit; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 999px; padding: 0.45rem 0.95rem; cursor: pointer; font-size: 0.85rem; }
+  .filter:hover { border-color: var(--accent); }
+  .filter.sel { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 620; }
+
+  .reviews { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+  .review { background: var(--surface); border: 1px solid var(--rule); border-radius: 3px; padding: 1.1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+  .review-top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+  .review-source { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .stars { color: var(--star); letter-spacing: 0.05em; font-size: 0.9rem; }
+  .review-text { font-size: 0.92rem; color: var(--ink-2); line-height: 1.55; }
+  .review-meta { font-size: 0.78rem; color: var(--muted); }
+
+  .limits { display: flex; flex-direction: column; gap: 0.9rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 0.95rem; font-size: 0.89rem; line-height: 1.6; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 620; }
+
+  footer { border-top: 1px solid var(--rule); padding-top: 1.2rem; font-size: 0.85rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Working example, built for George's Concrete Pumping</p>
+    <h1>Your Reviews page has a heading and nothing else</h1>
+    <p class="lede">I checked georgesconcretepumping.com/reviews directly today. It's live, it's titled "Reviews," and it has no reviews on it. Meanwhile you've been operating in Indianapolis for 32 years with a fleet of 21 boom pumps and 3 city pumps, and real customers have left praise on Yelp and other sites that never makes it back to your own page.</p>
+  </header>
+
+  <div class="notice">
+    <p><strong>What's directly verified:</strong> your Reviews page's emptiness (checked directly today) and your 32 years in business and fleet size (matches your own website and public FMCSA safety records).</p>
+    <p><strong>What's reasonably confident but not directly confirmed:</strong> that positive customer reviews exist for you on Yelp and other platforms. Search results describe genuine praise about your crew, but Yelp and Yellow Pages both blocked me from loading the pages directly, so I couldn't read the actual review text myself.</p>
+  </div>
+  <div class="notice">
+    <p><strong>What's illustrative:</strong> the review text shown below. Yelp and Yellow Pages both blocked automated access when I tried to pull your actual review text directly, so rather than guess at exact wording, every quote below is a sample built to match the general praise search results describe (professionalism, punctuality, communication), not a verbatim customer quote. A real build would pull your actual reviews through each platform's own API, not sample text.</p>
+  </div>
+
+  <div class="strip">
+    <div class="stat"><span class="stat-n">32</span><span class="stat-l">Years in business, per your own website</span></div>
+    <div class="stat"><span class="stat-n">0</span><span class="stat-l">Reviews currently shown on your own Reviews page</span></div>
+    <div class="stat"><span class="stat-n">3+</span><span class="stat-l">Third-party platforms where real customer praise for you already exists</span></div>
+  </div>
+
+  <section style="display:flex; flex-direction:column; gap:1.1rem;">
+    <div>
+      <h2 style="margin-bottom:0.6rem">What a pulled-in review feed could look like</h2>
+      <div class="filters" id="filter-root"></div>
+    </div>
+    <div class="reviews" id="reviews-root"></div>
+  </section>
+
+  <section>
+    <h2 style="margin-bottom:0.9rem">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>The review text here is a labeled sample, not a real quote.</b> Both Yelp and Yellow Pages returned a blocked response when I tried to fetch your actual review pages directly, so I could not verify or reproduce your real customers' exact words. I chose not to guess and present it as verbatim. A real version would connect to Yelp's Fusion API and Google's Places API, both of which support this legitimately.</div>
+      <div class="lim"><b>The verified part is the gap, not the specific praise.</b> What I can stand behind: your own Reviews page is empty, you've been in business 32 years, and search results describe genuine positive reviews about your crew's punctuality and professionalism existing on other platforms. That gap, real reviews existing but not showing up where a new customer actually looks, is the real problem this solves.</div>
+      <div class="lim"><b>This pulls reviews in, it doesn't collect new ones.</b> A separate, smaller piece (an auto-text or auto-email asking for a review after each pour) is what grows the pool over time. This demo only shows the display side: making existing scattered praise visible in one place.</div>
+      <div class="lim"><b>Displaying third-party reviews usually requires each platform's permission.</b> Yelp in particular restricts how its reviews can be reproduced outside Yelp itself. A real build needs to go through Yelp's and Google's own embed or API terms, not just scrape and republish.</div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Prepared by Shlok Sarnayak for George's Concrete Pumping Services · Business facts verified against your own site today · Review text is a labeled sample, not real customer quotes · Not connected to your live site</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  // Every entry here is explicitly a SAMPLE built to match what search results
+  // described (professionalism, punctuality, communication), not a real quote.
+  // Yelp and Yellow Pages both blocked direct access when checking real text.
+  var REVIEWS = [
+    { source: "Yelp (sample)", stars: 5, text: "Called them for a same-day residential pour and they showed up on time with everything set up fast. Crew was professional the whole way through.", meta: "Illustrative, not a real quote" },
+    { source: "Google (sample)", stars: 5, text: "We've used a few concrete pumping companies over the years for commercial jobs and these guys are the most reliable by far. Operators know what they're doing.", meta: "Illustrative, not a real quote" },
+    { source: "Yellow Pages (sample)", stars: 5, text: "Great communication before and during the pour, no surprises, and they cleaned up properly after. Would call them again for the next project.", meta: "Illustrative, not a real quote" },
+    { source: "Google (sample)", stars: 4, text: "Solid experience overall for an agricultural pour, punctual and the equipment looked well maintained. Scheduling took a couple calls to lock down.", meta: "Illustrative, not a real quote" }
+  ];
+
+  var SOURCES = ["All", "Yelp (sample)", "Google (sample)", "Yellow Pages (sample)"];
+  var state = { filter: "All" };
+
+  function stars(n) {
+    var s = "";
+    for (var i = 0; i < 5; i++) s += i < n ? "★" : "☆";
+    return s;
+  }
+
+  function render() {
+    var froot = document.getElementById("filter-root");
+    var fhtml = "";
+    SOURCES.forEach(function (s) {
+      fhtml += '<button class="filter' + (state.filter === s ? ' sel' : '') + '" data-src="' + s + '">' + s + '</button>';
+    });
+    froot.innerHTML = fhtml;
+    Array.prototype.forEach.call(froot.querySelectorAll(".filter"), function (b) {
+      b.addEventListener("click", function () { state.filter = b.dataset.src; render(); });
+    });
+
+    var rroot = document.getElementById("reviews-root");
+    var shown = state.filter === "All" ? REVIEWS : REVIEWS.filter(function (r) { return r.source === state.filter; });
+    if (!shown.length) {
+      rroot.innerHTML = '<p style="color:var(--muted); font-size:0.9rem;">No sample reviews in this filter.</p>';
+      return;
+    }
+    rroot.innerHTML = shown.map(function (r) {
+      return '<div class="review">' +
+        '<div class="review-top"><span class="review-source">' + r.source + '</span><span class="stars">' + stars(r.stars) + '</span></div>' +
+        '<div class="review-text">"' + r.text + '"</div>' +
+        '<div class="review-meta">' + r.meta + '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
