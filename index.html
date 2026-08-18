@@ -4,17 +4,43 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Demos</title>
+<title>Working examples — Fixpoint Studio</title>
 <style>
-  body { font-family: -apple-system, system-ui, sans-serif; max-width: 640px; margin: 4rem auto; padding: 0 1.5rem; color: #222; line-height: 1.5; }
-  a { color: #2563eb; }
-  ul { padding-left: 1.2rem; }
+  :root { --ground:#FBF8F3; --ink:#201A12; --ink-2:#4A3F2E; --muted:#7A6C55; --rule:#E3D8C3; --surface:#FFFFFF; --accent:#8A5A3B; }
+  @media (prefers-color-scheme: dark) {
+    :root { --ground:#171310; --ink:#F3ECE0; --ink-2:#D6C9B4; --muted:#A6987E; --rule:#3A3025; --surface:#211C16; --accent:#D2A377; }
+  }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; max-width: 760px; margin: 0 auto; padding: clamp(2rem,6vw,4rem) 1.5rem; color: var(--ink); background: var(--ground); line-height: 1.6; }
+  a { color: var(--accent); }
+  h1 { font-size: clamp(1.6rem,4vw,2.1rem); letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+  .lede { color: var(--ink-2); max-width: 60ch; margin-bottom: 2rem; }
+  .notice { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 0.9rem 1.1rem; font-size: 0.9rem; color: var(--ink-2); border-radius: 2px; margin-bottom: 2.5rem; }
+  ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+  li { background: var(--surface); }
+  li a { display: block; padding: 1.1rem 1.3rem; text-decoration: none; color: var(--ink); }
+  li a:hover { background: var(--ground); }
+  .card-title { font-weight: 620; font-size: 1.02rem; }
+  .card-sub { color: var(--muted); font-size: 0.88rem; margin-top: 0.2rem; }
 </style>
 </head>
 <body>
-<h1>Demos</h1>
-<p>Working prototypes built for prospective clients. Each one lives in its own folder.</p>
-<p><strong>Notice:</strong> These illustrative prototypes use sample data and are not affiliated with or endorsed by the businesses discussed.</p>
-<ul id="list"><li><em>No demos published yet.</em></li></ul>
+<h1>Working examples</h1>
+<p class="lede">Small working prototypes, each built to show one real automation solving one real problem for one real business. The library grows over time — even for businesses that never wrote back.</p>
+<div class="notice"><strong>Notice:</strong> every prototype here is illustrative, uses sample or publicly available data only, and is not affiliated with or endorsed by the businesses referenced.</div>
+<ul>
+  <li><a href="product-finder-quiz/">
+    <div class="card-title">Product-finder quiz</div>
+    <div class="card-sub">A few quick questions, answered against a retailer's own published guides, ending in one real in-stock recommendation. Built for Ministry of Sight.</div>
+  </a></li>
+  <li><a href="support-ticket-triage/">
+    <div class="card-title">Support-ticket triage &amp; drafting</div>
+    <div class="card-sub">Sample tickets sorted by urgency, with drafted replies and a clock deciding what needs a human. Built for Jewelry Candles.</div>
+  </a></li>
+  <li><a href="instant-quote-calculator/">
+    <div class="card-title">Instant quote calculator</div>
+    <div class="card-sub">Turns a business's own published pricing and travel-zone table into a live, self-serve quote. Built for Pool Table Guy.</div>
+  </a></li>
+</ul>
 </body>
 </html>

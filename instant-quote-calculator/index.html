@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Instant quote calculator: working example for Pool Table Guy</title>
+<style>
+  :root {
+    --ground: #F7F5F0; --surface: #FFFFFF; --surface-2: #EFEAE0;
+    --ink: #1A1D16; --ink-2: #3E4238; --muted: #6C7062;
+    --rule: #DBD6C6; --rule-soft: #E7E2D3;
+    --accent: #3E5C3A; --accent-ink: #FFFFFF; --accent-soft: #E4EAE0;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+    --measure: 62ch; --pad: clamp(1rem, 4vw, 2.5rem);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #14160F; --surface: #1D2016; --surface-2: #262A1D;
+      --ink: #EFEDE3; --ink-2: #CBCABC; --muted: #93967F;
+      --rule: #343924; --rule-soft: #2A2E1F;
+      --accent: #8FBF87; --accent-ink: #12160E; --accent-soft: #24301F;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #14160F; --surface: #1D2016; --surface-2: #262A1D;
+    --ink: #EFEDE3; --ink-2: #CBCABC; --muted: #93967F;
+    --rule: #343924; --rule-soft: #2A2E1F;
+    --accent: #8FBF87; --accent-ink: #12160E; --accent-soft: #24301F;
+  }
+  :root[data-theme="light"] {
+    --ground: #F7F5F0; --surface: #FFFFFF; --surface-2: #EFEAE0;
+    --ink: #1A1D16; --ink-2: #3E4238; --muted: #6C7062;
+    --rule: #DBD6C6; --rule-soft: #E7E2D3;
+    --accent: #3E5C3A; --accent-ink: #FFFFFF; --accent-soft: #E4EAE0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: var(--pad); display: flex; flex-direction: column; gap: clamp(2rem, 5vw, 3rem); }
+  .eyebrow { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0; }
+  h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); line-height: 1.15; letter-spacing: -0.02em; font-weight: 660; margin: 0.5rem 0 0; max-width: 26ch; }
+  h2 { font-size: 1.1rem; font-weight: 640; margin: 0; }
+  p { margin: 0; max-width: var(--measure); }
+  .lede { font-size: 1.02rem; color: var(--ink-2); margin-top: 0.9rem; }
+  .notice { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 1rem 1.15rem; border-radius: 2px; font-size: 0.9rem; color: var(--ink-2); }
+  .notice p { max-width: 78ch; }
+
+  .calc-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: clamp(1.25rem, 4vw, 2rem); display: flex; flex-direction: column; gap: 1.5rem; }
+  .field { display: flex; flex-direction: column; gap: 0.5rem; }
+  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .choice { font: inherit; color: inherit; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 3px; padding: 0.6rem 0.95rem; cursor: pointer; font-size: 0.92rem; transition: border-color .15s, background .15s; }
+  .choice:hover { border-color: var(--accent); }
+  .choice.sel { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 620; }
+  .choice:disabled { opacity: 0.35; cursor: not-allowed; }
+  select, input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: 3px; background: var(--surface-2); color: var(--ink); width: 100%; max-width: 22rem; }
+
+  .quote-out { border-top: 1px solid var(--rule); padding-top: 1.3rem; display: flex; flex-direction: column; gap: 0.9rem; }
+  .quote-line { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.93rem; color: var(--ink-2); }
+  .quote-line b { color: var(--ink); font-weight: 600; }
+  .quote-total { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.3rem; font-weight: 660; border-top: 1px dashed var(--rule); padding-top: 0.8rem; }
+  .quote-total .amt { font-family: var(--mono); }
+  .quote-sub { font-size: 0.82rem; color: var(--muted); }
+  .placeholder { font-size: 0.92rem; color: var(--muted); font-style: italic; }
+
+  .limits { display: flex; flex-direction: column; gap: 0.9rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 0.95rem; font-size: 0.89rem; line-height: 1.6; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 620; }
+
+  footer { border-top: 1px solid var(--rule); padding-top: 1.2rem; font-size: 0.85rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Working example, built for Pool Table Guy</p>
+    <h1>The instant quote your own pricing page already supports</h1>
+    <p class="lede">Your pricing page already lays out every number a self-serve quote tool would need: cloth grade and size tiers, cushion rubber options, and a full postcode-zone travel surcharge table. Right now getting a number means a form, call, or email. Here's what a live calculator over that same data looks like.</p>
+  </header>
+
+  <div class="notice">
+    <p><strong>Every price and rule below is copied from your own pricing page</strong>, not invented: cloth grade and size tiers, cushion rubber prices, and the four-tier postcode surcharge table with the Congestion Charge Zone add-on. VAT is shown separately, matching your page's "all prices exclude 20% VAT" note.</p>
+  </div>
+
+  <div class="calc-card" id="calc-root"></div>
+
+  <section>
+    <h2 style="margin-bottom:0.9rem">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Postcode matching is prefix-only, not address-verified.</b> This checks the letters at the start of what someone types (BN, SW, and so on), the same way your printed table is organized. It doesn't verify the postcode is real or resolve edge cases like a district split across two of your zones, if any exist. Real deployment would want a proper postcode lookup.</div>
+      <div class="lim"><b>The Congestion Charge Zone toggle is a judgment call, not a lookup.</b> Your page says SE splits into an "Outside CC Zone" tier and an "Inside CC Zone" tier, and the £50 Congestion Charge itself is waived if parking is provided. I built this as a manual toggle the customer ticks rather than guessing from a postcode, since I can't tell from the pricing page alone which SE postcodes fall inside the zone.</div>
+      <div class="lim"><b>Cushion rubber and cloth replacement are priced as separate services here, matching your page.</b> If a customer wants both done in one visit, this calculator totals them independently rather than assuming a combined-job discount, since your page doesn't mention one.</div>
+      <div class="lim"><b>This calculates a price, it doesn't book anything.</b> No calendar, no payment, no confirmation email. The honest next step after "here's your number" is still your existing quote form or a call, this just gets someone to that point already knowing what to expect.</div>
+      <div class="lim"><b>Your own pricing page currently shows the postcode table twice with different contents.</b> Earlier on the page GU and LU sit in the +£40 tier and AL isn't listed at all, later on the same page GU moves to the base tier and AL and LU both appear in the +£70 tier. This calculator uses the second, later version. Worth fixing on the live page regardless of this demo, since right now a customer could read two different numbers for the same postcode depending which part of the page they check.</div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Prepared by Shlok Sarnayak · Prices and postcode zones copied from your live pricing page today · Not connected to your booking system or payment processor</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  // ---- Source data, copied directly from pooltableguy.co.uk/pricing ----
+  var VAT_RATE = 0.20;
+
+  var CUSHION = [
+    { key: "brit-peradon", label: "British table, up to 8ft, Peradon Club rubber", price: 130 },
+    { key: "brit-hainsworth", label: "British table, up to 7ft, Hainsworth Northern rubber", price: 200 },
+    { key: "us-k66", label: "American table, up to 9ft, K-66 rubber", price: 150 }
+  ];
+
+  // Cloth: table origin -> grade -> { "6/7": price, "8": price, "9": price }
+  var CLOTH = {
+    british: {
+      "Hainsworth Club": { "6/7": 280, "8": 320, "9": 380 },
+      "Hainsworth Elite Pro": { "6/7": 280, "8": 320, "9": 380 },
+      "Hainsworth Smart": { "6/7": 320, "8": 360, "9": 420 },
+      "Hainsworth Match": { "6/7": 370, "8": 420, "9": 480 }
+    },
+    american: {
+      "Hainsworth Elite Pro": { "7/8": 460, "9": 500 },
+      "Simonis 760/860": { "7/8": 500, "9": 540 },
+      "Brunswick Centennial": { "7/8": 870, "9": 910 }
+    }
+  };
+
+  var BRITISH_SIZES = [{ key: "6/7", label: "6ft or 7ft" }, { key: "8", label: "8ft" }, { key: "9", label: "9ft" }];
+  var AMERICAN_SIZES = [{ key: "7/8", label: "7ft or 8ft" }, { key: "9", label: "9ft" }];
+
+  var TRAVEL_ZONES = [
+    { key: "base", label: "Included in base fee", fee: 0, prefixes: ["BN", "BR", "CR", "DA", "GU", "KT", "ME", "RH", "SM", "TW"] },
+    { key: "z40", label: "+£40", fee: 40, prefixes: ["CT", "HA", "HP", "PO", "SE", "SL", "TN", "UB"] },
+    { key: "z70", label: "+£70", fee: 70, prefixes: ["AL", "CM", "E", "EC", "EN", "IG", "LU", "N", "NW", "OX", "MK", "SE", "SG", "SO", "SS", "SW", "RG", "RM", "W", "WC", "WD"] }
+  ];
+
+  var state = { service: null, cushion: null, tableOrigin: null, clothGrade: null, clothSize: null, postcode: "", ccz: false };
+  var root = document.getElementById("calc-root");
+
+  function money(n) { return "£" + n.toFixed(2); }
+
+  function findZoneByPostcode(pc) {
+    var p = (pc || "").trim().toUpperCase();
+    if (!p) return null;
+    var letters = p.match(/^[A-Z]+/);
+    if (!letters) return null;
+    var prefix = letters[0];
+    // SE appears in both the £40 and £70 lists on the source page (outside vs
+    // inside the Congestion Charge Zone), so postcode prefix alone can't
+    // resolve it. Every other prefix on the page is unique to one zone.
+    if (prefix === "SE") return "se-ambiguous";
+    for (var i = 0; i < TRAVEL_ZONES.length; i++) {
+      if (TRAVEL_ZONES[i].prefixes.indexOf(prefix) !== -1) return TRAVEL_ZONES[i].key;
+    }
+    return null;
+  }
+
+  function render() {
+    var html = '';
+
+    html += '<div class="field"><div class="field-label">Which service?</div><div class="choices">';
+    html += '<button class="choice' + (state.service === 'cushion' ? ' sel' : '') + '" data-service="cushion">Cushion rubber replacement</button>';
+    html += '<button class="choice' + (state.service === 'cloth' ? ' sel' : '') + '" data-service="cloth">Cloth replacement</button>';
+    html += '</div></div>';
+
+    if (state.service === 'cushion') {
+      html += '<div class="field"><div class="field-label">Table and rubber</div><div class="choices">';
+      CUSHION.forEach(function (c) {
+        html += '<button class="choice' + (state.cushion === c.key ? ' sel' : '') + '" data-cushion="' + c.key + '">' + c.label + ', ' + money(c.price) + '</button>';
+      });
+      html += '</div></div>';
+    }
+
+    if (state.service === 'cloth') {
+      html += '<div class="field"><div class="field-label">Table type</div><div class="choices">';
+      html += '<button class="choice' + (state.tableOrigin === 'british' ? ' sel' : '') + '" data-origin="british">British</button>';
+      html += '<button class="choice' + (state.tableOrigin === 'american' ? ' sel' : '') + '" data-origin="american">American</button>';
+      html += '</div></div>';
+
+      if (state.tableOrigin) {
+        html += '<div class="field"><div class="field-label">Cloth grade</div><div class="choices">';
+        Object.keys(CLOTH[state.tableOrigin]).forEach(function (g) {
+          html += '<button class="choice' + (state.clothGrade === g ? ' sel' : '') + '" data-grade="' + g + '">' + g + '</button>';
+        });
+        html += '</div></div>';
+
+        var sizes = state.tableOrigin === 'british' ? BRITISH_SIZES : AMERICAN_SIZES;
+        html += '<div class="field"><div class="field-label">Table size</div><div class="choices">';
+        sizes.forEach(function (s) {
+          html += '<button class="choice' + (state.clothSize === s.key ? ' sel' : '') + '" data-size="' + s.key + '">' + s.label + '</button>';
+        });
+        html += '</div></div>';
+      }
+    }
+
+    if (state.service) {
+      html += '<div class="field"><div class="field-label">Your postcode area (e.g. SW, BN, OX)</div>';
+      html += '<input type="text" id="pc-input" value="' + state.postcode + '" placeholder="First part of your postcode" maxlength="8">';
+      html += '</div>';
+
+      var zone = findZoneByPostcode(state.postcode);
+      if (zone === 'se-ambiguous') {
+        html += '<div class="field"><div class="field-label">SE postcodes split by Congestion Charge Zone on your pricing page. Which applies?</div><div class="choices">';
+        html += '<button class="choice' + (state.seZone === 'z40' ? ' sel' : '') + '" data-sezone="z40">Outside the CC Zone, +£40</button>';
+        html += '<button class="choice' + (state.seZone === 'z70' ? ' sel' : '') + '" data-sezone="z70">Inside the CC Zone, +£70</button>';
+        html += '</div></div>';
+      }
+
+      html += '<div class="field"><div class="field-label">Congestion Charge Zone</div><div class="choices">';
+      html += '<button class="choice' + (state.ccz ? ' sel' : '') + '" data-ccz="toggle">' + (state.ccz ? 'Job is inside the CCZ' : 'Job is outside the CCZ') + '</button>';
+      html += '</div><div class="quote-sub">Your page adds £50 for the CCZ, waived if parking is provided.</div></div>';
+
+      if (state.ccz) {
+        html += '<div class="field"><div class="field-label">Parking provided?</div><div class="choices">';
+        html += '<button class="choice' + (state.parking ? ' sel' : '') + '" data-parking="toggle">' + (state.parking ? 'Yes, parking is provided' : 'No parking provided') + '</button>';
+        html += '</div></div>';
+      }
+    }
+
+    html += '<div class="quote-out" id="quote-out"></div>';
+
+    root.innerHTML = html;
+    wireEvents();
+    renderQuote();
+  }
+
+  function wireEvents() {
+    Array.prototype.forEach.call(root.querySelectorAll('[data-service]'), function (b) {
+      b.addEventListener('click', function () {
+        state.service = b.dataset.service;
+        state.cushion = null; state.tableOrigin = null; state.clothGrade = null; state.clothSize = null;
+        render();
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-cushion]'), function (b) {
+      b.addEventListener('click', function () { state.cushion = b.dataset.cushion; render(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-origin]'), function (b) {
+      b.addEventListener('click', function () { state.tableOrigin = b.dataset.origin; state.clothGrade = null; state.clothSize = null; render(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-grade]'), function (b) {
+      b.addEventListener('click', function () { state.clothGrade = b.dataset.grade; render(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-size]'), function (b) {
+      b.addEventListener('click', function () { state.clothSize = b.dataset.size; render(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-sezone]'), function (b) {
+      b.addEventListener('click', function () { state.seZone = b.dataset.sezone; render(); });
+    });
+    var cczBtn = root.querySelector('[data-ccz]');
+    if (cczBtn) cczBtn.addEventListener('click', function () { state.ccz = !state.ccz; state.parking = false; render(); });
+    var parkBtn = root.querySelector('[data-parking]');
+    if (parkBtn) parkBtn.addEventListener('click', function () { state.parking = !state.parking; render(); });
+    var pcInput = document.getElementById('pc-input');
+    if (pcInput) {
+      pcInput.addEventListener('input', function () {
+        state.postcode = pcInput.value;
+        state.seZone = null;
+        rerenderKeepingFocus();
+      });
+    }
+  }
+
+  function rerenderKeepingFocus() {
+    // Typing a postcode re-renders the whole form (the SE disambiguation
+    // choice can appear or disappear), so restore focus and cursor position
+    // on the postcode field afterward or every keystroke would lose it.
+    render();
+    var pcInput = document.getElementById('pc-input');
+    if (pcInput) { pcInput.focus(); pcInput.setSelectionRange(pcInput.value.length, pcInput.value.length); }
+  }
+
+  function currentBasePrice() {
+    if (state.service === 'cushion' && state.cushion) {
+      var c = CUSHION.filter(function (x) { return x.key === state.cushion; })[0];
+      return c ? c.price : null;
+    }
+    if (state.service === 'cloth' && state.tableOrigin && state.clothGrade && state.clothSize) {
+      var sizes = CLOTH[state.tableOrigin][state.clothGrade];
+      return sizes && sizes[state.clothSize] !== undefined ? sizes[state.clothSize] : null;
+    }
+    return null;
+  }
+
+  function currentTravelFee() {
+    var zone = findZoneByPostcode(state.postcode);
+    if (zone === 'se-ambiguous') {
+      if (state.seZone === 'z40') return 40;
+      if (state.seZone === 'z70') return 70;
+      return null;
+    }
+    if (zone === 'base') return 0;
+    if (zone === 'z40') return 40;
+    if (zone === 'z70') return 70;
+    return zone === null && state.postcode.trim() ? 'unknown' : null;
+  }
+
+  function renderQuote() {
+    var out = document.getElementById('quote-out');
+    if (!out) return;
+
+    var base = currentBasePrice();
+    if (base === null) {
+      out.innerHTML = '<p class="placeholder">Pick a service and its options above to see a price.</p>';
+      return;
+    }
+
+    var travel = currentTravelFee();
+    var html = '';
+    html += '<div class="quote-line"><span>Service</span><b>' + money(base) + '</b></div>';
+
+    if (travel === 'unknown') {
+      html += '<div class="quote-line"><span>Travel</span><b>Not on your published zone list</b></div>';
+      html += '<p class="quote-sub">That postcode area isn’t in your pricing page’s zone table. The honest answer here is to ask directly rather than guess a surcharge.</p>';
+      out.innerHTML = html;
+      return;
+    }
+    if (travel === null) {
+      html += '<p class="placeholder">Enter a postcode area above to add travel.</p>';
+      out.innerHTML = html;
+      return;
+    }
+
+    html += '<div class="quote-line"><span>Travel</span><b>' + (travel === 0 ? 'Included' : '+' + money(travel)) + '</b></div>';
+
+    var cczFee = 0;
+    if (state.ccz && !state.parking) {
+      cczFee = 50;
+      html += '<div class="quote-line"><span>Congestion Charge Zone</span><b>+' + money(cczFee) + '</b></div>';
+    } else if (state.ccz && state.parking) {
+      html += '<div class="quote-line"><span>Congestion Charge Zone</span><b>Waived, parking provided</b></div>';
+    }
+
+    var subtotal = base + travel + cczFee;
+    var vat = subtotal * VAT_RATE;
+    var total = subtotal + vat;
+
+    html += '<div class="quote-line"><span>VAT (20%)</span><b>' + money(vat) + '</b></div>';
+    html += '<div class="quote-total"><span>Estimated total</span><span class="amt">' + money(total) + '</span></div>';
+    html += '<p class="quote-sub">Based on the pricing and travel zones published on your own pricing page today. Not a booking, still needs confirming through your existing quote process.</p>';
+
+    out.innerHTML = html;
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
