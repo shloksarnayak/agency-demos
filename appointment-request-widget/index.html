@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Appointment request widget: working example for Wohl Optics</title>
+<style>
+  :root {
+    --ground: #F4F3EE; --surface: #FFFFFF; --surface-2: #EAE7DC;
+    --ink: #1C1B17; --ink-2: #423F35; --muted: #726C5C;
+    --rule: #DAD4C2; --rule-soft: #E6E1D1;
+    --accent: #2C5F6B; --accent-ink: #FFFFFF; --accent-soft: #E1EBED;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+    --measure: 62ch; --pad: clamp(1rem, 4vw, 2.5rem);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #14171A; --surface: #1D2124; --surface-2: #262B2E;
+      --ink: #EBEDEA; --ink-2: #C9CCC5; --muted: #939A8E;
+      --rule: #32372F; --rule-soft: #292E27;
+      --accent: #7FBFCC; --accent-ink: #0F1719; --accent-soft: #1C2F32;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #14171A; --surface: #1D2124; --surface-2: #262B2E;
+    --ink: #EBEDEA; --ink-2: #C9CCC5; --muted: #939A8E;
+    --rule: #32372F; --rule-soft: #292E27;
+    --accent: #7FBFCC; --accent-ink: #0F1719; --accent-soft: #1C2F32;
+  }
+  :root[data-theme="light"] {
+    --ground: #F4F3EE; --surface: #FFFFFF; --surface-2: #EAE7DC;
+    --ink: #1C1B17; --ink-2: #423F35; --muted: #726C5C;
+    --rule: #DAD4C2; --rule-soft: #E6E1D1;
+    --accent: #2C5F6B; --accent-ink: #FFFFFF; --accent-soft: #E1EBED;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: var(--pad); display: flex; flex-direction: column; gap: clamp(2rem, 5vw, 3rem); }
+  .eyebrow { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0; }
+  h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); line-height: 1.15; letter-spacing: -0.02em; font-weight: 660; margin: 0.5rem 0 0; max-width: 26ch; }
+  h2 { font-size: 1.1rem; font-weight: 640; margin: 0; }
+  p { margin: 0; max-width: var(--measure); }
+  .lede { font-size: 1.02rem; color: var(--ink-2); margin-top: 0.9rem; }
+  .notice { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 1rem 1.15rem; border-radius: 2px; font-size: 0.9rem; color: var(--ink-2); }
+  .notice p { max-width: 78ch; }
+
+  .form-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: clamp(1.25rem, 4vw, 2rem); display: flex; flex-direction: column; gap: 1.4rem; }
+  .field { display: flex; flex-direction: column; gap: 0.5rem; }
+  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .choice { font: inherit; color: inherit; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 3px; padding: 0.6rem 0.95rem; cursor: pointer; font-size: 0.92rem; }
+  .choice:hover { border-color: var(--accent); }
+  .choice.sel { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 620; }
+  input[type="text"], input[type="tel"], input[type="email"] { font: inherit; font-size: 0.95rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: 3px; background: var(--surface-2); color: var(--ink); width: 100%; max-width: 26rem; }
+  .hours-table { border-collapse: collapse; font-size: 0.88rem; }
+  .hours-table td { padding: 0.25rem 0.9rem 0.25rem 0; color: var(--ink-2); }
+  .hours-table td.day { color: var(--muted); font-family: var(--mono); font-size: 0.78rem; }
+
+  .submit-btn { align-self: flex-start; font: inherit; font-weight: 620; font-size: 0.95rem; color: var(--accent-ink); background: var(--accent); border: none; border-radius: 3px; padding: 0.75rem 1.4rem; cursor: pointer; }
+  .submit-btn:hover { opacity: 0.9; }
+  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .confirm { border: 1px solid var(--rule); background: var(--accent-soft); border-radius: 3px; padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .confirm h3 { margin: 0; font-size: 1.02rem; color: var(--accent); }
+  .confirm dl { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; }
+  .confirm dt { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .confirm dd { margin: 0 0 0.4rem; font-size: 0.92rem; color: var(--ink); }
+
+  .limits { display: flex; flex-direction: column; gap: 0.9rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 0.95rem; font-size: 0.89rem; line-height: 1.6; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 620; }
+
+  footer { border-top: 1px solid var(--rule); padding-top: 1.2rem; font-size: 0.85rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Working example, built for Wohl Optics</p>
+    <h1>Catching the request that comes in outside your open hours</h1>
+    <p class="lede">Your reviews are genuinely excellent, and phone and fax as the only contact channels clearly work for the customers who already know you. This isn't about fixing something broken, it's about the person who finds your site at 9pm comparing you to Pearle Vision and America's Best, both of which let them book online right now.</p>
+  </header>
+
+  <div class="notice">
+    <p><strong>What's real:</strong> your hours, appointment-only model, and service list below are copied from your own site today. What this isn't: a live booking calendar showing real open slots, since that would need your actual scheduling system connected, which this demo doesn't have access to. It's a request form. Same as phone or fax today, someone still confirms the actual time.</p>
+  </div>
+
+  <div class="form-card" id="form-root"></div>
+
+  <section>
+    <h2 style="margin-bottom:0.9rem">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>This is a request form, not a booking calendar.</b> It doesn't know which specific times are actually free, because it isn't connected to your real schedule. A customer picks a rough preference and it gets sent to you, same as a phone call, just captured outside your open hours instead of going unanswered.</div>
+      <div class="lim"><b>This is deliberately not framed as fixing something broken.</b> Your reviews are strong and one-family-at-a-time is clearly a feature, not a gap, for people who already know you. This only catches the person who's still deciding and finds your site after 6pm.</div>
+      <div class="lim"><b>Nothing here actually sends anything.</b> A real version would email or text you the request the moment someone submits it. This demo just shows what that submission would look like.</div>
+      <div class="lim"><b>Service list and hours are copied from your contact page today.</b> If either changes, this needs a one-line update to match, it won't drift out of sync on its own.</div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Prepared by Shlok Sarnayak for Doug Wohl · Hours and services verified against your own site today · Not connected to your phone system, fax, or real appointment book</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var SERVICES = [
+    "Eye and vision exam", "Contact lens exam and fitting", "Frame fitting and selection",
+    "Eyeglass adjustment", "Eyeglass repair", "Replacement lenses"
+  ];
+
+  var HOURS = [
+    ["Monday", "10:00 AM to 5:00 PM"],
+    ["Tuesday", "10:00 AM to 4:00 PM"],
+    ["Wednesday", "10:30 AM to 6:00 PM"],
+    ["Thursday", "10:30 AM to 7:30 PM"],
+    ["Friday", "10:00 AM to 6:00 PM"],
+    ["Saturday", "10:00 AM to 1:00 PM"]
+  ];
+
+  var DAY_PREFS = HOURS.map(function (h) { return h[0]; });
+  var TIME_PREFS = ["Morning", "Early afternoon", "Late afternoon or evening"];
+
+  var state = { service: null, day: null, time: null, name: "", contact: "", submitted: false };
+  var root = document.getElementById("form-root");
+
+  function canSubmit() {
+    return state.service && state.day && state.time && state.name.trim() && state.contact.trim();
+  }
+
+  function render() {
+    if (state.submitted) { renderConfirm(); return; }
+
+    var html = '';
+    html += '<div class="field"><div class="field-label">What do you need?</div><div class="choices">';
+    SERVICES.forEach(function (s) {
+      html += '<button class="choice' + (state.service === s ? ' sel' : '') + '" data-service="' + s + '">' + s + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field"><div class="field-label">Preferred day</div><div class="choices">';
+    DAY_PREFS.forEach(function (d) {
+      html += '<button class="choice' + (state.day === d ? ' sel' : '') + '" data-day="' + d + '">' + d + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field"><div class="field-label">Preferred time of day</div><div class="choices">';
+    TIME_PREFS.forEach(function (t) {
+      html += '<button class="choice' + (state.time === t ? ' sel' : '') + '" data-time="' + t + '">' + t + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field"><div class="field-label">Your name</div><input type="text" id="name-input" value="' + state.name.replace(/"/g, '&quot;') + '" placeholder="First and last name"></div>';
+    html += '<div class="field"><div class="field-label">Phone or email</div><input type="text" id="contact-input" value="' + state.contact.replace(/"/g, '&quot;') + '" placeholder="How should we reach you?"></div>';
+
+    html += '<div class="field"><div class="field-label">Your hours, for reference</div><table class="hours-table"><tbody>';
+    HOURS.forEach(function (h) { html += '<tr><td class="day">' + h[0] + '</td><td>' + h[1] + '</td></tr>'; });
+    html += '</tbody></table></div>';
+
+    html += '<button class="submit-btn" id="submit-btn"' + (canSubmit() ? '' : ' disabled') + '>Request this appointment</button>';
+
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll('[data-service]'), function (b) {
+      b.addEventListener('click', function () { state.service = b.dataset.service; render(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-day]'), function (b) {
+      b.addEventListener('click', function () { state.day = b.dataset.day; render(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-time]'), function (b) {
+      b.addEventListener('click', function () { state.time = b.dataset.time; render(); });
+    });
+
+    var nameInput = document.getElementById('name-input');
+    var contactInput = document.getElementById('contact-input');
+    nameInput.addEventListener('input', function () { state.name = nameInput.value; syncSubmitState(); });
+    contactInput.addEventListener('input', function () { state.contact = contactInput.value; syncSubmitState(); });
+
+    var submitBtn = document.getElementById('submit-btn');
+    submitBtn.addEventListener('click', function () {
+      if (!canSubmit()) return;
+      state.submitted = true;
+      render();
+    });
+  }
+
+  function syncSubmitState() {
+    var btn = document.getElementById('submit-btn');
+    if (btn) btn.disabled = !canSubmit();
+  }
+
+  function renderConfirm() {
+    var html = '<div class="confirm">';
+    html += '<h3>Request captured, this is what Wohl Optics would receive</h3>';
+    html += '<dl>';
+    html += '<dt>Service</dt><dd>' + state.service + '</dd>';
+    html += '<dt>Preferred day</dt><dd>' + state.day + '</dd>';
+    html += '<dt>Preferred time</dt><dd>' + state.time + '</dd>';
+    html += '<dt>Name</dt><dd>' + escapeHtml(state.name) + '</dd>';
+    html += '<dt>Contact</dt><dd>' + escapeHtml(state.contact) + '</dd>';
+    html += '</dl>';
+    html += '<p style="font-size:0.88rem; color:var(--ink-2);">A real version emails or texts this to Doug the moment it\'s submitted, and confirms the actual time back to the customer once it\'s checked against the real schedule.</p>';
+    html += '<button class="submit-btn" id="reset-btn" style="align-self:flex-start;">Start over</button>';
+    html += '</div>';
+    root.innerHTML = html;
+    document.getElementById('reset-btn').addEventListener('click', function () {
+      state = { service: null, day: null, time: null, name: "", contact: "", submitted: false };
+      render();
+    });
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
