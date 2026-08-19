@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Support triage, working example for Simply Good Coffee</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .sec { display: flex; flex-direction: column; gap: 1.4rem; }
+  .sec-head { display: flex; flex-direction: column; gap: 0.55rem; }
+  .why { font-size: 0.87rem; color: var(--muted); line-height: 1.6; max-width: 82ch; border-left: 2px solid var(--rule); padding-left: 0.9rem; }
+  .why b { color: var(--ink-2); font-weight: 620; }
+
+  .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .stat { background: var(--surface); padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .stat-n { font-family: var(--serif); font-size: 1.7rem; font-variant-numeric: tabular-nums; line-height: 1; }
+  .stat-l { font-size: 0.78rem; color: var(--muted); line-height: 1.35; }
+
+  .queue { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.85rem; }
+  .tk { position: relative; text-align: left; font: inherit; color: var(--ink); background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--shadow-inset), var(--shadow-sm); padding: 1rem 1.15rem 1rem 1.3rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; transition: transform 0.15s ease; }
+  .tk:hover { transform: translateY(-2px); }
+  .tk::before { content: ""; position: absolute; inset: 0.6rem auto 0.6rem 0; width: 3px; border-radius: 3px; background: var(--sv); }
+  .tk[aria-selected="true"] { box-shadow: var(--shadow-inset), 0 0 0 1.5px var(--brand), var(--shadow-md); }
+  .tk-top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+  .tk-id { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+  .tk-age { font-family: var(--mono); font-size: 0.72rem; color: var(--sv); font-weight: 620; white-space: nowrap; }
+  .tk-cat { font-size: 0.87rem; line-height: 1.35; font-weight: 570; }
+  .tk-flag { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }
+  .tk-sev { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sv); }
+
+  .panel { display: none; flex-direction: column; gap: 1.5rem; }
+  .panel.on { display: flex; }
+  .routing { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  .badge { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.34rem 0.7rem; border-radius: 999px; white-space: nowrap; }
+  .badge.hold { color: var(--warn); background: var(--warn-bg); }
+  .badge.human { color: var(--hot); background: var(--hot-bg); }
+  .badge.auto { color: var(--good); background: var(--good-bg); }
+  .badge.rule { color: var(--muted); background: var(--surface-2); }
+
+  .cols { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+  @media (min-width: 860px) { .cols { grid-template-columns: 1.05fr 1fr; } }
+
+  .card { background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--shadow-inset), var(--shadow-sm); display: flex; flex-direction: column; overflow: hidden; }
+  .card-h { padding: 0.75rem 1.1rem; border-bottom: 1px solid var(--rule-soft); background: var(--surface-2); display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
+  .card-h .who { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .card-b { padding: 1.15rem; display: flex; flex-direction: column; gap: 0.85rem; }
+  .inbound { font-family: var(--serif); font-size: 0.97rem; line-height: 1.66; color: var(--ink-2); }
+  .inbound p { max-width: none; }
+  .inbound .subj { font-family: var(--sans); font-size: 0.85rem; font-weight: 640; color: var(--ink); margin-bottom: 0.2rem; }
+
+  .fields { display: flex; flex-direction: column; gap: 0; }
+  .fld { padding: 0.55rem 0; border-bottom: 1px dashed var(--rule-soft); }
+  .fld:last-child { border-bottom: 0; padding-bottom: 0; }
+  .fld:first-child { padding-top: 0; }
+  .fld dt { font-family: var(--mono); font-size: 0.63rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+  .fld dd { margin: 0; font-family: var(--mono); font-size: 0.79rem; line-height: 1.5; color: var(--ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+  .reply { white-space: pre-wrap; font-size: 0.93rem; line-height: 1.68; color: var(--ink-2); }
+  .ph { font-family: var(--mono); font-size: 0.85em; color: var(--brand); background: var(--brand-soft); border-bottom: 1px dotted var(--brand); padding: 0.05em 0.25em; border-radius: 2px; }
+
+  .rules { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .rl { background: var(--surface); padding: 1.2rem; display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
+  @media (min-width: 780px) { .rl { grid-template-columns: 2.2rem 1fr; column-gap: 0.9rem; } }
+  .rl-n { font-family: var(--serif); font-size: 0.95rem; color: var(--brand); font-weight: 600; padding-top: 0.12rem; }
+  .rl-body { display: flex; flex-direction: column; gap: 0.5rem; }
+  .rl-line { font-size: 0.9rem; line-height: 1.58; max-width: 80ch; }
+  .rl-line .tag { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 0.12rem; }
+  .rl-why { font-size: 0.85rem; color: var(--muted); line-height: 1.6; max-width: 80ch; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 82ch; }
+  .lim b { color: var(--ink); font-weight: 620; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Support-ticket triage</a> / Simply Good Coffee</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Simply Good Coffee</span>
+  <h1 class="fx-h1">Two tickets, triaged after the AI phone system couldn't help</h1>
+  <p class="fx-lede">Two sample tickets, modeled on real, dated BBB complaints filed against Simply Good Coffee this year. Both describe the same pattern: a customer calls your support line, hits an AI system with no clear way through to a person, and has to write in instead. Here's what the triage step could look like once that written message arrives.</p>
+  <p class="fx-lede" style="font-size:0.95rem; margin-top:0.6rem;">Prepared by Shlok Sarnayak for Dean Rotchin. Nothing here is connected to your live systems.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice" style="flex-direction:column; align-items:flex-start; gap:0.6rem;">
+    <p><strong>The two tickets below are modeled on real BBB complaints, not copies of them.</strong> The core of each, what the customer experienced with your AI phone system and what they wrote in asking for, is grounded in complaints I read directly on BBB. The customer names, order numbers, and product details are mine, invented so no real customer's details appear here.</p>
+    <p>Anything in <span class="ph">[square brackets]</span> is a number or a decision I refused to invent.</p>
+  </div>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="fx-h2" style="margin-bottom:0;">The queue this morning</h2>
+      <p class="why">Sorted by how close each one is to becoming another BBB complaint, not by arrival time.</p>
+    </div>
+
+    <div class="strip">
+      <div class="stat"><span class="stat-n" style="color:var(--hot)">1</span><span class="stat-l">Needs a person's judgment on a warranty claim, held</span></div>
+      <div class="stat"><span class="stat-n" style="color:var(--good)">1</span><span class="stat-l">A direct order-status lookup, safe for the system to answer alone</span></div>
+      <div class="stat"><span class="stat-n">29</span><span class="stat-l">BBB complaints filed against the business in the last 3 years, per BBB's own count, read directly today</span></div>
+    </div>
+
+    <div class="queue" role="tablist" aria-label="Sample tickets">
+      <button class="tk" role="tab" aria-selected="true" aria-controls="p1" id="t1" style="--sv:var(--hot)">
+        <span class="tk-top"><span class="tk-id">SGC-3301</span><span class="tk-age">Called first</span></span>
+        <span class="tk-cat">Descaling issue, gave up on the phone line</span>
+        <span class="tk-flag">No callback despite a 24-hour promise</span>
+        <span class="tk-sev">High, held for approval</span>
+      </button>
+      <button class="tk" role="tab" aria-selected="false" aria-controls="p2" id="t2" style="--sv:var(--good)">
+        <span class="tk-top"><span class="tk-id">SGC-3288</span><span class="tk-age">Called first</span></span>
+        <span class="tk-cat">Just wants shipping confirmed</span>
+        <span class="tk-flag">Phone system couldn't capture the order number</span>
+        <span class="tk-sev">Low, safe to auto-send</span>
+      </button>
+    </div>
+
+    <div class="panel on" id="p1" role="tabpanel" aria-labelledby="t1">
+      <div class="routing">
+        <span class="badge hold">Drafted, held for approval</span>
+        <span class="badge rule">Rule 1 fired</span>
+        <span class="badge rule">Rule 2 fired</span>
+      </div>
+      <div class="cols">
+        <div class="card">
+          <div class="card-h"><h3>What arrived</h3><span class="who">Customer</span></div>
+          <div class="card-b">
+            <div class="inbound">
+              <div class="subj">Gave up on the phone, writing instead</div>
+              <p>I tried calling about a descaling issue on my brewer, <span class="ph">[SGC-3301]</span>, and just kept getting bounced between what sounded like different automated systems. I was told someone would call me back within 24 hours and nobody did.</p>
+              <p>I don't want to go through that again, so I'm writing instead. The descale cycle keeps stopping partway through and the water tastes off afterward. Can someone actually look at this.</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>What the system pulled out</h3><span class="who">Extracted</span></div>
+          <div class="card-b">
+            <dl class="fields">
+              <div class="fld"><dt>Order reference</dt><dd>SGC-3301</dd></div>
+              <div class="fld"><dt>Product</dt><dd>THE BREWER, plastic-free</dd></div>
+              <div class="fld"><dt>Issue reported</dt><dd>Descale cycle stops partway through, water tastes off after</dd></div>
+              <div class="fld"><dt>Prior contact</dt><dd>Phone call, transferred multiple times, no resolution; promised callback within 24 hours, not received</dd></div>
+              <div class="fld"><dt>Decision required</dt><dd>Yes, whether this is a warranty repair, a replacement, or a troubleshooting fix needs someone to actually diagnose it</dd></div>
+              <div class="fld"><dt>Escalation language</dt><dd>None yet</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Drafted reply, waiting for a person to send</h3><span class="who">Operator voice</span></div>
+        <div class="card-b">
+          <div class="reply">Hi <span class="ph">[first name]</span>,
+
+You called about this, got transferred without a resolution, and never got the callback you were promised. I'm sorry, that's on us.
+
+I've got your brewer, order <span class="ph">[SGC-3301]</span>, in front of me now. A descale cycle stopping partway and an off taste afterward could be a few different things, so rather than guess in writing, <span class="ph">[support lead]</span> is going to actually walk through it with you.
+
+You'll hear from a person, not a system, by <span class="ph">[follow-up date]</span>.
+
+<span class="ph">[rep name]</span>
+Simply Good Coffee</div>
+        </div>
+      </div>
+      <p class="why"><b>Why the system won't send this by itself.</b> Diagnosing a hardware issue and deciding whether it's a warranty repair or a replacement is a judgment call, not something a triage system should guess at. Its job here is capturing what happened on the failed call and getting a draft in front of a person fast, not deciding the fix.</p>
+    </div>
+
+    <div class="panel" id="p2" role="tabpanel" aria-labelledby="t2">
+      <div class="routing">
+        <span class="badge auto">Safe to auto-send</span>
+        <span class="badge rule">Rule 3 fired</span>
+      </div>
+      <div class="cols">
+        <div class="card">
+          <div class="card-h"><h3>What arrived</h3><span class="who">Customer</span></div>
+          <div class="card-b">
+            <div class="inbound">
+              <div class="subj">Order number, since the phone system couldn't get it</div>
+              <p>I called to check if my order shipped and the automated system couldn't get my order number right twice, so I gave up and I'm emailing instead. My order is <span class="ph">[SGC-3288]</span>, placed <span class="ph">[order date]</span>. Has it shipped yet?</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>What the system pulled out</h3><span class="who">Extracted</span></div>
+          <div class="card-b">
+            <dl class="fields">
+              <div class="fld"><dt>Order reference</dt><dd>SGC-3288</dd></div>
+              <div class="fld"><dt>What they're asking for</dt><dd>Shipping status on an order already placed</dd></div>
+              <div class="fld"><dt>Prior contact</dt><dd>Phone call, automated system failed to capture the order number</dd></div>
+              <div class="fld"><dt>Decision required</dt><dd>No, the order either has a shipping scan or it doesn't, a direct lookup</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Drafted reply, cleared to send automatically</h3><span class="who">Operator voice</span></div>
+        <div class="card-b">
+          <div class="reply">Hi <span class="ph">[first name]</span>,
+
+Sorry the phone system couldn't get your order number, that shouldn't have happened.
+
+Order <span class="ph">[SGC-3288]</span> shipped from our Los Angeles fulfillment center on <span class="ph">[ship date]</span>, tracking number <span class="ph">[tracking number]</span>.
+
+If anything looks off, write back and a person will take a look.
+
+Simply Good Coffee</div>
+        </div>
+      </div>
+      <p class="why"><b>Why this is the one the system can send alone.</b> Whether an order shipped is a direct lookup, not a judgment call. This is also the ticket most likely to sit unanswered precisely because it sounds routine, and it's modeled on a real complaint where the AI phone system itself was the obstacle, not the shipping.</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="fx-h2" style="margin-bottom:0;">The rules underneath</h2>
+      <p class="why">These are the part worth arguing with.</p>
+    </div>
+    <div class="rules">
+      <div class="rl">
+        <div class="rl-n">01</div>
+        <div class="rl-body">
+          <div class="rl-line"><span class="tag">When</span>A message mentions a prior failed phone or chat attempt, especially one involving your automated system.</div>
+          <div class="rl-line"><span class="tag">Then</span>Flag it as a second contact attempt even though it arrived as a first written message, since the customer already tried once.</div>
+          <div class="rl-why">Multiple BBB complaints this year describe the same shape: a customer calls, hits the automated system, gets nowhere, then has to find another way in. Treating the written message as a fresh, first-time contact undercounts how many times this customer has already tried.</div>
+        </div>
+      </div>
+      <div class="rl">
+        <div class="rl-n">02</div>
+        <div class="rl-body">
+          <div class="rl-line"><span class="tag">When</span>The reply would require diagnosing a hardware issue or deciding a warranty outcome.</div>
+          <div class="rl-line"><span class="tag">Then</span>The system gathers what it can, the product, the issue, the prior contact history, drafts a reply, and holds it for a person to actually diagnose before sending.</div>
+          <div class="rl-why">A five-year warranty program is worth something only if a real diagnosis happens before a decision gets made. Guessing at a fix in an automated reply would be worse than the delay it's trying to avoid.</div>
+        </div>
+      </div>
+      <div class="rl">
+        <div class="rl-n">03</div>
+        <div class="rl-body">
+          <div class="rl-line"><span class="tag">When</span>A request is a direct lookup, has an order shipped, with no dispute or diagnosis attached.</div>
+          <div class="rl-line"><span class="tag">Then</span>The system answers immediately and sends without waiting for a person.</div>
+          <div class="rl-why">This is exactly the kind of request that shouldn't need a human at all, and one of the real complaints this page is modeled on describes a customer who couldn't even get this simple a question answered because the automated phone system mishandled their order number. A written channel with a reliable direct-lookup answer is a lower bar to clear than fixing the phone system, and it closes the same gap.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="fx-h2" style="margin-bottom:0;">What this demo can't do</h2>
+      <p class="why">The parts a proposal would normally leave out.</p>
+    </div>
+    <div class="limits">
+      <div class="lim"><b>This is a written-channel fix, not a phone-system fix.</b> The complaints I read describe your AI phone system itself as the obstacle, garbled order numbers, being transferred between automated branches. This demo addresses what happens once a customer gives up on the phone and writes in instead, it doesn't change the phone system itself. That's a separate, harder conversation.</div>
+      <div class="lim"><b>The integration is the product.</b> A real version needs read access to your Shopify order data to answer a shipping question correctly, or to pull up a customer's warranty and order history for a hardware issue. Without that, both replies collapse into a polite acknowledgment.</div>
+      <div class="lim"><b>I don't know your current call and email volume.</b> These two tickets are grounded in complaints from this year, they aren't a claim about how often this happens across all your orders. Whether this is worth building depends on numbers only you have.</div>
+      <div class="lim"><b>This only routes and drafts, it never diagnoses a hardware issue or decides a warranty outcome on its own.</b> Keeping that judgment call with a person, always, is deliberate.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p>Prepared by Shlok Sarnayak for Simply Good Coffee. BBB complaints describing your AI phone system, and the absence of a chat widget or AI mention anywhere on your site itself, verified directly today (29 complaints filed in the last 3 years, per BBB's own count). Ticket data is a labeled sample modeled on those complaints, not connected to your real orders.</p>
+</footer>
+<script>
+  (function () {
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.tk'));
+    var panels = tabs.map(function (t) {
+      return document.getElementById(t.getAttribute('aria-controls'));
+    });
+    function select(i) {
+      tabs.forEach(function (t, n) { t.setAttribute('aria-selected', n === i ? 'true' : 'false'); });
+      panels.forEach(function (p, n) { p.classList.toggle('on', n === i); });
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () { select(i); });
+      t.addEventListener('keydown', function (e) {
+        var next = null;
+        if (e.key === 'ArrowRight') next = (i + 1) % tabs.length;
+        if (e.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+        if (next !== null) { e.preventDefault(); select(next); tabs[next].focus(); }
+      });
+    });
+  })();
+</script>
+</body>
+</html>
