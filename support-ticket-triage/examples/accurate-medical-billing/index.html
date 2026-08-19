@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Support triage, working example for Accurate Medical Billing</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .sec { display: flex; flex-direction: column; gap: 1.4rem; }
+  .sec-head { display: flex; flex-direction: column; gap: 0.55rem; }
+  .why { font-size: 0.87rem; color: var(--muted); line-height: 1.6; max-width: 82ch; border-left: 2px solid var(--rule); padding-left: 0.9rem; }
+  .why b { color: var(--ink-2); font-weight: 620; }
+
+  .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .stat { background: var(--surface); padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .stat-n { font-family: var(--serif); font-size: 1.7rem; font-variant-numeric: tabular-nums; line-height: 1; }
+  .stat-l { font-size: 0.78rem; color: var(--muted); line-height: 1.35; }
+
+  .queue { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.85rem; }
+  .tk { position: relative; text-align: left; font: inherit; color: var(--ink); background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--shadow-inset), var(--shadow-sm); padding: 1rem 1.15rem 1rem 1.3rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; transition: transform 0.15s ease; }
+  .tk:hover { transform: translateY(-2px); }
+  .tk::before { content: ""; position: absolute; inset: 0.6rem auto 0.6rem 0; width: 3px; border-radius: 3px; background: var(--sv); }
+  .tk[aria-selected="true"] { box-shadow: var(--shadow-inset), 0 0 0 1.5px var(--brand), var(--shadow-md); }
+  .tk-top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+  .tk-id { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+  .tk-age { font-family: var(--mono); font-size: 0.72rem; color: var(--sv); font-weight: 620; white-space: nowrap; }
+  .tk-cat { font-size: 0.87rem; line-height: 1.35; font-weight: 570; }
+  .tk-flag { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }
+  .tk-sev { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sv); }
+
+  .panel { display: none; flex-direction: column; gap: 1.5rem; }
+  .panel.on { display: flex; }
+  .routing { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  .badge { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.34rem 0.7rem; border-radius: 999px; white-space: nowrap; }
+  .badge.hold { color: var(--warn); background: var(--warn-bg); }
+  .badge.human { color: var(--hot); background: var(--hot-bg); }
+  .badge.auto { color: var(--good); background: var(--good-bg); }
+  .badge.rule { color: var(--muted); background: var(--surface-2); }
+
+  .cols { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+  @media (min-width: 860px) { .cols { grid-template-columns: 1.05fr 1fr; } }
+
+  .card { background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--shadow-inset), var(--shadow-sm); display: flex; flex-direction: column; overflow: hidden; }
+  .card-h { padding: 0.75rem 1.1rem; border-bottom: 1px solid var(--rule-soft); background: var(--surface-2); display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
+  .card-h .who { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .card-b { padding: 1.15rem; display: flex; flex-direction: column; gap: 0.85rem; }
+  .inbound { font-family: var(--serif); font-size: 0.97rem; line-height: 1.66; color: var(--ink-2); }
+  .inbound p { max-width: none; }
+  .inbound .subj { font-family: var(--sans); font-size: 0.85rem; font-weight: 640; color: var(--ink); margin-bottom: 0.2rem; }
+
+  .fields { display: flex; flex-direction: column; gap: 0; }
+  .fld { padding: 0.55rem 0; border-bottom: 1px dashed var(--rule-soft); }
+  .fld:last-child { border-bottom: 0; padding-bottom: 0; }
+  .fld:first-child { padding-top: 0; }
+  .fld dt { font-family: var(--mono); font-size: 0.63rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+  .fld dd { margin: 0; font-family: var(--mono); font-size: 0.79rem; line-height: 1.5; color: var(--ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+  .reply { white-space: pre-wrap; font-size: 0.93rem; line-height: 1.68; color: var(--ink-2); }
+  .ph { font-family: var(--mono); font-size: 0.85em; color: var(--brand); background: var(--brand-soft); border-bottom: 1px dotted var(--brand); padding: 0.05em 0.25em; border-radius: 2px; }
+
+  .rules { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .rl { background: var(--surface); padding: 1.2rem; display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
+  @media (min-width: 780px) { .rl { grid-template-columns: 2.2rem 1fr; column-gap: 0.9rem; } }
+  .rl-n { font-family: var(--serif); font-size: 0.95rem; color: var(--brand); font-weight: 600; padding-top: 0.12rem; }
+  .rl-body { display: flex; flex-direction: column; gap: 0.5rem; }
+  .rl-line { font-size: 0.9rem; line-height: 1.58; max-width: 80ch; }
+  .rl-line .tag { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 0.12rem; }
+  .rl-why { font-size: 0.85rem; color: var(--muted); line-height: 1.6; max-width: 80ch; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 82ch; }
+  .lim b { color: var(--ink); font-weight: 620; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Support-ticket triage</a> / Accurate Medical Billing</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Accurate Medical Billing</span>
+  <h1 class="fx-h1">Two tickets, triaged before the phone rings a fourth time</h1>
+  <p class="fx-lede">Two sample tickets, modeled closely on two real BBB complaints filed against AMB two weeks apart in early 2024. Both describe the same failure mode: a patient writes or calls more than once and hears nothing back. Here's what the triage step could look like.</p>
+  <p class="fx-lede" style="font-size:0.95rem; margin-top:0.6rem;">Prepared by Shlok Sarnayak for Terrie (TJ) Webber. Nothing here is connected to your live systems.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice" style="flex-direction:column; align-items:flex-start; gap:0.6rem;">
+    <p><strong>The two tickets below are modeled on real complaints, not copies of them.</strong> The core of each, what the patient asked for, how many times they wrote, and what happened, is grounded in the actual BBB record. The patient names, account numbers, dollar amounts, and practice names are mine, invented so no real patient's details appear here.</p>
+    <p>Anything in <span class="ph">[square brackets]</span> is a number or a decision I refused to invent.</p>
+  </div>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="fx-h2" style="margin-bottom:0;">The queue this morning</h2>
+      <p class="why">Sorted by how close each one is to becoming a repeat BBB complaint, not by arrival time.</p>
+    </div>
+
+    <div class="strip">
+      <div class="stat"><span class="stat-n" style="color:var(--hot)">1</span><span class="stat-l">Needs a judgment call on the account, held for a person</span></div>
+      <div class="stat"><span class="stat-n" style="color:var(--good)">1</span><span class="stat-l">A direct lookup, safe for the system to answer alone</span></div>
+      <div class="stat"><span class="stat-n">2</span><span class="stat-l">Contact attempts before this message, on the ticket that's held</span></div>
+      <div class="stat"><span class="stat-n">3</span><span class="stat-l">Separate channels used, phone, email, and the website form</span></div>
+    </div>
+
+    <div class="queue" role="tablist" aria-label="Sample tickets">
+      <button class="tk" role="tab" aria-selected="true" aria-controls="p1" id="t1" style="--sv:var(--hot)">
+        <span class="tk-top"><span class="tk-id">AMB-2201</span><span class="tk-age">3rd contact</span></span>
+        <span class="tk-cat">Balance dispute, wants it "cleared"</span>
+        <span class="tk-flag">2 prior calls, no callback</span>
+        <span class="tk-sev">High, held for approval</span>
+      </button>
+      <button class="tk" role="tab" aria-selected="false" aria-controls="p2" id="t2" style="--sv:var(--good)">
+        <span class="tk-top"><span class="tk-id">AMB-2187</span><span class="tk-age">4th contact</span></span>
+        <span class="tk-cat">Just needs a payment receipt</span>
+        <span class="tk-flag">Called, emailed, website form, all unanswered</span>
+        <span class="tk-sev">Low, safe to auto-send</span>
+      </button>
+    </div>
+
+    <div class="panel on" id="p1" role="tabpanel" aria-labelledby="t1">
+      <div class="routing">
+        <span class="badge hold">Drafted, held for approval</span>
+        <span class="badge rule">Rule 1 fired</span>
+        <span class="badge rule">Rule 2 fired</span>
+      </div>
+      <div class="cols">
+        <div class="card">
+          <div class="card-h"><h3>What arrived</h3><span class="who">Patient</span></div>
+          <div class="card-b">
+            <div class="inbound">
+              <div class="subj">Still trying to get my account cleared</div>
+              <p>I'm writing again about account <span class="ph">[AMB-2201]</span>. I've called twice now and left messages both times asking someone to look into this and get it cleared, and I still haven't heard from anyone.</p>
+              <p>I don't think this balance is right, my insurance already processed this and I want it looked at before it goes any further. Can someone please call me back this time.</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>What the system pulled out</h3><span class="who">Extracted</span></div>
+          <div class="card-b">
+            <dl class="fields">
+              <div class="fld"><dt>Account reference</dt><dd>AMB-2201</dd></div>
+              <div class="fld"><dt>What they're asking for</dt><dd>A review of a balance they believe insurance already covered, and to have it cleared</dd></div>
+              <div class="fld"><dt>Prior contact attempts</dt><dd>2 phone calls, both unreturned</dd></div>
+              <div class="fld"><dt>This message</dt><dd>3rd attempt, now in writing</dd></div>
+              <div class="fld"><dt>Decision required</dt><dd>Yes, whether the balance is correct needs someone to check the claim against what the payer actually paid</dd></div>
+              <div class="fld"><dt>Escalation language</dt><dd>None yet</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Drafted reply, waiting for a person to send</h3><span class="who">Operator voice</span></div>
+        <div class="card-b">
+          <div class="reply">Hi <span class="ph">[first name]</span>,
+
+You've called twice about this and neither call was returned. That's on us, not you, and I'm sorry.
+
+I'm pulling account <span class="ph">[AMB-2201]</span> now to check what your insurer actually paid against what's showing as your balance. That's the only way to answer honestly whether the balance is right, so I'm not going to guess at it in this email.
+
+<span class="ph">[TJ / owner]</span> will have an answer for you by <span class="ph">[follow-up date]</span>, by phone since that's what you asked for the first two times.
+
+<span class="ph">[rep name]</span>
+Accurate Medical Billing</div>
+        </div>
+      </div>
+      <p class="why"><b>Why the system won't send this by itself.</b> Whether the balance is actually wrong is a claims question, checking what a payer processed against what's billed, and that's a judgment call, not a lookup. The system's job here is logging the two missed calls and getting a draft in front of a person fast, not deciding the account is right or wrong.</p>
+    </div>
+
+    <div class="panel" id="p2" role="tabpanel" aria-labelledby="t2">
+      <div class="routing">
+        <span class="badge auto">Safe to auto-send</span>
+        <span class="badge rule">Rule 3 fired</span>
+      </div>
+      <div class="cols">
+        <div class="card">
+          <div class="card-h"><h3>What arrived</h3><span class="who">Patient</span></div>
+          <div class="card-b">
+            <div class="inbound">
+              <div class="subj">Just need a receipt, tried three ways now</div>
+              <p>I called last week, emailed a few days after that, and then filled out the form on your website too, and haven't heard back from any of them. All I need is a receipt showing my <span class="ph">[$210]</span> payment on account <span class="ph">[AMB-2187]</span> for my own records.</p>
+              <p>Not upset, I just need the paperwork. Please send it whenever someone gets a chance.</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>What the system pulled out</h3><span class="who">Extracted</span></div>
+          <div class="card-b">
+            <dl class="fields">
+              <div class="fld"><dt>Account reference</dt><dd>AMB-2187</dd></div>
+              <div class="fld"><dt>What they're asking for</dt><dd>A copy of a payment receipt already on file</dd></div>
+              <div class="fld"><dt>Prior contact attempts</dt><dd>Phone, email, and the website contact form, all unanswered</dd></div>
+              <div class="fld"><dt>Payment on record</dt><dd><span class="ph">[$210]</span>, dated <span class="ph">[payment date]</span></dd></div>
+              <div class="fld"><dt>Decision required</dt><dd>No, the payment either exists on the account or it doesn't, a direct lookup</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Drafted reply, cleared to send automatically</h3><span class="who">Operator voice</span></div>
+        <div class="card-b">
+          <div class="reply">Hi <span class="ph">[first name]</span>,
+
+Sorry it took three tries to reach anyone, that shouldn't have happened.
+
+Here's your receipt for account <span class="ph">[AMB-2187]</span>: payment of <span class="ph">[$210]</span> received <span class="ph">[payment date]</span>, attached to this email as a PDF.
+
+If anything on it looks off, write back and a person will take a look.
+
+Accurate Medical Billing</div>
+        </div>
+      </div>
+      <p class="why"><b>Why this is the one the system can send alone.</b> Nothing in it is a judgment call, the payment is either on the account or it isn't. This is also the ticket most likely to sit for days precisely because nothing about it sounds urgent, and the real complaint it's modeled on says it took a phone call, an email, and a website form, three separate channels, to not get an answer at all.</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="fx-h2" style="margin-bottom:0;">The rules underneath</h2>
+      <p class="why">These are the part worth arguing with.</p>
+    </div>
+    <div class="rules">
+      <div class="rl">
+        <div class="rl-n">01</div>
+        <div class="rl-body">
+          <div class="rl-line"><span class="tag">When</span>A second (or later) message arrives from the same patient with no reply in between, on any channel, phone, email, or the website form.</div>
+          <div class="rl-line"><span class="tag">Then</span>Urgency moves up, the queue label counts the attempt number, and it jumps ahead of newer messages.</div>
+          <div class="rl-why">Both real complaints this page is modeled on describe more than one unanswered attempt before the patient gave up and filed with BBB. Counting repeat contact across channels, not just within one inbox, is what catches a patient who tried the phone, then email, then the website form.</div>
+        </div>
+      </div>
+      <div class="rl">
+        <div class="rl-n">02</div>
+        <div class="rl-body">
+          <div class="rl-line"><span class="tag">When</span>The reply would require deciding whether a balance, claim, or dispute is correct.</div>
+          <div class="rl-line"><span class="tag">Then</span>The system gathers what it can, prior contact attempts, the account reference, what's being disputed, drafts a reply, and holds it for a person to check against the actual claim and payer record before sending.</div>
+          <div class="rl-why">A billing dispute is exactly the kind of judgment call that shouldn't be answered by a fast, confident-sounding message that turns out to be wrong. The system's value here is making sure the draft and the missed-call history reach a person quickly, not deciding the account is right.</div>
+        </div>
+      </div>
+      <div class="rl">
+        <div class="rl-n">03</div>
+        <div class="rl-body">
+          <div class="rl-line"><span class="tag">When</span>A request is a direct lookup against something already on file, a receipt, a payment date, a mailing address, with no dispute attached.</div>
+          <div class="rl-line"><span class="tag">Then</span>The system answers immediately and sends without waiting for a person.</div>
+          <div class="rl-why">This is the request type that seems too simple to cause a complaint, and one of the two real BBB filings this page is built from was exactly this: a patient trying three different channels just to get a receipt. Requests with no judgment call attached are the ones automation can safely close on its own, freeing a person's time for the ones that actually need it.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="fx-h2" style="margin-bottom:0;">What this demo can't do</h2>
+      <p class="why">The parts a proposal would normally leave out.</p>
+    </div>
+    <div class="limits">
+      <div class="lim"><b>The integration is the product.</b> A real version needs read access to your account and payment records to answer a receipt request correctly, or to pull up what a payer actually processed on a disputed balance. Without that, both replies collapse into a polite acknowledgment.</div>
+      <div class="lim"><b>I don't know your current call and email volume.</b> These two tickets are grounded in your two most recent BBB complaints, both from early 2024, they aren't a claim about how often this happens generally. Whether this is worth building depends on how many messages a week actually go unanswered, and only you have that number.</div>
+      <div class="lim"><b>Which inbox and which line this watches is your call.</b> Your contact page lists a primary and an alternate phone number, an email address, a fax, a website contact form, and a bill-pay portal. Triage pointed at the wrong one of those is worthless, so that's a five-minute conversation before anything gets built.</div>
+      <div class="lim"><b>This only routes and drafts, it never decides a disputed balance on its own.</b> Keeping that judgment call with a person, always, is deliberate, not a current limitation to be removed later.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p>Prepared by Shlok Sarnayak for Accurate Medical Billing. Your two BBB complaints and the absence of a receipt/status portal on your contact page verified directly today. Ticket data is a labeled sample modeled on those complaints, not connected to your real accounts.</p>
+</footer>
+<script>
+  (function () {
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.tk'));
+    var panels = tabs.map(function (t) {
+      return document.getElementById(t.getAttribute('aria-controls'));
+    });
+    function select(i) {
+      tabs.forEach(function (t, n) { t.setAttribute('aria-selected', n === i ? 'true' : 'false'); });
+      panels.forEach(function (p, n) { p.classList.toggle('on', n === i); });
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () { select(i); });
+      t.addEventListener('keydown', function (e) {
+        var next = null;
+        if (e.key === 'ArrowRight') next = (i + 1) % tabs.length;
+        if (e.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+        if (next !== null) { e.preventDefault(); select(next); tabs[next].focus(); }
+      });
+    });
+  })();
+</script>
+</body>
+</html>
