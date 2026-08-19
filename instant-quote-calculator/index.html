@@ -5,64 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Instant quote calculator template</title>
+<link rel="stylesheet" href="../assets/theme.css">
 <style>
-  :root {
-    --ground: #F7F5F0; --surface: #FFFFFF; --surface-2: #EFEAE0;
-    --ink: #1A1D16; --ink-2: #3E4238; --muted: #6C7062;
-    --rule: #DBD6C6; --accent: #3E5C3A; --accent-ink: #FFFFFF; --accent-soft: #E4EAE0;
-    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
-    --pad: clamp(1rem, 4vw, 2.5rem);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --ground: #14160F; --surface: #1D2016; --surface-2: #262A1D; --ink: #EFEDE3; --ink-2: #CBCABC; --muted: #93967F; --rule: #343924; --accent: #8FBF87; --accent-ink: #12160E; --accent-soft: #24301F; }
-  }
-  :root[data-theme="dark"] { --ground: #14160F; --surface: #1D2016; --surface-2: #262A1D; --ink: #EFEDE3; --ink-2: #CBCABC; --muted: #93967F; --rule: #343924; --accent: #8FBF87; --accent-ink: #12160E; --accent-soft: #24301F; }
-  :root[data-theme="light"] { --ground: #F7F5F0; --surface: #FFFFFF; --surface-2: #EFEAE0; --ink: #1A1D16; --ink-2: #3E4238; --muted: #6C7062; --rule: #DBD6C6; --accent: #3E5C3A; --accent-ink: #FFFFFF; --accent-soft: #E4EAE0; }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 860px; margin: 0 auto; padding: var(--pad); display: flex; flex-direction: column; gap: clamp(2rem, 5vw, 3rem); }
-  .eyebrow { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0; }
-  h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); line-height: 1.15; letter-spacing: -0.02em; font-weight: 660; margin: 0.5rem 0 0; max-width: 24ch; }
-  h2 { font-size: 1.1rem; font-weight: 640; margin: 0; }
-  p { margin: 0; max-width: 62ch; }
-  .lede { font-size: 1.02rem; color: var(--ink-2); margin-top: 0.9rem; }
-  .notice { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 1rem 1.15rem; border-radius: 2px; font-size: 0.9rem; color: var(--ink-2); }
-  .calc-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: clamp(1.25rem, 4vw, 2rem); display: flex; flex-direction: column; gap: 1.4rem; }
-  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-  .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .choice { font: inherit; color: inherit; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 3px; padding: 0.6rem 0.95rem; cursor: pointer; font-size: 0.92rem; }
-  .choice:hover { border-color: var(--accent); }
-  .choice.sel { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 620; }
   .quote-out { border-top: 1px solid var(--rule); padding-top: 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; }
-  .quote-line { display: flex; justify-content: space-between; font-size: 0.93rem; color: var(--ink-2); }
-  .quote-total { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.3rem; font-weight: 660; border-top: 1px dashed var(--rule); padding-top: 0.8rem; }
-  .quote-total .amt { font-family: var(--mono); }
-  .limits { display: flex; flex-direction: column; gap: 0.9rem; }
-  .lim { border-left: 2px solid var(--rule); padding-left: 0.95rem; font-size: 0.89rem; line-height: 1.6; color: var(--ink-2); max-width: 78ch; }
-  .lim b { color: var(--ink); font-weight: 620; }
-  footer { border-top: 1px solid var(--rule); padding-top: 1.2rem; font-size: 0.85rem; color: var(--muted); }
+  .quote-line { display: flex; justify-content: space-between; font-size: 0.94rem; color: var(--ink-2); }
+  .quote-total { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.4rem; font-weight: 660; border-top: 1px dashed var(--rule); padding-top: 0.9rem; font-family: var(--serif); }
+  .quote-total .amt { color: var(--brand); }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .lim a { color: var(--brand); }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <p class="eyebrow">Template, not built for a specific business</p>
-    <h1>A calculator over pricing a business already publishes</h1>
-    <p class="lede">Many service businesses already list their prices and tiers somewhere on their site, they just don't let a customer combine them into one number without a call or a form. This page uses a fictional cleaning service to show the mechanism.</p>
-  </header>
-  <div class="notice"><p><strong>The service, tiers, and prices below are fictional.</strong> When this gets built for a real business, every number comes from their own published pricing, the way the example below shows.</p></div>
-  <div class="calc-card" id="calc-root"></div>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Instant quote calculator</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">A calculator over pricing a business already publishes</h1>
+  <p class="fx-lede">Many service businesses already list their prices and tiers somewhere on their site, they just don't let a customer combine them into one number without a call or a form. This page uses a fictional cleaning service to show the mechanism.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>The service, tiers, and prices below are fictional.</strong> When this gets built for a real business, every number comes from their own published pricing, the way the example below shows.</p></div>
+  <div class="fx-card" id="calc-root"></div>
   <section>
-    <h2 style="margin-bottom:0.9rem">How this gets built for real</h2>
+    <h2 class="fx-h2">How this gets built for real</h2>
     <div class="limits">
       <div class="lim"><b>Only the pricing a business already publishes.</b> This doesn't invent numbers, it turns a printed price list or tier table into something a customer can combine themselves.</div>
       <div class="lim"><b>It calculates, it doesn't book.</b> The honest next step after a number is still the business's real quote or booking process, this just gets someone there already knowing what to expect.</div>
-      <div class="lim"><b>See it built for a real business: <a href="examples/pool-table-guy/" style="color:var(--accent)">Pool Table Guy, a UK pool table servicing company</a>.</b></div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/pool-table-guy/">Pool Table Guy, a UK pool table servicing company</a>.</b></div>
     </div>
   </section>
-  <footer><p>Prepared by Shlok Sarnayak · Fictional pricing on this page · Not connected to any live booking system</p></footer>
-</div>
+</main>
+<footer class="fx-footer"><p>Prepared by Shlok Sarnayak. Fictional pricing on this page, not connected to any live booking system.</p></footer>
 <script>
 (function () {
   var TIERS = [
@@ -80,14 +59,14 @@
   var root = document.getElementById("calc-root");
   function money(n) { return "$" + n.toFixed(2); }
   function render() {
-    var html = '<div><div class="field-label">Home size</div><div class="choices" style="margin-top:0.5rem;">';
+    var html = '<div><div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Home size</div><div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.6rem;">';
     TIERS.forEach(function (t) {
-      html += '<button class="choice' + (state.tier === t.key ? ' sel' : '') + '" data-tier="' + t.key + '">' + t.label + ', ' + money(t.price) + '</button>';
+      html += '<button class="fx-opt' + (state.tier === t.key ? ' sel' : '') + '" style="padding:0.65rem 1rem;" data-tier="' + t.key + '">' + t.label + ', ' + money(t.price) + '</button>';
     });
     html += '</div></div>';
-    html += '<div><div class="field-label">Add-ons</div><div class="choices" style="margin-top:0.5rem;">';
+    html += '<div style="margin-top:1.3rem;"><div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Add-ons</div><div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.6rem;">';
     ADDONS.forEach(function (a) {
-      html += '<button class="choice' + (state.addons[a.key] ? ' sel' : '') + '" data-addon="' + a.key + '">' + a.label + ', +' + money(a.price) + '</button>';
+      html += '<button class="fx-opt' + (state.addons[a.key] ? ' sel' : '') + '" style="padding:0.65rem 1rem;" data-addon="' + a.key + '">' + a.label + ', +' + money(a.price) + '</button>';
     });
     html += '</div></div>';
     html += '<div class="quote-out" id="quote-out"></div>';

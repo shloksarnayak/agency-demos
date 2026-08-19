@@ -5,518 +5,138 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Support triage, working example for Jewelry Candles</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
 <style>
-  :root {
-    --ground: #F6F4F0;
-    --surface: #FFFFFF;
-    --surface-2: #EFEBE3;
-    --ink: #1C1813;
-    --ink-2: #423B32;
-    --muted: #6E655A;
-    --rule: #DDD6C9;
-    --rule-soft: #E8E2D7;
-    --accent: #1F5E57;
-    --accent-soft: #E3EDEA;
-    --sev-calm: #3E7A56;
-    --sev-warn: #A66C15;
-    --sev-hot: #B84A1E;
-    --sev-crit: #94211A;
-    --sev-calm-bg: #E6EFE8;
-    --sev-warn-bg: #F6EBD8;
-    --sev-hot-bg: #F8E6DD;
-    --sev-crit-bg: #F6E0DC;
-
-    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
-    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
-
-    --measure: 68ch;
-    --pad: clamp(1rem, 4vw, 2.5rem);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --ground: #15130F;
-      --surface: #201D17;
-      --surface-2: #2A261E;
-      --ink: #F2EEE5;
-      --ink-2: #D3CCBF;
-      --muted: #A09686;
-      --rule: #383227;
-      --rule-soft: #2E2921;
-      --accent: #6FBCAF;
-      --accent-soft: #1B302D;
-      --sev-calm: #7BBF95;
-      --sev-warn: #D9A356;
-      --sev-hot: #E8825C;
-      --sev-crit: #E5766C;
-      --sev-calm-bg: #1B2A21;
-      --sev-warn-bg: #302617;
-      --sev-hot-bg: #33201A;
-      --sev-crit-bg: #331B1B;
-    }
-  }
-
-  :root[data-theme="dark"] {
-    --ground: #15130F;
-    --surface: #201D17;
-    --surface-2: #2A261E;
-    --ink: #F2EEE5;
-    --ink-2: #D3CCBF;
-    --muted: #A09686;
-    --rule: #383227;
-    --rule-soft: #2E2921;
-    --accent: #6FBCAF;
-    --accent-soft: #1B302D;
-    --sev-calm: #7BBF95;
-    --sev-warn: #D9A356;
-    --sev-hot: #E8825C;
-    --sev-crit: #E5766C;
-    --sev-calm-bg: #1B2A21;
-    --sev-warn-bg: #302617;
-    --sev-hot-bg: #33201A;
-    --sev-crit-bg: #331B1B;
-  }
-
-  :root[data-theme="light"] {
-    --ground: #F6F4F0;
-    --surface: #FFFFFF;
-    --surface-2: #EFEBE3;
-    --ink: #1C1813;
-    --ink-2: #423B32;
-    --muted: #6E655A;
-    --rule: #DDD6C9;
-    --rule-soft: #E8E2D7;
-    --accent: #1F5E57;
-    --accent-soft: #E3EDEA;
-    --sev-calm: #3E7A56;
-    --sev-warn: #A66C15;
-    --sev-hot: #B84A1E;
-    --sev-crit: #94211A;
-    --sev-calm-bg: #E6EFE8;
-    --sev-warn-bg: #F6EBD8;
-    --sev-hot-bg: #F8E6DD;
-    --sev-crit-bg: #F6E0DC;
-  }
-
-  * { box-sizing: border-box; }
-
-  body {
-    margin: 0;
-    background: var(--ground);
-    color: var(--ink);
-    font-family: var(--sans);
-    font-size: 16px;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  .wrap {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: var(--pad);
-    display: flex;
-    flex-direction: column;
-    gap: clamp(2.5rem, 6vw, 4rem);
-  }
-
-  .eyebrow {
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin: 0;
-  }
-
-  h1 {
-    font-size: clamp(1.7rem, 4.5vw, 2.6rem);
-    line-height: 1.12;
-    letter-spacing: -0.022em;
-    font-weight: 660;
-    margin: 0.5rem 0 0;
-    text-wrap: balance;
-    max-width: 20ch;
-  }
-
-  h2 {
-    font-size: clamp(1.2rem, 2.8vw, 1.5rem);
-    line-height: 1.2;
-    letter-spacing: -0.015em;
-    font-weight: 640;
-    margin: 0;
-    text-wrap: balance;
-  }
-
-  h3 {
-    font-size: 0.95rem;
-    font-weight: 640;
-    margin: 0;
-    letter-spacing: -0.005em;
-  }
-
-  p { margin: 0; max-width: var(--measure); }
-
-  .lede {
-    font-size: clamp(1rem, 1.9vw, 1.1rem);
-    color: var(--ink-2);
-    margin-top: 1.1rem;
-  }
-
-  .masthead { display: flex; flex-direction: column; }
-  .masthead .stack { display: flex; flex-direction: column; gap: 0.9rem; margin-top: 1.1rem; }
-
-  /* ---- notice ---- */
-  .notice {
-    border: 1px solid var(--rule);
-    border-left: 3px solid var(--accent);
-    background: var(--surface);
-    padding: 1rem 1.15rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    border-radius: 2px;
-  }
-  .notice p { font-size: 0.9rem; color: var(--ink-2); max-width: 78ch; }
-
-  /* ---- section head ---- */
   .sec { display: flex; flex-direction: column; gap: 1.4rem; }
   .sec-head { display: flex; flex-direction: column; gap: 0.55rem; }
+  .why { font-size: 0.87rem; color: var(--muted); line-height: 1.6; max-width: 82ch; border-left: 2px solid var(--rule); padding-left: 0.9rem; }
+  .why b { color: var(--ink-2); font-weight: 620; }
 
-  /* ---- summary strip ---- */
-  .strip {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1px;
-    background: var(--rule);
-    border: 1px solid var(--rule);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .stat { background: var(--surface); padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.25rem; }
-  .stat-n {
-    font-family: var(--mono);
-    font-size: 1.6rem;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-    letter-spacing: -0.02em;
-  }
-  .stat-l { font-size: 0.75rem; color: var(--muted); line-height: 1.35; }
+  .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .stat { background: var(--surface); padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .stat-n { font-family: var(--serif); font-size: 1.7rem; font-variant-numeric: tabular-nums; line-height: 1; }
+  .stat-l { font-size: 0.78rem; color: var(--muted); line-height: 1.35; }
 
-  /* ---- ticket selector ---- */
-  .queue {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0.75rem;
-  }
-  .tk {
-    position: relative;
-    text-align: left;
-    font: inherit;
-    color: inherit;
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: 2px;
-    padding: 0.9rem 1rem 0.9rem 1.15rem;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    transition: border-color 0.15s, transform 0.15s;
-  }
-  .tk::before {
-    content: "";
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 3px;
-    background: var(--sv);
-  }
-  .tk:hover { border-color: var(--muted); }
-  .tk:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .tk[aria-selected="true"] {
-    border-color: var(--ink);
-    background: var(--surface-2);
-  }
+  .queue { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.85rem; }
+  .tk { position: relative; text-align: left; font: inherit; color: var(--ink); background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--shadow-inset), var(--shadow-sm); padding: 1rem 1.15rem 1rem 1.3rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; transition: transform 0.15s ease; }
+  .tk:hover { transform: translateY(-2px); }
+  .tk::before { content: ""; position: absolute; inset: 0.6rem auto 0.6rem 0; width: 3px; border-radius: 3px; background: var(--sv); }
+  .tk[aria-selected="true"] { box-shadow: var(--shadow-inset), 0 0 0 1.5px var(--brand), var(--shadow-md); }
   .tk-top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
-  .tk-id {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.02em;
-    color: var(--muted);
-  }
-  .tk-age {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    font-variant-numeric: tabular-nums;
-    color: var(--sv);
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .tk-cat { font-size: 0.85rem; line-height: 1.35; font-weight: 560; }
-  .tk-flag {
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    line-height: 1.3;
-    color: var(--muted);
-  }
-  .tk-sev {
-    font-family: var(--mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--sv);
-  }
+  .tk-id { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+  .tk-age { font-family: var(--mono); font-size: 0.72rem; color: var(--sv); font-weight: 620; white-space: nowrap; }
+  .tk-cat { font-size: 0.87rem; line-height: 1.35; font-weight: 570; }
+  .tk-flag { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }
+  .tk-sev { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sv); }
 
-  /* ---- detail ---- */
   .panel { display: none; flex-direction: column; gap: 1.5rem; }
   .panel.on { display: flex; }
+  .routing { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  .badge { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.34rem 0.7rem; border-radius: 999px; white-space: nowrap; }
+  .badge.hold { color: var(--warn); background: var(--warn-bg); }
+  .badge.human { color: var(--hot); background: var(--hot-bg); }
+  .badge.auto { color: var(--good); background: var(--good-bg); }
+  .badge.rule { color: var(--muted); background: var(--surface-2); }
 
-  .routing {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    align-items: center;
-  }
-  .badge {
-    font-family: var(--mono);
-    font-size: 0.68rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 0.32rem 0.6rem;
-    border-radius: 2px;
-    border: 1px solid currentColor;
-    white-space: nowrap;
-  }
-  .badge.hold { color: var(--sev-hot); background: var(--sev-hot-bg); }
-  .badge.human { color: var(--sev-crit); background: var(--sev-crit-bg); }
-  .badge.auto { color: var(--sev-calm); background: var(--sev-calm-bg); }
-  .badge.rule { color: var(--muted); background: transparent; }
+  .cols { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+  @media (min-width: 860px) { .cols { grid-template-columns: 1.05fr 1fr; } }
 
-  .cols {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  @media (min-width: 860px) {
-    .cols { grid-template-columns: 1.05fr 1fr; }
-  }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: 2px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  .card-h {
-    padding: 0.7rem 1.1rem;
-    border-bottom: 1px solid var(--rule-soft);
-    background: var(--surface-2);
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 0.75rem;
-  }
-  .card-h .who {
-    font-family: var(--mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  .card-b { padding: 1.1rem; display: flex; flex-direction: column; gap: 0.85rem; }
-
-  /* customer voice = serif */
-  .inbound { font-family: var(--serif); font-size: 0.95rem; line-height: 1.66; color: var(--ink-2); }
+  .card { background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--shadow-inset), var(--shadow-sm); display: flex; flex-direction: column; overflow: hidden; }
+  .card-h { padding: 0.75rem 1.1rem; border-bottom: 1px solid var(--rule-soft); background: var(--surface-2); display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
+  .card-h .who { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .card-b { padding: 1.15rem; display: flex; flex-direction: column; gap: 0.85rem; }
+  .inbound { font-family: var(--serif); font-size: 0.97rem; line-height: 1.66; color: var(--ink-2); }
   .inbound p { max-width: none; }
   .inbound .subj { font-family: var(--sans); font-size: 0.85rem; font-weight: 640; color: var(--ink); margin-bottom: 0.2rem; }
 
-  /* machine output = mono */
   .fields { display: flex; flex-direction: column; gap: 0; }
-  .fld {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.1rem;
-    padding: 0.55rem 0;
-    border-bottom: 1px dashed var(--rule-soft);
-  }
+  .fld { padding: 0.55rem 0; border-bottom: 1px dashed var(--rule-soft); }
   .fld:last-child { border-bottom: 0; padding-bottom: 0; }
   .fld:first-child { padding-top: 0; }
-  .fld dt {
-    font-family: var(--mono);
-    font-size: 0.63rem;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  .fld dd {
-    margin: 0;
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    line-height: 1.5;
-    color: var(--ink);
-    font-variant-numeric: tabular-nums;
-    overflow-wrap: anywhere;
-  }
+  .fld dt { font-family: var(--mono); font-size: 0.63rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+  .fld dd { margin: 0; font-family: var(--mono); font-size: 0.79rem; line-height: 1.5; color: var(--ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 
-  /* drafted reply = sans, the operator voice */
-  .reply { white-space: pre-wrap; font-size: 0.92rem; line-height: 1.66; color: var(--ink-2); }
+  .reply { white-space: pre-wrap; font-size: 0.93rem; line-height: 1.68; color: var(--ink-2); }
+  .ph { font-family: var(--mono); font-size: 0.85em; color: var(--brand); background: var(--brand-soft); border-bottom: 1px dotted var(--brand); padding: 0.05em 0.25em; border-radius: 2px; }
 
-  .ph {
-    font-family: var(--mono);
-    font-size: 0.85em;
-    color: var(--accent);
-    background: var(--accent-soft);
-    border-bottom: 1px dotted var(--accent);
-    padding: 0.05em 0.25em;
-    border-radius: 2px;
-  }
-
-  .why {
-    font-size: 0.86rem;
-    color: var(--muted);
-    line-height: 1.6;
-    max-width: 82ch;
-    border-left: 2px solid var(--rule);
-    padding-left: 0.85rem;
-  }
-  .why b { color: var(--ink-2); font-weight: 620; }
-
-  /* ---- rules ---- */
-  .rules { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 2px; overflow: hidden; }
-  .rl { background: var(--surface); padding: 1.1rem; display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
-  @media (min-width: 780px) {
-    .rl { grid-template-columns: 2.2rem 1fr; column-gap: 0.9rem; }
-  }
-  .rl-n {
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    font-variant-numeric: tabular-nums;
-    color: var(--accent);
-    font-weight: 640;
-    padding-top: 0.12rem;
-  }
+  .rules { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .rl { background: var(--surface); padding: 1.2rem; display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
+  @media (min-width: 780px) { .rl { grid-template-columns: 2.2rem 1fr; column-gap: 0.9rem; } }
+  .rl-n { font-family: var(--serif); font-size: 0.95rem; color: var(--brand); font-weight: 600; padding-top: 0.12rem; }
   .rl-body { display: flex; flex-direction: column; gap: 0.5rem; }
-  .rl-line { font-size: 0.88rem; line-height: 1.55; max-width: 80ch; }
-  .rl-line .tag {
-    font-family: var(--mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    display: block;
-    margin-bottom: 0.12rem;
-  }
-  .rl-why { font-size: 0.84rem; color: var(--muted); line-height: 1.6; max-width: 80ch; }
+  .rl-line { font-size: 0.9rem; line-height: 1.58; max-width: 80ch; }
+  .rl-line .tag { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 0.12rem; }
+  .rl-why { font-size: 0.85rem; color: var(--muted); line-height: 1.6; max-width: 80ch; }
 
-  /* ---- limits ---- */
-  .limits { display: flex; flex-direction: column; gap: 0.9rem; }
-  .lim {
-    border-left: 2px solid var(--rule);
-    padding-left: 0.95rem;
-    font-size: 0.9rem;
-    line-height: 1.62;
-    color: var(--ink-2);
-    max-width: 82ch;
-  }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 82ch; }
   .lim b { color: var(--ink); font-weight: 620; }
 
-  .conflict {
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-left: 3px solid var(--sev-warn);
-    border-radius: 2px;
-    padding: 1.1rem 1.2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-  .conflict ul { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.45rem; }
-  .conflict li { font-size: 0.88rem; line-height: 1.55; color: var(--ink-2); }
-  .conflict code {
-    font-family: var(--mono);
-    font-size: 0.85em;
-    background: var(--surface-2);
-    padding: 0.08em 0.3em;
-    border-radius: 2px;
-    overflow-wrap: anywhere;
-  }
-
-  footer {
-    border-top: 1px solid var(--rule);
-    padding-top: 1.4rem;
-    font-size: 0.85rem;
-    color: var(--muted);
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    * { transition: none !important; animation: none !important; }
-  }
+  .conflict { background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--shadow-inset), var(--shadow-sm); border-left: 3px solid var(--warn); padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.8rem; }
+  .conflict ul { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .conflict li { font-size: 0.9rem; line-height: 1.58; color: var(--ink-2); }
+  .conflict code { font-family: var(--mono); font-size: 0.85em; background: var(--surface-2); padding: 0.08em 0.3em; border-radius: 4px; overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
-
-<div class="wrap">
-
-  <header class="masthead">
-    <p class="eyebrow">Working example · built for Jewelry Candles</p>
-    <h1>Four tickets, triaged before anyone opens the inbox</h1>
-    <div class="stack">
-      <p class="lede">Four sample tickets, run through the triage step: what the system pulls out of the message, what it drafts back, and (the part that actually matters) the clock that decides whether a person sees it before the customer gives up.</p>
-      <p class="lede" style="font-size:0.95rem">Prepared by Shlok Sarnayak for Nadia Mova. Nothing here is connected to your live systems.</p>
-    </div>
-  </header>
-
-  <div class="notice">
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Support-ticket triage</a> / Jewelry Candles</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Jewelry Candles</span>
+  <h1 class="fx-h1">Four tickets, triaged before anyone opens the inbox</h1>
+  <p class="fx-lede">Four sample tickets, run through the triage step: what the system pulls out of the message, what it drafts back, and (the part that actually matters) the clock that decides whether a person sees it before the customer gives up.</p>
+  <p class="fx-lede" style="font-size:0.95rem; margin-top:0.6rem;">Prepared by Shlok Sarnayak for Nadia Mova. Nothing here is connected to your live systems.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice" style="flex-direction:column; align-items:flex-start; gap:0.6rem;">
     <p><strong>Every ticket below is invented.</strong> I asked for a real complaint to work from and didn't want to hold this up waiting, so I wrote four from scratch. The names, order numbers, dates and order contents are mine. The <em>product names and prices</em> are real, taken from your collection pages.</p>
     <p>Anything in <span class="ph">[square brackets]</span> is a number or a decision I refused to invent. Some are ordinary setup gaps. Some are gaps on your side, there's a section at the bottom about those.</p>
   </div>
 
   <section class="sec">
     <div class="sec-head">
-      <h2>The queue this morning</h2>
+      <h2 class="fx-h2" style="margin-bottom:0;">The queue this morning</h2>
       <p class="why">Sorted by how close each one is to becoming a public complaint, not by arrival time, and not by how angry the customer sounds.</p>
     </div>
 
     <div class="strip">
-      <div class="stat"><span class="stat-n" style="color:var(--sev-crit)">3</span><span class="stat-l">Past your published 48-hour reply standard with nothing sent</span></div>
-      <div class="stat"><span class="stat-n" style="color:var(--sev-hot)">3</span><span class="stat-l">Customer has written more than once, unanswered</span></div>
+      <div class="stat"><span class="stat-n" style="color:var(--hot)">3</span><span class="stat-l">Past your published 48-hour reply standard with nothing sent</span></div>
+      <div class="stat"><span class="stat-n" style="color:var(--warn)">3</span><span class="stat-l">Customer has written more than once, unanswered</span></div>
       <div class="stat"><span class="stat-n">11</span><span class="stat-l">Days since the oldest unanswered message arrived</span></div>
-      <div class="stat"><span class="stat-n" style="color:var(--sev-calm)">1</span><span class="stat-l">Safe for the system to answer on its own</span></div>
+      <div class="stat"><span class="stat-n" style="color:var(--good)">1</span><span class="stat-l">Safe for the system to answer on its own</span></div>
     </div>
 
     <div class="queue" role="tablist" aria-label="Sample tickets">
-      <button class="tk" role="tab" aria-selected="false" aria-controls="p3" id="t3" style="--sv:var(--sev-crit)">
+      <button class="tk" role="tab" aria-selected="false" aria-controls="p3" id="t3" style="--sv:var(--hot)">
         <span class="tk-top"><span class="tk-id">SAMPLE-4419</span><span class="tk-age">11d</span></span>
         <span class="tk-cat">Prize-value dispute, "scam" and "BBB" in writing</span>
         <span class="tk-flag">2nd contact, unanswered</span>
-        <span class="tk-sev">Critical · human send only</span>
+        <span class="tk-sev">Critical, human send only</span>
       </button>
-      <button class="tk" role="tab" aria-selected="true" aria-controls="p1" id="t1" style="--sv:var(--sev-crit)">
+      <button class="tk" role="tab" aria-selected="true" aria-controls="p1" id="t1" style="--sv:var(--hot)">
         <span class="tk-top"><span class="tk-id">SAMPLE-4417</span><span class="tk-age">9d</span></span>
         <span class="tk-cat">Shipping confirmation sent, tracking never moved</span>
         <span class="tk-flag">3rd contact, unanswered</span>
-        <span class="tk-sev">Critical · human send only</span>
+        <span class="tk-sev">Critical, human send only</span>
       </button>
-      <button class="tk" role="tab" aria-selected="false" aria-controls="p2" id="t2" style="--sv:var(--sev-hot)">
+      <button class="tk" role="tab" aria-selected="false" aria-controls="p2" id="t2" style="--sv:var(--warn)">
         <span class="tk-top"><span class="tk-id">SAMPLE-4418</span><span class="tk-age">5d</span></span>
         <span class="tk-cat">Carrier says delivered, customer has nothing</span>
         <span class="tk-flag">2nd contact, unanswered</span>
-        <span class="tk-sev">High · held for approval</span>
+        <span class="tk-sev">High, held for approval</span>
       </button>
-      <button class="tk" role="tab" aria-selected="false" aria-controls="p4" id="t4" style="--sv:var(--sev-warn)">
+      <button class="tk" role="tab" aria-selected="false" aria-controls="p4" id="t4" style="--sv:var(--good)">
         <span class="tk-top"><span class="tk-id">SAMPLE-4420</span><span class="tk-age">Today</span></span>
         <span class="tk-cat">Cracked candle, one item short, photos attached</span>
         <span class="tk-flag">48h reporting clock running</span>
-        <span class="tk-sev">Medium · safe to auto-send</span>
+        <span class="tk-sev">Medium, safe to auto-send</span>
       </button>
     </div>
 
-    <!-- ================= TICKET 1 ================= -->
     <div class="panel on" id="p1" role="tabpanel" aria-labelledby="t1">
       <div class="routing">
         <span class="badge human">Human send only</span>
@@ -525,7 +145,6 @@
         <span class="badge rule">Rule 3 fired</span>
         <span class="badge rule">Rule 4 fired, most restrictive, wins</span>
       </div>
-
       <div class="cols">
         <div class="card">
           <div class="card-h"><h3>What arrived</h3><span class="who">Customer</span></div>
@@ -538,7 +157,6 @@
             </div>
           </div>
         </div>
-
         <div class="card">
           <div class="card-h"><h3>What the system pulled out</h3><span class="who">Extracted</span></div>
           <div class="card-b">
@@ -559,7 +177,6 @@
           </div>
         </div>
       </div>
-
       <div class="card">
         <div class="card-h"><h3>Drafted reply, waiting for a person to send</h3><span class="who">Operator voice</span></div>
         <div class="card-b">
@@ -579,11 +196,9 @@ I can't do anything about the birthday, and I'm genuinely sorry about that part 
 Jewelry Candles Customer Care</div>
         </div>
       </div>
-
       <p class="why"><b>Why the system won't send this by itself.</b> Nine days of silence puts it past Rule 4, which takes the ticket away from automation entirely. A fast, well-written machine reply to someone who has been ignored for nine days still reads as a machine. The drafting saves the time; the sending stays a person's job.</p>
     </div>
 
-    <!-- ================= TICKET 2 ================= -->
     <div class="panel" id="p2" role="tabpanel" aria-labelledby="t2">
       <div class="routing">
         <span class="badge hold">Drafted, held for approval</span>
@@ -591,7 +206,6 @@ Jewelry Candles Customer Care</div>
         <span class="badge rule">Rule 2 fired</span>
         <span class="badge rule">Rule 5 fired, most restrictive, wins</span>
       </div>
-
       <div class="cols">
         <div class="card">
           <div class="card-h"><h3>What arrived</h3><span class="who">Customer</span></div>
@@ -604,7 +218,6 @@ Jewelry Candles Customer Care</div>
             </div>
           </div>
         </div>
-
         <div class="card">
           <div class="card-h"><h3>What the system pulled out</h3><span class="who">Extracted</span></div>
           <div class="card-b">
@@ -625,7 +238,6 @@ Jewelry Candles Customer Care</div>
           </div>
         </div>
       </div>
-
       <div class="card">
         <div class="card-h"><h3>Drafted reply, waiting for a person to approve</h3><span class="who">Operator voice</span></div>
         <div class="card-b">
@@ -639,9 +251,9 @@ I'd rather be straight with you than leave you hoping. Our published policy is t
 
 That isn't the same as handing you a phone number and calling it finished. On my side:
 
-,  I've pulled the complete scan history and delivery-scan detail for your tracking number. It's below this message. That record is what the carrier will ask you for, and you shouldn't have to come back and request it from us.
+1. I've pulled the complete scan history and delivery-scan detail for your tracking number. It's below this message. That record is what the carrier will ask you for, and you shouldn't have to come back and request it from us.
 
-,  I've asked <span class="ph">[owner name]</span> to decide whether to make an exception on this one. What the policy says and what we choose to do are two different questions, and the second belongs to a person. You'll have that decision by <span class="ph">[follow-up date]</span>, a yes or a no, not a maybe.
+2. I've asked <span class="ph">[owner name]</span> to decide whether to make an exception on this one. What the policy says and what we choose to do are two different questions, and the second belongs to a person. You'll have that decision by <span class="ph">[follow-up date]</span>, a yes or a no, not a maybe.
 
 <span class="ph">[If your team is willing to open carrier traces as the sender, add: "I've also opened a shipper-side trace with USPS, reference (number)." If not, delete this paragraph, see notes at the bottom of this page.]</span>
 
@@ -649,11 +261,9 @@ That isn't the same as handing you a phone number and calling it finished. On my
 Jewelry Candles Customer Care</div>
         </div>
       </div>
-
       <p class="why"><b>Why this one is drafted but held.</b> The honest answer under your published policy is largely no, and a "no" that lands four minutes after the email reads as a machine refusing someone. The system's job here is the gathering and the drafting. The deciding stays with whoever owns the goodwill budget.</p>
     </div>
 
-    <!-- ================= TICKET 3 ================= -->
     <div class="panel" id="p3" role="tabpanel" aria-labelledby="t3">
       <div class="routing">
         <span class="badge human">Human send only</span>
@@ -662,7 +272,6 @@ Jewelry Candles Customer Care</div>
         <span class="badge rule">Rule 5 fired</span>
         <span class="badge rule">Rule 4 fired, most restrictive, wins</span>
       </div>
-
       <div class="cols">
         <div class="card">
           <div class="card-h"><h3>What arrived</h3><span class="who">Customer</span></div>
@@ -676,7 +285,6 @@ Jewelry Candles Customer Care</div>
             </div>
           </div>
         </div>
-
         <div class="card">
           <div class="card-h"><h3>What the system pulled out</h3><span class="who">Extracted</span></div>
           <div class="card-b">
@@ -695,7 +303,6 @@ Jewelry Candles Customer Care</div>
           </div>
         </div>
       </div>
-
       <div class="card">
         <div class="card-h"><h3>Drafted reply, waiting for a person to send</h3><span class="who">Operator voice</span></div>
         <div class="card-b">
@@ -715,17 +322,14 @@ What I'm not going to do is quote policy at you and close the ticket. Your order
 Jewelry Candles Customer Care</div>
         </div>
       </div>
-
       <p class="why"><b>Why this one never touches automation.</b> Once someone has typed "BBB" into an email, another fast status note reads as more of the same silence. Rule 4 pulls it out of the queue and hands it to a person the same day. Note what the draft doesn't do: it doesn't restate the guarantee and the return terms as an answer. That reply exists in your public record twice, and both customers rejected it, so sending it faster isn't the fix.</p>
     </div>
 
-    <!-- ================= TICKET 4 ================= -->
     <div class="panel" id="p4" role="tabpanel" aria-labelledby="t4">
       <div class="routing">
         <span class="badge auto">Safe to auto-send</span>
         <span class="badge rule">Rule 6 fired</span>
       </div>
-
       <div class="cols">
         <div class="card">
           <div class="card-h"><h3>What arrived</h3><span class="who">Customer</span></div>
@@ -739,7 +343,6 @@ Jewelry Candles Customer Care</div>
             </div>
           </div>
         </div>
-
         <div class="card">
           <div class="card-h"><h3>What the system pulled out</h3><span class="who">Extracted</span></div>
           <div class="card-b">
@@ -759,7 +362,6 @@ Jewelry Candles Customer Care</div>
           </div>
         </div>
       </div>
-
       <div class="card">
         <div class="card-h"><h3>Drafted reply, cleared to send automatically</h3><span class="who">Operator voice</span></div>
         <div class="card-b">
@@ -779,18 +381,15 @@ One note so no clock runs out on you. We ask customers to report a product issue
 Jewelry Candles Customer Care</div>
         </div>
       </div>
-
       <p class="why"><b>Why this is the one the system can send alone.</b> Nothing in it decides anything, it routes, it confirms a deadline was met, and it asks one question. It's also the ticket most likely to be left until tomorrow, because the customer is <em>nice</em>. Three separate 48-hour clocks are live on your pages, and tomorrow is where they quietly break while nobody is angry yet. Tone is a bad proxy for urgency; that's most of the argument for aging rules.</p>
     </div>
   </section>
 
-  <!-- ================= RULES ================= -->
   <section class="sec">
     <div class="sec-head">
-      <h2>The rules underneath</h2>
+      <h2 class="fx-h2" style="margin-bottom:0;">The rules underneath</h2>
       <p class="why">These are the part worth arguing with. When more than one fires on the same ticket, <b>the most restrictive action wins</b>, that's why SAMPLE-4419 is human-send-only even though Rule 1 would otherwise have it acknowledged inside 48 hours.</p>
     </div>
-
     <div class="rules">
       <div class="rl">
         <div class="rl-n">01</div>
@@ -800,7 +399,6 @@ Jewelry Candles Customer Care</div>
           <div class="rl-why">Your own FAQ tells customers you'll get back to them within 48 hours, and that Friday inquiries get a reply the following Monday. This doesn't invent a standard, it makes the one you already published the thing the system enforces. Missing a response time you set yourself is the easiest sentence in the world for an unhappy customer to write, because they can screenshot your page next to it.</div>
         </div>
       </div>
-
       <div class="rl">
         <div class="rl-n">02</div>
         <div class="rl-body">
@@ -809,7 +407,6 @@ Jewelry Candles Customer Care</div>
           <div class="rl-why">In the public complaint record, repeat contact with no reply is attached to nearly every other issue rather than standing on its own, customers describing four emails, six emails with documentation, one describing roughly a hundred. By the time someone writes a formal complaint, the count of ignored attempts is usually the story, not the original problem. Counting repeat contact is enough to break that pattern.</div>
         </div>
       </div>
-
       <div class="rl">
         <div class="rl-n">03</div>
         <div class="rl-body">
@@ -818,7 +415,6 @@ Jewelry Candles Customer Care</div>
           <div class="rl-why">Your shipping information tells customers tracking may take up to 48 hours to update after a label is created. Past days rather than hours, "please allow a little more time" stops being true and the customer can see that on their own screen. Note what this rule deliberately does <em>not</em> say: a missing scan isn't proof the package never entered the network, USPS does accept parcels it fails to scan. Asserting otherwise in writing is a claim a later scan can embarrass you with.</div>
         </div>
       </div>
-
       <div class="rl">
         <div class="rl-n">04</div>
         <div class="rl-body">
@@ -827,7 +423,6 @@ Jewelry Candles Customer Care</div>
           <div class="rl-why">Public complaints about your business tend to surface somewhere around the two-to-three week mark. I can't prove silence is what <em>causes</em> that escalation, it's a pattern across review sites, not a mechanism I've tested, but it's the one variable sitting on your side of the line. And once someone has typed "BBB", another automated note reads as more of the same. That's why this rule takes the ticket away from the automation rather than speeding it up.</div>
         </div>
       </div>
-
       <div class="rl">
         <div class="rl-n">05</div>
         <div class="rl-body">
@@ -836,7 +431,6 @@ Jewelry Candles Customer Care</div>
           <div class="rl-why">These are the cases where speed alone makes things worse. A quoted policy landing in four minutes reads as a machine refusing you. The automation's job here is the gathering and the drafting, never the deciding, and there's a straightforward commercial argument that a goodwill call on a $280 order costs less than a permanent public complaint about one.</div>
         </div>
       </div>
-
       <div class="rl">
         <div class="rl-n">06</div>
         <div class="rl-body">
@@ -845,7 +439,6 @@ Jewelry Candles Customer Care</div>
           <div class="rl-why">Three separate 48-hour clocks are already live on your pages: product issues reported within 48 hours of receipt, replacement candles shipped within 48 hours of the broken-candle form, replacement jewelry within 48 hours of that form. A polite email with photos is the easiest one in the inbox to leave until tomorrow, and tomorrow is where all three quietly break.</div>
         </div>
       </div>
-
       <div class="rl">
         <div class="rl-n">07</div>
         <div class="rl-body">
@@ -854,7 +447,6 @@ Jewelry Candles Customer Care</div>
           <div class="rl-why">Every draft on this page commits to a date. A system that manufactures written, dated callback promises with nothing enforcing them doesn't fix a non-response problem, it generates fresh evidence of one, in your own words, with a timestamp. This rule exists because the rest of the page would be dangerous without it.</div>
         </div>
       </div>
-
       <div class="rl">
         <div class="rl-n">08</div>
         <div class="rl-body">
@@ -866,13 +458,11 @@ Jewelry Candles Customer Care</div>
     </div>
   </section>
 
-  <!-- ================= THE REAL FINDING ================= -->
   <section class="sec">
     <div class="sec-head">
-      <h2>The thing I'd fix before buying any software</h2>
+      <h2 class="fx-h2" style="margin-bottom:0;">The thing I'd fix before buying any software</h2>
       <p class="why">This came out of reading your policy pages closely enough to write replies that quote them. I'd rather hand it over than keep it as a sales point.</p>
     </div>
-
     <div class="conflict">
       <p><strong>Your published policies currently contradict each other, and automation would multiply whichever version it's pointed at.</strong></p>
       <ul>
@@ -882,55 +472,40 @@ Jewelry Candles Customer Care</div>
         <li><b>Two different toll-free numbers</b> appear in otherwise near-identical policy text on different pages.</li>
         <li><b>The page carrying your shipping timeframes isn't linked from your own navigation.</b> I checked the raw HTML of the footer, homepage and both FAQ pages and found no link to it. It's still a live URL, I'm not claiming customers can't reach it, only that they're unlikely to land on it from your site.</li>
       </ul>
-      <p class="why" style="border:0;padding:0">This is why I kept returns out of all four samples. A rep can't answer consistently when the source doesn't. Reconciling that text is a prerequisite, not a nice-to-have, and it's your text to reconcile, not a vendor's. It's also free.</p>
+      <p class="why" style="border:0; padding:0;">This is why I kept returns out of all four samples. A rep can't answer consistently when the source doesn't. Reconciling that text is a prerequisite, not a nice-to-have, and it's your text to reconcile, not a vendor's. It's also free.</p>
     </div>
   </section>
 
-  <!-- ================= LIMITS ================= -->
   <section class="sec">
     <div class="sec-head">
-      <h2>What this demo can't do</h2>
+      <h2 class="fx-h2" style="margin-bottom:0;">What this demo can't do</h2>
       <p class="why">The parts a proposal would normally leave out.</p>
     </div>
-
     <div class="limits">
       <div class="lim"><b>The integration is the product; the wording is just what makes it worth opening.</b> These replies say things a demo cannot know, that no scan has been recorded since the label, that a delivery scan happened at a specific time, that four of five items shipped. Every one of those is only true in production with live read access to your order data and to USPS and UPS tracking. Without that, all four collapse into a polite acknowledgment, which is something that can be sent with no integration at all.</div>
-
       <div class="lim"><b>I don't know what you already run.</b> I didn't research your current helpdesk, autoresponders or order-status notifications, and I'm not claiming you have none. A vendor describing a gap he hasn't verified is a vendor guessing. If something's already in place, the useful question is whether these rules sit on top of it or replace it.</div>
-
       <div class="lim"><b>I can't tell which inbox this would watch.</b> Three customer-facing email addresses and two different toll-free numbers appear across your own pages, and <code>/pages/contact-us</code> is a Wufoo form embed rather than a helpdesk. Triage pointed at the wrong queue is worthless, so the first real question isn't technical, it's which of those actually lands somewhere a person works.</div>
-
       <div class="lim"><b>The system reads text, not photographs.</b> On SAMPLE-4420 it counted two attachments; it did not assess whether the crack is visible in them. Your broken-candle form is explicit that you won't replace a candle without a picture of the actual breakage, so a machine pre-approving photos would set customers up to be rejected later by your own reviewer. Counting is safe. Judging isn't.</div>
-
       <div class="lim"><b>Two drafts assume a business decision, not a software one.</b> SAMPLE-4418's bracketed paragraph, and the bracketed clause near the end of SAMPLE-4417, both offer to open a carrier trace as the sender. Whether you're willing to do that is your call, and your published policy currently points customers to the carrier themselves. If the answer is no, those come out and both replies get noticeably weaker, worth deciding deliberately rather than discovering by default after it's built.</div>
-
       <div class="lim"><b>Every sample here is a bad week.</b> All four score medium or higher, because I built them from public complaints, which are by definition the ones that went wrong. A real week has a long tail this doesn't show: tracking questions, ring-size changes, restock asks, appraisal follow-ups. That tail decides whether triage saves time or just adds a step, and I have no visibility into your ticket volume, staffing or current response times. Anyone quoting you a percentage improvement without those three numbers is making it up.</div>
-
       <div class="lim"><b>The complaint text is paraphrase, not quotation.</b> Tone is modelled on publicly posted complaints and reviews, but everything I read passed through a summarizing step. If a line sounds like a specific customer you recognise, that's coincidence, not a record.</div>
-
       <div class="lim"><b>I'd build this to draft and hold rather than send unattended</b>, particularly where the honest answer is no. A four-minute automated decline is worse than a slow human one. If you want fully unattended sending, that's a different design with different risk, and I'd want to argue about it with you before building it rather than after.</div>
     </div>
   </section>
-
-  <footer>
-    <p>Prepared by Shlok Sarnayak · Sample data throughout · Not connected to any live system</p>
-  </footer>
-</div>
-
+</main>
+<footer class="fx-footer">
+  <p>Prepared by Shlok Sarnayak. Sample data throughout, not connected to any live system.</p>
+</footer>
 <script>
   (function () {
     var tabs = Array.prototype.slice.call(document.querySelectorAll('.tk'));
-    // Resolve each tab's panel by aria-controls, not by DOM index, the queue is
-    // ordered by risk while the panels stay in ticket order, so the two lists differ.
     var panels = tabs.map(function (t) {
       return document.getElementById(t.getAttribute('aria-controls'));
     });
-
     function select(i) {
       tabs.forEach(function (t, n) { t.setAttribute('aria-selected', n === i ? 'true' : 'false'); });
       panels.forEach(function (p, n) { p.classList.toggle('on', n === i); });
     }
-
     tabs.forEach(function (t, i) {
       t.addEventListener('click', function () { select(i); });
       t.addEventListener('keydown', function (e) {
@@ -942,6 +517,5 @@ Jewelry Candles Customer Care</div>
     });
   })();
 </script>
-
 </body>
 </html>

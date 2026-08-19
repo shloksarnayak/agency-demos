@@ -5,67 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Appointment request widget template</title>
+<link rel="stylesheet" href="../assets/theme.css">
 <style>
-  :root {
-    --ground: #F4F3EE; --surface: #FFFFFF; --surface-2: #EAE7DC;
-    --ink: #1C1B17; --ink-2: #423F35; --muted: #726C5C;
-    --rule: #DAD4C2; --accent: #2C5F6B; --accent-ink: #FFFFFF; --accent-soft: #E1EBED;
-    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
-    --pad: clamp(1rem, 4vw, 2.5rem);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --ground: #14171A; --surface: #1D2124; --surface-2: #262B2E; --ink: #EBEDEA; --ink-2: #C9CCC5; --muted: #939A8E; --rule: #32372F; --accent: #7FBFCC; --accent-ink: #0F1719; --accent-soft: #1C2F32; }
-  }
-  :root[data-theme="dark"] { --ground: #14171A; --surface: #1D2124; --surface-2: #262B2E; --ink: #EBEDEA; --ink-2: #C9CCC5; --muted: #939A8E; --rule: #32372F; --accent: #7FBFCC; --accent-ink: #0F1719; --accent-soft: #1C2F32; }
-  :root[data-theme="light"] { --ground: #F4F3EE; --surface: #FFFFFF; --surface-2: #EAE7DC; --ink: #1C1B17; --ink-2: #423F35; --muted: #726C5C; --rule: #DAD4C2; --accent: #2C5F6B; --accent-ink: #FFFFFF; --accent-soft: #E1EBED; }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 860px; margin: 0 auto; padding: var(--pad); display: flex; flex-direction: column; gap: clamp(2rem, 5vw, 3rem); }
-  .eyebrow { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0; }
-  h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); line-height: 1.15; letter-spacing: -0.02em; font-weight: 660; margin: 0.5rem 0 0; max-width: 24ch; }
-  h2 { font-size: 1.1rem; font-weight: 640; margin: 0; }
-  p { margin: 0; max-width: 62ch; }
-  .lede { font-size: 1.02rem; color: var(--ink-2); margin-top: 0.9rem; }
-  .notice { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 1rem 1.15rem; border-radius: 2px; font-size: 0.9rem; color: var(--ink-2); }
-  .form-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: clamp(1.25rem, 4vw, 2rem); display: flex; flex-direction: column; gap: 1.4rem; }
-  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-  .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .choice { font: inherit; color: inherit; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 3px; padding: 0.6rem 0.95rem; cursor: pointer; font-size: 0.92rem; }
-  .choice:hover { border-color: var(--accent); }
-  .choice.sel { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 620; }
-  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: 3px; background: var(--surface-2); color: var(--ink); width: 100%; max-width: 26rem; }
-  .submit-btn { align-self: flex-start; font: inherit; font-weight: 620; font-size: 0.95rem; color: var(--accent-ink); background: var(--accent); border: none; border-radius: 3px; padding: 0.75rem 1.4rem; cursor: pointer; }
-  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .confirm { border: 1px solid var(--rule); background: var(--accent-soft); border-radius: 3px; padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; }
-  .confirm h3 { margin: 0; font-size: 1.02rem; color: var(--accent); }
+  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; max-width: 26rem; transition: border-color 0.12s ease; }
+  input[type="text"]:focus { outline: none; border-color: var(--brand); }
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.8rem; }
+  .confirm h3 { margin: 0; font-size: 1.05rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
   .confirm dt { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-  .confirm dd { margin: 0 0 0.4rem; font-size: 0.92rem; color: var(--ink); }
-  .limits { display: flex; flex-direction: column; gap: 0.9rem; }
-  .lim { border-left: 2px solid var(--rule); padding-left: 0.95rem; font-size: 0.89rem; line-height: 1.6; color: var(--ink-2); max-width: 78ch; }
-  .lim b { color: var(--ink); font-weight: 620; }
-  footer { border-top: 1px solid var(--rule); padding-top: 1.2rem; font-size: 0.85rem; color: var(--muted); }
+  .confirm dd { margin: 0 0 0.5rem; font-size: 0.94rem; color: var(--ink); }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .lim a { color: var(--brand); }
+  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <p class="eyebrow">Template, not built for a specific business</p>
-    <h1>Catching the visitor who's comparing options at 9pm</h1>
-    <p class="lede">A request form for a business that's currently phone or email only. Not a real-time booking calendar, a captured request that gets confirmed the same way a phone call would. This page uses a fictional clinic to show the mechanism.</p>
-  </header>
-  <div class="notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the service list and hours come from their own site, the way the example below shows.</p></div>
-  <div class="form-card" id="form-root"></div>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Appointment request widget</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Catching the visitor who's comparing options at 9pm</h1>
+  <p class="fx-lede">A request form for a business that's currently phone or email only. Not a real-time booking calendar, a captured request that gets confirmed the same way a phone call would. This page uses a fictional clinic to show the mechanism.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the service list and hours come from their own site, the way the example below shows.</p></div>
+  <div class="fx-card" id="form-root"></div>
   <section>
-    <h2 style="margin-bottom:0.9rem">How this gets built for real</h2>
+    <h2 class="fx-h2">How this gets built for real</h2>
     <div class="limits">
       <div class="lim"><b>A request, not a live booking system.</b> It doesn't know which times are actually free unless it's connected to the business's real schedule.</div>
       <div class="lim"><b>Framed as additive, not as fixing something broken.</b> A phone-only model can be a deliberate, working choice. This only catches the person who's still deciding and finds the site outside open hours.</div>
-      <div class="lim"><b>See it built for a real business: <a href="examples/wohl-optics/" style="color:var(--accent)">Wohl Optics</a>.</b></div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/wohl-optics/">Wohl Optics</a>.</b></div>
     </div>
   </section>
-  <footer><p>Prepared by Shlok Sarnayak · Fictional data on this page · Not connected to any live system</p></footer>
-</div>
+</main>
+<footer class="fx-footer"><p>Prepared by Shlok Sarnayak. Fictional data on this page, not connected to any live system.</p></footer>
 <script>
 (function () {
   var SERVICES = ["General consultation", "Follow-up visit", "New patient intake"];
@@ -76,18 +55,18 @@
   function canSubmit() { return state.service && state.day && state.time && state.name.trim() && state.contact.trim(); }
   function render() {
     if (state.submitted) { renderConfirm(); return; }
-    var html = '<div><div class="field-label">What do you need?</div><div class="choices" style="margin-top:0.5rem;">';
-    SERVICES.forEach(function (s) { html += '<button class="choice' + (state.service === s ? ' sel' : '') + '" data-service="' + s + '">' + s + '</button>'; });
+    var html = '<div><div class="field-label">What do you need?</div><div style="display:flex; flex-wrap:wrap; gap:0.5rem;">';
+    SERVICES.forEach(function (s) { html += '<button class="fx-opt' + (state.service === s ? ' sel' : '') + '" style="padding:0.65rem 1rem;" data-service="' + s + '">' + s + '</button>'; });
     html += '</div></div>';
-    html += '<div><div class="field-label">Preferred day</div><div class="choices" style="margin-top:0.5rem;">';
-    DAYS.forEach(function (d) { html += '<button class="choice' + (state.day === d ? ' sel' : '') + '" data-day="' + d + '">' + d + '</button>'; });
+    html += '<div style="margin-top:1.2rem;"><div class="field-label">Preferred day</div><div style="display:flex; flex-wrap:wrap; gap:0.5rem;">';
+    DAYS.forEach(function (d) { html += '<button class="fx-opt' + (state.day === d ? ' sel' : '') + '" style="padding:0.65rem 1rem;" data-day="' + d + '">' + d + '</button>'; });
     html += '</div></div>';
-    html += '<div><div class="field-label">Preferred time</div><div class="choices" style="margin-top:0.5rem;">';
-    TIMES.forEach(function (t) { html += '<button class="choice' + (state.time === t ? ' sel' : '') + '" data-time="' + t + '">' + t + '</button>'; });
+    html += '<div style="margin-top:1.2rem;"><div class="field-label">Preferred time</div><div style="display:flex; flex-wrap:wrap; gap:0.5rem;">';
+    TIMES.forEach(function (t) { html += '<button class="fx-opt' + (state.time === t ? ' sel' : '') + '" style="padding:0.65rem 1rem;" data-time="' + t + '">' + t + '</button>'; });
     html += '</div></div>';
-    html += '<div><div class="field-label">Your name</div><input type="text" id="name-input" value="' + state.name.replace(/"/g, '&quot;') + '" placeholder="First and last name" style="margin-top:0.5rem;"></div>';
-    html += '<div><div class="field-label">Phone or email</div><input type="text" id="contact-input" value="' + state.contact.replace(/"/g, '&quot;') + '" placeholder="How should we reach you?" style="margin-top:0.5rem;"></div>';
-    html += '<button class="submit-btn" id="submit-btn"' + (canSubmit() ? '' : ' disabled') + '>Request this appointment</button>';
+    html += '<div style="margin-top:1.2rem;"><div class="field-label">Your name</div><input type="text" id="name-input" value="' + state.name.replace(/"/g, '&quot;') + '" placeholder="First and last name"></div>';
+    html += '<div style="margin-top:1.2rem;"><div class="field-label">Phone or email</div><input type="text" id="contact-input" value="' + state.contact.replace(/"/g, '&quot;') + '" placeholder="How should we reach you?"></div>';
+    html += '<button class="fx-btn" id="submit-btn" style="margin-top:1.3rem;"' + (canSubmit() ? '' : ' disabled') + '>Request this appointment</button>';
     root.innerHTML = html;
     Array.prototype.forEach.call(root.querySelectorAll('[data-service]'), function (b) { b.addEventListener('click', function () { state.service = b.dataset.service; render(); }); });
     Array.prototype.forEach.call(root.querySelectorAll('[data-day]'), function (b) { b.addEventListener('click', function () { state.day = b.dataset.day; render(); }); });
@@ -106,7 +85,7 @@
     html += '<dt>Preferred time</dt><dd>' + state.time + '</dd>';
     html += '<dt>Name</dt><dd>' + escapeHtml(state.name) + '</dd>';
     html += '<dt>Contact</dt><dd>' + escapeHtml(state.contact) + '</dd>';
-    html += '</dl><button class="submit-btn" id="reset-btn" style="align-self:flex-start;">Start over</button></div>';
+    html += '</dl><button class="fx-btn-ghost" id="reset-btn">Start over</button></div>';
     root.innerHTML = html;
     document.getElementById('reset-btn').addEventListener('click', function () { state = { service: null, day: null, time: null, name: "", contact: "", submitted: false }; render(); });
   }

@@ -5,93 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Support-ticket triage template</title>
+<link rel="stylesheet" href="../assets/theme.css">
 <style>
-  :root {
-    --ground: #F6F4F0; --surface: #FFFFFF; --surface-2: #EFEBE3;
-    --ink: #1C1813; --ink-2: #423B32; --muted: #6E655A;
-    --rule: #DDD6C9; --rule-soft: #E8E2D7;
-    --accent: #1F5E57; --accent-soft: #E3EDEA;
-    --sev-calm: #3E7A56; --sev-hot: #B84A1E; --sev-crit: #94211A;
-    --sev-calm-bg: #E6EFE8; --sev-hot-bg: #F8E6DD; --sev-crit-bg: #F6E0DC;
-    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
-    --pad: clamp(1rem, 4vw, 2.5rem);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --ground: #15130F; --surface: #201D17; --surface-2: #2A261E;
-      --ink: #F2EEE5; --ink-2: #D3CCBF; --muted: #A09686;
-      --rule: #383227; --rule-soft: #2E2921;
-      --accent: #6FBCAF; --accent-soft: #1B302D;
-      --sev-calm: #7BBF95; --sev-hot: #E8825C; --sev-crit: #E5766C;
-      --sev-calm-bg: #1B2A21; --sev-hot-bg: #33201A; --sev-crit-bg: #331B1B;
-    }
-  }
-  :root[data-theme="dark"] {
-    --ground: #15130F; --surface: #201D17; --surface-2: #2A261E;
-    --ink: #F2EEE5; --ink-2: #D3CCBF; --muted: #A09686;
-    --rule: #383227; --rule-soft: #2E2921;
-    --accent: #6FBCAF; --accent-soft: #1B302D;
-    --sev-calm: #7BBF95; --sev-hot: #E8825C; --sev-crit: #E5766C;
-    --sev-calm-bg: #1B2A21; --sev-hot-bg: #33201A; --sev-crit-bg: #331B1B;
-  }
-  :root[data-theme="light"] {
-    --ground: #F6F4F0; --surface: #FFFFFF; --surface-2: #EFEBE3;
-    --ink: #1C1813; --ink-2: #423B32; --muted: #6E655A;
-    --rule: #DDD6C9; --rule-soft: #E8E2D7;
-    --accent: #1F5E57; --accent-soft: #E3EDEA;
-    --sev-calm: #3E7A56; --sev-hot: #B84A1E; --sev-crit: #94211A;
-    --sev-calm-bg: #E6EFE8; --sev-hot-bg: #F8E6DD; --sev-crit-bg: #F6E0DC;
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 1000px; margin: 0 auto; padding: var(--pad); display: flex; flex-direction: column; gap: clamp(2rem, 5vw, 3rem); }
-  .eyebrow { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0; }
-  h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); line-height: 1.15; letter-spacing: -0.02em; font-weight: 660; margin: 0.5rem 0 0; max-width: 24ch; }
-  h2 { font-size: 1.15rem; font-weight: 640; margin: 0; }
-  p { margin: 0; max-width: 68ch; }
-  .lede { font-size: 1.02rem; color: var(--ink-2); margin-top: 0.9rem; }
-  .notice { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 1rem 1.15rem; border-radius: 2px; font-size: 0.9rem; color: var(--ink-2); }
-  .queue { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; }
-  .tk { position: relative; text-align: left; font: inherit; color: inherit; background: var(--surface); border: 1px solid var(--rule); border-radius: 2px; padding: 0.9rem 1rem 0.9rem 1.15rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.4rem; }
-  .tk::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--sv); }
-  .tk[aria-selected="true"] { border-color: var(--ink); background: var(--surface-2); }
+  .queue { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.85rem; }
+  .tk { position: relative; text-align: left; font: inherit; color: var(--ink); background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--shadow-inset), var(--shadow-sm); padding: 1rem 1.15rem 1rem 1.3rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.4rem; transition: transform 0.12s ease; }
+  .tk:hover { transform: translateY(-2px); }
+  .tk::before { content: ""; position: absolute; inset: 0.6rem auto 0.6rem 0; width: 3px; border-radius: 3px; background: var(--sv); }
+  .tk[aria-selected="true"] { box-shadow: var(--shadow-inset), 0 0 0 1.5px var(--brand), var(--shadow-md); }
   .tk-id { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
-  .tk-cat { font-size: 0.85rem; font-weight: 560; }
-  .tk-sev { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sv); }
-  .panel { display: none; flex-direction: column; gap: 1.2rem; }
+  .tk-cat { font-size: 0.9rem; font-weight: 580; }
+  .tk-sev { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sv); }
+  .panel { display: none; flex-direction: column; gap: 1.3rem; }
   .panel.on { display: flex; }
-  .badge { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.32rem 0.6rem; border-radius: 2px; border: 1px solid currentColor; }
-  .badge.human { color: var(--sev-crit); background: var(--sev-crit-bg); }
-  .badge.auto { color: var(--sev-calm); background: var(--sev-calm-bg); }
-  .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 2px; padding: 1rem 1.1rem; }
-  .card h3 { margin: 0 0 0.6rem; font-size: 0.85rem; color: var(--muted); font-weight: 620; }
-  .inbound { font-size: 0.92rem; color: var(--ink-2); }
-  .reply { white-space: pre-wrap; font-size: 0.9rem; line-height: 1.6; color: var(--ink-2); }
-  .why { font-size: 0.85rem; color: var(--muted); border-left: 2px solid var(--rule); padding-left: 0.8rem; }
-  .limits { display: flex; flex-direction: column; gap: 0.9rem; }
-  .lim { border-left: 2px solid var(--rule); padding-left: 0.95rem; font-size: 0.89rem; line-height: 1.6; color: var(--ink-2); max-width: 78ch; }
-  .lim b { color: var(--ink); font-weight: 620; }
-  footer { border-top: 1px solid var(--rule); padding-top: 1.2rem; font-size: 0.85rem; color: var(--muted); }
+  .badge { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.34rem 0.7rem; border-radius: 999px; }
+  .badge.human { color: var(--hot); background: var(--hot-bg); }
+  .badge.auto { color: var(--good); background: var(--good-bg); }
+  .card { background: var(--surface-2); border-radius: var(--radius-md); padding: 1.1rem 1.2rem; }
+  .card h3 { margin: 0 0 0.6rem; font-size: 0.82rem; color: var(--muted); font-weight: 640; }
+  .inbound { font-size: 0.94rem; color: var(--ink-2); }
+  .reply { white-space: pre-wrap; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); }
+  .why { font-size: 0.87rem; color: var(--muted); border-left: 2px solid var(--rule); padding-left: 0.9rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .lim a { color: var(--brand); }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <p class="eyebrow">Template, not built for a specific business</p>
-    <h1>Sample tickets, triaged before anyone opens the inbox</h1>
-    <p class="lede">What the system pulls out of an incoming message, what it drafts back, and the clock that decides whether a person sees it before the customer gives up. This page uses two invented sample tickets to show the mechanism.</p>
-  </header>
-  <div class="notice"><p><strong>Both tickets below are invented</strong>, built to show the two ends of the triage range: something safe to draft-and-hold for approval, and something urgent enough that only a person should send it. A real build sorts a business's actual incoming messages this way, using their own products, policies and reply-time standards.</p></div>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Support-ticket triage</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Sample tickets, triaged before anyone opens the inbox</h1>
+  <p class="fx-lede">What the system pulls out of an incoming message, what it drafts back, and the clock that decides whether a person sees it before the customer gives up. This page uses two invented sample tickets to show the mechanism.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Both tickets below are invented</strong>, built to show the two ends of the triage range: something safe to draft-and-hold for approval, and something urgent enough that only a person should send it. A real build sorts a business's actual incoming messages this way, using their own products, policies and reply-time standards.</p></div>
   <div class="queue" role="tablist">
-    <button class="tk" role="tab" aria-selected="true" aria-controls="p1" id="t1" style="--sv:var(--sev-hot)">
+    <button class="tk" role="tab" aria-selected="true" aria-controls="p1" id="t1" style="--sv:var(--hot)">
       <span class="tk-id">SAMPLE-101</span><span class="tk-cat">Order delayed past the stated shipping window</span><span class="tk-sev">High, drafted and held for approval</span>
     </button>
-    <button class="tk" role="tab" aria-selected="false" aria-controls="p2" id="t2" style="--sv:var(--sev-calm)">
+    <button class="tk" role="tab" aria-selected="false" aria-controls="p2" id="t2" style="--sv:var(--good)">
       <span class="tk-id">SAMPLE-102</span><span class="tk-cat">Simple question about an order status</span><span class="tk-sev">Low, safe to auto-send</span>
     </button>
   </div>
-  <div class="panel on" id="p1" role="tabpanel">
+  <div class="fx-card panel on" id="p1" role="tabpanel">
     <div><span class="badge human">Drafted, held for approval</span></div>
     <div class="card"><h3>What arrived</h3><div class="inbound">"I ordered nine days ago and the tracking still says label created. Can someone tell me what's going on?"</div></div>
     <div class="card"><h3>Drafted reply, waiting for a person to send</h3><div class="reply">Hi there,
@@ -101,7 +63,7 @@ Thanks for flagging this, and I'm sorry for the wait. Your order shipped with a 
 [Name]</div></div>
     <div class="why">Held rather than auto-sent because the honest next step (checking with fulfillment) isn't something the system can actually confirm on its own.</div>
   </div>
-  <div class="panel" id="p2" role="tabpanel">
+  <div class="fx-card panel" id="p2" role="tabpanel">
     <div><span class="badge auto">Safe to auto-send</span></div>
     <div class="card"><h3>What arrived</h3><div class="inbound">"Just checking, has order #4471 shipped yet?"</div></div>
     <div class="card"><h3>Drafted reply</h3><div class="reply">Hi there,
@@ -112,15 +74,15 @@ Order #4471 shipped on [date] via [carrier], tracking number [number]. Expected 
     <div class="why">Safe to send automatically because the answer is a direct lookup, not a judgment call.</div>
   </div>
   <section>
-    <h2 style="margin-bottom:0.9rem">How this gets built for real</h2>
+    <h2 class="fx-h2">How this gets built for real</h2>
     <div class="limits">
       <div class="lim"><b>Real tickets, real products.</b> A real build reads a business's actual incoming messages and drafts against their real order data, policies, and product names, not invented ones.</div>
       <div class="lim"><b>The urgency sorting is the point, not the drafting.</b> Anything ambiguous, emotional, or where the honest answer isn't a simple lookup gets held for a person. Only clean, verifiable answers go out unattended.</div>
-      <div class="lim"><b>See it built for a real business: <a href="examples/jewelry-candles/" style="color:var(--accent)">Jewelry Candles</a>.</b></div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/jewelry-candles/">Jewelry Candles</a>.</b></div>
     </div>
   </section>
-  <footer><p>Prepared by Shlok Sarnayak · Sample tickets on this page · Not connected to any live system</p></footer>
-</div>
+</main>
+<footer class="fx-footer"><p>Prepared by Shlok Sarnayak. Sample tickets on this page, not connected to any live system.</p></footer>
 <script>
 (function () {
   var tabs = Array.prototype.slice.call(document.querySelectorAll('.tk'));

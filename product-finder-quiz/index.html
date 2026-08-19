@@ -5,92 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Product-finder quiz template</title>
+<link rel="stylesheet" href="../assets/theme.css">
 <style>
-  :root {
-    --ground: #FBF8F3; --surface: #FFFFFF; --surface-2: #F1EBE0;
-    --ink: #201A12; --ink-2: #4A3F2E; --muted: #7A6C55;
-    --rule: #E3D8C3; --rule-soft: #ECE3D2;
-    --accent: #8A5A3B; --accent-ink: #FFFFFF; --accent-soft: #F3E5D8;
-    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
-    --measure: 62ch; --pad: clamp(1rem, 4vw, 2.5rem);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --ground: #171310; --surface: #211C16; --surface-2: #2B241C;
-      --ink: #F3ECE0; --ink-2: #D6C9B4; --muted: #A6987E;
-      --rule: #3A3025; --rule-soft: #302A20;
-      --accent: #D2A377; --accent-ink: #1A140D; --accent-soft: #33291D;
-    }
-  }
-  :root[data-theme="dark"] {
-    --ground: #171310; --surface: #211C16; --surface-2: #2B241C;
-    --ink: #F3ECE0; --ink-2: #D6C9B4; --muted: #A6987E;
-    --rule: #3A3025; --rule-soft: #302A20;
-    --accent: #D2A377; --accent-ink: #1A140D; --accent-soft: #33291D;
-  }
-  :root[data-theme="light"] {
-    --ground: #FBF8F3; --surface: #FFFFFF; --surface-2: #F1EBE0;
-    --ink: #201A12; --ink-2: #4A3F2E; --muted: #7A6C55;
-    --rule: #E3D8C3; --rule-soft: #ECE3D2;
-    --accent: #8A5A3B; --accent-ink: #FFFFFF; --accent-soft: #F3E5D8;
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 900px; margin: 0 auto; padding: var(--pad); display: flex; flex-direction: column; gap: clamp(2rem, 5vw, 3rem); }
-  .eyebrow { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0; }
-  h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); line-height: 1.15; letter-spacing: -0.02em; font-weight: 660; margin: 0.5rem 0 0; max-width: 24ch; }
-  h2 { font-size: 1.15rem; font-weight: 640; margin: 0; }
-  p { margin: 0; max-width: var(--measure); }
-  .lede { font-size: 1.02rem; color: var(--ink-2); margin-top: 0.9rem; }
-  .notice { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 1rem 1.15rem; border-radius: 2px; font-size: 0.9rem; color: var(--ink-2); }
-  .notice p { max-width: 78ch; }
-  .quiz-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: clamp(1.25rem, 4vw, 2rem); display: flex; flex-direction: column; gap: 1.5rem; }
-  .step-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-  .q-text { font-size: 1.2rem; font-weight: 620; letter-spacing: -0.01em; max-width: 34ch; }
-  .options { display: flex; flex-direction: column; gap: 0.6rem; }
-  .opt { text-align: left; font: inherit; color: inherit; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 3px; padding: 0.85rem 1rem; cursor: pointer; font-size: 0.95rem; line-height: 1.45; }
-  .opt:hover { border-color: var(--accent); }
-  .opt b { display: block; font-weight: 620; margin-bottom: 0.15rem; }
-  .opt span.sub { color: var(--muted); font-size: 0.85rem; }
-  .progress { display: flex; gap: 0.35rem; }
-  .dot { width: 1.6rem; height: 3px; border-radius: 2px; background: var(--rule); }
-  .dot.on { background: var(--accent); }
-  .back-btn { align-self: flex-start; font: inherit; font-size: 0.85rem; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0.2rem 0; }
-  .back-btn:hover { color: var(--ink); }
-  .result-head { display: flex; flex-direction: column; gap: 0.5rem; }
-  .pill { display: inline-flex; align-self: flex-start; align-items: baseline; gap: 0.4rem; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 0.35rem 0.9rem; font-family: var(--mono); font-weight: 640; font-size: 0.95rem; }
   .picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
-  .pick { background: var(--surface-2); border: 1px solid var(--rule); border-radius: 3px; padding: 1rem; display: flex; flex-direction: column; gap: 0.3rem; }
-  .pick-name { font-weight: 620; font-size: 0.98rem; }
-  .pick-detail { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); }
-  .restart { font: inherit; font-size: 0.9rem; color: var(--accent); background: none; border: 1px solid var(--accent); border-radius: 3px; padding: 0.55rem 1rem; cursor: pointer; align-self: flex-start; }
-  .restart:hover { background: var(--accent-soft); }
-  .limits { display: flex; flex-direction: column; gap: 0.9rem; }
-  .lim { border-left: 2px solid var(--rule); padding-left: 0.95rem; font-size: 0.89rem; line-height: 1.6; color: var(--ink-2); max-width: 78ch; }
-  .lim b { color: var(--ink); font-weight: 620; }
-  footer { border-top: 1px solid var(--rule); padding-top: 1.2rem; font-size: 0.85rem; color: var(--muted); }
+  .pick { background: var(--surface-2); border-radius: var(--radius-md); padding: 1.1rem; box-shadow: var(--shadow-inset); }
+  .pick-name { font-weight: 640; font-size: 1rem; }
+  .pick-detail { font-family: var(--mono); font-size: 0.85rem; color: var(--muted); margin-top: 0.3rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .lim a { color: var(--brand); }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <p class="eyebrow">Template, not built for a specific business</p>
-    <h1>A short quiz that ends in one real recommendation</h1>
-    <p class="lede">A few quick questions, answered against a business's own published sizing or fit guidance, ending in one product recommendation with real stock and price. This page uses a fictional shop to show the mechanism. See a version built for a real business below.</p>
-  </header>
-  <div class="notice"><p><strong>Everything on this page is fictional</strong>, a made-up shop with made-up products, built to show how the quiz works. When this gets built for a real business, every question and recommendation is sourced from that business's own published guides and live stock, the way the examples below show.</p></div>
-  <div class="quiz-card" id="quiz-root"></div>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Product-finder quiz</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">A short quiz that ends in one real recommendation</h1>
+  <p class="fx-lede">A few quick questions, answered against a business's own published sizing or fit guidance, ending in one product recommendation with real stock and price. This page uses a fictional shop to show the mechanism.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything on this page is fictional</strong>, a made-up shop with made-up products, built to show how the quiz works. When this gets built for a real business, every question and recommendation is sourced from that business's own published guides and live stock, the way the example below shows.</p></div>
+  <div class="fx-card" id="quiz-root"></div>
   <section>
-    <h2 style="margin-bottom:0.9rem">How this gets built for real</h2>
+    <h2 class="fx-h2">How this gets built for real</h2>
     <div class="limits">
       <div class="lim"><b>The questions come from the business's own guides, not invented rules.</b> If a business already publishes a sizing chart, a fit guide, or a "how to choose" article, the quiz just asks what that guide already asks, one question at a time instead of one long page.</div>
       <div class="lim"><b>The recommendation checks real stock.</b> A product only gets recommended if it's actually available in the size or option the quiz determined, not just theoretically in the catalog.</div>
-      <div class="lim"><b>See it built for a real business: <a href="examples/ministry-of-sight/" style="color:var(--accent)">Ministry of Sight, a reading-glasses retailer</a>.</b></div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/ministry-of-sight/">Ministry of Sight, a reading-glasses retailer</a>.</b></div>
     </div>
   </section>
-  <footer><p>Prepared by Shlok Sarnayak · Fictional data on this page · Not connected to any live store</p></footer>
-</div>
+</main>
+<footer class="fx-footer"><p>Prepared by Shlok Sarnayak. Fictional data on this page, not connected to any live store.</p></footer>
 <script>
 (function () {
   var SIZES = ["Small", "Medium", "Large"];
@@ -108,31 +59,32 @@
   ];
   var state = { step: 0, size: null };
   var root = document.getElementById("quiz-root");
-  function dots(total, cur) { var h = '<div class="progress">'; for (var i = 0; i < total; i++) h += '<span class="dot' + (i <= cur ? ' on' : '') + '"></span>'; return h + '</div>'; }
+  function dots(total, cur) { var h = '<div class="fx-progress">'; for (var i = 0; i < total; i++) h += '<span class="fx-dot' + (i <= cur ? ' on' : '') + '"></span>'; return h + '</div>'; }
   function render() {
     if (state.step === 0) renderQ();
     else renderResult();
   }
   function renderQ() {
     var q = QUESTIONS[0];
-    var html = dots(2, 0);
-    html += '<div class="step-label">Question 1 of 1</div><div class="q-text">' + q.q + '</div><div class="options">';
+    var html = '<div style="display:flex; flex-direction:column; gap:1.4rem;">' + dots(2, 0);
+    html += '<div style="font-size:1.25rem; font-weight:620; letter-spacing:-0.01em; max-width:34ch;">' + q.q + '</div><div style="display:flex; flex-direction:column; gap:0.65rem;">';
     q.opts.forEach(function (o, i) {
-      html += '<button class="opt" data-i="' + i + '"><b>' + o.label + '</b><span class="sub">' + o.sub + '</span></button>';
+      html += '<button class="fx-opt" data-i="' + i + '"><b>' + o.label + '</b><span class="sub">' + o.sub + '</span></button>';
     });
-    html += '</div>';
+    html += '</div></div>';
     root.innerHTML = html;
-    Array.prototype.forEach.call(root.querySelectorAll(".opt"), function (b) {
+    Array.prototype.forEach.call(root.querySelectorAll(".fx-opt"), function (b) {
       b.addEventListener("click", function () { state.size = q.opts[+b.dataset.i].size; state.step = 1; render(); });
     });
   }
   function renderResult() {
-    var html = dots(2, 1) + '<div class="result-head"><div class="step-label">Your result</div><div class="pill">' + state.size + '</div></div>';
+    var html = '<div style="display:flex; flex-direction:column; gap:1.4rem;">' + dots(2, 1);
+    html += '<div style="display:flex; flex-direction:column; gap:0.6rem;"><span class="fx-pill">' + state.size + '</span></div>';
     html += '<div class="picks">';
     PRODUCTS[state.size].forEach(function (p) {
       html += '<div class="pick"><div class="pick-name">' + p.name + '</div><div class="pick-detail">' + p.detail + '</div></div>';
     });
-    html += '</div><button class="restart" id="restart">Start over</button>';
+    html += '</div><button class="fx-btn-ghost" id="restart" style="align-self:flex-start;">Start over</button></div>';
     root.innerHTML = html;
     document.getElementById("restart").addEventListener("click", function () { state = { step: 0, size: null }; render(); });
   }

@@ -5,89 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Instant quote calculator: working example for Pool Table Guy</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
 <style>
-  :root {
-    --ground: #F7F5F0; --surface: #FFFFFF; --surface-2: #EFEAE0;
-    --ink: #1A1D16; --ink-2: #3E4238; --muted: #6C7062;
-    --rule: #DBD6C6; --rule-soft: #E7E2D3;
-    --accent: #3E5C3A; --accent-ink: #FFFFFF; --accent-soft: #E4EAE0;
-    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
-    --measure: 62ch; --pad: clamp(1rem, 4vw, 2.5rem);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --ground: #14160F; --surface: #1D2016; --surface-2: #262A1D;
-      --ink: #EFEDE3; --ink-2: #CBCABC; --muted: #93967F;
-      --rule: #343924; --rule-soft: #2A2E1F;
-      --accent: #8FBF87; --accent-ink: #12160E; --accent-soft: #24301F;
-    }
-  }
-  :root[data-theme="dark"] {
-    --ground: #14160F; --surface: #1D2016; --surface-2: #262A1D;
-    --ink: #EFEDE3; --ink-2: #CBCABC; --muted: #93967F;
-    --rule: #343924; --rule-soft: #2A2E1F;
-    --accent: #8FBF87; --accent-ink: #12160E; --accent-soft: #24301F;
-  }
-  :root[data-theme="light"] {
-    --ground: #F7F5F0; --surface: #FFFFFF; --surface-2: #EFEAE0;
-    --ink: #1A1D16; --ink-2: #3E4238; --muted: #6C7062;
-    --rule: #DBD6C6; --rule-soft: #E7E2D3;
-    --accent: #3E5C3A; --accent-ink: #FFFFFF; --accent-soft: #E4EAE0;
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 860px; margin: 0 auto; padding: var(--pad); display: flex; flex-direction: column; gap: clamp(2rem, 5vw, 3rem); }
-  .eyebrow { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0; }
-  h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); line-height: 1.15; letter-spacing: -0.02em; font-weight: 660; margin: 0.5rem 0 0; max-width: 26ch; }
-  h2 { font-size: 1.1rem; font-weight: 640; margin: 0; }
-  p { margin: 0; max-width: var(--measure); }
-  .lede { font-size: 1.02rem; color: var(--ink-2); margin-top: 0.9rem; }
-  .notice { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 1rem 1.15rem; border-radius: 2px; font-size: 0.9rem; color: var(--ink-2); }
-  .notice p { max-width: 78ch; }
-
-  .calc-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: clamp(1.25rem, 4vw, 2rem); display: flex; flex-direction: column; gap: 1.5rem; }
   .field { display: flex; flex-direction: column; gap: 0.5rem; }
   .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
   .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-  .choice { font: inherit; color: inherit; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 3px; padding: 0.6rem 0.95rem; cursor: pointer; font-size: 0.92rem; transition: border-color .15s, background .15s; }
-  .choice:hover { border-color: var(--accent); }
-  .choice.sel { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 620; }
-  .choice:disabled { opacity: 0.35; cursor: not-allowed; }
-  select, input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: 3px; background: var(--surface-2); color: var(--ink); width: 100%; max-width: 22rem; }
+  .choice { font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.6rem 0.95rem; cursor: pointer; font-size: 0.92rem; transition: border-color .15s, background .15s; }
+  .choice:hover { border-color: var(--brand); }
+  .choice.sel { border-color: var(--brand); background: var(--brand-soft); color: var(--ink); font-weight: 620; box-shadow: 0 0 0 1px var(--brand) inset; }
+  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; max-width: 22rem; }
+  input[type="text"]:focus { outline: none; border-color: var(--brand); }
 
   .quote-out { border-top: 1px solid var(--rule); padding-top: 1.3rem; display: flex; flex-direction: column; gap: 0.9rem; }
-  .quote-line { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.93rem; color: var(--ink-2); }
+  .quote-line { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.94rem; color: var(--ink-2); }
   .quote-line b { color: var(--ink); font-weight: 600; }
-  .quote-total { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.3rem; font-weight: 660; border-top: 1px dashed var(--rule); padding-top: 0.8rem; }
-  .quote-total .amt { font-family: var(--mono); }
+  .quote-total { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.4rem; font-weight: 660; border-top: 1px dashed var(--rule); padding-top: 0.9rem; font-family: var(--serif); }
+  .quote-total .amt { color: var(--brand); }
   .quote-sub { font-size: 0.82rem; color: var(--muted); }
   .placeholder { font-size: 0.92rem; color: var(--muted); font-style: italic; }
 
-  .limits { display: flex; flex-direction: column; gap: 0.9rem; }
-  .lim { border-left: 2px solid var(--rule); padding-left: 0.95rem; font-size: 0.89rem; line-height: 1.6; color: var(--ink-2); max-width: 78ch; }
-  .lim b { color: var(--ink); font-weight: 620; }
-
-  footer { border-top: 1px solid var(--rule); padding-top: 1.2rem; font-size: 0.85rem; color: var(--muted); }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
 </style>
 </head>
 <body>
-<div class="wrap">
-
-  <header>
-    <p class="eyebrow">Working example, built for Pool Table Guy</p>
-    <h1>The instant quote your own pricing page already supports</h1>
-    <p class="lede">Your pricing page already lays out every number a self-serve quote tool would need: cloth grade and size tiers, cushion rubber options, and a full postcode-zone travel surcharge table. Right now getting a number means a form, call, or email. Here's what a live calculator over that same data looks like.</p>
-  </header>
-
-  <div class="notice">
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Instant quote calculator</a> / Pool Table Guy</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Pool Table Guy</span>
+  <h1 class="fx-h1">The instant quote your own pricing page already supports</h1>
+  <p class="fx-lede">Your pricing page already lays out every number a self-serve quote tool would need: cloth grade and size tiers, cushion rubber options, and a full postcode-zone travel surcharge table. Right now getting a number means a form, call, or email. Here's what a live calculator over that same data looks like.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
     <p><strong>Every price and rule below is copied from your own pricing page</strong>, not invented: cloth grade and size tiers, cushion rubber prices, and the four-tier postcode surcharge table with the Congestion Charge Zone add-on. VAT is shown separately, matching your page's "all prices exclude 20% VAT" note.</p>
   </div>
-
-  <div class="calc-card" id="calc-root"></div>
-
+  <div class="fx-card" id="calc-root"></div>
   <section>
-    <h2 style="margin-bottom:0.9rem">What I'd flag before you roll this out anywhere else</h2>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
     <div class="limits">
       <div class="lim"><b>Postcode matching is prefix-only, not address-verified.</b> This checks the letters at the start of what someone types (BN, SW, and so on), the same way your printed table is organized. It doesn't verify the postcode is real or resolve edge cases like a district split across two of your zones, if any exist. Real deployment would want a proper postcode lookup.</div>
       <div class="lim"><b>The Congestion Charge Zone toggle is a judgment call, not a lookup.</b> Your page says SE splits into an "Outside CC Zone" tier and an "Inside CC Zone" tier, and the £50 Congestion Charge itself is waived if parking is provided. I built this as a manual toggle the customer ticks rather than guessing from a postcode, since I can't tell from the pricing page alone which SE postcodes fall inside the zone.</div>
@@ -96,11 +56,10 @@
       <div class="lim"><b>Your own pricing page currently shows the postcode table twice with different contents.</b> Earlier on the page GU and LU sit in the +£40 tier and AL isn't listed at all, later on the same page GU moves to the base tier and AL and LU both appear in the +£70 tier. This calculator uses the second, later version. Worth fixing on the live page regardless of this demo, since right now a customer could read two different numbers for the same postcode depending which part of the page they check.</div>
     </div>
   </section>
-
-  <footer>
-    <p>Prepared by Shlok Sarnayak · Prices and postcode zones copied from your live pricing page today · Not connected to your booking system or payment processor</p>
-  </footer>
-</div>
+</main>
+<footer class="fx-footer">
+  <p>Prepared by Shlok Sarnayak. Prices and postcode zones copied from your live pricing page today. Not connected to your booking system or payment processor.</p>
+</footer>
 
 <script>
 (function () {

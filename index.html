@@ -5,54 +5,90 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Working examples: Fixpoint Studio</title>
+<link rel="stylesheet" href="assets/theme.css">
 <style>
-  :root { --ground:#FBF8F3; --ink:#201A12; --ink-2:#4A3F2E; --muted:#7A6C55; --rule:#E3D8C3; --surface:#FFFFFF; --accent:#8A5A3B; }
-  @media (prefers-color-scheme: dark) {
-    :root { --ground:#171310; --ink:#F3ECE0; --ink-2:#D6C9B4; --muted:#A6987E; --rule:#3A3025; --surface:#211C16; --accent:#D2A377; }
-  }
-  * { box-sizing: border-box; }
-  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; max-width: 760px; margin: 0 auto; padding: clamp(2rem,6vw,4rem) 1.5rem; color: var(--ink); background: var(--ground); line-height: 1.6; }
-  a { color: var(--accent); }
-  h1 { font-size: clamp(1.6rem,4vw,2.1rem); letter-spacing: -0.02em; margin-bottom: 0.5rem; }
-  .lede { color: var(--ink-2); max-width: 60ch; margin-bottom: 2rem; }
-  .notice { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 0.9rem 1.1rem; font-size: 0.9rem; color: var(--ink-2); border-radius: 2px; margin-bottom: 2.5rem; }
-  ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
-  li { background: var(--surface); }
-  li a { display: block; padding: 1.1rem 1.3rem; text-decoration: none; color: var(--ink); }
-  li a:hover { background: var(--ground); }
-  .card-title { font-weight: 620; font-size: 1.02rem; }
-  .card-sub { color: var(--muted); font-size: 0.88rem; margin-top: 0.2rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.1rem; }
+  .tcard { display: flex; flex-direction: column; gap: 0.9rem; text-decoration: none; color: var(--ink); background: var(--surface-raised); border-radius: var(--radius-lg); box-shadow: var(--shadow-inset), var(--shadow-sm); padding: 1.6rem; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+  .tcard:hover { transform: translateY(-3px); box-shadow: var(--shadow-inset), var(--shadow-lg); }
+  .tcard-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--brand-soft); color: var(--brand); display: flex; align-items: center; justify-content: center; font-size: 1.15rem; }
+  .tcard-title { font-weight: 650; font-size: 1.05rem; letter-spacing: -0.01em; }
+  .tcard-sub { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+  .tcard-arrow { margin-top: auto; font-size: 0.85rem; color: var(--brand); font-weight: 600; display: flex; align-items: center; gap: 0.35rem; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .stat { background: var(--surface); padding: 1.1rem 1.2rem; }
+  .stat-n { font-family: var(--serif); font-size: 1.7rem; font-weight: 600; color: var(--ink); }
+  .stat-l { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
 </style>
 </head>
 <body>
-<h1>Working examples</h1>
-<p class="lede">Six templates, each built around one recurring problem, not one company. Every template also has at least one version built for a real business, using their real data, linked from its own page. The library grows over time, even for businesses that never wrote back.</p>
-<div class="notice"><strong>Notice:</strong> every prototype here is illustrative, uses sample or publicly available data only, and is not affiliated with or endorsed by any business referenced.</div>
-<ul>
-  <li><a href="product-finder-quiz/">
-    <div class="card-title">Product-finder quiz</div>
-    <div class="card-sub">A few quick questions, answered against a retailer's own published guides, ending in one real in-stock recommendation.</div>
-  </a></li>
-  <li><a href="support-ticket-triage/">
-    <div class="card-title">Support-ticket triage &amp; drafting</div>
-    <div class="card-sub">Sample tickets sorted by urgency, with drafted replies and a clock deciding what needs a human.</div>
-  </a></li>
-  <li><a href="instant-quote-calculator/">
-    <div class="card-title">Instant quote calculator</div>
-    <div class="card-sub">Turns a business's own published pricing and travel-zone table into a live, self-serve quote.</div>
-  </a></li>
-  <li><a href="review-showcase-widget/">
-    <div class="card-title">Review showcase widget</div>
-    <div class="card-sub">Pulls scattered third-party praise into one filterable display on a business's own site.</div>
-  </a></li>
-  <li><a href="appointment-request-widget/">
-    <div class="card-title">Appointment request widget</div>
-    <div class="card-sub">Catches the after-hours visitor who's comparing options online, before they book with a competitor instead.</div>
-  </a></li>
-  <li><a href="order-status-lookup/">
-    <div class="card-title">Order &amp; job status lookup</div>
-    <div class="card-sub">A self-serve status check for a repair, order, or build, so customers stop having to call to find out where things stand.</div>
-  </a></li>
-</ul>
+
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="index.html">
+      <span class="fx-mark">F</span>
+      <span class="fx-brand-name">Fixpoint Studio</span>
+    </a>
+    <div class="fx-nav-links">
+      <a href="#library">Template library</a>
+    </div>
+  </div>
+</nav>
+
+<header class="fx-hero">
+  <span class="fx-kicker">Working examples</span>
+  <h1 class="fx-h1">Small, real automations, built before you say yes</h1>
+  <p class="fx-lede">Six templates, each solving one recurring problem, not built around one company. Every template also has a version built for a real business, using their real data, so you can see exactly how it holds up in practice.</p>
+</header>
+
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Every prototype here is illustrative</strong>, using sample or publicly available data only, and is not affiliated with or endorsed by any business referenced.</p></div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-n">6</div><div class="stat-l">Working templates</div></div>
+    <div class="stat"><div class="stat-n">6</div><div class="stat-l">Real-business examples</div></div>
+    <div class="stat"><div class="stat-n">0</div><div class="stat-l">Invented facts about a real business</div></div>
+  </div>
+
+  <section id="library">
+    <h2 class="fx-h2">Template library</h2>
+    <div class="grid">
+      <a class="tcard" href="product-finder-quiz/">
+        <span class="tcard-icon">◈</span>
+        <div><div class="tcard-title">Product-finder quiz</div><div class="tcard-sub">A few quick questions, answered against a retailer's own published guides, ending in one real in-stock recommendation.</div></div>
+        <span class="tcard-arrow">View template →</span>
+      </a>
+      <a class="tcard" href="support-ticket-triage/">
+        <span class="tcard-icon">◇</span>
+        <div><div class="tcard-title">Support-ticket triage</div><div class="tcard-sub">Sample tickets sorted by urgency, with drafted replies and a clock deciding what needs a human.</div></div>
+        <span class="tcard-arrow">View template →</span>
+      </a>
+      <a class="tcard" href="instant-quote-calculator/">
+        <span class="tcard-icon">◆</span>
+        <div><div class="tcard-title">Instant quote calculator</div><div class="tcard-sub">Turns a business's own published pricing and travel-zone table into a live, self-serve quote.</div></div>
+        <span class="tcard-arrow">View template →</span>
+      </a>
+      <a class="tcard" href="review-showcase-widget/">
+        <span class="tcard-icon">★</span>
+        <div><div class="tcard-title">Review showcase widget</div><div class="tcard-sub">Pulls scattered third-party praise into one filterable display on a business's own site.</div></div>
+        <span class="tcard-arrow">View template →</span>
+      </a>
+      <a class="tcard" href="appointment-request-widget/">
+        <span class="tcard-icon">◐</span>
+        <div><div class="tcard-title">Appointment request widget</div><div class="tcard-sub">Catches the after-hours visitor comparing options online, before they book with a competitor instead.</div></div>
+        <span class="tcard-arrow">View template →</span>
+      </a>
+      <a class="tcard" href="order-status-lookup/">
+        <span class="tcard-icon">◎</span>
+        <div><div class="tcard-title">Order &amp; job status lookup</div><div class="tcard-sub">A self-serve status check for a repair, order, or build, so customers stop having to call to find out where things stand.</div></div>
+        <span class="tcard-arrow">View template →</span>
+      </a>
+    </div>
+  </section>
+</main>
+
+<footer class="fx-footer">
+  <p>Fixpoint Studio, prepared by Shlok Sarnayak. The library grows over time, even for businesses that never wrote back.</p>
+</footer>
+
 </body>
 </html>

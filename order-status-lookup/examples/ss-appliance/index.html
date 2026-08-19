@@ -5,111 +5,63 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Job status lookup: working example for S&amp;S Appliance</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
 <style>
-  :root {
-    --ground: #F3F4F1; --surface: #FFFFFF; --surface-2: #E9EBE4;
-    --ink: #1A1D19; --ink-2: #3F4339; --muted: #6D7266;
-    --rule: #D6D9CD; --rule-soft: #E3E5DA;
-    --accent: #3B6E4F; --accent-ink: #FFFFFF; --accent-soft: #E1EDE5;
-    --step-done: #3B6E4F; --step-active: #B5791F; --step-pending: #A7AC9C;
-    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
-    --measure: 62ch; --pad: clamp(1rem, 4vw, 2.5rem);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --ground: #14160F; --surface: #1E211A; --surface-2: #272B21;
-      --ink: #EDEFE7; --ink-2: #CBCEC0; --muted: #969A85;
-      --rule: #363B2C; --rule-soft: #2B3022;
-      --accent: #7FBF95; --accent-ink: #0F1610; --accent-soft: #1D2E21;
-      --step-done: #7FBF95; --step-active: #E0AC4E; --step-pending: #565B4B;
-    }
-  }
-  :root[data-theme="dark"] {
-    --ground: #14160F; --surface: #1E211A; --surface-2: #272B21;
-    --ink: #EDEFE7; --ink-2: #CBCEC0; --muted: #969A85;
-    --rule: #363B2C; --rule-soft: #2B3022;
-    --accent: #7FBF95; --accent-ink: #0F1610; --accent-soft: #1D2E21;
-    --step-done: #7FBF95; --step-active: #E0AC4E; --step-pending: #565B4B;
-  }
-  :root[data-theme="light"] {
-    --ground: #F3F4F1; --surface: #FFFFFF; --surface-2: #E9EBE4;
-    --ink: #1A1D19; --ink-2: #3F4339; --muted: #6D7266;
-    --rule: #D6D9CD; --rule-soft: #E3E5DA;
-    --accent: #3B6E4F; --accent-ink: #FFFFFF; --accent-soft: #E1EDE5;
-    --step-done: #3B6E4F; --step-active: #B5791F; --step-pending: #A7AC9C;
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 860px; margin: 0 auto; padding: var(--pad); display: flex; flex-direction: column; gap: clamp(2rem, 5vw, 3rem); }
-  .eyebrow { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0; }
-  h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); line-height: 1.15; letter-spacing: -0.02em; font-weight: 660; margin: 0.5rem 0 0; max-width: 26ch; }
-  h2 { font-size: 1.1rem; font-weight: 640; margin: 0; }
-  p { margin: 0; max-width: var(--measure); }
-  .lede { font-size: 1.02rem; color: var(--ink-2); margin-top: 0.9rem; }
-  .notice { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 1rem 1.15rem; border-radius: 2px; font-size: 0.9rem; color: var(--ink-2); }
-  .notice p { max-width: 78ch; }
-
-  .lookup-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: clamp(1.25rem, 4vw, 2rem); display: flex; flex-direction: column; gap: 1.4rem; }
-  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
   .lookup-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
-  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.65rem 0.9rem; border: 1px solid var(--rule); border-radius: 3px; background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
-  .lookup-btn { font: inherit; font-weight: 620; font-size: 0.95rem; color: var(--accent-ink); background: var(--accent); border: none; border-radius: 3px; padding: 0.65rem 1.3rem; cursor: pointer; }
-  .lookup-btn:hover { opacity: 0.9; }
+  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+  input[type="text"]:focus { outline: none; border-color: var(--brand); }
   .samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
-  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.8rem; color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 999px; padding: 0.3rem 0.8rem; cursor: pointer; }
+  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.8rem; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.35rem 0.85rem; cursor: pointer; }
   .sample-chip:hover { opacity: 0.85; }
 
   .result { border-top: 1px solid var(--rule); padding-top: 1.3rem; display: flex; flex-direction: column; gap: 1.1rem; }
   .result-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
-  .result-head h3 { margin: 0; font-size: 1.05rem; }
+  .result-head h3 { margin: 0; font-size: 1.1rem; font-family: var(--serif); }
   .result-meta { font-size: 0.85rem; color: var(--muted); }
 
-  .stages { display: flex; flex-direction: column; gap: 0; }
   .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.6rem 0; }
-  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; position: relative; }
-  .stage-dot.done { background: var(--step-done); }
-  .stage-dot.active { background: var(--step-active); box-shadow: 0 0 0 3px var(--accent-soft); }
-  .stage-dot.pending { background: var(--step-pending); opacity: 0.5; }
-  .stage-line { position: absolute; left: 50%; top: 100%; width: 2px; height: 1.4rem; transform: translateX(-50%); background: var(--rule); }
-  .stage:last-child .stage-line { display: none; }
-  .stage-label { font-weight: 600; font-size: 0.95rem; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
   .stage-label.pending-text { color: var(--muted); font-weight: 500; }
   .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
 
   .error-box { font-size: 0.92rem; color: var(--muted); font-style: italic; }
 
-  .limits { display: flex; flex-direction: column; gap: 0.9rem; }
-  .lim { border-left: 2px solid var(--rule); padding-left: 0.95rem; font-size: 0.89rem; line-height: 1.6; color: var(--ink-2); max-width: 78ch; }
-  .lim b { color: var(--ink); font-weight: 620; }
-
-  footer { border-top: 1px solid var(--rule); padding-top: 1.2rem; font-size: 0.85rem; color: var(--muted); }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
 </style>
 </head>
 <body>
-<div class="wrap">
-
-  <header>
-    <p class="eyebrow">Working example, built for S&amp;S Appliance</p>
-    <h1>The Job Status page that doesn't check any status</h1>
-    <p class="lede">Your site's main navigation has a "Job Status" link. I checked it directly today: it's a heading that says "CHECK JOB STATUS," followed by three buttons that all send you somewhere else. There's no actual way to look anything up.</p>
-  </header>
-
-  <div class="notice">
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Order &amp; job status lookup</a> / S&amp;S Appliance</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for S&amp;S Appliance</span>
+  <h1 class="fx-h1">The Job Status page that doesn't check any status</h1>
+  <p class="fx-lede">Your site's main navigation has a "Job Status" link. I checked it directly today: it's a heading that says "CHECK JOB STATUS," followed by three buttons that all send you somewhere else. There's no actual way to look anything up.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
     <p><strong>What's real:</strong> your live status page really has no lookup form, checked directly today. Your BBB record shows a repeating pattern of customers who couldn't get a status update without calling repeatedly.</p>
   </div>
-  <div class="notice">
+  <div class="fx-notice">
     <p><strong>What's illustrative:</strong> the three sample tickets below aren't real customer jobs. They show what actually typing a number into a working version of this page would return, using the stages a repair job typically goes through. A real build would connect to whatever system you already use to track jobs, not this sample data.</p>
   </div>
-
-  <div class="lookup-card">
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
     <div>
-      <div class="field-label">Enter a ticket number</div>
-      <div class="lookup-row" style="margin-top:0.5rem;">
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Enter a ticket number</div>
+      <div class="lookup-row" style="margin-top:0.6rem;">
         <input type="text" id="ticket-input" placeholder="e.g. SS-40217">
-        <button class="lookup-btn" id="lookup-btn">Check status</button>
+        <button class="fx-btn" id="lookup-btn">Check status</button>
       </div>
-      <div class="samples" style="margin-top:0.7rem;">
+      <div class="samples" style="margin-top:0.8rem;">
         <span style="font-size:0.82rem; color:var(--muted);">Try a sample:</span>
         <button class="sample-chip" data-sample="SS-40217">SS-40217</button>
         <button class="sample-chip" data-sample="SS-40190">SS-40190</button>
@@ -118,9 +70,8 @@
     </div>
     <div id="result-root"></div>
   </div>
-
   <section>
-    <h2 style="margin-bottom:0.9rem">What I'd flag before you roll this out anywhere else</h2>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
     <div class="limits">
       <div class="lim"><b>Only the three sample ticket numbers above return anything.</b> This isn't connected to your real job records, so it can't look up an actual customer's repair. A real version would need a link to whatever system your team already schedules and tracks jobs in.</div>
       <div class="lim"><b>The repeating BBB pattern is real, the fix is a reasonable guess, not a guarantee.</b> Your BBB history shows repeated complaints about customers unable to get a status update without repeated calls. A self-service lookup addresses that specific pattern. It won't fix a job that's genuinely delayed, it just means the customer isn't left wondering whether anyone is working on it.</div>
@@ -128,11 +79,10 @@
       <div class="lim"><b>This only shows status, it doesn't let anyone reschedule or cancel.</b> Keeping the first version narrow (just "where does my job stand") is deliberate, adding actions later is straightforward once the lookup itself is proven useful.</div>
     </div>
   </section>
-
-  <footer>
-    <p>Prepared by Shlok Sarnayak for S&amp;S Appliance · Your empty status page and BBB pattern verified directly today · Ticket data is a labeled sample, not connected to your real job records</p>
-  </footer>
-</div>
+</main>
+<footer class="fx-footer">
+  <p>Prepared by Shlok Sarnayak for S&amp;S Appliance. Your empty status page and BBB pattern verified directly today. Ticket data is a labeled sample, not connected to your real job records.</p>
+</footer>
 
 <script>
 (function () {
