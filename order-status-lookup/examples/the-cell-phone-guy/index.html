@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Job status lookup: working example for The Cell Phone Guy</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .lookup-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+  input[type="text"]:focus { outline: none; border-color: var(--brand); }
+  .samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.8rem; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.35rem 0.85rem; cursor: pointer; }
+  .sample-chip:hover { opacity: 0.85; }
+
+  .result { border-top: 1px solid var(--rule); padding-top: 1.3rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .result-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
+  .result-head h3 { margin: 0; font-size: 1.1rem; font-family: var(--serif); }
+  .result-meta { font-size: 0.85rem; color: var(--muted); }
+  .result-cost { font-size: 0.85rem; color: var(--brand); font-weight: 650; }
+
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.6rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+
+  .error-box { font-size: 0.92rem; color: var(--muted); font-style: italic; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Order &amp; job status lookup</a> / The Cell Phone Guy</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for The Cell Phone Guy</span>
+  <h1 class="fx-h1">A cost estimate and status text, the moment the diagnosis is done</h1>
+  <p class="fx-lede">Your site has a contact form for questions, but nothing that tells a customer what a repair will cost or where it stands once a device is dropped off. BBB and Birdeye complaints, spanning different devices and different years, independently describe the same gap: no cost estimate, no status update, the customer has to call in to find out anything at all. Here's what an automatic text at each step could look like.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> your live site has no cost-estimate tool, status tracker, or booking system anywhere, checked directly today, only a contact form. Complaints on BBB and Birdeye, across separate incidents and separate years, describe the same specific pattern: a repair dropped off with no pre-authorization estimate given, and a status check that only happens if the customer calls in first. One review describes going three weeks with no update at all.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What I'd be straight with you about:</strong> a handful of complaints across BBB and Birdeye aren't proof this happens on every repair, most drop-offs presumably go fine. What's notable is that the same specific gap, no estimate before work starts, no update once it's underway, shows up independently across different devices and different years rather than in one bad week. A status text doesn't replace the phone call for something that needs a real conversation, it just means the ordinary "what's this going to cost, is it ready yet" question gets answered without one.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the two sample repair references below aren't real repairs. They show what typing a reference into a working version of this page would return, using a flow a phone or tablet repair typically goes through. A real build would connect to whatever you already use to log a device at drop-off.</p>
+  </div>
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Enter a repair reference</div>
+      <div class="lookup-row" style="margin-top:0.6rem;">
+        <input type="text" id="ticket-input" placeholder="e.g. CPG-7734">
+        <button class="fx-btn" id="lookup-btn">Check status</button>
+      </div>
+      <div class="samples" style="margin-top:0.8rem;">
+        <span style="font-size:0.82rem; color:var(--muted);">Try a sample:</span>
+        <button class="sample-chip" data-sample="CPG-7734">CPG-7734</button>
+        <button class="sample-chip" data-sample="CPG-7719">CPG-7719</button>
+      </div>
+    </div>
+    <div id="result-root"></div>
+  </div>
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Only the two sample repair references above return anything.</b> This isn't connected to your real intake system, so it can't look up an actual customer's device. A real version would need a link to however your team currently logs a device when it comes in.</div>
+      <div class="lim"><b>The four stages shown (received, diagnosed with cost, repair in progress, ready for pickup) are a typical repair-shop flow, not copied from your internal process.</b> Worth a short conversation about how your team actually phases a job before this gets built for real.</div>
+      <div class="lim"><b>This is a status and estimate check, not an authorization system.</b> A customer would still need to approve a cost before work starts on anything not covered by a flat-rate quote, this only means they get asked instead of left wondering.</div>
+      <div class="lim"><b>This only shows status.</b> It doesn't change how a repair gets diagnosed or priced, it just means "what's it going to cost" and "is it ready" get answered without a phone call.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p>Prepared by Shlok Sarnayak for The Cell Phone Guy. Your site's lack of a cost-estimate or status system, and the BBB and Birdeye complaints describing the same gap, verified directly today. Repair data is a labeled sample, not connected to your real intake records.</p>
+</footer>
+<script>
+(function () {
+  var STAGE_NAMES = ["Received", "Diagnosed", "Repair in progress", "Ready for pickup"];
+
+  var REPAIRS = {
+    "CPG-7734": { device: "iPhone 12, cracked screen", cost: "Estimate: $89, awaiting your approval", stage: 1, times: ["Aug 15, 10:20 AM", "Aug 15, 1:05 PM", null, null] },
+    "CPG-7719": { device: "Nintendo Switch, charge port", cost: "Approved: $65", stage: 3, times: ["Aug 12, 9:00 AM", "Aug 12, 11:30 AM", "Aug 13, 2:15 PM", "Aug 14, 10:00 AM"] }
+  };
+
+  var resultRoot = document.getElementById("result-root");
+  var ticketInput = document.getElementById("ticket-input");
+
+  function normalize(v) { return (v || "").trim().toUpperCase(); }
+
+  function lookup() {
+    var key = normalize(ticketInput.value);
+    if (!key) {
+      resultRoot.innerHTML = '<p class="error-box">Enter a repair reference above, or try one of the samples.</p>';
+      return;
+    }
+    var repair = REPAIRS[key];
+    if (!repair) {
+      resultRoot.innerHTML = '<p class="error-box">No sample repair matches "' + escapeHtml(ticketInput.value) + '". Try one of the two samples above, this demo only has data for those.</p>';
+      return;
+    }
+    renderRepair(key, repair);
+  }
+
+  function renderRepair(key, repair) {
+    var html = '<div class="result">';
+    html += '<div class="result-head"><h3>' + key + '</h3><span class="result-meta">' + repair.device + '</span></div>';
+    if (repair.cost) { html += '<div class="result-cost">' + repair.cost + '</div>'; }
+    html += '<div>';
+    STAGE_NAMES.forEach(function (name, i) {
+      var cls = i < repair.stage ? 'done' : (i === repair.stage ? 'active' : 'pending');
+      var time = repair.times[i];
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === 'pending' ? ' pending-text' : '') + '">' + name + '</div><div class="stage-time">' + (time ? time : (cls === 'active' ? 'In progress' : 'Not started')) + '</div></div></div>';
+    });
+    html += '</div></div>';
+    resultRoot.innerHTML = html;
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", lookup);
+  ticketInput.addEventListener("keydown", function (e) { if (e.key === "Enter") lookup(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".sample-chip"), function (b) {
+    b.addEventListener("click", function () { ticketInput.value = b.dataset.sample; lookup(); });
+  });
+
+  resultRoot.innerHTML = '<p class="error-box">Enter a repair reference above, or try one of the samples.</p>';
+})();
+</script>
+</body>
+</html>
