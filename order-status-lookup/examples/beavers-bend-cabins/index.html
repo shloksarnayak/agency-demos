@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Job status lookup: working example for Beavers Bend Luxury Cabin Rentals</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .lookup-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+  input[type="text"]:focus { outline: none; border-color: var(--brand); }
+  .samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.8rem; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.35rem 0.85rem; cursor: pointer; }
+  .sample-chip:hover { opacity: 0.85; }
+
+  .result { border-top: 1px solid var(--rule); padding-top: 1.3rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .result-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
+  .result-head h3 { margin: 0; font-size: 1.1rem; font-family: var(--serif); }
+  .result-meta { font-size: 0.85rem; color: var(--muted); }
+
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.6rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+
+  .error-box { font-size: 0.92rem; color: var(--muted); font-style: italic; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Order &amp; job status lookup</a> / Beavers Bend Luxury Cabin Rentals</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Beavers Bend Luxury Cabin Rentals</span>
+  <h1 class="fx-h1">A guest itinerary that sends itself, across all three booking channels</h1>
+  <p class="fx-lede">You're managing nearly 50 properties across your own site, Airbnb, and VRBO, each with its own cancellation policy and its own guest thread. Nothing automatically confirms a booking, sends arrival instructions, checks in mid-stay, or asks for a review once someone checks out, that's all one person, across three channels. Here's what an automatic guest-lifecycle message could look like.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> your own site lists 49 active properties with no visible automated booking-confirmation, arrival-instruction, or guest-messaging system, checked directly today. Bookings run through three separate channels, your own site, Airbnb, and VRBO, each with a different cancellation policy, all routed through one point of contact.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What I'd be straight with you about:</strong> this isn't about disputes or refunds, and I'm deliberately not touching that. Your Airbnb rating (4.9) says routine stays go well. What a growing, three-channel operation runs into is volume, the same confirmation, arrival info, and check-in message getting typed out by hand, over and over, across three different inboxes. Automating the routine part is what frees a person to actually handle the stay that needs judgment.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the two sample booking references below aren't real bookings. They show what typing a reference into a working version of this page would return, using the stages a stay typically goes through. A real build would connect to whichever channel a booking actually came through.</p>
+  </div>
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Enter a booking reference</div>
+      <div class="lookup-row" style="margin-top:0.6rem;">
+        <input type="text" id="ticket-input" placeholder="e.g. BB-2214">
+        <button class="fx-btn" id="lookup-btn">Check status</button>
+      </div>
+      <div class="samples" style="margin-top:0.8rem;">
+        <span style="font-size:0.82rem; color:var(--muted);">Try a sample:</span>
+        <button class="sample-chip" data-sample="BB-2214">BB-2214</button>
+        <button class="sample-chip" data-sample="BB-2197">BB-2197</button>
+      </div>
+    </div>
+    <div id="result-root"></div>
+  </div>
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Only the two sample booking references above return anything.</b> This isn't connected to your real reservation system, so it can't look up an actual guest's stay. A real version would need a link to whichever channel a booking came through, your own site, Airbnb, or VRBO.</div>
+      <div class="lim"><b>The four stages shown (confirmed, arrival info sent, mid-stay check-in, review request) are a typical short-term-rental guest lifecycle, not copied from your internal process.</b> Worth a short conversation about how your team actually phases a stay before this gets built for real.</div>
+      <div class="lim"><b>This handles the routine lifecycle only, it isn't a dispute or refund tool.</b> Anything that needs a judgment call, a cancellation, a complaint, stays with a person. This only means the confirmation and arrival messages don't have to be typed by hand three separate times.</div>
+      <div class="lim"><b>This only shows status.</b> It doesn't change your cancellation policies or how a dispute gets handled, it just means the routine part of a stay runs itself.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p>Prepared by Shlok Sarnayak for Beavers Bend Luxury Cabin Rentals. Your property count and the absence of an automated guest-messaging system across your three booking channels verified directly today. Booking data is a labeled sample, not connected to your real reservations.</p>
+</footer>
+<script>
+(function () {
+  var STAGE_NAMES = ["Booking confirmed", "Arrival info sent", "Mid-stay check-in", "Review request sent"];
+
+  var BOOKINGS = {
+    "BB-2214": { property: "Whispering Pines, 3BR, direct booking", stage: 1, times: ["Aug 10, confirmed", "Aug 14, sent", null, null] },
+    "BB-2197": { property: "River View Retreat, 4BR, VRBO", stage: 3, times: ["Jul 28, confirmed", "Aug 1, sent", "Aug 3, sent", "Aug 5, sent"] }
+  };
+
+  var resultRoot = document.getElementById("result-root");
+  var ticketInput = document.getElementById("ticket-input");
+
+  function normalize(v) { return (v || "").trim().toUpperCase(); }
+
+  function lookup() {
+    var key = normalize(ticketInput.value);
+    if (!key) {
+      resultRoot.innerHTML = '<p class="error-box">Enter a booking reference above, or try one of the samples.</p>';
+      return;
+    }
+    var booking = BOOKINGS[key];
+    if (!booking) {
+      resultRoot.innerHTML = '<p class="error-box">No sample booking matches "' + escapeHtml(ticketInput.value) + '". Try one of the two samples above, this demo only has data for those.</p>';
+      return;
+    }
+    renderBooking(key, booking);
+  }
+
+  function renderBooking(key, booking) {
+    var html = '<div class="result">';
+    html += '<div class="result-head"><h3>' + key + '</h3><span class="result-meta">' + booking.property + '</span></div>';
+    html += '<div>';
+    STAGE_NAMES.forEach(function (name, i) {
+      var cls = i < booking.stage ? 'done' : (i === booking.stage ? 'active' : 'pending');
+      var time = booking.times[i];
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === 'pending' ? ' pending-text' : '') + '">' + name + '</div><div class="stage-time">' + (time ? time : (cls === 'active' ? 'In progress' : 'Not started')) + '</div></div></div>';
+    });
+    html += '</div></div>';
+    resultRoot.innerHTML = html;
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", lookup);
+  ticketInput.addEventListener("keydown", function (e) { if (e.key === "Enter") lookup(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".sample-chip"), function (b) {
+    b.addEventListener("click", function () { ticketInput.value = b.dataset.sample; lookup(); });
+  });
+
+  resultRoot.innerHTML = '<p class="error-box">Enter a booking reference above, or try one of the samples.</p>';
+})();
+</script>
+</body>
+</html>
