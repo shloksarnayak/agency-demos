@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Job status lookup: working example for Water Well Services</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .lookup-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+  input[type="text"]:focus { outline: none; border-color: var(--brand); }
+  .samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.8rem; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.35rem 0.85rem; cursor: pointer; }
+  .sample-chip:hover { opacity: 0.85; }
+
+  .result { border-top: 1px solid var(--rule); padding-top: 1.3rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .result-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
+  .result-head h3 { margin: 0; font-size: 1.1rem; font-family: var(--serif); }
+  .result-meta { font-size: 0.85rem; color: var(--muted); }
+  .result-eta { font-size: 0.85rem; color: var(--brand); font-weight: 650; }
+
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.6rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+
+  .error-box { font-size: 0.92rem; color: var(--muted); font-style: italic; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Order &amp; job status lookup</a> / Water Well Services</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Water Well Services</span>
+  <h1 class="fx-h1">An arrival window that goes out on its own</h1>
+  <p class="fx-lede">You already run Jobber, which can send automatic status texts, but your public contact page doesn't show it being used that way. A few recent reviews describe a change from a year or two ago: customers used to get a call ahead of arrival, now that doesn't always happen. With three acquisitions behind your growth, that reads like dispatch capacity not quite keeping up, not a tooling gap. Here's what an automatic arrival-window text could look like on top of what you already have.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> your own contact page links out to Jobber (clienthub.getjobber.com), confirmed directly today, so the platform capable of automatic arrival texts is already in your stack. Recent reviews describe a specific before/after pattern: reliable call-ahead arrivals a year or two ago, inconsistent no-shows more recently.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What I'd be straight with you about:</strong> this pattern traces mostly to one review platform, direct access to a couple of others was blocked, so I'd treat this as a lead worth a five-minute conversation, not a settled fact. It also lines up with something concrete: growing through three acquisitions plausibly outpaces a back-office dispatch process built for one location, which is a scaling problem, not a decline in the team itself. Neither of your two closest local competitors have scheduling or arrival-tracking tools either, so this would be a real local differentiator, not catching up.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the two sample job references below aren't real jobs. They show what typing a reference into a working version of this page would return, using a flow a well service call typically goes through. A real build would connect to your existing Jobber account rather than duplicate it.</p>
+  </div>
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Enter a job reference</div>
+      <div class="lookup-row" style="margin-top:0.6rem;">
+        <input type="text" id="ticket-input" placeholder="e.g. WWS-4471">
+        <button class="fx-btn" id="lookup-btn">Check status</button>
+      </div>
+      <div class="samples" style="margin-top:0.8rem;">
+        <span style="font-size:0.82rem; color:var(--muted);">Try a sample:</span>
+        <button class="sample-chip" data-sample="WWS-4471">WWS-4471</button>
+        <button class="sample-chip" data-sample="WWS-4452">WWS-4452</button>
+      </div>
+    </div>
+    <div id="result-root"></div>
+  </div>
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Only the two sample job references above return anything.</b> This isn't connected to your real Jobber account, so it can't look up an actual customer's job. A real version would use Jobber's own data, since you already have it.</div>
+      <div class="lim"><b>The four stages shown (dispatch confirmed, technician en route with an arrival window, on site, complete) are a typical well-service flow, not copied from your internal process.</b> Worth a short conversation about how your dispatchers actually phase a call before this gets built for real.</div>
+      <div class="lim"><b>This is a status text, not a dispatch system.</b> It doesn't decide which technician goes where, it just means the customer gets an arrival window automatically instead of waiting to see if anyone shows.</div>
+      <div class="lim"><b>This only shows status.</b> It doesn't change how a job gets scheduled, it just means "when will they get here" gets answered without a call.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p>Prepared by Shlok Sarnayak for Water Well Services. Your Jobber account and the absence of arrival-window notifications on your public contact flow verified directly today. Job data is a labeled sample, not connected to your real Jobber records.</p>
+</footer>
+<script>
+(function () {
+  var STAGE_NAMES = ["Dispatch confirmed", "Technician en route", "On site", "Complete"];
+
+  var JOBS = {
+    "WWS-4471": { job: "Well pump repair, low pressure", eta: "Arrival window: 1:00 PM to 3:00 PM", stage: 1, times: ["8:15 AM, confirmed", "12:40 PM, en route", null, null] },
+    "WWS-4452": { job: "Annual well check-up", eta: null, stage: 3, times: ["9:00 AM, confirmed", "9:50 AM, en route", "10:15 AM, arrived", "11:05 AM, complete"] }
+  };
+
+  var resultRoot = document.getElementById("result-root");
+  var ticketInput = document.getElementById("ticket-input");
+
+  function normalize(v) { return (v || "").trim().toUpperCase(); }
+
+  function lookup() {
+    var key = normalize(ticketInput.value);
+    if (!key) {
+      resultRoot.innerHTML = '<p class="error-box">Enter a job reference above, or try one of the samples.</p>';
+      return;
+    }
+    var job = JOBS[key];
+    if (!job) {
+      resultRoot.innerHTML = '<p class="error-box">No sample job matches "' + escapeHtml(ticketInput.value) + '". Try one of the two samples above, this demo only has data for those.</p>';
+      return;
+    }
+    renderJob(key, job);
+  }
+
+  function renderJob(key, job) {
+    var html = '<div class="result">';
+    html += '<div class="result-head"><h3>' + key + '</h3><span class="result-meta">' + job.job + '</span></div>';
+    if (job.eta) { html += '<div class="result-eta">' + job.eta + '</div>'; }
+    html += '<div>';
+    STAGE_NAMES.forEach(function (name, i) {
+      var cls = i < job.stage ? 'done' : (i === job.stage ? 'active' : 'pending');
+      var time = job.times[i];
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === 'pending' ? ' pending-text' : '') + '">' + name + '</div><div class="stage-time">' + (time ? time : (cls === 'active' ? 'In progress' : 'Not started')) + '</div></div></div>';
+    });
+    html += '</div></div>';
+    resultRoot.innerHTML = html;
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", lookup);
+  ticketInput.addEventListener("keydown", function (e) { if (e.key === "Enter") lookup(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".sample-chip"), function (b) {
+    b.addEventListener("click", function () { ticketInput.value = b.dataset.sample; lookup(); });
+  });
+
+  resultRoot.innerHTML = '<p class="error-box">Enter a job reference above, or try one of the samples.</p>';
+})();
+</script>
+</body>
+</html>
