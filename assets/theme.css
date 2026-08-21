@@ -380,6 +380,7 @@ h2.fx-h2{
   z-index:2;
 }
 .fx-footer p{max-width:1032px;margin:0 auto;}
+.fx-footer .fx-safety{margin-bottom:.45rem;font-family:var(--sans);font-size:.72rem;}
 .fx-footer a{color:var(--ink);}
 
 /* Harmonize page-local widgets that intentionally define their own classes. */
