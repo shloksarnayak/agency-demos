@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Support triage, working example for 512 Refrigeration Services</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .sec { display: flex; flex-direction: column; gap: 1.4rem; }
+  .sec-head { display: flex; flex-direction: column; gap: 0.55rem; }
+  .why { font-size: 0.87rem; color: var(--muted); line-height: 1.6; max-width: 82ch; border-left: 2px solid var(--rule); padding-left: 0.9rem; }
+  .why b { color: var(--ink-2); font-weight: 620; }
+
+  .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .stat { background: var(--surface); padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .stat-n { font-family: var(--serif); font-size: 1.7rem; font-variant-numeric: tabular-nums; line-height: 1; }
+  .stat-l { font-size: 0.78rem; color: var(--muted); line-height: 1.35; }
+
+  .queue { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.85rem; }
+  .tk { position: relative; text-align: left; font: inherit; color: var(--ink); background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--shadow-inset), var(--shadow-sm); padding: 1rem 1.15rem 1rem 1.3rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; transition: transform 0.15s ease; }
+  .tk:hover { transform: translateY(-2px); }
+  .tk::before { content: ""; position: absolute; inset: 0.6rem auto 0.6rem 0; width: 3px; border-radius: 3px; background: var(--sv); }
+  .tk[aria-selected="true"] { box-shadow: var(--shadow-inset), 0 0 0 1.5px var(--brand), var(--shadow-md); }
+  .tk-top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+  .tk-id { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+  .tk-age { font-family: var(--mono); font-size: 0.72rem; color: var(--sv); font-weight: 620; white-space: nowrap; }
+  .tk-cat { font-size: 0.87rem; line-height: 1.35; font-weight: 570; }
+  .tk-flag { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }
+  .tk-sev { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sv); }
+
+  .panel { display: none; flex-direction: column; gap: 1.5rem; }
+  .panel.on { display: flex; }
+  .routing { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  .badge { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.34rem 0.7rem; border-radius: 999px; white-space: nowrap; }
+  .badge.hold { color: var(--warn); background: var(--warn-bg); }
+  .badge.human { color: var(--hot); background: var(--hot-bg); }
+  .badge.auto { color: var(--good); background: var(--good-bg); }
+  .badge.rule { color: var(--muted); background: var(--surface-2); }
+
+  .cols { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+  @media (min-width: 860px) { .cols { grid-template-columns: 1.05fr 1fr; } }
+
+  .card { background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--shadow-inset), var(--shadow-sm); display: flex; flex-direction: column; overflow: hidden; }
+  .card-h { padding: 0.75rem 1.1rem; border-bottom: 1px solid var(--rule-soft); background: var(--surface-2); display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
+  .card-h .who { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .card-b { padding: 1.15rem; display: flex; flex-direction: column; gap: 0.85rem; }
+  .inbound { font-family: var(--serif); font-size: 0.97rem; line-height: 1.66; color: var(--ink-2); }
+  .inbound p { max-width: none; }
+  .inbound .subj { font-family: var(--sans); font-size: 0.85rem; font-weight: 640; color: var(--ink); margin-bottom: 0.2rem; }
+
+  .fields { display: flex; flex-direction: column; gap: 0; }
+  .fld { padding: 0.55rem 0; border-bottom: 1px dashed var(--rule-soft); }
+  .fld:last-child { border-bottom: 0; padding-bottom: 0; }
+  .fld:first-child { padding-top: 0; }
+  .fld dt { font-family: var(--mono); font-size: 0.63rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+  .fld dd { margin: 0; font-family: var(--mono); font-size: 0.79rem; line-height: 1.5; color: var(--ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+  .reply { white-space: pre-wrap; font-size: 0.93rem; line-height: 1.68; color: var(--ink-2); }
+  .ph { font-family: var(--mono); font-size: 0.85em; color: var(--brand); background: var(--brand-soft); border-bottom: 1px dotted var(--brand); padding: 0.05em 0.25em; border-radius: 2px; }
+
+  .rules { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .rl { background: var(--surface); padding: 1.2rem; display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
+  @media (min-width: 780px) { .rl { grid-template-columns: 2.2rem 1fr; column-gap: 0.9rem; } }
+  .rl-n { font-family: var(--serif); font-size: 0.95rem; color: var(--brand); font-weight: 600; padding-top: 0.12rem; }
+  .rl-body { display: flex; flex-direction: column; gap: 0.5rem; }
+  .rl-line { font-size: 0.9rem; line-height: 1.58; max-width: 80ch; }
+  .rl-line .tag { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 0.12rem; }
+  .rl-why { font-size: 0.85rem; color: var(--muted); line-height: 1.6; max-width: 80ch; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 82ch; }
+  .lim b { color: var(--ink); font-weight: 620; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Support-ticket triage</a> / 512 Refrigeration Services</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for 512 Refrigeration Services</span>
+  <h1 class="fx-h1">Protecting a 45-minute response time from a misdiagnosed first visit</h1>
+  <p class="fx-lede">Your own homepage carries a testimonial about arriving in 45 minutes when competitors quoted 24 to 48 hours, that speed claim is real and worth protecting. A separate review describes a first visit that got diagnosed over the phone, sent a tech out, and missed the actual problem, needing a second emergency call to find the real problem. Two sample tickets below show what a short structured intake before dispatch could catch.</p>
+  <p class="fx-lede" style="font-size:0.95rem; margin-top:0.6rem;">Prepared by Shlok Sarnayak for the 512 Refrigeration team. Nothing here is connected to your live systems.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice" style="flex-direction:column; align-items:flex-start; gap:0.6rem;">
+    <p><strong>One of the two tickets below is modeled on a real review, not a copy of it.</strong> The core of it, a phone-diagnosed visit that missed the actual problem, is grounded in what I read directly. The customer name, unit details, and job number are mine, invented so no real customer's details appear here. The second ticket is a routine, illustrative example, not tied to any specific review.</p>
+    <p>Anything in <span class="ph">[square brackets]</span> is a number or a decision I refused to invent.</p>
+  </div>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="fx-h2" style="margin-bottom:0;">The queue this morning</h2>
+      <p class="why">Sorted by how much is riding on getting the intake details right, not by arrival time.</p>
+    </div>
+
+    <div class="strip">
+      <div class="stat"><span class="stat-n" style="color:var(--hot)">1</span><span class="stat-l">Needs a full symptom/equipment intake before dispatch, held</span></div>
+      <div class="stat"><span class="stat-n" style="color:var(--good)">1</span><span class="stat-l">A routine request, safe for the system to answer alone</span></div>
+      <div class="stat"><span class="stat-n">45 min</span><span class="stat-l">Your own published response-time claim, this is what a repeat visit risks</span></div>
+    </div>
+
+    <div class="queue" role="tablist" aria-label="Sample tickets">
+      <button class="tk" role="tab" aria-selected="true" aria-controls="p1" id="t1" style="--sv:var(--hot)">
+        <span class="tk-top"><span class="tk-id">512-8817</span><span class="tk-age">Emergency</span></span>
+        <span class="tk-cat">Walk-in cooler not holding temp</span>
+        <span class="tk-flag">Vague symptom description, needs intake</span>
+        <span class="tk-sev">High, held for triage</span>
+      </button>
+      <button class="tk" role="tab" aria-selected="false" aria-controls="p2" id="t2" style="--sv:var(--good)">
+        <span class="tk-top"><span class="tk-id">512-8802</span><span class="tk-age">Routine</span></span>
+        <span class="tk-cat">Confirming a scheduled maintenance visit</span>
+        <span class="tk-flag">Routine question</span>
+        <span class="tk-sev">Low, safe to auto-send</span>
+      </button>
+    </div>
+
+    <div class="panel on" id="p1" role="tabpanel" aria-labelledby="t1">
+      <div class="routing">
+        <span class="badge hold">Held for structured intake</span>
+        <span class="badge rule">Rule 1 fired</span>
+        <span class="badge rule">Rule 2 fired</span>
+      </div>
+      <div class="cols">
+        <div class="card">
+          <div class="card-h"><h3>What arrived</h3><span class="who">Customer</span></div>
+          <div class="card-b">
+            <div class="inbound">
+              <div class="subj">Cooler's not keeping temp, need someone out</div>
+              <p>Hi, our walk-in cooler isn't holding temperature, it's been running warm since this morning. Can you get someone out today?</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>What the system pulled out</h3><span class="who">Extracted</span></div>
+          <div class="card-b">
+            <dl class="fields">
+              <div class="fld"><dt>Job reference</dt><dd>512-8817</dd></div>
+              <div class="fld"><dt>Equipment</dt><dd>Walk-in cooler, model not stated</dd></div>
+              <div class="fld"><dt>Symptom reported</dt><dd>Running warm, since this morning</dd></div>
+              <div class="fld"><dt>Missing before dispatch</dt><dd>No mention of compressor noise, frost buildup, door seal condition, or how warm, the details that separate a simple fix from a refrigerant issue</dd></div>
+              <div class="fld"><dt>Decision required</dt><dd>Yes, a phone diagnosis without these details risks sending a tech in with the wrong parts or missing the real cause</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Drafted intake reply, waiting for a person to send</h3><span class="who">Operator voice</span></div>
+        <div class="card-b">
+          <div class="reply">Hi <span class="ph">[first name]</span>,
+
+We can get someone out today. Before we dispatch, three quick questions so the tech shows up with the right parts the first time, for <span class="ph">[512-8817]</span>:
+
+1. Is the compressor running, or silent?
+2. Any frost or ice buildup inside the unit?
+3. Roughly what temperature is it holding at right now?
+
+Reply with what you can, and we'll have <span class="ph">[tech name]</span> there within <span class="ph">[response window]</span>.
+
+<span class="ph">[rep name]</span>
+512 Refrigeration Services</div>
+        </div>
+      </div>
+      <p class="why"><b>Why the system holds this instead of dispatching immediately.</b> A vague symptom on a refrigeration call is exactly what a real review describes going wrong here, a tech diagnosed a case like this over the phone, went out, and missed a freon leak, needing a second emergency visit to find it. Three questions up front catch that before a truck rolls, without slowing down the response time that's the whole selling point.</p>
+    </div>
+
+    <div class="panel" id="p2" role="tabpanel" aria-labelledby="t2">
+      <div class="routing">
+        <span class="badge auto">Safe to auto-send</span>
+        <span class="badge rule">Rule 3 fired</span>
+      </div>
+      <div class="cols">
+        <div class="card">
+          <div class="card-h"><h3>What arrived</h3><span class="who">Customer</span></div>
+          <div class="card-b">
+            <div class="inbound">
+              <div class="subj">Confirming our maintenance visit</div>
+              <p>Just confirming our planned maintenance visit, <span class="ph">[512-8802]</span>, is still on for this week.</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>What the system pulled out</h3><span class="who">Extracted</span></div>
+          <div class="card-b">
+            <dl class="fields">
+              <div class="fld"><dt>Job reference</dt><dd>512-8802</dd></div>
+              <div class="fld"><dt>What they're asking for</dt><dd>Confirmation of an already-scheduled maintenance visit</dd></div>
+              <div class="fld"><dt>Decision required</dt><dd>No, the appointment either exists on the schedule or it doesn't, a direct lookup</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Drafted reply, cleared to send automatically</h3><span class="who">Operator voice</span></div>
+        <div class="card-b">
+          <div class="reply">Hi <span class="ph">[first name]</span>,
+
+Confirmed, your planned maintenance visit for <span class="ph">[512-8802]</span> is scheduled for <span class="ph">[appointment date]</span>, <span class="ph">[time window]</span>.
+
+If anything's changed, just write back.
+
+512 Refrigeration Services</div>
+        </div>
+      </div>
+      <p class="why"><b>Why this is the one the system can send alone.</b> Confirming a scheduled date is a direct lookup, no equipment symptoms to gather, no diagnosis at stake. Keeping this one instant is what lets the intake step above stay a genuine safeguard instead of friction on every message.</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="fx-h2" style="margin-bottom:0;">The rules underneath</h2>
+      <p class="why">These are the part worth arguing with.</p>
+    </div>
+    <div class="rules">
+      <div class="rl">
+        <div class="rl-n">01</div>
+        <div class="rl-body">
+          <div class="rl-line"><span class="tag">When</span>An emergency message describes a symptom without the details that distinguish a simple fix from a refrigerant or compressor issue, compressor noise, frost buildup, seal condition, current temperature.</div>
+          <div class="rl-line"><span class="tag">Then</span>The system asks a short, fixed set of questions before dispatch is confirmed, rather than sending a tech out on a bare symptom.</div>
+          <div class="rl-why">The review this page is modeled on describes exactly this gap, a phone diagnosis without enough detail led to the wrong first visit and a second emergency call to actually find the freon leak. A short intake step catches that before a truck rolls, it doesn't ask the customer to diagnose it themselves.</div>
+        </div>
+      </div>
+      <div class="rl">
+        <div class="rl-n">02</div>
+        <div class="rl-body">
+          <div class="rl-line"><span class="tag">When</span>The intake answers point at something beyond a routine fix, refrigerant symptoms, an unusual noise pattern, anything a phone triage script isn't confident about.</div>
+          <div class="rl-line"><span class="tag">Then</span>The ticket still goes to a person to decide what to send the tech out with, the system gathers, it never diagnoses.</div>
+          <div class="rl-why">A wrong diagnosis costs more than the few minutes an intake question takes, it costs a second emergency visit and the customer's confidence in the response-time claim your marketing is built on.</div>
+        </div>
+      </div>
+      <div class="rl">
+        <div class="rl-n">03</div>
+        <div class="rl-body">
+          <div class="rl-line"><span class="tag">When</span>A request is a direct lookup, confirming a scheduled visit, with no symptom or diagnosis involved.</div>
+          <div class="rl-line"><span class="tag">Then</span>The system answers immediately and sends without waiting for a person.</div>
+          <div class="rl-why">Keeping routine confirmations instant is what makes the intake step above worth having, it only adds friction where friction actually protects the fix.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="fx-h2" style="margin-bottom:0;">What this demo can't do</h2>
+      <p class="why">The parts a proposal would normally leave out.</p>
+    </div>
+    <div class="limits">
+      <div class="lim"><b>This is a hypothesis worth testing, not a proven pattern.</b> The evidence here is one homepage testimonial about your speed and one separate review about a misdiagnosis, not a documented volume of missed calls. Worth confirming with your own team how often a first visit misses the real issue before building this for real.</div>
+      <div class="lim"><b>The integration is the product.</b> A real version needs to actually route the intake answers to whoever schedules dispatch, and ideally to the tech's ticket, not just collect them. Without that, this collapses into an extra email nobody reads before rolling a truck.</div>
+      <div class="lim"><b>This doesn't replace a tech's judgment on-site.</b> It only makes sure the tech shows up with more than a bare symptom description, the diagnosis itself still happens in person.</div>
+      <div class="lim"><b>This only routes and asks three questions, it never decides what's wrong on its own.</b> Keeping that with a person or the tech on-site is deliberate.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p>Prepared by Shlok Sarnayak for 512 Refrigeration Services. Your homepage speed testimonial and the separate review describing a misdiagnosed first visit verified directly today. Ticket data is a labeled sample modeled on that review, not connected to your real jobs.</p>
+</footer>
+<script>
+  (function () {
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.tk'));
+    var panels = tabs.map(function (t) {
+      return document.getElementById(t.getAttribute('aria-controls'));
+    });
+    function select(i) {
+      tabs.forEach(function (t, n) { t.setAttribute('aria-selected', n === i ? 'true' : 'false'); });
+      panels.forEach(function (p, n) { p.classList.toggle('on', n === i); });
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () { select(i); });
+      t.addEventListener('keydown', function (e) {
+        var next = null;
+        if (e.key === 'ArrowRight') next = (i + 1) % tabs.length;
+        if (e.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+        if (next !== null) { e.preventDefault(); select(next); tabs[next].focus(); }
+      });
+    });
+  })();
+</script>
+</body>
+</html>

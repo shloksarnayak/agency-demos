@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Job status lookup: working example for Central Title &amp; Escrow</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .lookup-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+  input[type="text"]:focus { outline: none; border-color: var(--brand); }
+  .samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.8rem; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.35rem 0.85rem; cursor: pointer; }
+  .sample-chip:hover { opacity: 0.85; }
+
+  .result { border-top: 1px solid var(--rule); padding-top: 1.3rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .result-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
+  .result-head h3 { margin: 0; font-size: 1.1rem; font-family: var(--serif); }
+  .result-meta { font-size: 0.85rem; color: var(--muted); }
+
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.6rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+
+  .error-box { font-size: 0.92rem; color: var(--muted); font-style: italic; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Order &amp; job status lookup</a> / Central Title &amp; Escrow</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Central Title &amp; Escrow</span>
+  <h1 class="fx-h1">A closing file status that doesn't wait for a phone call</h1>
+  <p class="fx-lede">You already have a mobile app and an online order portal, but neither shows a client where their closing file actually stands day to day. Two Redfin reviews, seven years apart, describe the same thing: a document error or delay only surfaces when the client calls in to ask. Here's what an automatic file-status update could look like, kept well clear of the title work itself.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> your site lists a branded mobile app and a title order portal, checked directly today, but neither shows an existing file's status or sends a proactive update when a document is ready for review. Two Redfin reviews, dated years apart, independently describe the same pattern: a client finding out about a closing disclosure error or a delay only by calling in, not from the business.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What I'd be straight with you about:</strong> your BBB record shows no complaints on file, and more recent reviews are positive, this isn't a trust problem. Two reviews years apart is a real, narrow pattern worth checking, not proof it happens often. A status update wouldn't have caught the underlying document errors themselves, it just means a delay or a document ready for review doesn't sit silent until someone calls to ask.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the two sample file references below aren't real closings. They show what typing a reference into a working version of this page would return, using stages a closing file typically goes through. A real build would connect to whatever your team already uses to track a file, staying well clear of the title examination itself.</p>
+  </div>
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Enter a file reference</div>
+      <div class="lookup-row" style="margin-top:0.6rem;">
+        <input type="text" id="ticket-input" placeholder="e.g. CTE-5512">
+        <button class="fx-btn" id="lookup-btn">Check status</button>
+      </div>
+      <div class="samples" style="margin-top:0.8rem;">
+        <span style="font-size:0.82rem; color:var(--muted);">Try a sample:</span>
+        <button class="sample-chip" data-sample="CTE-5512">CTE-5512</button>
+        <button class="sample-chip" data-sample="CTE-5498">CTE-5498</button>
+      </div>
+    </div>
+    <div id="result-root"></div>
+  </div>
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Only the two sample file references above return anything.</b> This isn't connected to your real closing files, so it can't look up an actual client's transaction. A real version would need a link to whatever your team already tracks a file in.</div>
+      <div class="lim"><b>The stages shown (order opened, title search, documents ready, closing scheduled) are a typical closing flow, not copied from your internal process.</b> Worth a short conversation about how your team actually phases a file before this gets built for real.</div>
+      <div class="lim"><b>This is a status check, not a document or title-review system.</b> It doesn't touch the title examination or closing disclosure itself, that stays entirely with your licensed staff. This only means a client can see where the file stands without calling.</div>
+      <div class="lim"><b>This only shows status.</b> It doesn't change how a closing gets processed, it just means a delay or a document ready for review doesn't sit silent until someone calls to ask.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p>Prepared by Shlok Sarnayak for Central Title &amp; Escrow. Your mobile app, order portal, and the absence of a file-status tracker verified directly today. File data is a labeled sample, not connected to your real closings.</p>
+</footer>
+<script>
+(function () {
+  var STAGE_NAMES = ["Order opened", "Title search", "Documents ready", "Closing scheduled"];
+
+  var FILES = {
+    "CTE-5512": { transaction: "Refinance, single-family", stage: 1, times: ["Aug 8, opened", "Aug 12, in progress", null, null] },
+    "CTE-5498": { transaction: "Purchase closing", stage: 3, times: ["Jul 28, opened", "Jul 31, complete", "Aug 4, ready", "Aug 9, scheduled"] }
+  };
+
+  var resultRoot = document.getElementById("result-root");
+  var ticketInput = document.getElementById("ticket-input");
+
+  function normalize(v) { return (v || "").trim().toUpperCase(); }
+
+  function lookup() {
+    var key = normalize(ticketInput.value);
+    if (!key) {
+      resultRoot.innerHTML = '<p class="error-box">Enter a file reference above, or try one of the samples.</p>';
+      return;
+    }
+    var file = FILES[key];
+    if (!file) {
+      resultRoot.innerHTML = '<p class="error-box">No sample file matches "' + escapeHtml(ticketInput.value) + '". Try one of the two samples above, this demo only has data for those.</p>';
+      return;
+    }
+    renderFile(key, file);
+  }
+
+  function renderFile(key, file) {
+    var html = '<div class="result">';
+    html += '<div class="result-head"><h3>' + key + '</h3><span class="result-meta">' + file.transaction + '</span></div>';
+    html += '<div>';
+    STAGE_NAMES.forEach(function (name, i) {
+      var cls = i < file.stage ? 'done' : (i === file.stage ? 'active' : 'pending');
+      var time = file.times[i];
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === 'pending' ? ' pending-text' : '') + '">' + name + '</div><div class="stage-time">' + (time ? time : (cls === 'active' ? 'In progress' : 'Not started')) + '</div></div></div>';
+    });
+    html += '</div></div>';
+    resultRoot.innerHTML = html;
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", lookup);
+  ticketInput.addEventListener("keydown", function (e) { if (e.key === "Enter") lookup(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".sample-chip"), function (b) {
+    b.addEventListener("click", function () { ticketInput.value = b.dataset.sample; lookup(); });
+  });
+
+  resultRoot.innerHTML = '<p class="error-box">Enter a file reference above, or try one of the samples.</p>';
+})();
+</script>
+</body>
+</html>

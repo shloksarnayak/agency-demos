@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Invoice &amp; payment status tracker template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+  input[type="text"]:focus { outline: none; border-color: var(--brand); }
+  .lookup-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.8rem; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.35rem 0.85rem; cursor: pointer; }
+  .sample-chip:hover { opacity: 0.85; }
+  .result { border-top: 1px solid var(--rule); padding-top: 1.3rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .result-head { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+  .result-head h3 { margin: 0; font-size: 1.1rem; font-family: var(--serif); }
+  .result-meta { font-size: 0.85rem; color: var(--muted); }
+  .inv-table { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .inv-row { background: var(--surface); padding: 0.9rem 1.1rem; display: grid; grid-template-columns: 1fr auto auto; gap: 1rem; align-items: center; }
+  .inv-branch { font-size: 0.78rem; color: var(--muted); }
+  .inv-amount { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .inv-status { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.3rem 0.65rem; border-radius: 999px; white-space: nowrap; }
+  .inv-status.paid { color: var(--good); background: var(--good-bg); }
+  .inv-status.outstanding { color: var(--warn); background: var(--warn-bg); }
+  .inv-status.overdue { color: var(--hot); background: var(--hot-bg); }
+  .error-box { font-size: 0.92rem; color: var(--muted); font-style: italic; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Invoice &amp; payment status tracker</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">One place to see who's paid, across every location</h1>
+  <p class="fx-lede">Many multi-location service businesses track invoices as loose files, split across a desktop, a cloud drive, and separate branch folders, with no single view of who owes what. This page uses fictional accounts to show what a pulled-together lookup looks like, for the owner or office staff, not the customer.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, it connects to wherever invoices actually live today, a folder structure, a spreadsheet, an accounting tool, and pulls them into one searchable view rather than replacing how invoices get created.</p></div>
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Look up a client account</div>
+      <div class="lookup-row" style="margin-top:0.6rem;">
+        <input type="text" id="ticket-input" placeholder="e.g. Riverside Plaza">
+        <button class="fx-btn" id="lookup-btn">Check status</button>
+      </div>
+      <div class="samples" style="margin-top:0.8rem;">
+        <span style="font-size:0.82rem; color:var(--muted);">Try a sample:</span>
+        <button class="sample-chip" data-sample="Riverside Plaza">Riverside Plaza</button>
+        <button class="sample-chip" data-sample="Coastal Offices">Coastal Offices</button>
+      </div>
+    </div>
+    <div id="result-root"></div>
+  </div>
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>Pulls from where invoices already live, doesn't replace it.</b> The generic flow here is a placeholder, a real build reads whatever the business already uses to generate an invoice, a folder, a spreadsheet, an accounting tool, and doesn't change that part.</div>
+      <div class="lim"><b>Status only, not a payment processor.</b> This shows what's outstanding, it doesn't collect a payment itself. Keeping the first version narrow is deliberate.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/amr-janitorial/">AMR Janitorial Services</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p>Prepared by Shlok Sarnayak. Fictional account data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  var ACCOUNTS = {
+    "RIVERSIDE PLAZA": {
+      client: "Riverside Plaza",
+      invoices: [
+        { branch: "Torrance branch", period: "July 2026", amount: "$1,240.00", status: "paid" },
+        { branch: "Torrance branch", period: "August 2026", amount: "$1,240.00", status: "outstanding" }
+      ]
+    },
+    "COASTAL OFFICES": {
+      client: "Coastal Offices",
+      invoices: [
+        { branch: "West LA branch", period: "June 2026", amount: "$860.00", status: "overdue" },
+        { branch: "West LA branch", period: "July 2026", amount: "$860.00", status: "outstanding" },
+        { branch: "Mid-LA branch", period: "July 2026", amount: "$410.00", status: "paid" }
+      ]
+    }
+  };
+  var resultRoot = document.getElementById("result-root");
+  var ticketInput = document.getElementById("ticket-input");
+  function normalize(v) { return (v || "").trim().toUpperCase(); }
+  function lookup() {
+    var key = normalize(ticketInput.value);
+    if (!key) { resultRoot.innerHTML = '<p class="error-box">Enter a client name above, or try one of the samples.</p>'; return; }
+    var account = ACCOUNTS[key];
+    if (!account) { resultRoot.innerHTML = '<p class="error-box">No sample account matches "' + escapeHtml(ticketInput.value) + '". Try one of the two samples above, this demo only has data for those.</p>'; return; }
+    render(account);
+  }
+  function render(account) {
+    var outstanding = account.invoices.filter(function (i) { return i.status !== "paid"; }).length;
+    var html = '<div class="result"><div class="result-head"><h3>' + account.client + '</h3><span class="result-meta">' + outstanding + ' invoice' + (outstanding === 1 ? '' : 's') + ' outstanding</span></div><div class="inv-table">';
+    account.invoices.forEach(function (inv) {
+      html += '<div class="inv-row"><div><div>' + inv.period + '</div><div class="inv-branch">' + inv.branch + '</div></div><div class="inv-amount">' + inv.amount + '</div><div class="inv-status ' + inv.status + '">' + inv.status + '</div></div>';
+    });
+    html += '</div></div>';
+    resultRoot.innerHTML = html;
+  }
+  function escapeHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  document.getElementById("lookup-btn").addEventListener("click", lookup);
+  ticketInput.addEventListener("keydown", function (e) { if (e.key === "Enter") lookup(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".sample-chip"), function (b) { b.addEventListener("click", function () { ticketInput.value = b.dataset.sample; lookup(); }); });
+  resultRoot.innerHTML = '<p class="error-box">Enter a client name above, or try one of the samples.</p>';
+})();
+</script>
+</body>
+</html>

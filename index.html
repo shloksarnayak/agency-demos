@@ -4,91 +4,150 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f8fc">
 <title>Working examples: Fixpoint Studio</title>
+<meta name="description" content="A curated library of practical, working automation prototypes from Fixpoint Studio.">
 <link rel="stylesheet" href="assets/theme.css">
 <style>
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.1rem; }
-  .tcard { display: flex; flex-direction: column; gap: 0.9rem; text-decoration: none; color: var(--ink); background: var(--surface-raised); border-radius: var(--radius-lg); box-shadow: var(--shadow-inset), var(--shadow-sm); padding: 1.6rem; transition: transform 0.15s ease, box-shadow 0.15s ease; }
-  .tcard:hover { transform: translateY(-3px); box-shadow: var(--shadow-inset), var(--shadow-lg); }
-  .tcard-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--brand-soft); color: var(--brand); display: flex; align-items: center; justify-content: center; font-size: 1.15rem; }
-  .tcard-title { font-weight: 650; font-size: 1.05rem; letter-spacing: -0.01em; }
-  .tcard-sub { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
-  .tcard-arrow { margin-top: auto; font-size: 0.85rem; color: var(--brand); font-weight: 600; display: flex; align-items: center; gap: 0.35rem; }
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
-  .stat { background: var(--surface); padding: 1.1rem 1.2rem; }
-  .stat-n { font-family: var(--serif); font-size: 1.7rem; font-weight: 600; color: var(--ink); }
-  .stat-l { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
+  .home-hero { position: relative; overflow: hidden; padding: clamp(4.5rem, 10vw, 8.5rem) var(--pad) clamp(4rem, 8vw, 7rem); border-bottom: 1px solid var(--rule); }
+  .home-hero::before { content: ""; position: absolute; width: 44rem; height: 44rem; right: -17rem; top: -25rem; border-radius: 50%; background: radial-gradient(circle, rgba(88, 83, 214, .16), rgba(88, 83, 214, 0) 68%); pointer-events: none; }
+  .hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(300px, .82fr); gap: clamp(3rem, 7vw, 6.5rem); align-items: center; max-width: 1180px; margin: 0 auto; }
+  .home-title { font-family: var(--serif); font-size: clamp(3.15rem, 7.3vw, 6.35rem); line-height: .94; letter-spacing: -.055em; font-weight: 580; margin: 0; max-width: 11ch; }
+  .home-title em { color: var(--brand); font-style: italic; font-weight: 520; }
+  .home-lede { margin: 1.65rem 0 0; color: var(--ink-2); font-size: clamp(1.08rem, 1.8vw, 1.28rem); line-height: 1.65; max-width: 58ch; }
+  .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem; margin-top: 2rem; }
+  .text-link { color: var(--ink-2); text-decoration: none; font-size: .92rem; font-weight: 650; padding: .75rem .4rem; }
+  .text-link:hover { color: var(--brand); }
+  .proof-line { display: flex; flex-wrap: wrap; gap: .85rem 1.35rem; margin-top: 2.25rem; color: var(--muted); font-size: .81rem; font-weight: 580; }
+  .proof-line span { display: inline-flex; align-items: center; gap: .5rem; }
+  .proof-line span::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--good); box-shadow: 0 0 0 4px var(--good-bg); }
+  .workflow-card { position: relative; border: 1px solid color-mix(in srgb, var(--rule) 75%, var(--brand) 25%); border-radius: 28px; padding: .7rem; background: color-mix(in srgb, var(--surface) 92%, transparent); box-shadow: 0 28px 70px rgba(37, 35, 87, .13), 0 2px 8px rgba(20, 20, 34, .05); transform: rotate(1.35deg); }
+  .workflow-card::before { content: ""; position: absolute; inset: 12% -8% -8% 12%; border: 1px solid var(--rule); border-radius: 28px; background: var(--surface-2); z-index: -1; transform: rotate(-4deg); }
+  .workflow-inner { border-radius: 21px; background: var(--surface-raised); overflow: hidden; box-shadow: var(--shadow-inset); }
+  .workflow-top { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.05rem; border-bottom: 1px solid var(--rule-soft); }
+  .window-dots { display: flex; gap: 5px; }
+  .window-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--rule); }
+  .sample-label { font-family: var(--mono); font-size: .62rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+  .workflow-body { padding: 1.4rem; }
+  .workflow-kicker { font-size: .7rem; color: var(--brand); font-weight: 750; text-transform: uppercase; letter-spacing: .09em; }
+  .workflow-title { font-family: var(--serif); font-size: 1.55rem; letter-spacing: -.025em; line-height: 1.12; margin-top: .45rem; }
+  .flow-list { display: grid; gap: .7rem; margin-top: 1.35rem; }
+  .flow-item { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: .75rem; padding: .8rem; border-radius: 12px; background: var(--surface-2); }
+  .flow-num { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: var(--surface); box-shadow: var(--shadow-inset); color: var(--brand); font-family: var(--mono); font-size: .7rem; font-weight: 700; }
+  .flow-copy b { display: block; font-size: .79rem; line-height: 1.3; }
+  .flow-copy span { display: block; color: var(--muted); font-size: .67rem; margin-top: .13rem; }
+  .flow-status { color: var(--good); background: var(--good-bg); border-radius: 999px; padding: .23rem .52rem; font-size: .61rem; font-weight: 750; }
+  .workflow-foot { display: flex; align-items: center; gap: .6rem; margin-top: 1rem; padding: .85rem .95rem; border-radius: 12px; background: var(--brand); color: var(--brand-ink); font-size: .74rem; font-weight: 650; }
+  .workflow-foot::before { content: "\2713"; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,.17); }
+  .home-main { max-width: 1180px; margin: 0 auto; padding: clamp(4rem, 8vw, 7rem) var(--pad); }
+  .intro-row { display: grid; grid-template-columns: 1fr minmax(260px, 390px); gap: 2rem; align-items: end; margin-bottom: 2.1rem; }
+  .section-eyebrow { color: var(--brand); font-family: var(--mono); font-size: .7rem; font-weight: 750; letter-spacing: .11em; text-transform: uppercase; }
+  .section-title { font-family: var(--serif); font-size: clamp(2.25rem, 4.5vw, 4rem); line-height: 1.02; letter-spacing: -.04em; font-weight: 580; margin: .65rem 0 0; max-width: 14ch; }
+  .section-note { color: var(--muted); font-size: .96rem; line-height: 1.65; margin: 0; max-width: 42ch; }
+  .library-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .demo-card { --card-accent: var(--brand); --card-soft: var(--brand-soft); position: relative; display: grid; grid-template-columns: 1fr 150px; min-height: 260px; gap: 1.4rem; overflow: hidden; text-decoration: none; color: var(--ink); background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 22px; padding: clamp(1.35rem, 3vw, 1.8rem); box-shadow: var(--shadow-sm); transition: transform .24s cubic-bezier(.2,.8,.2,1), border-color .24s ease, box-shadow .24s ease; }
+  .demo-card:hover { transform: translateY(-5px); border-color: color-mix(in srgb, var(--card-accent) 45%, var(--rule)); box-shadow: var(--shadow-lg); }
+  .demo-card:nth-child(2) { --card-accent: #b54b72; --card-soft: #f9eaf0; }
+  .demo-card:nth-child(3) { --card-accent: #b36a16; --card-soft: #fbf0df; }
+  .demo-card:nth-child(4) { --card-accent: #167864; --card-soft: #e5f4ef; }
+  .demo-card:nth-child(5) { --card-accent: #3459a8; --card-soft: #e9effb; }
+  .demo-card:nth-child(6) { --card-accent: #6e4ea1; --card-soft: #f0eafb; }
+  .card-copy { display: flex; flex-direction: column; min-width: 0; }
+  .card-num { color: var(--card-accent); font-family: var(--mono); font-size: .7rem; font-weight: 750; letter-spacing: .08em; }
+  .card-title { font-family: var(--serif); font-size: clamp(1.45rem, 2.5vw, 1.85rem); line-height: 1.08; letter-spacing: -.025em; margin-top: 1.05rem; }
+  .card-sub { color: var(--muted); font-size: .88rem; line-height: 1.55; margin-top: .75rem; }
+  .card-link { display: inline-flex; align-items: center; gap: .45rem; color: var(--card-accent); font-size: .78rem; font-weight: 750; margin-top: auto; padding-top: 1rem; }
+  .card-link::after { content: "\2192"; transition: transform .2s ease; }
+  .demo-card:hover .card-link::after { transform: translateX(4px); }
+  .mini-ui { align-self: center; display: grid; gap: .55rem; width: 150px; padding: .9rem; border-radius: 16px; background: var(--card-soft); transform: rotate(2.5deg); }
+  .mini-head { width: 64%; height: 7px; border-radius: 9px; background: var(--card-accent); opacity: .85; }
+  .mini-line { height: 5px; border-radius: 8px; background: color-mix(in srgb, var(--card-accent) 22%, transparent); }
+  .mini-line.short { width: 70%; }
+  .mini-choice { height: 27px; border-radius: 8px; background: var(--surface); box-shadow: var(--shadow-inset); }
+  .mini-choice.active { background: var(--card-accent); opacity: .86; }
+  .mini-stars { color: var(--card-accent); font-size: .7rem; letter-spacing: .08em; }
+  .mini-price { color: var(--card-accent); font-family: var(--serif); font-size: 1.55rem; line-height: 1; }
+  .mini-track { height: 4px; border-radius: 8px; background: color-mix(in srgb, var(--card-accent) 20%, transparent); overflow: hidden; }
+  .mini-track::after { content: ""; display: block; width: 68%; height: 100%; background: var(--card-accent); }
+  .principles { margin-top: clamp(4rem, 8vw, 7rem); padding: clamp(2rem, 5vw, 3.5rem); border: 1px solid rgba(255,255,255,.1); border-radius: 28px; background: #171725; color: #f7f8fc; box-shadow: 0 24px 60px rgba(11,11,20,.18); }
+  .principles-head { display: flex; justify-content: space-between; gap: 2rem; align-items: end; padding-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,.13); }
+  .principles .section-eyebrow { color: #b7b9ff; }
+  .principles h2 { font-family: var(--serif); font-size: clamp(2rem, 4vw, 3.45rem); line-height: 1.03; letter-spacing: -.035em; font-weight: 550; margin: .6rem 0 0; max-width: 16ch; }
+  .principles-head p { color: rgba(255,255,255,.62); max-width: 36ch; font-size: .91rem; line-height: 1.6; margin: 0; }
+  .principle-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .principle { padding: 2rem 1.5rem 0 0; }
+  .principle + .principle { border-left: 1px solid rgba(255,255,255,.13); padding-left: 1.5rem; }
+  .principle b { display: block; font-size: .9rem; color: #fff; }
+  .principle p { color: rgba(255,255,255,.57); font-size: .81rem; line-height: 1.6; margin: .5rem 0 0; }
+  .home-main > .fx-notice { margin-top: 1.2rem; }
+  @media (max-width: 850px) {
+    .hero-grid, .intro-row { grid-template-columns: 1fr; }
+    .workflow-card { max-width: 470px; margin: .5rem auto 0; transform: none; }
+    .library-grid { grid-template-columns: 1fr; }
+    .principles-head { display: block; }
+    .principles-head p { margin-top: 1rem; }
+  }
+  @media (max-width: 560px) {
+    .home-hero { padding-top: 3.7rem; }
+    .home-title { font-size: clamp(3rem, 15vw, 4.25rem); }
+    .demo-card { grid-template-columns: 1fr 100px; min-height: 240px; }
+    .mini-ui { width: 115px; padding: .7rem; }
+    .principle-grid { grid-template-columns: 1fr; }
+    .principle { padding: 1.35rem 0; }
+    .principle + .principle { border-left: 0; border-top: 1px solid rgba(255,255,255,.13); padding-left: 0; }
+  }
 </style>
 </head>
 <body>
-
 <nav class="fx-nav">
   <div class="fx-nav-row">
-    <a class="fx-brand" href="index.html">
-      <span class="fx-mark">F</span>
-      <span class="fx-brand-name">Fixpoint Studio</span>
-    </a>
-    <div class="fx-nav-links">
-      <a href="#library">Template library</a>
-    </div>
+    <a class="fx-brand" href="index.html" aria-label="Fixpoint Studio home"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <div class="fx-nav-links"><a href="#library">Examples</a><a href="#approach">Approach</a><a class="fx-nav-cta" href="#library">Explore the work <span aria-hidden="true">&#8595;</span></a></div>
   </div>
 </nav>
-
-<header class="fx-hero">
-  <span class="fx-kicker">Working examples</span>
-  <h1 class="fx-h1">Small, real automations, built before you say yes</h1>
-  <p class="fx-lede">Six templates, each solving one recurring problem, not built around one company. Every template also has a version built for a real business, using their real data, so you can see exactly how it holds up in practice.</p>
-</header>
-
-<main class="fx-main">
-  <div class="fx-notice"><p><strong>Every prototype here is illustrative</strong>, using sample or publicly available data only, and is not affiliated with or endorsed by any business referenced.</p></div>
-
-  <div class="stats">
-    <div class="stat"><div class="stat-n">6</div><div class="stat-l">Working templates</div></div>
-    <div class="stat"><div class="stat-n">6</div><div class="stat-l">Real-business examples</div></div>
-    <div class="stat"><div class="stat-n">0</div><div class="stat-l">Invented facts about a real business</div></div>
+<header class="home-hero">
+  <div class="hero-grid">
+    <div>
+      <h1 class="home-title">See the work <em>before</em> you say yes.</h1>
+      <p class="home-lede">A focused library of small, useful automations, each built around one recurring business problem and made tangible enough to try.</p>
+      <div class="hero-actions"><a class="fx-btn fx-btn-link" href="#library">Browse six working demos <span aria-hidden="true">&#8595;</span></a><a class="text-link" href="#approach">How they’re built</a></div>
+      <div class="proof-line" aria-label="Library highlights"><span>Interactive prototypes</span><span>Real-business examples</span><span>Clearly sourced data</span></div>
+    </div>
+    <div class="workflow-card" aria-label="Sample workflow preview">
+      <div class="workflow-inner">
+        <div class="workflow-top"><div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div><span class="sample-label">Sample workflow</span></div>
+        <div class="workflow-body">
+          <div class="workflow-kicker">A useful outcome, fast</div><div class="workflow-title">From a recurring task to a working tool.</div>
+          <div class="flow-list">
+            <div class="flow-item"><span class="flow-num">01</span><span class="flow-copy"><b>Find the friction</b><span>One clear, repeatable problem</span></span><span class="flow-status">Done</span></div>
+            <div class="flow-item"><span class="flow-num">02</span><span class="flow-copy"><b>Build the smallest solution</b><span>Useful before it gets complicated</span></span><span class="flow-status">Done</span></div>
+            <div class="flow-item"><span class="flow-num">03</span><span class="flow-copy"><b>Put it in your hands</b><span>Click through the real interaction</span></span><span class="flow-status">Live</span></div>
+          </div>
+          <div class="workflow-foot">Ready to explore, no signup required</div>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <section id="library">
-    <h2 class="fx-h2">Template library</h2>
-    <div class="grid">
-      <a class="tcard" href="product-finder-quiz/">
-        <span class="tcard-icon">◈</span>
-        <div><div class="tcard-title">Product-finder quiz</div><div class="tcard-sub">A few quick questions, answered against a retailer's own published guides, ending in one real in-stock recommendation.</div></div>
-        <span class="tcard-arrow">View template →</span>
-      </a>
-      <a class="tcard" href="support-ticket-triage/">
-        <span class="tcard-icon">◇</span>
-        <div><div class="tcard-title">Support-ticket triage</div><div class="tcard-sub">Sample tickets sorted by urgency, with drafted replies and a clock deciding what needs a human.</div></div>
-        <span class="tcard-arrow">View template →</span>
-      </a>
-      <a class="tcard" href="instant-quote-calculator/">
-        <span class="tcard-icon">◆</span>
-        <div><div class="tcard-title">Instant quote calculator</div><div class="tcard-sub">Turns a business's own published pricing and travel-zone table into a live, self-serve quote.</div></div>
-        <span class="tcard-arrow">View template →</span>
-      </a>
-      <a class="tcard" href="review-showcase-widget/">
-        <span class="tcard-icon">★</span>
-        <div><div class="tcard-title">Review showcase widget</div><div class="tcard-sub">Pulls scattered third-party praise into one filterable display on a business's own site.</div></div>
-        <span class="tcard-arrow">View template →</span>
-      </a>
-      <a class="tcard" href="appointment-request-widget/">
-        <span class="tcard-icon">◐</span>
-        <div><div class="tcard-title">Appointment request widget</div><div class="tcard-sub">Catches the after-hours visitor comparing options online, before they book with a competitor instead.</div></div>
-        <span class="tcard-arrow">View template →</span>
-      </a>
-      <a class="tcard" href="order-status-lookup/">
-        <span class="tcard-icon">◎</span>
-        <div><div class="tcard-title">Order &amp; job status lookup</div><div class="tcard-sub">A self-serve status check for a repair, order, or build, so customers stop having to call to find out where things stand.</div></div>
-        <span class="tcard-arrow">View template →</span>
-      </a>
+</header>
+<main class="home-main">
+  <section id="library" aria-labelledby="library-title">
+    <div class="intro-row"><div><div class="section-eyebrow">The prototype library</div><h2 class="section-title" id="library-title">Seven practical ideas, ready to try.</h2></div><p class="section-note">Each template solves one specific problem. Open any card to use the prototype, understand its limits, and see a version grounded in a real business.</p></div>
+    <div class="library-grid">
+      <a class="demo-card" href="product-finder-quiz/"><span class="card-copy"><span class="card-num">01 / DISCOVERY</span><span class="card-title">Product-finder quiz</span><span class="card-sub">Turn a dense buying guide into a few friendly questions and one grounded recommendation.</span><span class="card-link">Try the prototype</span></span><span class="mini-ui" aria-hidden="true"><i class="mini-head"></i><i class="mini-line"></i><i class="mini-line short"></i><i class="mini-choice active"></i><i class="mini-choice"></i></span></a>
+      <a class="demo-card" href="support-ticket-triage/"><span class="card-copy"><span class="card-num">02 / SUPPORT</span><span class="card-title">Support-ticket triage</span><span class="card-sub">Sort incoming requests by urgency, draft helpful replies, and surface what needs a human.</span><span class="card-link">Try the prototype</span></span><span class="mini-ui" aria-hidden="true"><i class="mini-head"></i><i class="mini-choice active"></i><i class="mini-choice"></i><i class="mini-choice"></i><i class="mini-line short"></i></span></a>
+      <a class="demo-card" href="instant-quote-calculator/"><span class="card-copy"><span class="card-num">03 / SALES</span><span class="card-title">Instant quote calculator</span><span class="card-sub">Combine published rates and travel zones into a clear, self-serve estimate in seconds.</span><span class="card-link">Try the prototype</span></span><span class="mini-ui" aria-hidden="true"><i class="mini-head"></i><span class="mini-price">$145</span><i class="mini-line"></i><i class="mini-line short"></i><i class="mini-choice active"></i></span></a>
+      <a class="demo-card" href="review-showcase-widget/"><span class="card-copy"><span class="card-num">04 / TRUST</span><span class="card-title">Review showcase</span><span class="card-sub">Bring scattered third-party praise together in one focused, filterable display.</span><span class="card-link">Try the prototype</span></span><span class="mini-ui" aria-hidden="true"><span class="mini-stars">&#9733; &#9733; &#9733; &#9733; &#9733;</span><i class="mini-line"></i><i class="mini-line"></i><i class="mini-line short"></i><i class="mini-choice"></i></span></a>
+      <a class="demo-card" href="appointment-request-widget/"><span class="card-copy"><span class="card-num">05 / BOOKING</span><span class="card-title">Appointment request</span><span class="card-sub">Capture the after-hours visitor before they leave to compare another option.</span><span class="card-link">Try the prototype</span></span><span class="mini-ui" aria-hidden="true"><i class="mini-head"></i><i class="mini-choice"></i><i class="mini-choice active"></i><i class="mini-choice"></i><i class="mini-line short"></i></span></a>
+      <a class="demo-card" href="order-status-lookup/"><span class="card-copy"><span class="card-num">06 / OPERATIONS</span><span class="card-title">Order status lookup</span><span class="card-sub">Give customers a simple status check, so the team spends less time answering “where is it?”</span><span class="card-link">Try the prototype</span></span><span class="mini-ui" aria-hidden="true"><i class="mini-head"></i><i class="mini-track"></i><i class="mini-choice"></i><i class="mini-line"></i><i class="mini-line short"></i></span></a>
+      <a class="demo-card" href="invoice-status-tracker/"><span class="card-copy"><span class="card-num">07 / FINANCE</span><span class="card-title">Invoice &amp; payment tracker</span><span class="card-sub">One searchable view of who's paid across every location, instead of scattered files and a guess.</span><span class="card-link">Try the prototype</span></span><span class="mini-ui" aria-hidden="true"><i class="mini-head"></i><i class="mini-choice active"></i><i class="mini-choice"></i><i class="mini-line"></i><i class="mini-line short"></i></span></a>
     </div>
   </section>
+  <section class="principles" id="approach" aria-labelledby="approach-title">
+    <div class="principles-head"><div><div class="section-eyebrow">The standard behind the work</div><h2 id="approach-title">Credibility comes from being concrete.</h2></div><p>Every prototype is intentionally small, honest about its limits, and designed around information the business already owns or publishes.</p></div>
+    <div class="principle-grid"><div class="principle"><b>Built to be tried</b><p>Working interactions communicate the idea faster than a long proposal ever could.</p></div><div class="principle"><b>Clear about the source</b><p>Sample data stays labeled. Real examples use public information and make the boundary visible.</p></div><div class="principle"><b>Focused on one outcome</b><p>Each tool earns its place by removing one piece of friction for a customer or a team.</p></div></div>
+  </section>
+  <div class="fx-notice" role="note"><p><strong>A note on the examples:</strong> Every prototype is illustrative, uses sample or publicly available data only, and is not affiliated with or endorsed by any business referenced.</p></div>
 </main>
-
-<footer class="fx-footer">
-  <p>Fixpoint Studio, prepared by Shlok Sarnayak. The library grows over time, even for businesses that never wrote back.</p>
-</footer>
-
+<footer class="fx-footer fx-footer-home"><div><a class="fx-brand" href="index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a><p>Small automations made tangible.</p></div><p>Prepared by Shlok Sarnayak · A growing library of working ideas.</p></footer>
 </body>
 </html>
