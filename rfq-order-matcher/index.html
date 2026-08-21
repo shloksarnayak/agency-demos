@@ -24,7 +24,7 @@
   .rfq-mfr { color: var(--muted); font-size: 0.82rem; margin-left: 0.4rem; }
   .badge { font-family: var(--mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.32rem 0.62rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
   .badge.exact, .badge.high { color: var(--good); background: var(--good-bg); }
-  .badge.review { color: var(--warn); background: var(--warn-bg); }
+  .badge.review, .badge.noprice { color: var(--warn); background: var(--warn-bg); }
   .badge.notfound { color: var(--hot); background: var(--hot-bg); }
   .badge.confirmed { color: var(--brand); background: var(--brand-soft); }
   .rfq-side { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; min-width: 6.5rem; }
@@ -133,9 +133,9 @@
 
   function preprocess(s) {
     var t = (s || "").toLowerCase();
-    t = t.replace(/["'()]/g, " ").replace(/[,;:]/g, " ");
     UNIT_EXPAND.forEach(function (pair) { t = t.replace(pair[0], pair[1]); });
-    t = t.replace(/(?<!\d)[-/](?!\d)/g, " ").replace(/(?<=\D)[-/]/g, " ").replace(/[-/](?=\D)/g, " ");
+    t = t.replace(/[-"'()]/g, " ").replace(/[,;:]/g, " ");
+    t = t.replace(/(?<!\d)\/|\/(?!\d)/g, " ");
     t = t.replace(/[^a-z0-9./ ]/g, " ");
     return t;
   }
@@ -145,6 +145,13 @@
       .map(function (t) { return (t.length > 3 && t.slice(-1) === "s" && t.slice(-2) !== "ss") ? t.slice(0, -1) : t; });
   }
   function normCode(s) { return (s || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+  function extractCodeCandidates(rawText) {
+    var matches = (rawText || "").match(/[A-Za-z0-9][A-Za-z0-9/-]{1,}/g) || [];
+    return matches.filter(function (t) {
+      var alnum = t.replace(/[^A-Za-z0-9]/g, "");
+      return /[0-9]/.test(alnum) && alnum.length >= 3;
+    });
+  }
   function levenshtein(a, b) {
     var m = a.length, n = b.length;
     if (m === 0) return n; if (n === 0) return m;
@@ -167,16 +174,17 @@
   });
   var N = CATALOG_PREP.length;
   function idf(t) { return Math.log(1 + N / (DF[t] || 1)); }
+  function idf2(t) { var v = idf(t); return v * v; }
   CATALOG_PREP.forEach(function (entry) {
     var set = {}; entry.tokens.forEach(function (t) { set[t] = 1; });
     entry.tokenSet = set;
-    var sum = 0; Object.keys(set).forEach(function (t) { sum += idf(t) * idf(t); });
+    var sum = 0; Object.keys(set).forEach(function (t) { sum += idf2(t); });
     entry.norm = Math.sqrt(sum) || 1;
   });
   function cosine(qTokens, entry) {
     var dot = 0;
-    qTokens.forEach(function (t) { if (entry.tokenSet[t]) dot += idf(t) * idf(t); });
-    var qSum = 0; qTokens.forEach(function (t) { qSum += idf(t) * idf(t); });
+    qTokens.forEach(function (t) { if (entry.tokenSet[t]) dot += idf2(t); });
+    var qSum = 0; qTokens.forEach(function (t) { qSum += idf2(t); });
     var qNorm = Math.sqrt(qSum) || 1;
     return dot / (qNorm * entry.norm);
   }
@@ -184,10 +192,10 @@
 
   function scoreLine(queryText) {
     var qTokens = uniq(tokenize(queryText));
-    var codeTokens = qTokens.filter(function (t) { return /[0-9]/.test(t) && t.replace(/[^a-z0-9]/gi, "").length >= 3; });
+    var codeCandidates = extractCodeCandidates(queryText);
     var scored = CATALOG_PREP.map(function (entry) {
       var codeBonus = 0;
-      codeTokens.forEach(function (ct) {
+      codeCandidates.forEach(function (ct) {
         var nc = normCode(ct);
         if (nc.length < 3) return;
         var d = levenshtein(nc, entry.normSku);
@@ -229,12 +237,10 @@
   var resultRoot = document.getElementById("result-root");
   var lineState = [];
 
-  function badgeFor(tier, hasPrice, isManualPick) {
-    if (isManualPick) return { cls: "confirmed", label: "Confirmed by you" };
+  function badgeFor(tier, hasPrice) {
+    if (!hasPrice) return { cls: "noprice", label: "Matched, no price" };
     if (tier === "EXACT") return { cls: "exact", label: "Exact match" };
-    if (tier === "HIGH") return hasPrice ? { cls: "high", label: "Likely match" } : { cls: "noprice", label: "Matched, no price" };
-    if (tier === "AMBIGUOUS") return { cls: "review", label: "Needs a quick check" };
-    return { cls: "notfound", label: "Not in this catalog" };
+    return { cls: "high", label: "Likely match" };
   }
 
   function decide(i, decision) { lineState[i].decision = decision; render(); }
@@ -242,41 +248,45 @@
   function rowHtml(line, i) {
     var st = lineState[i];
     var tier = st.tier;
+    var isFlagged = st.decision && st.decision.type === "flag";
+    var isAccepted = st.decision && st.decision.type === "accept";
     var html = '<div class="rfq-row">';
     html += '<div class="rfq-row-top"><div class="rfq-num">' + (i + 1) + '.</div><div><div class="rfq-raw">' + escapeHtml(line.raw) + '</div>';
 
-    if (st.decision && st.decision.type === "accept") {
+    if (isFlagged) {
+      html += '<div class="rfq-match"><span class="badge confirmed">Flagged by you</span> Sent to a person to source or confirm, not counted in the total.</div>';
+      html += '<div class="rfq-override"><button onclick="__rfq.reopen(' + i + ')">Not flagged after all? Re-open this line</button></div>';
+    } else if (isAccepted) {
       var it = st.decision.item;
       var wasManualPick = tier === "AMBIGUOUS" || tier === "NO_MATCH";
-      var b = badgeFor(tier, it.price !== null, wasManualPick);
+      var b = wasManualPick ? { cls: "confirmed", label: "Confirmed by you" } : badgeFor(tier, it.price !== null);
       html += '<div class="rfq-match"><span class="badge ' + b.cls + '">' + b.label + '</span> <span class="name">' + escapeHtml(it.desc) + '</span><span class="rfq-sku">' + escapeHtml(it.sku) + '</span><span class="rfq-mfr">' + escapeHtml(it.mfr) + '</span></div>';
       html += '<div class="rfq-override"><button onclick="__rfq.flag(' + i + ')">Not right? Flag this line for a person instead</button></div>';
     } else if (tier === "AMBIGUOUS") {
-      var b2 = badgeFor(tier, true);
-      html += '<div class="rfq-match"><span class="badge ' + b2.cls + '">' + b2.label + '</span> ' + st.candidates.length + ' catalog items are close enough that this needs a person to pick.</div>';
+      var promptText = st.candidates.length > 1
+        ? st.candidates.length + ' catalog items are close enough that this needs a person to pick.'
+        : 'Only a weak match, worth a person confirming before this is used.';
+      html += '<div class="rfq-match"><span class="badge review">Needs a quick check</span> ' + promptText + '</div>';
       html += '<div class="rfq-candidates">';
       st.candidates.forEach(function (c, ci) {
         html += '<button class="rfq-cand" onclick="__rfq.pick(' + i + ',' + ci + ')"><span><span class="cn">' + escapeHtml(c.item.sku) + '</span> ' + escapeHtml(c.item.desc) + '</span><span class="cp">' + money(c.item.price) + ' / ' + c.item.unit + '</span></button>';
       });
       html += '</div>';
       html += '<button class="rfq-flag-btn" onclick="__rfq.flag(' + i + ')">None of these, flag for a person to source</button>';
-    } else if (tier === "NO_MATCH") {
-      var b3 = badgeFor(tier, false);
-      html += '<div class="rfq-match"><span class="badge ' + b3.cls + '">' + b3.label + '</span> Nothing in this catalog scores as a plausible match.</div>';
+    } else {
+      html += '<div class="rfq-match"><span class="badge notfound">Not in this catalog</span> Nothing in this catalog scores as a plausible match.</div>';
       html += '<button class="rfq-flag-btn" onclick="__rfq.flag(' + i + ')">Acknowledge, source this separately</button>';
     }
 
     html += '</div><div class="rfq-side">';
-    if (st.decision && st.decision.type === "accept") {
+    if (isAccepted) {
       var it2 = st.decision.item;
       html += '<div class="rfq-price">' + money(it2.price) + ' / ' + it2.unit + '</div>';
-      html += '<div class="rfq-qty">qty ' + line.qty + '</div>';
       html += '<div class="rfq-price">' + money(it2.price * line.qty) + '</div>';
-    } else if (st.decision && st.decision.type === "flag") {
-      html += '<div class="rfq-price muted">flagged</div><div class="rfq-qty">qty ' + line.qty + '</div>';
     } else {
-      html += '<div class="rfq-price muted">pending</div><div class="rfq-qty">qty ' + line.qty + '</div>';
+      html += '<div class="rfq-price muted">' + (isFlagged ? 'flagged' : 'pending') + '</div>';
     }
+    html += '<div class="rfq-qty">qty ' + line.qty + '</div>';
     html += '</div></div></div>';
     return html;
   }
@@ -290,26 +300,25 @@
     lineState.forEach(function (st, i) { html += rowHtml(st.line, i); });
     html += '</div>';
 
-    var subtotal = 0, autoCount = 0, flaggedOrReviewCount = 0, pendingCount = 0;
+    var subtotal = 0, autoCount = 0, confirmedCount = 0, flaggedCount = 0, pendingCount = 0;
     lineState.forEach(function (st) {
       if (st.decision && st.decision.type === "accept") {
-        if (st.tier === "EXACT" || st.tier === "HIGH") autoCount++;
+        if (st.tier === "EXACT" || st.tier === "HIGH") autoCount++; else confirmedCount++;
         subtotal += st.decision.item.price * st.line.qty;
       } else if (st.decision && st.decision.type === "flag") {
-        flaggedOrReviewCount++;
+        flaggedCount++;
       } else {
         pendingCount++;
       }
     });
 
-    var allResolved = pendingCount === 0;
     html += '<div class="rfq-approve-bar">';
-    html += '<div class="rfq-summary-stats"><span><b>' + autoCount + '</b> auto-matched</span><span><b>' + flaggedOrReviewCount + '</b> flagged for a person</span>' + (pendingCount ? '<span><b>' + pendingCount + '</b> still need a decision</span>' : '') + '</div>';
+    html += '<div class="rfq-summary-stats"><span><b>' + autoCount + '</b> auto-matched</span><span><b>' + confirmedCount + '</b> confirmed by you</span><span><b>' + flaggedCount + '</b> flagged for a person</span>' + (pendingCount ? '<span><b>' + pendingCount + '</b> still need a decision</span>' : '') + '</div>';
     html += '<div class="rfq-approve-row"><span class="rfq-total-amt">' + money(subtotal) + '</span><span style="color:var(--muted); font-size:0.85rem;">running subtotal, resolved lines only</span></div>';
     if (window.__rfq_done) {
       html += '<div class="rfq-done"><b>Marked ready.</b><span>In a real build, this hands staff a clean, confirmed list to key into their order system. Nothing sent, nothing ordered, nothing decided without a person.</span><span><button class="fx-btn-ghost" onclick="__rfq.reset()" style="margin-top:0.4rem;">Start over</button></span></div>';
     } else {
-      html += '<div><button class="fx-btn" id="approve-btn" ' + (allResolved ? '' : 'disabled') + ' onclick="__rfq.approve()">Approve draft order' + (allResolved ? '' : ' (' + pendingCount + ' line' + (pendingCount === 1 ? '' : 's') + ' still need a decision)') + '</button></div>';
+      html += '<div><button class="fx-btn" id="approve-btn" ' + (pendingCount ? 'disabled' : '') + ' onclick="__rfq.approve()">Approve draft order' + (pendingCount ? ' (' + pendingCount + ' line' + (pendingCount === 1 ? '' : 's') + ' still need a decision)' : '') + '</button></div>';
     }
     html += '</div>';
     resultRoot.innerHTML = html;
@@ -330,8 +339,13 @@
   window.__rfq = {
     pick: function (i, ci) { decide(i, { type: "accept", item: lineState[i].candidates[ci].item }); },
     flag: function (i) { decide(i, { type: "flag" }); },
+    reopen: function (i) {
+      var st = lineState[i];
+      if (st.tier === "EXACT" || st.tier === "HIGH") decide(i, { type: "accept", item: st.candidates[0].item });
+      else decide(i, null);
+    },
     approve: function () { window.__rfq_done = true; render(); },
-    reset: function () { window.__rfq_done = false; runMatch(textarea.value); }
+    reset: function () { runMatch(textarea.value); }
   };
 
   document.getElementById("match-btn").addEventListener("click", function () { runMatch(textarea.value); });

@@ -11,7 +11,6 @@
   .rfq-textarea:focus { outline: none; border-color: var(--brand); }
   .rfq-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; margin-top: 0.9rem; }
   .rfq-samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.7rem; }
-  .rfq-summary { margin-top: 1.6rem; padding-top: 1.3rem; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem; }
   .rfq-summary-stats { display: flex; gap: 1.4rem; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); }
   .rfq-summary-stats b { color: var(--ink); font-weight: 660; }
   .rfq-table { display: flex; flex-direction: column; gap: 10px; margin-top: 1.5rem; }
@@ -27,9 +26,8 @@
   .rfq-mfr { color: var(--muted); font-size: 0.82rem; margin-left: 0.4rem; }
   .badge { font-family: var(--mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.32rem 0.62rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
   .badge.exact, .badge.high { color: var(--good); background: var(--good-bg); }
-  .badge.review { color: var(--warn); background: var(--warn-bg); }
+  .badge.review, .badge.noprice { color: var(--warn); background: var(--warn-bg); }
   .badge.notfound { color: var(--hot); background: var(--hot-bg); }
-  .badge.noprice { color: var(--warn); background: var(--warn-bg); }
   .badge.confirmed { color: var(--brand); background: var(--brand-soft); }
   .rfq-side { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; min-width: 6.5rem; }
   .rfq-price { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 0.92rem; text-align: right; }
@@ -71,7 +69,7 @@
 </header>
 <main class="fx-main">
   <div class="fx-notice">
-    <p><strong>What's real:</strong> every item this page can match against, its SKU, manufacturer, description, and price, was pulled directly from dale-electric.com's public product search, checked directly today. It's a hand-picked slice across your receptacles, conduit, wire nuts, breakers, junction boxes, cable ties, exit signs, load centers, and disconnects, about 40 SKUs, not your full live catalog of roughly 20,000 in-stock items, and not a live feed into your system, a snapshot taken for this demo.</p>
+    <p><strong>What's real:</strong> every item this page can match against, its SKU, manufacturer, description, and price, was pulled directly from dale-electric.com's public product search and re-checked against the live site before publishing. It's a hand-picked slice across your receptacles, conduit, wire nuts, breakers, junction boxes, cable ties, exit signs, load centers, and disconnects, 41 SKUs, not your full live catalog of roughly 20,000 in-stock items, and not a live feed into your system, a snapshot taken for this demo.</p>
   </div>
   <div class="fx-notice">
     <p><strong>What's illustrative:</strong> the purchase order below is a composite example I wrote, not a real customer's order. "Northway Facilities Group" is not an actual Dale Electric account. It's built to show the patterns that actually show up in this kind of order: a buyer's own part numbers instead of yours, a typo'd SKU, a vague trade description with no code at all, two catalog items that look interchangeable until you check the price, and one item you don't carry at all.</p>
@@ -82,7 +80,7 @@
       <textarea class="rfq-textarea" id="order-input" spellcheck="false"></textarea>
       <div class="rfq-actions">
         <button class="fx-btn" id="match-btn">Match against the catalog</button>
-        <span style="font-size:0.82rem; color:var(--muted);">39 real SKUs loaded, see the list below</span>
+        <span id="catalog-count" style="font-size:0.82rem; color:var(--muted);"></span>
       </div>
       <div class="rfq-samples">
         <span style="font-size:0.82rem; color:var(--muted);">Try a sample order:</span>
@@ -96,57 +94,57 @@
     <h2 class="fx-h2">What I'd flag before this goes anywhere near a real order</h2>
     <div class="limits">
       <div class="lim"><b>This never places or finalizes an order.</b> Every line below either gets an explicit yes from a person, or gets kicked to "needs a look." Nothing here writes to your order system, touches real stock, or emails anyone.</div>
-      <div class="lim"><b>It only knows this ~40-item slice.</b> Anything from the rest of your catalog comes back as "not found" here, not because you don't carry it, just because this demo wasn't given the rest of it. A real build reads whatever catalog export or data feed you already keep current, so it knows everything you actually stock.</div>
+      <div class="lim"><b>It only knows this 41-item slice.</b> Anything from the rest of your catalog comes back as "not found" here, not because you don't carry it, just because this demo wasn't given the rest of it. A real build reads whatever catalog export or data feed you already keep current, so it knows everything you actually stock.</div>
       <div class="lim"><b>Where your team actually keys orders in is the open question.</b> Whether that's an ERP, a phone order pad, EDI, or something else changes how this plugs in. Worth a short conversation before anything gets built for real, this is a demo of the matching step, not a finished integration.</div>
-      <div class="lim"><b>Pricing shown is what your site displayed today, not a live quote.</b> A few items on your own site don't show a price without adding to cart, that shows up below as "matched, call to confirm price," never a guessed number.</div>
+      <div class="lim"><b>Pricing shown is what your site displayed when we checked, not a live quote.</b> A few items on your own site don't show a price without adding to cart, that shows up below as "matched, call to confirm price," never a guessed number.</div>
     </div>
   </section>
 </main>
-<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Catalog data (SKUs, manufacturers, descriptions, prices) verified directly against dale-electric.com's public product search today. The incoming order and "Northway Facilities Group" are a labeled sample, not a real customer or transaction.</p></footer>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Catalog data (SKUs, manufacturers, descriptions, prices) verified directly against dale-electric.com's public product search. The incoming order and "Northway Facilities Group" are a labeled sample, not a real customer or transaction.</p></footer>
 <script>
 (function () {
   "use strict";
 
   var CATALOG = [
-    { sku: "16342", mfr: "Leviton", desc: "20 Amp 125 Volt NEMA 5-20R Decora Plus Duplex Receptacle Tamper-Resistant", price: 8.05, unit: "EA" },
-    { sku: "MT163-HGR", mfr: "Leviton", desc: "20 Amp 125 Volt Decora Plus Duplex Receptacle Tamper-Resistant Hospital Grade", price: 41.80, unit: "EA" },
-    { sku: "BR54U", mfr: "Midwest Electric", desc: "50 Amp receptacle 125/250 Volt NEMA 14-50R 3-pole 4-wire", price: 58.32, unit: "EA" },
-    { sku: "8460N", mfr: "Cooper Wiring Devices", desc: "60 Amp power receptacle 250 Volt NEMA 15-60R back and side wired", price: 108.54, unit: "EA" },
-    { sku: "SS206-A", mfr: "Selecta Switch", desc: "Switch 15 Amp SPST off-on screw terminal", price: 6.11, unit: "EA" },
-    { sku: "SS208-B", mfr: "Selecta Switch", desc: "Switch 15 Amp DPDT on-off-on screw terminal", price: 11.32, unit: "EA" },
-    { sku: "WY1", mfr: "Topaz", desc: "Yellow winged wire connector wire nut 18-10 AWG box of 100", price: 0.09, unit: "EA" },
-    { sku: "TOP-S-CD", mfr: "NSI Industries", desc: "Easy-twist ceramic wire connector wire nut 22-14 AWG box of 100", price: 71.39, unit: "BOX" },
-    { sku: "TOP-M-CD", mfr: "NSI Industries", desc: "Easy-twist ceramic wire connector wire nut 22-10 AWG box of 100", price: 75.86, unit: "BOX" },
+    { sku: "16342", mfr: "Leviton", desc: "20 Amp 125 Volt NEMA 5-20R Decora Plus Duplex Receptacle, Commercial Grade, Brown", price: 8.05, unit: "EA" },
+    { sku: "MT163-HGR", mfr: "Leviton", desc: "20 Amp 125 Volt Decora Plus Duplex Receptacle, Tamper-Resistant, Hospital Grade, Red", price: 41.80, unit: "EA" },
+    { sku: "BR54U", mfr: "Midwest Electric", desc: "50 Amp receptacle, 3 pole 4 wire, 125/250 Volt, NEMA 14-50R, flush mount, side wired", price: 58.32, unit: "EA" },
+    { sku: "8460N", mfr: "Cooper Wiring Devices", desc: "60 Amp power receptacle, 250 Volt, NEMA 15-60R, back and side wired", price: 108.54, unit: "EA" },
+    { sku: "SS206-A", mfr: "Selecta Switch", desc: "Switch 15 Amp SPST off, momentary on, screw terminal", price: 6.11, unit: "EA" },
+    { sku: "SS208-B", mfr: "Selecta Switch", desc: "Switch 15 Amp DPDT on, off, momentary on, AC, screw terminal", price: 11.32, unit: "EA" },
+    { sku: "WY1", mfr: "Topaz", desc: "Yellow winged wire connector, joins 18-10 AWG, box of 100", price: 0.09, unit: "EA" },
+    { sku: "TOP-S-CD", mfr: "NSI Industries", desc: "Easy-twist ceramic wire connector, small, 22-14 AWG, 100 pack", price: 71.39, unit: "EA" },
+    { sku: "TOP-M-CD", mfr: "NSI Industries", desc: "Easy-twist ceramic wire connector, medium, 22-10 AWG, 100 pack", price: 75.86, unit: "EA" },
     { sku: "474-MAW", mfr: "M and W Electric", desc: "1/2 inch metallic romex connector", price: 0.34, unit: "EA" },
-    { sku: "TIC-50", mfr: "M and W Electric", desc: "1/2 inch two piece tilt-in romex connector steel", price: 0.45, unit: "EA" },
-    { sku: "MBRC50", mfr: "Peco Fasteners", desc: "1/2 inch NM romex connector box of 100", price: 0.36, unit: "EA" },
-    { sku: "PVCX1/2", mfr: "PVC Conduit", desc: "PVC 1/2 inch conduit schedule 80 10 foot stick", price: 6.75, unit: "EA" },
-    { sku: "EMT-1/2X10FT", mfr: "Steel Conduit", desc: "1/2 inch thinwall EMT metallic conduit 10 foot stick", price: 5.99, unit: "EA" },
-    { sku: "EMT-3X10FT", mfr: "Steel Conduit", desc: "3 inch thinwall EMT metallic conduit 10 foot stick", price: 56.70, unit: "EA" },
-    { sku: "IMC-3/4-10FT", mfr: "Steel Conduit", desc: "3/4 inch IMC galvanized conduit 10 foot stick", price: 20.93, unit: "EA" },
+    { sku: "TIC-50", mfr: "M and W Electric", desc: "1/2 inch two piece tilt-in romex connector, steel", price: 0.45, unit: "EA" },
+    { sku: "MBRC50", mfr: "Peco Fasteners", desc: "1/2 inch NM romex connector, box of 100", price: 0.36, unit: "EA" },
+    { sku: "PVCX1/2", mfr: "PVC Conduit", desc: "PVC 1/2 inch conduit, schedule 80, 10 foot stick", price: 6.75, unit: "EA" },
+    { sku: "EMT-1/2X10FT", mfr: "Steel Conduit", desc: "1/2 inch thinwall EMT metallic conduit, 10 foot stick", price: 5.99, unit: "EA" },
+    { sku: "EMT-3X10FT", mfr: "Steel Conduit", desc: "3 inch thinwall EMT metallic conduit, 10 foot stick", price: 56.70, unit: "EA" },
+    { sku: "IMC-3/4-10FT", mfr: "Steel Conduit", desc: "3/4 inch IMC galvanized conduit, 10 foot stick", price: 20.93, unit: "EA" },
     { sku: "1221", mfr: "Topaz", desc: "4x4x2 schedule 40 PVC junction box", price: 13.90, unit: "EA" },
     { sku: "1222-TOPAZ", mfr: "Topaz", desc: "4x4x4 schedule 40 PVC junction box", price: 23.83, unit: "EA" },
     { sku: "1224-TOPAZ", mfr: "Topaz", desc: "5x5x2 schedule 40 PVC junction box", price: 30.78, unit: "EA" },
     { sku: "1226-TOPAZ", mfr: "Topaz", desc: "6x6x6 schedule 40 PVC junction box", price: 39.62, unit: "EA" },
-    { sku: "QS2150", mfr: "Siemens", desc: "Low voltage residential circuit breaker main breaker type QS", price: 166.12, unit: "EA" },
-    { sku: "B115M00S01", mfr: "Siemens", desc: "Low voltage molded case circuit breaker panelboard mounting 240 Volt", price: 197.93, unit: "EA" },
-    { sku: "QR23B200L", mfr: "Siemens", desc: "Low voltage molded case circuit breaker 200 Amp 3-pole 10KA at 240 Volt", price: 1182.11, unit: "EA" },
-    { sku: "DT4B", mfr: "L.H. Dottie", desc: "Standard duty cable tie 0.095 in width 4.12 in length 18 lb UV black", price: 8.10, unit: "EA" },
-    { sku: "DT5B", mfr: "L.H. Dottie", desc: "Standard duty cable tie 0.14 in width 5.54 in length 40 lb UV black", price: 9.74, unit: "EA" },
-    { sku: "DT6B", mfr: "L.H. Dottie", desc: "Standard duty cable tie 0.18 in width 7.56 in length 50 lb UV black", price: 12.21, unit: "EA" },
-    { sku: "DT11BBULK", mfr: "L.H. Dottie", desc: "Standard duty cable tie 0.18 in width 11.25 in length 50 lb UV black bulk pack", price: 20.92, unit: "EA" },
-    { sku: "22742-TCP", mfr: "TCP", desc: "LED compact polycarbonate exit sign red letters AC only white housing 2.4W", price: 35.88, unit: "EA" },
-    { sku: "22743", mfr: "TCP", desc: "LED compact polycarbonate exit sign red letters battery backup white housing 2.4W", price: 23.91, unit: "EA" },
-    { sku: "60761", mfr: "LEDvance", desc: "Exit sign LED red letters 120/277 Volt surface mounted white finish", price: 22.40, unit: "EA" },
-    { sku: "60762", mfr: "LEDvance", desc: "Exit sign LED green letters 120/277 Volt surface mounted white finish", price: 23.97, unit: "EA" },
-    { sku: "AP70R", mfr: "Cooper Lighting", desc: "Exit sign red letters", price: 24.20, unit: "EA" },
-    { sku: "R14-1W", mfr: "Rab Lighting", desc: "Weatherproof cover rectangular 1 hole white single gang", price: null, unit: "EA" },
-    { sku: "R14-1B", mfr: "Rab Lighting", desc: "Weatherproof cover rectangular 1 hole black single gang", price: null, unit: "EA" },
-    { sku: "R14-3", mfr: "Rab Lighting", desc: "Weatherproof cover rectangular 3 hole silver gray", price: null, unit: "EA" },
+    { sku: "QS2150", mfr: "Siemens", desc: "Low voltage residential circuit breaker, main breaker, type QS", price: 166.12, unit: "EA" },
+    { sku: "B115M00S01", mfr: "Siemens", desc: "Low voltage molded case circuit breaker, panelboard mounting, 240 Volt", price: 197.93, unit: "EA" },
+    { sku: "QR23B200L", mfr: "Siemens", desc: "Low voltage molded case circuit breaker, 200 Amp 3-pole, 10KA at 240 Volt", price: 1182.11, unit: "EA" },
+    { sku: "DT4B", mfr: "L.H. Dottie", desc: "Standard duty cable tie, 4.12 in length, 18 lb, UV black", price: 8.10, unit: "EA" },
+    { sku: "DT5B", mfr: "L.H. Dottie", desc: "Standard duty cable tie, 5.54 in length, 40 lb, UV black", price: 9.74, unit: "EA" },
+    { sku: "DT6B", mfr: "L.H. Dottie", desc: "Standard duty cable tie, 7.56 in length, 50 lb, UV black", price: 12.21, unit: "EA" },
+    { sku: "DT11BBULK", mfr: "L.H. Dottie", desc: "Standard duty cable tie, 11.25 in length, 50 lb, UV black, bulk pack", price: 20.92, unit: "EA" },
+    { sku: "22742-TCP", mfr: "TCP", desc: "LED compact polycarbonate exit sign, red letters, AC only, white housing, 2.4W", price: 35.88, unit: "EA" },
+    { sku: "22743", mfr: "TCP", desc: "LED compact polycarbonate exit sign, red letters, battery backup, white housing, 2.4W", price: 23.91, unit: "EA" },
+    { sku: "60761", mfr: "LEDvance", desc: "Exit sign LED, red letters, 120/277 Volt, surface mounted, white finish", price: 22.40, unit: "EA" },
+    { sku: "60762", mfr: "LEDvance", desc: "Exit sign LED, green letters, 120/277 Volt, surface mounted, white finish", price: 23.97, unit: "EA" },
+    { sku: "AP70R", mfr: "Cooper Lighting", desc: "Exit sign", price: 24.20, unit: "EA" },
+    { sku: "R14-1W", mfr: "Rab Lighting", desc: "Weatherproof cover, rectangular, 1 hole, white", price: null, unit: "EA" },
+    { sku: "R14-1B", mfr: "Rab Lighting", desc: "Weatherproof cover, rectangular, 1 hole, black", price: null, unit: "EA" },
+    { sku: "R14-3", mfr: "Rab Lighting", desc: "Weatherproof cover, rectangular, 3 hole, silver gray", price: null, unit: "EA" },
     { sku: "265A6250G34", mfr: "Midwest Electric", desc: "125 Amp load center", price: 39.96, unit: "EA" },
-    { sku: "LC33N1", mfr: "Midwest Electric", desc: "Load center interior 33 space", price: 56.61, unit: "EA" },
-    { sku: "LC33N7", mfr: "Midwest Electric", desc: "Load center interior 33 space", price: 54.18, unit: "EA" },
-    { sku: "WNAS2060GFCI", mfr: "Siemens", desc: "Residential AC disconnect switch with 15 Amp GFCI protection", price: 110.00, unit: "EA" },
+    { sku: "LC33N1", mfr: "Midwest Electric", desc: "Load center interior, 33 space", price: 56.61, unit: "EA" },
+    { sku: "LC33N7", mfr: "Midwest Electric", desc: "Load center interior, 33 space", price: 54.18, unit: "EA" },
+    { sku: "WNAS2060GFCI", mfr: "Siemens", desc: "Residential AC disconnect switch, 60 Amp, with 15 Amp GFCI receptacle", price: 110.00, unit: "EA" },
     { sku: "AHDS30", mfr: "Cooper Wiring Devices", desc: "30 Amp disconnect switch", price: 200.34, unit: "EA" },
     { sku: "AHDS60", mfr: "Cooper Wiring Devices", desc: "60 Amp disconnect switch", price: 320.71, unit: "EA" }
   ];
@@ -156,7 +154,7 @@
 "PO# 4471 - Northway Facilities Group\n" +
 "Ship to: Glens Falls, NY\n" +
 "\n" +
-"1. Duplex receptacles, tamper resistant, 20A, qty 40\n" +
+"1. Duplex receptacles, 20A 125V, qty 40\n" +
 "2. EL-118 - yellow wire nuts, box of 100, qty 6 (600 count)\n" +
 "3. 1/2 EMT conduit, 10' sticks, qty 50\n" +
 "4. SKU 474MAW - 1/2 romex connector, qty 300\n" +
@@ -164,7 +162,7 @@
 "6. 200A 3 pole breaker, Siemens, QR23B200, qty 2\n" +
 "7. Black cable ties, 50 lb, qty 15\n" +
 "8. Emergency exit sign, red letters, qty 10\n" +
-"9. WP-1G-WHT - weatherproof single gang cover, white, qty 30\n" +
+"9. WP-1G-WHT - weatherproof outlet cover, rectangular, white, qty 30\n" +
 "10. Residential AC disconnect with GFCI, qty 4\n" +
 "11. LC-33-INT - 33 space load center interior, qty 3\n" +
 "12. 3 phase 480V motor starter, 25HP, NEMA size 3, Square D, qty 1\n" +
@@ -183,9 +181,9 @@
 
   function preprocess(s) {
     var t = (s || "").toLowerCase();
-    t = t.replace(/["'()]/g, " ").replace(/[,;:]/g, " ");
     UNIT_EXPAND.forEach(function (pair) { t = t.replace(pair[0], pair[1]); });
-    t = t.replace(/(?<!\d)[-/](?!\d)/g, " ").replace(/(?<=\D)[-/]/g, " ").replace(/[-/](?=\D)/g, " ");
+    t = t.replace(/[-"'()]/g, " ").replace(/[,;:]/g, " ");
+    t = t.replace(/(?<!\d)\/|\/(?!\d)/g, " ");
     t = t.replace(/[^a-z0-9./ ]/g, " ");
     return t;
   }
@@ -195,6 +193,13 @@
       .map(function (t) { return (t.length > 3 && t.slice(-1) === "s" && t.slice(-2) !== "ss") ? t.slice(0, -1) : t; });
   }
   function normCode(s) { return (s || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+  function extractCodeCandidates(rawText) {
+    var matches = (rawText || "").match(/[A-Za-z0-9][A-Za-z0-9/-]{1,}/g) || [];
+    return matches.filter(function (t) {
+      var alnum = t.replace(/[^A-Za-z0-9]/g, "");
+      return /[0-9]/.test(alnum) && alnum.length >= 3;
+    });
+  }
   function levenshtein(a, b) {
     var m = a.length, n = b.length;
     if (m === 0) return n; if (n === 0) return m;
@@ -217,16 +222,17 @@
   });
   var N = CATALOG_PREP.length;
   function idf(t) { return Math.log(1 + N / (DF[t] || 1)); }
+  function idf2(t) { var v = idf(t); return v * v; }
   CATALOG_PREP.forEach(function (entry) {
     var set = {}; entry.tokens.forEach(function (t) { set[t] = 1; });
     entry.tokenSet = set;
-    var sum = 0; Object.keys(set).forEach(function (t) { sum += idf(t) * idf(t); });
+    var sum = 0; Object.keys(set).forEach(function (t) { sum += idf2(t); });
     entry.norm = Math.sqrt(sum) || 1;
   });
   function cosine(qTokens, entry) {
     var dot = 0;
-    qTokens.forEach(function (t) { if (entry.tokenSet[t]) dot += idf(t) * idf(t); });
-    var qSum = 0; qTokens.forEach(function (t) { qSum += idf(t) * idf(t); });
+    qTokens.forEach(function (t) { if (entry.tokenSet[t]) dot += idf2(t); });
+    var qSum = 0; qTokens.forEach(function (t) { qSum += idf2(t); });
     var qNorm = Math.sqrt(qSum) || 1;
     return dot / (qNorm * entry.norm);
   }
@@ -234,10 +240,10 @@
 
   function scoreLine(queryText) {
     var qTokens = uniq(tokenize(queryText));
-    var codeTokens = qTokens.filter(function (t) { return /[0-9]/.test(t) && t.replace(/[^a-z0-9]/gi, "").length >= 3; });
+    var codeCandidates = extractCodeCandidates(queryText);
     var scored = CATALOG_PREP.map(function (entry) {
       var codeBonus = 0;
-      codeTokens.forEach(function (ct) {
+      codeCandidates.forEach(function (ct) {
         var nc = normCode(ct);
         if (nc.length < 3) return;
         var d = levenshtein(nc, entry.normSku);
@@ -279,12 +285,10 @@
   var resultRoot = document.getElementById("result-root");
   var lineState = [];
 
-  function badgeFor(tier, hasPrice, isManualPick) {
-    if (isManualPick) return { cls: "confirmed", label: "Confirmed by you" };
+  function badgeFor(tier, hasPrice) {
+    if (!hasPrice) return { cls: "noprice", label: "Matched, no price" };
     if (tier === "EXACT") return { cls: "exact", label: "Exact match" };
-    if (tier === "HIGH") return hasPrice ? { cls: "high", label: "Likely match" } : { cls: "noprice", label: "Matched, no price" };
-    if (tier === "AMBIGUOUS") return { cls: "review", label: "Needs a quick check" };
-    return { cls: "notfound", label: "Not in this catalog" };
+    return { cls: "high", label: "Likely match" };
   }
 
   function decide(i, decision) { lineState[i].decision = decision; render(); }
@@ -292,22 +296,29 @@
   function rowHtml(line, i) {
     var st = lineState[i];
     var tier = st.tier;
+    var isFlagged = st.decision && st.decision.type === "flag";
+    var isAccepted = st.decision && st.decision.type === "accept";
     var rowCls = "rfq-row" + (tier === "AMBIGUOUS" && !st.decision ? " is-review" : "") + (tier === "NO_MATCH" && !st.decision ? " is-notfound" : "");
     var html = '<div class="' + rowCls + '">';
     html += '<div class="rfq-row-top"><div class="rfq-num">' + (i + 1) + '.</div><div><div class="rfq-raw">' + escapeHtml(line.raw) + '</div>';
 
-    if (st.decision && st.decision.type === "accept") {
+    if (isFlagged) {
+      html += '<div class="rfq-match"><span class="badge confirmed">Flagged by you</span> Sent to a person to source or confirm, not counted in the total.</div>';
+      html += '<div class="rfq-override"><button onclick="__rfq.reopen(' + i + ')">Not flagged after all? Re-open this line</button></div>';
+    } else if (isAccepted) {
       var it = st.decision.item;
       var wasManualPick = tier === "AMBIGUOUS" || tier === "NO_MATCH";
-      var b = badgeFor(tier, it.price !== null, wasManualPick);
+      var b = wasManualPick ? { cls: "confirmed", label: "Confirmed by you" } : badgeFor(tier, it.price !== null);
       html += '<div class="rfq-match"><span class="badge ' + b.cls + '">' + b.label + '</span> <span class="name">' + escapeHtml(it.desc) + '</span><span class="rfq-sku">' + escapeHtml(it.sku) + '</span><span class="rfq-mfr">' + escapeHtml(it.mfr) + '</span></div>';
       if (it.price === null) {
-        html += '<div class="rfq-note warn-text">Matched, but this item does not show a price without logging in on your site. Call to confirm before this line is included in a total.</div>';
+        html += '<div class="rfq-note warn-text">Matched, but this item does not show a price without adding it to a cart on your site. Call to confirm before this line is included in a total.</div>';
       }
       html += '<div class="rfq-override"><button onclick="__rfq.flag(' + i + ')">Not right? Flag this line for a person instead</button></div>';
     } else if (tier === "AMBIGUOUS") {
-      var b2 = badgeFor(tier, true);
-      html += '<div class="rfq-match"><span class="badge ' + b2.cls + '">' + b2.label + '</span> ' + st.candidates.length + ' catalog items are close enough that this needs a person to pick.</div>';
+      var promptText = st.candidates.length > 1
+        ? st.candidates.length + ' catalog items are close enough that this needs a person to pick.'
+        : 'Only a weak match, worth a person confirming before this is used.';
+      html += '<div class="rfq-match"><span class="badge review">Needs a quick check</span> ' + promptText + '</div>';
       html += '<div class="rfq-candidates">';
       st.candidates.forEach(function (c, ci) {
         var priceLabel = c.item.price === null ? "call for price" : money(c.item.price) + " / " + c.item.unit;
@@ -315,23 +326,20 @@
       });
       html += '</div>';
       html += '<button class="rfq-flag-btn" onclick="__rfq.flag(' + i + ')">None of these, flag for a person to source</button>';
-    } else if (tier === "NO_MATCH") {
-      var b3 = badgeFor(tier, false);
-      html += '<div class="rfq-match"><span class="badge ' + b3.cls + '">' + b3.label + '</span> Nothing in this catalog slice scores as a plausible match.</div>';
+    } else {
+      html += '<div class="rfq-match"><span class="badge notfound">Not in this catalog</span> Nothing in this catalog slice scores as a plausible match.</div>';
       html += '<button class="rfq-flag-btn" onclick="__rfq.flag(' + i + ')">Acknowledge, source this separately</button>';
     }
 
     html += '</div><div class="rfq-side">';
-    if (st.decision && st.decision.type === "accept") {
+    if (isAccepted) {
       var it2 = st.decision.item;
       html += '<div class="rfq-price' + (it2.price === null ? ' muted' : '') + '">' + (it2.price === null ? 'call for price' : money(it2.price) + ' / ' + it2.unit) + '</div>';
-      html += '<div class="rfq-qty">qty ' + line.qty + '</div>';
       if (it2.price !== null) html += '<div class="rfq-price">' + money(it2.price * line.qty) + '</div>';
-    } else if (st.decision && st.decision.type === "flag") {
-      html += '<div class="rfq-price muted">flagged</div><div class="rfq-qty">qty ' + line.qty + '</div>';
     } else {
-      html += '<div class="rfq-price muted">pending</div><div class="rfq-qty">qty ' + line.qty + '</div>';
+      html += '<div class="rfq-price muted">' + (isFlagged ? 'flagged' : 'pending') + '</div>';
     }
+    html += '<div class="rfq-qty">qty ' + line.qty + '</div>';
     html += '</div></div></div>';
     return html;
   }
@@ -345,28 +353,26 @@
     lineState.forEach(function (st, i) { html += rowHtml(st.line, i); });
     html += '</div>';
 
-    var subtotal = 0, autoCount = 0, reviewCount = 0, flaggedCount = 0, noPriceCount = 0, pendingCount = 0;
+    var subtotal = 0, autoCount = 0, confirmedCount = 0, flaggedCount = 0, noPriceCount = 0, pendingCount = 0;
     lineState.forEach(function (st) {
       if (st.decision && st.decision.type === "accept") {
-        if (st.tier === "EXACT" || st.tier === "HIGH") autoCount++;
+        if (st.tier === "EXACT" || st.tier === "HIGH") autoCount++; else confirmedCount++;
         if (st.decision.item.price !== null) subtotal += st.decision.item.price * st.line.qty;
         else noPriceCount++;
       } else if (st.decision && st.decision.type === "flag") {
         flaggedCount++;
       } else {
         pendingCount++;
-        if (st.tier === "AMBIGUOUS") reviewCount++;
       }
     });
 
-    var allResolved = pendingCount === 0;
     html += '<div class="rfq-approve-bar">';
-    html += '<div class="rfq-summary-stats"><span><b>' + autoCount + '</b> auto-matched</span><span><b>' + (reviewCount + flaggedCount) + '</b> flagged for a person</span><span><b>' + noPriceCount + '</b> need a price check</span>' + (pendingCount ? '<span><b>' + pendingCount + '</b> still need a decision</span>' : '') + '</div>';
+    html += '<div class="rfq-summary-stats"><span><b>' + autoCount + '</b> auto-matched</span><span><b>' + confirmedCount + '</b> confirmed by you</span><span><b>' + flaggedCount + '</b> flagged for a person</span>' + (noPriceCount ? '<span><b>' + noPriceCount + '</b> need a price check</span>' : '') + (pendingCount ? '<span><b>' + pendingCount + '</b> still need a decision</span>' : '') + '</div>';
     html += '<div class="rfq-approve-row"><span class="rfq-total-amt">' + money(subtotal) + '</span><span style="color:var(--muted); font-size:0.85rem;">running subtotal, resolved lines with a published price only</span></div>';
     if (window.__rfq_done) {
       html += '<div class="rfq-done"><b>Marked ready.</b><span>In a real build, this hands your team a clean, confirmed list to key into whatever system you actually place orders in. Nothing sent, nothing ordered, nothing decided without a person, exactly like now.</span><span><button class="fx-btn-ghost" onclick="__rfq.reset()" style="margin-top:0.4rem;">Start over</button></span></div>';
     } else {
-      html += '<div><button class="fx-btn" id="approve-btn" ' + (allResolved ? '' : 'disabled') + ' onclick="__rfq.approve()">Approve draft order' + (allResolved ? '' : ' (' + pendingCount + ' line' + (pendingCount === 1 ? '' : 's') + ' still need a decision)') + '</button></div>';
+      html += '<div><button class="fx-btn" id="approve-btn" ' + (pendingCount ? 'disabled' : '') + ' onclick="__rfq.approve()">Approve draft order' + (pendingCount ? ' (' + pendingCount + ' line' + (pendingCount === 1 ? '' : 's') + ' still need a decision)' : '') + '</button></div>';
     }
     html += '</div>';
     resultRoot.innerHTML = html;
@@ -387,8 +393,13 @@
   window.__rfq = {
     pick: function (i, ci) { decide(i, { type: "accept", item: lineState[i].candidates[ci].item }); },
     flag: function (i) { decide(i, { type: "flag" }); },
+    reopen: function (i) {
+      var st = lineState[i];
+      if (st.tier === "EXACT" || st.tier === "HIGH") decide(i, { type: "accept", item: st.candidates[0].item });
+      else decide(i, null);
+    },
     approve: function () { window.__rfq_done = true; render(); },
-    reset: function () { window.__rfq_done = false; runMatch(textarea.value); }
+    reset: function () { runMatch(textarea.value); }
   };
 
   document.getElementById("match-btn").addEventListener("click", function () { runMatch(textarea.value); });
@@ -396,6 +407,7 @@
     b.addEventListener("click", function () { textarea.value = SAMPLES[b.dataset.sample]; runMatch(textarea.value); });
   });
 
+  document.getElementById("catalog-count").textContent = CATALOG.length + " real SKUs loaded from dale-electric.com";
   textarea.value = SAMPLES.typical;
   runMatch(textarea.value);
 })();
