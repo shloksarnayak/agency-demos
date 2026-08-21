@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Job QC sign-off &amp; warranty-claim tracker template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .qwt-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 900px) { .qwt-cols { grid-template-columns: 1fr; } }
+  .qwt-section-title { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.9rem; }
+  .qwt-job { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .qwt-job.is-done { opacity: 0.72; }
+  .qwt-job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .qwt-job-title { font-weight: 660; }
+  .qwt-job-meta { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .qwt-check-list { display: flex; flex-direction: column; gap: 0.45rem; margin: 0.85rem 0; }
+  .qwt-check { display: flex; align-items: center; gap: 0.55rem; font-size: 0.9rem; cursor: pointer; }
+  .qwt-check input { width: 16px; height: 16px; accent-color: var(--brand); cursor: pointer; }
+  .qwt-check.checked span { color: var(--ink-2); }
+  .qwt-signoff-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .qwt-initials { font: inherit; font-size: 0.85rem; padding: 0.5rem 0.7rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 6rem; }
+  .qwt-initials:focus { outline: none; border-color: var(--brand); }
+  .qwt-block-msg { font-size: 0.82rem; color: var(--hot); margin-top: 0.5rem; }
+  .qwt-done-badge { font-family: var(--mono); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--good); background: var(--good-bg); padding: 0.28rem 0.6rem; border-radius: 999px; }
+  .qwt-claim { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .qwt-claim-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .qwt-claim-title { font-weight: 660; }
+  .qwt-claim-meta { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .qwt-claim-issue { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.55rem; }
+  .qwt-status-row { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.75rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .qwt-badge { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.3rem 0.62rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .qwt-badge.ok { color: var(--good); background: var(--good-bg); }
+  .qwt-badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .qwt-badge.overdue { color: var(--hot); background: var(--hot-bg); }
+  .qwt-badge.resolved { color: var(--muted); background: var(--surface-2); }
+  .qwt-advance-btn { font: inherit; font-size: 0.78rem; font-weight: 650; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.4rem 0.8rem; cursor: pointer; }
+  .qwt-advance-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .qwt-new-form { display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 1.1rem; padding: 1rem 1.1rem; border: 1px dashed var(--rule); border-radius: 16px; }
+  .qwt-new-form input, .qwt-new-form select, .qwt-new-form textarea { font: inherit; font-size: 0.88rem; padding: 0.55rem 0.75rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  .qwt-new-form input:focus, .qwt-new-form select:focus, .qwt-new-form textarea:focus { outline: none; border-color: var(--brand); }
+  .qwt-reset-row { margin-top: 1.3rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Job QC &amp; warranty tracker</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Catch the defect before the customer does, then never lose a warranty call again</h1>
+  <p class="fx-lede">Many multi-crew, multi-location install and repair businesses have no gate between "the crew says it's done" and "it's invoiced", and no shared log of who called in a warranty problem or whether anyone followed up. This page uses a fictional business to show what that gate and that log look like as one small, working tool, not a redesign of how jobs get scheduled or billed.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, it plugs into wherever job and customer data already lives, a scheduling tool, a shared spreadsheet, a CRM, rather than replacing it. This page shows the workflow, not the integration.</p></div>
+  <div class="qwt-cols">
+    <div>
+      <h2 class="qwt-section-title">Jobs pending sign-off</h2>
+      <div id="jobs-root"></div>
+    </div>
+    <div>
+      <h2 class="qwt-section-title">Warranty claims</h2>
+      <button class="fx-btn-ghost" id="new-claim-toggle" style="margin-bottom:0.85rem;">+ Log a new warranty claim</button>
+      <div id="new-claim-form-root"></div>
+      <div id="claims-root"></div>
+    </div>
+  </div>
+  <div class="qwt-reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The checklist items and claim fields are placeholders.</b> A real build starts from the specific defects and complaint patterns that actually show up for that business, not a generic list.</div>
+      <div class="lim"><b>Sign-off is a gate, not a redesign of the workflow.</b> It sits in front of whatever already marks a job "complete" or "invoiced", it doesn't replace scheduling, billing, or CRM software.</div>
+      <div class="lim"><b>"Overdue" here is a simple day-count.</b> A real build matches whatever response-time commitment the business already makes, in writing or in practice.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/hurricane-fence/">Hurricane Fence Company</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job and claim data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "qwt_template_v1";
+  var CHECKLIST_LABELS = [
+    "Work matches the approved job spec",
+    "Finish/fit checked against the order (no misalignment, gaps, or reversed parts)",
+    "Site cleaned up, no leftover material or debris",
+    "Customer walkthrough completed"
+  ];
+
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); return d; }
+  function fmtDate(d) { return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+  function daysBetween(a, b) { return Math.floor((b - a) / (1000 * 60 * 60 * 24)); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function defaultData() {
+    return {
+      jobs: [
+        {
+          id: "J-2214", title: "Chain-link installation, Halloran residence", location: "Richmond office",
+          checklist: CHECKLIST_LABELS.map(function (l, i) { return { label: l, done: i < 2 }; }),
+          signedOff: null
+        },
+        {
+          id: "J-2201", title: "Ornamental fence, west lot", location: "Coastal office",
+          checklist: CHECKLIST_LABELS.map(function (l) { return { label: l, done: true }; }),
+          signedOff: null
+        },
+        {
+          id: "J-2198", title: "Automatic gate operator install", location: "Inland office",
+          checklist: CHECKLIST_LABELS.map(function (l) { return { label: l, done: true }; }),
+          signedOff: { by: "T.M.", at: daysAgo(2).toISOString() }
+        }
+      ],
+      claims: [
+        { id: "C-501", customer: "Sample Customer A", office: "Richmond office", issue: "Gate does not latch fully after installation.", loggedAt: daysAgo(6).toISOString(), lastTouchedAt: daysAgo(6).toISOString(), status: "New" },
+        { id: "C-502", customer: "Sample Customer B", office: "Coastal office", issue: "Gap under fence line, pet escaped yard.", loggedAt: daysAgo(2).toISOString(), lastTouchedAt: daysAgo(1).toISOString(), status: "Contacted" },
+        { id: "C-503", customer: "Sample Customer C", office: "Inland office", issue: "Panel section installed facing the wrong direction.", loggedAt: daysAgo(1).toISOString(), lastTouchedAt: daysAgo(1).toISOString(), status: "Scheduled" }
+      ]
+    };
+  }
+
+  var STATUS_ORDER = ["New", "Contacted", "Scheduled", "Resolved"];
+  var OVERDUE_DAYS = 3;
+
+  var data = load();
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return defaultData();
+  }
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  var jobsRoot = document.getElementById("jobs-root");
+  var claimsRoot = document.getElementById("claims-root");
+  var newClaimFormRoot = document.getElementById("new-claim-form-root");
+
+  function renderJobs() {
+    var pending = data.jobs.filter(function (j) { return !j.signedOff; });
+    var done = data.jobs.filter(function (j) { return j.signedOff; });
+    var html = "";
+    pending.forEach(function (job) {
+      var idx = data.jobs.indexOf(job);
+      var allChecked = job.checklist.every(function (c) { return c.done; });
+      html += '<div class="qwt-job"><div class="qwt-job-head"><div><div class="qwt-job-title">' + escapeHtml(job.title) + '</div><div class="qwt-job-meta">' + escapeHtml(job.id) + ' &middot; ' + escapeHtml(job.location) + '</div></div></div>';
+      html += '<div class="qwt-check-list">';
+      job.checklist.forEach(function (c, ci) {
+        html += '<label class="qwt-check' + (c.done ? ' checked' : '') + '"><input type="checkbox" ' + (c.done ? 'checked' : '') + ' onchange="__qwt.toggleCheck(' + idx + ',' + ci + ')"><span>' + escapeHtml(c.label) + '</span></label>';
+      });
+      html += '</div>';
+      html += '<div class="qwt-signoff-row"><input type="text" class="qwt-initials" id="initials-' + idx + '" placeholder="PM initials" maxlength="6"><button class="fx-btn" onclick="__qwt.signOff(' + idx + ')">Sign off &amp; mark ready to invoice</button></div>';
+      if (!allChecked) html += '<div class="qwt-block-msg">' + job.checklist.filter(function (c) { return !c.done; }).length + ' checklist item(s) still unchecked, sign-off is blocked until all are done.</div>';
+      html += '<div class="qwt-block-msg" id="signoff-err-' + idx + '" style="display:none;"></div>';
+      html += '</div>';
+    });
+    if (done.length) {
+      html += '<h3 style="font-size:0.85rem; color:var(--muted); margin:1.4rem 0 0.6rem;">Signed off, ready to invoice</h3>';
+      done.forEach(function (job) {
+        html += '<div class="qwt-job is-done"><div class="qwt-job-head"><div><div class="qwt-job-title">' + escapeHtml(job.title) + '</div><div class="qwt-job-meta">' + escapeHtml(job.id) + ' &middot; ' + escapeHtml(job.location) + '</div></div><span class="qwt-done-badge">Signed off by ' + escapeHtml(job.signedOff.by) + ', ' + fmtDate(new Date(job.signedOff.at)) + '</span></div></div>';
+      });
+    }
+    jobsRoot.innerHTML = html || '<p style="color:var(--muted); font-style:italic; font-size:0.9rem;">No jobs loaded.</p>';
+  }
+
+  function claimStatusBadge(claim) {
+    if (claim.status === "Resolved") return { cls: "resolved", label: "Resolved" };
+    var days = daysBetween(new Date(claim.lastTouchedAt), new Date());
+    if (days >= OVERDUE_DAYS) return { cls: "overdue", label: days + " day" + (days === 1 ? "" : "s") + " since last update, overdue" };
+    if (days >= OVERDUE_DAYS - 1) return { cls: "watch", label: days + " day" + (days === 1 ? "" : "s") + " since last update" };
+    return { cls: "ok", label: days === 0 ? "Updated today" : days + " day" + (days === 1 ? "" : "s") + " since last update" };
+  }
+
+  function renderClaims() {
+    var html = "";
+    var sorted = data.claims.slice().sort(function (a, b) { return new Date(a.loggedAt) - new Date(b.loggedAt); });
+    sorted.forEach(function (claim) {
+      var idx = data.claims.indexOf(claim);
+      var badge = claimStatusBadge(claim);
+      var nextIdx = STATUS_ORDER.indexOf(claim.status) + 1;
+      var nextStatus = STATUS_ORDER[nextIdx];
+      html += '<div class="qwt-claim"><div class="qwt-claim-head"><div><div class="qwt-claim-title">' + escapeHtml(claim.customer) + '</div><div class="qwt-claim-meta">' + escapeHtml(claim.id) + ' &middot; ' + escapeHtml(claim.office) + ' &middot; logged ' + fmtDate(new Date(claim.loggedAt)) + '</div></div><span class="qwt-badge ' + (claim.status === "Resolved" ? "resolved" : badge.cls) + '">' + escapeHtml(claim.status) + '</span></div>';
+      html += '<div class="qwt-claim-issue">' + escapeHtml(claim.issue) + '</div>';
+      html += '<div class="qwt-status-row"><span class="qwt-badge ' + badge.cls + '">' + badge.label + '</span>';
+      if (nextStatus) html += '<button class="qwt-advance-btn" onclick="__qwt.advance(' + idx + ')">Log update &rarr; mark “' + nextStatus + '”</button>';
+      html += '</div></div>';
+    });
+    claimsRoot.innerHTML = html || '<p style="color:var(--muted); font-style:italic; font-size:0.9rem;">No claims logged.</p>';
+  }
+
+  function renderNewClaimForm(open) {
+    if (!open) { newClaimFormRoot.innerHTML = ""; return; }
+    var offices = [];
+    data.claims.concat(data.jobs.map(function (j) { return { office: j.location }; })).forEach(function (c) { if (c.office && offices.indexOf(c.office) === -1) offices.push(c.office); });
+    if (!offices.length) offices = ["Main office"];
+    var opts = offices.map(function (o) { return '<option value="' + escapeHtml(o) + '">' + escapeHtml(o) + '</option>'; }).join("");
+    newClaimFormRoot.innerHTML =
+      '<div class="qwt-new-form">' +
+      '<input type="text" id="nc-customer" placeholder="Customer name">' +
+      '<select id="nc-office">' + opts + '</select>' +
+      '<textarea id="nc-issue" rows="2" placeholder="What did the customer report?"></textarea>' +
+      '<div><button class="fx-btn" onclick="__qwt.addClaim()">Log claim</button> <button class="fx-btn-ghost" onclick="__qwt.toggleNewClaim()">Cancel</button></div>' +
+      "</div>";
+  }
+
+  var newClaimOpen = false;
+
+  window.__qwt = {
+    toggleCheck: function (jobIdx, checkIdx) {
+      data.jobs[jobIdx].checklist[checkIdx].done = !data.jobs[jobIdx].checklist[checkIdx].done;
+      save(); renderJobs();
+    },
+    signOff: function (jobIdx) {
+      var job = data.jobs[jobIdx];
+      var errEl = document.getElementById("signoff-err-" + jobIdx);
+      var allChecked = job.checklist.every(function (c) { return c.done; });
+      var initials = document.getElementById("initials-" + jobIdx).value.trim();
+      if (!allChecked) { errEl.style.display = "block"; errEl.textContent = "Every checklist item must be checked before this job can be signed off."; return; }
+      if (!initials) { errEl.style.display = "block"; errEl.textContent = "Enter PM initials to sign off."; return; }
+      job.signedOff = { by: initials, at: new Date().toISOString() };
+      save(); renderJobs();
+    },
+    toggleNewClaim: function () { newClaimOpen = !newClaimOpen; renderNewClaimForm(newClaimOpen); },
+    addClaim: function () {
+      var customer = document.getElementById("nc-customer").value.trim();
+      var office = document.getElementById("nc-office").value;
+      var issue = document.getElementById("nc-issue").value.trim();
+      if (!customer || !issue) { alert("Enter a customer name and issue before logging the claim."); return; }
+      var n = data.claims.length + 1;
+      var now = new Date().toISOString();
+      data.claims.push({ id: "C-" + (500 + n), customer: customer, office: office, issue: issue, loggedAt: now, lastTouchedAt: now, status: "New" });
+      save(); newClaimOpen = false; renderNewClaimForm(false); renderClaims();
+    },
+    advance: function (claimIdx) {
+      var claim = data.claims[claimIdx];
+      var idx = STATUS_ORDER.indexOf(claim.status);
+      if (idx < STATUS_ORDER.length - 1) claim.status = STATUS_ORDER[idx + 1];
+      claim.lastTouchedAt = new Date().toISOString();
+      save(); renderClaims();
+    }
+  };
+
+  document.getElementById("new-claim-toggle").addEventListener("click", function () { __qwt.toggleNewClaim(); });
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset all jobs and claims back to the original sample data?")) return;
+    data = defaultData(); save(); renderJobs(); renderClaims();
+  });
+
+  renderJobs(); renderClaims();
+})();
+</script>
+</body>
+</html>

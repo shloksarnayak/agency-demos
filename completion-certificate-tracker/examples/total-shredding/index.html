@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Total Shredding LLC, job completion certificate &amp; follow-up tracker (working example)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input[type="text"], .field input[type="number"], .field input[type="date"], .field select {
+    font: inherit; font-size: 0.95rem; padding: 0.65rem 0.8rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .check-row { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.88rem; }
+  .check-row input { margin-top: 0.2rem; }
+  .samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.7rem; }
+  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.78rem; }
+  .discrepancy { padding: 0.9rem 1rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--warn-bg); color: #4f4716; font-size: 0.87rem; box-shadow: 3px 3px 0 var(--ink); }
+  .cert { border: 2px dashed var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: #fff; font-family: var(--mono); font-size: 0.85rem; line-height: 1.7; }
+  .cert h4 { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.6rem; }
+  .cert .line { display: flex; justify-content: space-between; gap: 1rem; border-bottom: 1px dotted var(--rule-soft); padding: 0.25rem 0; }
+  .job-table { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .job-row { background: var(--surface); padding: 0.85rem 1rem; display: grid; grid-template-columns: 1.4fr 1fr auto auto; gap: 0.8rem; align-items: center; font-size: 0.87rem; }
+  .job-meta { color: var(--muted); font-size: 0.76rem; }
+  .badge { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.28rem 0.6rem; border-radius: 999px; white-space: nowrap; }
+  .badge.ok { color: var(--good); background: var(--good-bg); }
+  .badge.flag { color: var(--hot); background: var(--hot-bg); }
+  .followup-list { display: flex; flex-direction: column; gap: 0.6rem; }
+  .followup-item { border: 2px solid var(--ink); border-radius: var(--radius-sm); padding: 0.8rem 1rem; background: #fff7cf; box-shadow: 3px 3px 0 var(--ink); display: flex; justify-content: space-between; gap: 1rem; align-items: center; flex-wrap: wrap; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.9rem; }
+  .fact-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; }
+  .fact-pill { font-family: var(--mono); font-size: 0.72rem; }
+  .audit-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.7rem 1rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--surface); box-shadow: 3px 3px 0 var(--ink); font-size: 0.87rem; }
+  .audit-row + .audit-row { margin-top: 0.6rem; }
+  @media print {
+    body * { visibility: hidden; }
+    #cert-print, #cert-print * { visibility: visible; }
+    #cert-print { position: absolute; left: 0; top: 0; width: 100%; }
+  }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Job completion certificate</a> / Total Shredding LLC</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Total Shredding LLC</span>
+  <h1 class="fx-h1">A certificate for every job, the moment it's done</h1>
+  <p class="fx-lede">Total Shredding's own site promises: "Both of our shredding services come with a certificate of destruction when you receive your invoice." Right now that's a manual step tied to invoicing, with no automated trigger, no online portal, and no box/item-count sign-off, and it's the gap behind two real, independent patterns in the public review record: a certificate that never arrived, and a billing dispute over a box count nobody confirmed on-site. This working example shows the fix: a certificate generated and logged the instant a job is completed, a count check that catches a mismatch before it becomes a dispute, and a follow-up flag that stays visible until someone closes it.</p>
+  <div class="fact-row" aria-label="Verified facts about Total Shredding">
+    <span class="fx-pill fact-pill">19 years in business (est. 2007)</span>
+    <span class="fx-pill fact-pill">NAID member</span>
+    <span class="fx-pill fact-pill">Background-checked, badged drivers</span>
+    <span class="fx-pill fact-pill">BBB A+</span>
+    <span class="fx-pill fact-pill">Serves LA / Burbank / Rosemead / Ventura-Orange-Santa Barbara Counties</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything interactive below uses fictional sample jobs and client names.</strong> The company facts in the strip above (years in business, NAID membership, service areas, BBB rating, the certificate promise) are sourced directly from Total Shredding's own website and BBB listing. No real Total Shredding customer data, job records, or proprietary information is used anywhere on this page.</p></div>
+
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.5rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Log a completed job</div>
+      <div class="samples">
+        <span style="font-size:0.82rem; color:var(--muted);">Try a sample:</span>
+        <button class="fx-btn-ghost sample-chip" data-sample="match">Standard job (count matches)</button>
+        <button class="fx-btn-ghost sample-chip" data-sample="mismatch">Miscount example (flags a discrepancy)</button>
+      </div>
+      <form id="job-form" class="form-grid" style="margin-top:1rem;">
+        <div class="field"><label for="f-client">Client / site name</label><input type="text" id="f-client" required></div>
+        <div class="field"><label for="f-date">Service date</label><input type="date" id="f-date" required></div>
+        <div class="field">
+          <label for="f-service">Service type</label>
+          <select id="f-service" required>
+            <option value="">Select&hellip;</option>
+            <option value="On-site (mobile) paper shredding">On-site (mobile) paper shredding</option>
+            <option value="Off-site paper shredding">Off-site paper shredding</option>
+          </select>
+        </div>
+        <div class="field"><label for="f-expected">Expected box count (quoted)</label><input type="number" id="f-expected" min="0" required></div>
+        <div class="field"><label for="f-actual">Actual box count on-site (driver entry)</label><input type="number" id="f-actual" min="0" required></div>
+        <div class="field span2"><label for="f-signoff">Customer sign-off name</label><input type="text" id="f-signoff" placeholder="Typed name confirms the box count above" required></div>
+        <div class="field span2 check-row"><input type="checkbox" id="f-confirm" required><label for="f-confirm">Customer confirms the box count above is correct</label></div>
+        <div id="discrepancy-box"></div>
+        <div class="field span2 check-row"><input type="checkbox" id="f-followup"><label for="f-followup">Flag this job for a manual follow-up / callback</label></div>
+        <div class="field span2" style="flex-direction:row; gap:0.6rem;"><button type="submit" class="fx-btn">Complete job &amp; generate certificate</button></div>
+      </form>
+    </div>
+    <div id="cert-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">Open follow-ups</h2>
+    <p style="color:var(--ink-2); font-size:0.92rem; margin-top:-0.6rem;">This is the piece that was missing when dreamy h.'s box-count dispute went unresolved after a promised callback: a flagged job stays here, visibly open, until someone marks it resolved.</p>
+    <div id="followup-root" style="margin-top:1rem;"></div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">Job log</h2>
+    <div id="joblog-root"></div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">Service-listing accuracy check</h2>
+    <p style="color:var(--ink-2); font-size:0.92rem; margin-top:-0.6rem;">A quick audit of the live quote form, run as part of this build:</p>
+    <div style="margin-top:1rem;">
+      <div class="audit-row"><span>Paper shredding (on-site &amp; off-site)</span><span class="badge ok">Live, accurate</span></div>
+      <div class="audit-row"><span>Hard drive / SSD / flash drive shredding</span><span class="badge flag">Still listed on the quote form, reportedly discontinued</span></div>
+    </div>
+    <p style="color:var(--muted); font-size:0.82rem; margin-top:0.8rem;">The live <em>/shredding-services/</em> quote form still lists hard-drive shredding as an option, but a caller was told the service was discontinued over a year ago. It's intentionally left out of the service dropdown above, and a production build would include a lightweight quarterly check like this one so a discontinued service can't sit on the live form indefinitely.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>Plugs into the existing quote/invoice flow.</b> Drivers already note box counts and invoicing already happens per job, this adds the count check and the automatic certificate on top, it doesn't replace the WPForms quote request or the invoicing process.</div>
+      <div class="lim"><b>Certificate delivery becomes automatic.</b> Instead of a certificate arriving "with your invoice" as a manual step, it's generated and emailed the moment a job is marked complete, closing the exact gap a Yelp reviewer hit when no certificate ever arrived.</div>
+      <div class="lim"><b>Back to the generic template: <a href="../../index.html">job completion certificate &amp; follow-up tracker</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Total Shredding LLC.</strong></p><p>Prepared by Shlok Sarnayak. Company facts (years in business, NAID membership, service areas, BBB rating, certificate promise) are sourced from Total Shredding's own website and BBB listing. All job records, client names, and box counts on this page are fictional samples, not real Total Shredding data.</p></footer>
+<script>
+(function () {
+  var STORE_KEY = "cct-demo-joblog-total-shredding";
+  var form = document.getElementById("job-form");
+  var discBox = document.getElementById("discrepancy-box");
+  var certRoot = document.getElementById("cert-root");
+  var followupRoot = document.getElementById("followup-root");
+  var joblogRoot = document.getElementById("joblog-root");
+  var expected = document.getElementById("f-expected");
+  var actual = document.getElementById("f-actual");
+  var ackDiscrepancy = false;
+
+  var SEED = [
+    { id: "COD-1001", client: "Meridian Law Group, Monrovia", date: "2026-08-11", service: "On-site (mobile) paper shredding", expected: 18, actual: 18, signoff: "R. Alvarez", flagged: false, reason: "", loggedAt: Date.now() - 9 * 86400000 },
+    { id: "COD-1002", client: "Coastal Medical Partners, Burbank", date: "2026-08-15", service: "Off-site paper shredding", expected: 41, actual: 31, signoff: "T. Nguyen", flagged: true, reason: "Box count mismatch (expected 41, actual 31), driver did not count on pickup, reviewing with customer", loggedAt: Date.now() - 5 * 86400000 },
+    { id: "COD-1003", client: "Rosemead Retail Group, Rosemead", date: "2026-08-19", service: "On-site (mobile) paper shredding", expected: 12, actual: 12, signoff: "K. Patel", flagged: false, reason: "", loggedAt: Date.now() - 1 * 86400000 }
+  ];
+
+  function loadJobs() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    saveJobs(SEED);
+    return SEED.slice();
+  }
+  function saveJobs(jobs) { localStorage.setItem(STORE_KEY, JSON.stringify(jobs)); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function checkDiscrepancy() {
+    var e = parseInt(expected.value, 10), a = parseInt(actual.value, 10);
+    ackDiscrepancy = false;
+    if (!isNaN(e) && !isNaN(a) && e !== a) {
+      discBox.innerHTML = '<div class="discrepancy field span2"><strong>Box count mismatch:</strong> quoted ' + e + ', driver entered ' + a + '. <label style="display:flex; gap:0.5rem; margin-top:0.5rem; align-items:flex-start;"><input type="checkbox" id="f-ack">This was reviewed with the customer before completing the job</label></div>';
+      var ackBox = document.getElementById("f-ack");
+      ackBox.addEventListener("change", function () { ackDiscrepancy = ackBox.checked; });
+    } else {
+      discBox.innerHTML = "";
+    }
+  }
+  expected.addEventListener("input", checkDiscrepancy);
+  actual.addEventListener("input", checkDiscrepancy);
+
+  function renderCert(job) {
+    var html = '<div id="cert-print" class="cert">' +
+      '<h4>Certificate of Destruction, Total Shredding LLC</h4>' +
+      '<div class="line"><span>Certificate ID</span><span>' + job.id + '</span></div>' +
+      '<div class="line"><span>Client / site</span><span>' + escapeHtml(job.client) + '</span></div>' +
+      '<div class="line"><span>Service date</span><span>' + job.date + '</span></div>' +
+      '<div class="line"><span>Service type</span><span>' + escapeHtml(job.service) + '</span></div>' +
+      '<div class="line"><span>Boxes destroyed</span><span>' + job.actual + '</span></div>' +
+      '<div class="line"><span>Customer sign-off</span><span>' + escapeHtml(job.signoff) + '</span></div>' +
+      '<div class="line"><span>Status</span><span>' + (job.flagged ? "Completed, follow-up flagged" : "Completed") + '</span></div>' +
+      '<p style="margin-top:0.9rem; color:var(--muted); font-size:0.78rem;">In production, this would be emailed to the customer automatically the moment the job is marked complete, instead of arriving manually with the invoice.</p>' +
+      '</div><button class="fx-btn-ghost" style="margin-top:0.8rem;" onclick="window.print()">Print / save as PDF</button>';
+    certRoot.innerHTML = html;
+  }
+
+  function renderFollowups(jobs) {
+    var open = jobs.filter(function (j) { return j.flagged; });
+    if (!open.length) { followupRoot.innerHTML = '<p class="empty">No open follow-ups.</p>'; return; }
+    var html = '<div class="followup-list">';
+    open.forEach(function (j) {
+      var days = Math.max(0, Math.round((Date.now() - j.loggedAt) / 86400000));
+      html += '<div class="followup-item"><div><b>' + escapeHtml(j.client) + '</b><div class="job-meta">' + escapeHtml(j.reason) + ' &middot; open ' + days + ' day' + (days === 1 ? '' : 's') + '</div></div><button class="fx-btn-ghost" data-resolve="' + j.id + '">Mark resolved</button></div>';
+    });
+    html += '</div>';
+    followupRoot.innerHTML = html;
+    Array.prototype.forEach.call(followupRoot.querySelectorAll("[data-resolve]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var jobs = loadJobs();
+        jobs.forEach(function (j) { if (j.id === btn.getAttribute("data-resolve")) j.flagged = false; });
+        saveJobs(jobs);
+        renderAll();
+      });
+    });
+  }
+
+  function renderJoblog(jobs) {
+    if (!jobs.length) { joblogRoot.innerHTML = '<p class="empty">No jobs logged yet.</p>'; return; }
+    var html = '<div class="job-table">';
+    jobs.slice().reverse().forEach(function (j) {
+      html += '<div class="job-row"><div><b>' + escapeHtml(j.client) + '</b><div class="job-meta">' + j.date + ' &middot; ' + escapeHtml(j.service) + '</div></div><div class="job-meta">' + j.actual + ' boxes (expected ' + j.expected + ')</div><span class="badge ' + (j.flagged ? "flag" : "ok") + '">' + (j.flagged ? "Follow-up open" : "Clear") + '</span><span class="job-meta">' + j.id + '</span></div>';
+    });
+    html += '</div>';
+    joblogRoot.innerHTML = html;
+  }
+
+  function renderAll() {
+    var jobs = loadJobs();
+    renderFollowups(jobs);
+    renderJoblog(jobs);
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var e2 = parseInt(expected.value, 10), a2 = parseInt(actual.value, 10);
+    var mismatch = !isNaN(e2) && !isNaN(a2) && e2 !== a2;
+    if (mismatch && !ackDiscrepancy) {
+      var box = discBox.querySelector(".discrepancy");
+      if (box) box.style.outline = "3px solid var(--hot)";
+      return;
+    }
+    var jobs = loadJobs();
+    var id = "COD-" + (1000 + jobs.length + 1);
+    var flagged = document.getElementById("f-followup").checked || mismatch;
+    var job = {
+      id: id,
+      client: document.getElementById("f-client").value,
+      date: document.getElementById("f-date").value,
+      service: document.getElementById("f-service").value,
+      expected: e2, actual: a2,
+      signoff: document.getElementById("f-signoff").value,
+      flagged: flagged,
+      reason: mismatch ? ("Box count mismatch (expected " + e2 + ", actual " + a2 + ")") : "Manually flagged for callback",
+      loggedAt: Date.now()
+    };
+    jobs.push(job);
+    saveJobs(jobs);
+    renderCert(job);
+    renderAll();
+    form.reset();
+    discBox.innerHTML = "";
+  });
+
+  document.querySelectorAll(".sample-chip").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var kind = btn.getAttribute("data-sample");
+      document.getElementById("f-client").value = kind === "mismatch" ? "Foothill Dental Group, Arcadia" : "Sierra Vista Escrow, Burbank";
+      document.getElementById("f-date").value = new Date().toISOString().slice(0, 10);
+      document.getElementById("f-service").value = "Off-site paper shredding";
+      document.getElementById("f-expected").value = kind === "mismatch" ? 26 : 9;
+      document.getElementById("f-actual").value = kind === "mismatch" ? 19 : 9;
+      document.getElementById("f-signoff").value = "M. Chen";
+      document.getElementById("f-confirm").checked = true;
+      checkDiscrepancy();
+    });
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
