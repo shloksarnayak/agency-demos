@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>RFQ &amp; PO line matching: working example for Dale Electric Supply</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .rfq-textarea { width: 100%; min-height: 260px; font-family: var(--mono); font-size: 0.82rem; padding: 1rem 1.1rem; border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--surface-2); color: var(--ink); resize: vertical; line-height: 1.65; }
+  .rfq-textarea:focus { outline: none; border-color: var(--brand); }
+  .rfq-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; margin-top: 0.9rem; }
+  .rfq-samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.7rem; }
+  .rfq-summary { margin-top: 1.6rem; padding-top: 1.3rem; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.6rem; }
+  .rfq-summary-stats { display: flex; gap: 1.4rem; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); }
+  .rfq-summary-stats b { color: var(--ink); font-weight: 660; }
+  .rfq-table { display: flex; flex-direction: column; gap: 10px; margin-top: 1.5rem; }
+  .rfq-row { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.2rem; box-shadow: var(--shadow-sm); }
+  .rfq-row.is-review { border-color: color-mix(in srgb, var(--warn) 35%, var(--rule)); }
+  .rfq-row.is-notfound { border-color: color-mix(in srgb, var(--hot) 30%, var(--rule)); }
+  .rfq-row-top { display: grid; grid-template-columns: 1.9rem 1fr auto; gap: 0.9rem; align-items: start; }
+  .rfq-num { font-family: var(--mono); font-size: 0.75rem; color: var(--faint); padding-top: 0.25rem; }
+  .rfq-raw { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); word-break: break-word; }
+  .rfq-match { margin-top: 0.4rem; font-size: 0.96rem; }
+  .rfq-match .name { font-weight: 630; }
+  .rfq-sku { font-family: var(--mono); font-size: 0.76rem; color: var(--brand); margin-left: 0.4rem; }
+  .rfq-mfr { color: var(--muted); font-size: 0.82rem; margin-left: 0.4rem; }
+  .badge { font-family: var(--mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.32rem 0.62rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.exact, .badge.high { color: var(--good); background: var(--good-bg); }
+  .badge.review { color: var(--warn); background: var(--warn-bg); }
+  .badge.notfound { color: var(--hot); background: var(--hot-bg); }
+  .badge.noprice { color: var(--warn); background: var(--warn-bg); }
+  .badge.confirmed { color: var(--brand); background: var(--brand-soft); }
+  .rfq-side { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; min-width: 6.5rem; }
+  .rfq-price { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 0.92rem; text-align: right; }
+  .rfq-price.muted { color: var(--muted); font-size: 0.76rem; font-style: italic; }
+  .rfq-qty { color: var(--muted); font-size: 0.76rem; text-align: right; }
+  .rfq-candidates { margin-top: 0.85rem; padding-left: 2.8rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .rfq-cand { text-align: left; font: inherit; font-size: 0.87rem; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: 10px; padding: 0.65rem 0.85rem; cursor: pointer; display: flex; justify-content: space-between; gap: 1rem; align-items: center; transition: border-color .12s ease, background .12s ease; }
+  .rfq-cand:hover { border-color: color-mix(in srgb, var(--brand) 55%, var(--rule)); background: var(--surface); }
+  .rfq-cand .cn { font-family: var(--mono); color: var(--brand); font-size: 0.78rem; }
+  .rfq-cand .cp { font-family: var(--mono); color: var(--muted); flex-shrink: 0; }
+  .rfq-flag-btn { text-align: left; font: inherit; font-size: 0.85rem; color: var(--muted); background: none; border: 1px dashed var(--rule); border-radius: 10px; padding: 0.6rem 0.85rem; cursor: pointer; margin-left: 2.8rem; margin-top: 0.7rem; }
+  .rfq-flag-btn:hover { color: var(--ink); border-color: var(--muted); }
+  .rfq-note { margin-top: 0.7rem; padding-left: 2.8rem; font-size: 0.83rem; color: var(--muted); }
+  .rfq-note.warn-text { color: var(--warn); }
+  .rfq-override { margin-top: 0.6rem; padding-left: 2.8rem; }
+  .rfq-override button { font: inherit; font-size: 0.78rem; color: var(--faint); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 0; }
+  .rfq-override button:hover { color: var(--ink-2); }
+  .rfq-approve-bar { display: flex; flex-direction: column; gap: 0.6rem; align-items: flex-start; margin-top: 1.7rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); }
+  .rfq-approve-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .rfq-total-amt { font-family: var(--serif); font-size: 2rem; }
+  .rfq-done { background: var(--good-bg); border: 1px solid color-mix(in srgb, var(--good) 30%, var(--rule)); border-radius: var(--radius-md); padding: 1rem 1.2rem; color: var(--ink-2); font-size: 0.92rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  .rfq-done b { color: var(--good); }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">RFQ &amp; PO line matching</a> / Dale Electric Supply</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Dale Electric Supply</span>
+  <h1 class="fx-h1">The cross-referencing your team already does by phone, done in seconds, never guessed</h1>
+  <p class="fx-lede">Your own site already says it: "We can cross-reference SKUs, confirm availability, and help source hard-to-find electrical supplies." That's someone on your team matching an outside part reference to your catalog by hand, one call at a time. Below is a slice of your real, public product search, the same one live at dale-electric.com, reading a purchase order the way one actually shows up: a customer's own part numbers, a typo, a vague trade description, two items that are easy to mix up. Paste an order in and watch the first pass happen, then see exactly what it would and would not hand off to a person.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> every item this page can match against, its SKU, manufacturer, description, and price, was pulled directly from dale-electric.com's public product search, checked directly today. It's a hand-picked slice across your receptacles, conduit, wire nuts, breakers, junction boxes, cable ties, exit signs, load centers, and disconnects, about 40 SKUs, not your full live catalog of roughly 20,000 in-stock items, and not a live feed into your system, a snapshot taken for this demo.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the purchase order below is a composite example I wrote, not a real customer's order. "Northway Facilities Group" is not an actual Dale Electric account. It's built to show the patterns that actually show up in this kind of order: a buyer's own part numbers instead of yours, a typo'd SKU, a vague trade description with no code at all, two catalog items that look interchangeable until you check the price, and one item you don't carry at all.</p>
+  </div>
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Paste or edit an incoming order</div>
+      <textarea class="rfq-textarea" id="order-input" spellcheck="false"></textarea>
+      <div class="rfq-actions">
+        <button class="fx-btn" id="match-btn">Match against the catalog</button>
+        <span style="font-size:0.82rem; color:var(--muted);">39 real SKUs loaded, see the list below</span>
+      </div>
+      <div class="rfq-samples">
+        <span style="font-size:0.82rem; color:var(--muted);">Try a sample order:</span>
+        <button class="sample-chip" data-sample="typical">Typical mixed order (13 lines)</button>
+        <button class="sample-chip" data-sample="quick">Quick clean reorder (4 lines)</button>
+      </div>
+    </div>
+    <div id="result-root"></div>
+  </div>
+  <section>
+    <h2 class="fx-h2">What I'd flag before this goes anywhere near a real order</h2>
+    <div class="limits">
+      <div class="lim"><b>This never places or finalizes an order.</b> Every line below either gets an explicit yes from a person, or gets kicked to "needs a look." Nothing here writes to your order system, touches real stock, or emails anyone.</div>
+      <div class="lim"><b>It only knows this ~40-item slice.</b> Anything from the rest of your catalog comes back as "not found" here, not because you don't carry it, just because this demo wasn't given the rest of it. A real build reads whatever catalog export or data feed you already keep current, so it knows everything you actually stock.</div>
+      <div class="lim"><b>Where your team actually keys orders in is the open question.</b> Whether that's an ERP, a phone order pad, EDI, or something else changes how this plugs in. Worth a short conversation before anything gets built for real, this is a demo of the matching step, not a finished integration.</div>
+      <div class="lim"><b>Pricing shown is what your site displayed today, not a live quote.</b> A few items on your own site don't show a price without adding to cart, that shows up below as "matched, call to confirm price," never a guessed number.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p>Prepared by Shlok Sarnayak for Dale Electric Supply. Catalog data (SKUs, manufacturers, descriptions, prices) verified directly against dale-electric.com's public product search today. The incoming order and "Northway Facilities Group" are a labeled sample, not a real customer or transaction.</p></footer>
+<script>
+(function () {
+  "use strict";
+
+  var CATALOG = [
+    { sku: "16342", mfr: "Leviton", desc: "20 Amp 125 Volt NEMA 5-20R Decora Plus Duplex Receptacle Tamper-Resistant", price: 8.05, unit: "EA" },
+    { sku: "MT163-HGR", mfr: "Leviton", desc: "20 Amp 125 Volt Decora Plus Duplex Receptacle Tamper-Resistant Hospital Grade", price: 41.80, unit: "EA" },
+    { sku: "BR54U", mfr: "Midwest Electric", desc: "50 Amp receptacle 125/250 Volt NEMA 14-50R 3-pole 4-wire", price: 58.32, unit: "EA" },
+    { sku: "8460N", mfr: "Cooper Wiring Devices", desc: "60 Amp power receptacle 250 Volt NEMA 15-60R back and side wired", price: 108.54, unit: "EA" },
+    { sku: "SS206-A", mfr: "Selecta Switch", desc: "Switch 15 Amp SPST off-on screw terminal", price: 6.11, unit: "EA" },
+    { sku: "SS208-B", mfr: "Selecta Switch", desc: "Switch 15 Amp DPDT on-off-on screw terminal", price: 11.32, unit: "EA" },
+    { sku: "WY1", mfr: "Topaz", desc: "Yellow winged wire connector wire nut 18-10 AWG box of 100", price: 0.09, unit: "EA" },
+    { sku: "TOP-S-CD", mfr: "NSI Industries", desc: "Easy-twist ceramic wire connector wire nut 22-14 AWG box of 100", price: 71.39, unit: "BOX" },
+    { sku: "TOP-M-CD", mfr: "NSI Industries", desc: "Easy-twist ceramic wire connector wire nut 22-10 AWG box of 100", price: 75.86, unit: "BOX" },
+    { sku: "474-MAW", mfr: "M and W Electric", desc: "1/2 inch metallic romex connector", price: 0.34, unit: "EA" },
+    { sku: "TIC-50", mfr: "M and W Electric", desc: "1/2 inch two piece tilt-in romex connector steel", price: 0.45, unit: "EA" },
+    { sku: "MBRC50", mfr: "Peco Fasteners", desc: "1/2 inch NM romex connector box of 100", price: 0.36, unit: "EA" },
+    { sku: "PVCX1/2", mfr: "PVC Conduit", desc: "PVC 1/2 inch conduit schedule 80 10 foot stick", price: 6.75, unit: "EA" },
+    { sku: "EMT-1/2X10FT", mfr: "Steel Conduit", desc: "1/2 inch thinwall EMT metallic conduit 10 foot stick", price: 5.99, unit: "EA" },
+    { sku: "EMT-3X10FT", mfr: "Steel Conduit", desc: "3 inch thinwall EMT metallic conduit 10 foot stick", price: 56.70, unit: "EA" },
+    { sku: "IMC-3/4-10FT", mfr: "Steel Conduit", desc: "3/4 inch IMC galvanized conduit 10 foot stick", price: 20.93, unit: "EA" },
+    { sku: "1221", mfr: "Topaz", desc: "4x4x2 schedule 40 PVC junction box", price: 13.90, unit: "EA" },
+    { sku: "1222-TOPAZ", mfr: "Topaz", desc: "4x4x4 schedule 40 PVC junction box", price: 23.83, unit: "EA" },
+    { sku: "1224-TOPAZ", mfr: "Topaz", desc: "5x5x2 schedule 40 PVC junction box", price: 30.78, unit: "EA" },
+    { sku: "1226-TOPAZ", mfr: "Topaz", desc: "6x6x6 schedule 40 PVC junction box", price: 39.62, unit: "EA" },
+    { sku: "QS2150", mfr: "Siemens", desc: "Low voltage residential circuit breaker main breaker type QS", price: 166.12, unit: "EA" },
+    { sku: "B115M00S01", mfr: "Siemens", desc: "Low voltage molded case circuit breaker panelboard mounting 240 Volt", price: 197.93, unit: "EA" },
+    { sku: "QR23B200L", mfr: "Siemens", desc: "Low voltage molded case circuit breaker 200 Amp 3-pole 10KA at 240 Volt", price: 1182.11, unit: "EA" },
+    { sku: "DT4B", mfr: "L.H. Dottie", desc: "Standard duty cable tie 0.095 in width 4.12 in length 18 lb UV black", price: 8.10, unit: "EA" },
+    { sku: "DT5B", mfr: "L.H. Dottie", desc: "Standard duty cable tie 0.14 in width 5.54 in length 40 lb UV black", price: 9.74, unit: "EA" },
+    { sku: "DT6B", mfr: "L.H. Dottie", desc: "Standard duty cable tie 0.18 in width 7.56 in length 50 lb UV black", price: 12.21, unit: "EA" },
+    { sku: "DT11BBULK", mfr: "L.H. Dottie", desc: "Standard duty cable tie 0.18 in width 11.25 in length 50 lb UV black bulk pack", price: 20.92, unit: "EA" },
+    { sku: "22742-TCP", mfr: "TCP", desc: "LED compact polycarbonate exit sign red letters AC only white housing 2.4W", price: 35.88, unit: "EA" },
+    { sku: "22743", mfr: "TCP", desc: "LED compact polycarbonate exit sign red letters battery backup white housing 2.4W", price: 23.91, unit: "EA" },
+    { sku: "60761", mfr: "LEDvance", desc: "Exit sign LED red letters 120/277 Volt surface mounted white finish", price: 22.40, unit: "EA" },
+    { sku: "60762", mfr: "LEDvance", desc: "Exit sign LED green letters 120/277 Volt surface mounted white finish", price: 23.97, unit: "EA" },
+    { sku: "AP70R", mfr: "Cooper Lighting", desc: "Exit sign red letters", price: 24.20, unit: "EA" },
+    { sku: "R14-1W", mfr: "Rab Lighting", desc: "Weatherproof cover rectangular 1 hole white single gang", price: null, unit: "EA" },
+    { sku: "R14-1B", mfr: "Rab Lighting", desc: "Weatherproof cover rectangular 1 hole black single gang", price: null, unit: "EA" },
+    { sku: "R14-3", mfr: "Rab Lighting", desc: "Weatherproof cover rectangular 3 hole silver gray", price: null, unit: "EA" },
+    { sku: "265A6250G34", mfr: "Midwest Electric", desc: "125 Amp load center", price: 39.96, unit: "EA" },
+    { sku: "LC33N1", mfr: "Midwest Electric", desc: "Load center interior 33 space", price: 56.61, unit: "EA" },
+    { sku: "LC33N7", mfr: "Midwest Electric", desc: "Load center interior 33 space", price: 54.18, unit: "EA" },
+    { sku: "WNAS2060GFCI", mfr: "Siemens", desc: "Residential AC disconnect switch with 15 Amp GFCI protection", price: 110.00, unit: "EA" },
+    { sku: "AHDS30", mfr: "Cooper Wiring Devices", desc: "30 Amp disconnect switch", price: 200.34, unit: "EA" },
+    { sku: "AHDS60", mfr: "Cooper Wiring Devices", desc: "60 Amp disconnect switch", price: 320.71, unit: "EA" }
+  ];
+
+  var SAMPLES = {
+    typical:
+"PO# 4471 - Northway Facilities Group\n" +
+"Ship to: Glens Falls, NY\n" +
+"\n" +
+"1. Duplex receptacles, tamper resistant, 20A, qty 40\n" +
+"2. EL-118 - yellow wire nuts, box of 100, qty 6 (600 count)\n" +
+"3. 1/2 EMT conduit, 10' sticks, qty 50\n" +
+"4. SKU 474MAW - 1/2 romex connector, qty 300\n" +
+"5. JB-4X4 - PVC junction box 4x4x4, qty 25\n" +
+"6. 200A 3 pole breaker, Siemens, QR23B200, qty 2\n" +
+"7. Black cable ties, 50 lb, qty 15\n" +
+"8. Emergency exit sign, red letters, qty 10\n" +
+"9. WP-1G-WHT - weatherproof single gang cover, white, qty 30\n" +
+"10. Residential AC disconnect with GFCI, qty 4\n" +
+"11. LC-33-INT - 33 space load center interior, qty 3\n" +
+"12. 3 phase 480V motor starter, 25HP, NEMA size 3, Square D, qty 1\n" +
+"13. 1221 - 4x4x2 PVC box, qty 10",
+    quick:
+"PO# 4502 - Northway Facilities Group\n" +
+"\n" +
+"1. SKU 1221 - PVC box 4x4x2, qty 20\n" +
+"2. 60761 - LED exit sign, red letters, qty 5\n" +
+"3. DT6B - black cable ties 50lb, qty 10\n" +
+"4. WNAS2060GFCI - AC disconnect w/ GFCI, qty 2"
+  };
+
+  var STOPWORDS = { a:1,an:1,the:1,and:1,or:1,with:1,for:1,of:1,in:1,per:1,need:1,needed:1,needs:1,please:1,we:1,qty:1,to:1,at:1,on:1,only:1 };
+  var UNIT_EXPAND = [[/(\d+)a\b/g,"$1 amp"],[/(\d+)v\b/g,"$1 volt"],[/(\d+)ft\b/g,"$1 foot"],[/(\d+)'/g,"$1 foot"],[/(\d+)lb\b/g,"$1 lb"]];
+
+  function preprocess(s) {
+    var t = (s || "").toLowerCase();
+    t = t.replace(/["'()]/g, " ").replace(/[,;:]/g, " ");
+    UNIT_EXPAND.forEach(function (pair) { t = t.replace(pair[0], pair[1]); });
+    t = t.replace(/(?<!\d)[-/](?!\d)/g, " ").replace(/(?<=\D)[-/]/g, " ").replace(/[-/](?=\D)/g, " ");
+    t = t.replace(/[^a-z0-9./ ]/g, " ");
+    return t;
+  }
+  function tokenize(s) {
+    return preprocess(s).split(/\s+/).map(function (t) { return t.trim(); })
+      .filter(function (t) { return t.length > 0 && !STOPWORDS[t]; })
+      .map(function (t) { return (t.length > 3 && t.slice(-1) === "s" && t.slice(-2) !== "ss") ? t.slice(0, -1) : t; });
+  }
+  function normCode(s) { return (s || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+  function levenshtein(a, b) {
+    var m = a.length, n = b.length;
+    if (m === 0) return n; if (n === 0) return m;
+    var dp = []; for (var i = 0; i <= m; i++) { dp.push(new Array(n + 1).fill(0)); dp[i][0] = i; }
+    for (var j = 0; j <= n; j++) dp[0][j] = j;
+    for (i = 1; i <= m; i++) for (j = 1; j <= n; j++) {
+      var cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+    }
+    return dp[m][n];
+  }
+
+  var CATALOG_PREP = CATALOG.map(function (item) {
+    return { item: item, normSku: normCode(item.sku), tokens: tokenize(item.mfr + " " + item.desc + " " + item.sku) };
+  });
+  var DF = {};
+  CATALOG_PREP.forEach(function (entry) {
+    var seen = {};
+    entry.tokens.forEach(function (t) { if (!seen[t]) { seen[t] = 1; DF[t] = (DF[t] || 0) + 1; } });
+  });
+  var N = CATALOG_PREP.length;
+  function idf(t) { return Math.log(1 + N / (DF[t] || 1)); }
+  CATALOG_PREP.forEach(function (entry) {
+    var set = {}; entry.tokens.forEach(function (t) { set[t] = 1; });
+    entry.tokenSet = set;
+    var sum = 0; Object.keys(set).forEach(function (t) { sum += idf(t) * idf(t); });
+    entry.norm = Math.sqrt(sum) || 1;
+  });
+  function cosine(qTokens, entry) {
+    var dot = 0;
+    qTokens.forEach(function (t) { if (entry.tokenSet[t]) dot += idf(t) * idf(t); });
+    var qSum = 0; qTokens.forEach(function (t) { qSum += idf(t) * idf(t); });
+    var qNorm = Math.sqrt(qSum) || 1;
+    return dot / (qNorm * entry.norm);
+  }
+  function uniq(arr) { var seen = {}, out = []; arr.forEach(function (t) { if (!seen[t]) { seen[t] = 1; out.push(t); } }); return out; }
+
+  function scoreLine(queryText) {
+    var qTokens = uniq(tokenize(queryText));
+    var codeTokens = qTokens.filter(function (t) { return /[0-9]/.test(t) && t.replace(/[^a-z0-9]/gi, "").length >= 3; });
+    var scored = CATALOG_PREP.map(function (entry) {
+      var codeBonus = 0;
+      codeTokens.forEach(function (ct) {
+        var nc = normCode(ct);
+        if (nc.length < 3) return;
+        var d = levenshtein(nc, entry.normSku);
+        if (d === 0) codeBonus = Math.max(codeBonus, 1.0);
+        else if (d <= 1 && nc.length >= 5) codeBonus = Math.max(codeBonus, 0.8);
+        else if (d <= 2 && nc.length >= 7) codeBonus = Math.max(codeBonus, 0.6);
+      });
+      var descScore = cosine(qTokens, entry);
+      return { item: entry.item, score: Math.max(codeBonus, descScore) };
+    });
+    scored.sort(function (a, b) { return b.score - a.score; });
+    var top = scored[0], second = scored[1];
+    var tier;
+    if (top.score >= 0.9) tier = "EXACT";
+    else if (top.score >= 0.4 && (top.score - second.score) >= 0.15) tier = "HIGH";
+    else if (top.score >= 0.22) tier = "AMBIGUOUS";
+    else tier = "NO_MATCH";
+    var candidates = tier === "AMBIGUOUS"
+      ? scored.filter(function (s) { return s.score >= top.score - 0.12 && s.score >= 0.2; }).slice(0, 4)
+      : [top];
+    return { tier: tier, top: top, candidates: candidates };
+  }
+
+  function parseOrderText(text) {
+    return text.split("\n").map(function (l) { return l.trim(); })
+      .filter(function (l) { return /^\d+[.)]/.test(l); })
+      .map(function (l) { return l.replace(/^\d+[.)]\s*/, ""); })
+      .filter(function (body) { return body.length > 0; })
+      .map(function (body) {
+        var m = body.match(/qty\s*(\d+)/i);
+        return { raw: body, qty: m ? parseInt(m[1], 10) : 1 };
+      });
+  }
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+  function money(n) { return "$" + n.toFixed(2); }
+
+  var textarea = document.getElementById("order-input");
+  var resultRoot = document.getElementById("result-root");
+  var lineState = [];
+
+  function badgeFor(tier, hasPrice, isManualPick) {
+    if (isManualPick) return { cls: "confirmed", label: "Confirmed by you" };
+    if (tier === "EXACT") return { cls: "exact", label: "Exact match" };
+    if (tier === "HIGH") return hasPrice ? { cls: "high", label: "Likely match" } : { cls: "noprice", label: "Matched, no price" };
+    if (tier === "AMBIGUOUS") return { cls: "review", label: "Needs a quick check" };
+    return { cls: "notfound", label: "Not in this catalog" };
+  }
+
+  function decide(i, decision) { lineState[i].decision = decision; render(); }
+
+  function rowHtml(line, i) {
+    var st = lineState[i];
+    var tier = st.tier;
+    var rowCls = "rfq-row" + (tier === "AMBIGUOUS" && !st.decision ? " is-review" : "") + (tier === "NO_MATCH" && !st.decision ? " is-notfound" : "");
+    var html = '<div class="' + rowCls + '">';
+    html += '<div class="rfq-row-top"><div class="rfq-num">' + (i + 1) + '.</div><div><div class="rfq-raw">' + escapeHtml(line.raw) + '</div>';
+
+    if (st.decision && st.decision.type === "accept") {
+      var it = st.decision.item;
+      var wasManualPick = tier === "AMBIGUOUS" || tier === "NO_MATCH";
+      var b = badgeFor(tier, it.price !== null, wasManualPick);
+      html += '<div class="rfq-match"><span class="badge ' + b.cls + '">' + b.label + '</span> <span class="name">' + escapeHtml(it.desc) + '</span><span class="rfq-sku">' + escapeHtml(it.sku) + '</span><span class="rfq-mfr">' + escapeHtml(it.mfr) + '</span></div>';
+      if (it.price === null) {
+        html += '<div class="rfq-note warn-text">Matched, but this item does not show a price without logging in on your site. Call to confirm before this line is included in a total.</div>';
+      }
+      html += '<div class="rfq-override"><button onclick="__rfq.flag(' + i + ')">Not right? Flag this line for a person instead</button></div>';
+    } else if (tier === "AMBIGUOUS") {
+      var b2 = badgeFor(tier, true);
+      html += '<div class="rfq-match"><span class="badge ' + b2.cls + '">' + b2.label + '</span> ' + st.candidates.length + ' catalog items are close enough that this needs a person to pick.</div>';
+      html += '<div class="rfq-candidates">';
+      st.candidates.forEach(function (c, ci) {
+        var priceLabel = c.item.price === null ? "call for price" : money(c.item.price) + " / " + c.item.unit;
+        html += '<button class="rfq-cand" onclick="__rfq.pick(' + i + ',' + ci + ')"><span><span class="cn">' + escapeHtml(c.item.sku) + '</span> ' + escapeHtml(c.item.desc) + '</span><span class="cp">' + priceLabel + '</span></button>';
+      });
+      html += '</div>';
+      html += '<button class="rfq-flag-btn" onclick="__rfq.flag(' + i + ')">None of these, flag for a person to source</button>';
+    } else if (tier === "NO_MATCH") {
+      var b3 = badgeFor(tier, false);
+      html += '<div class="rfq-match"><span class="badge ' + b3.cls + '">' + b3.label + '</span> Nothing in this catalog slice scores as a plausible match.</div>';
+      html += '<button class="rfq-flag-btn" onclick="__rfq.flag(' + i + ')">Acknowledge, source this separately</button>';
+    }
+
+    html += '</div><div class="rfq-side">';
+    if (st.decision && st.decision.type === "accept") {
+      var it2 = st.decision.item;
+      html += '<div class="rfq-price' + (it2.price === null ? ' muted' : '') + '">' + (it2.price === null ? 'call for price' : money(it2.price) + ' / ' + it2.unit) + '</div>';
+      html += '<div class="rfq-qty">qty ' + line.qty + '</div>';
+      if (it2.price !== null) html += '<div class="rfq-price">' + money(it2.price * line.qty) + '</div>';
+    } else if (st.decision && st.decision.type === "flag") {
+      html += '<div class="rfq-price muted">flagged</div><div class="rfq-qty">qty ' + line.qty + '</div>';
+    } else {
+      html += '<div class="rfq-price muted">pending</div><div class="rfq-qty">qty ' + line.qty + '</div>';
+    }
+    html += '</div></div></div>';
+    return html;
+  }
+
+  function render() {
+    if (!lineState.length) {
+      resultRoot.innerHTML = '<p style="color:var(--muted); font-style:italic; font-size:0.92rem;">Paste an order above, or try a sample, then click "Match against the catalog."</p>';
+      return;
+    }
+    var html = '<div class="rfq-table">';
+    lineState.forEach(function (st, i) { html += rowHtml(st.line, i); });
+    html += '</div>';
+
+    var subtotal = 0, autoCount = 0, reviewCount = 0, flaggedCount = 0, noPriceCount = 0, pendingCount = 0;
+    lineState.forEach(function (st) {
+      if (st.decision && st.decision.type === "accept") {
+        if (st.tier === "EXACT" || st.tier === "HIGH") autoCount++;
+        if (st.decision.item.price !== null) subtotal += st.decision.item.price * st.line.qty;
+        else noPriceCount++;
+      } else if (st.decision && st.decision.type === "flag") {
+        flaggedCount++;
+      } else {
+        pendingCount++;
+        if (st.tier === "AMBIGUOUS") reviewCount++;
+      }
+    });
+
+    var allResolved = pendingCount === 0;
+    html += '<div class="rfq-approve-bar">';
+    html += '<div class="rfq-summary-stats"><span><b>' + autoCount + '</b> auto-matched</span><span><b>' + (reviewCount + flaggedCount) + '</b> flagged for a person</span><span><b>' + noPriceCount + '</b> need a price check</span>' + (pendingCount ? '<span><b>' + pendingCount + '</b> still need a decision</span>' : '') + '</div>';
+    html += '<div class="rfq-approve-row"><span class="rfq-total-amt">' + money(subtotal) + '</span><span style="color:var(--muted); font-size:0.85rem;">running subtotal, resolved lines with a published price only</span></div>';
+    if (window.__rfq_done) {
+      html += '<div class="rfq-done"><b>Marked ready.</b><span>In a real build, this hands your team a clean, confirmed list to key into whatever system you actually place orders in. Nothing sent, nothing ordered, nothing decided without a person, exactly like now.</span><span><button class="fx-btn-ghost" onclick="__rfq.reset()" style="margin-top:0.4rem;">Start over</button></span></div>';
+    } else {
+      html += '<div><button class="fx-btn" id="approve-btn" ' + (allResolved ? '' : 'disabled') + ' onclick="__rfq.approve()">Approve draft order' + (allResolved ? '' : ' (' + pendingCount + ' line' + (pendingCount === 1 ? '' : 's') + ' still need a decision)') + '</button></div>';
+    }
+    html += '</div>';
+    resultRoot.innerHTML = html;
+  }
+
+  function runMatch(text) {
+    window.__rfq_done = false;
+    var lines = parseOrderText(text);
+    lineState = lines.map(function (line) {
+      var r = scoreLine(line.raw);
+      var decision = null;
+      if (r.tier === "EXACT" || r.tier === "HIGH") decision = { type: "accept", item: r.top.item };
+      return { line: line, tier: r.tier, candidates: r.candidates, decision: decision };
+    });
+    render();
+  }
+
+  window.__rfq = {
+    pick: function (i, ci) { decide(i, { type: "accept", item: lineState[i].candidates[ci].item }); },
+    flag: function (i) { decide(i, { type: "flag" }); },
+    approve: function () { window.__rfq_done = true; render(); },
+    reset: function () { window.__rfq_done = false; runMatch(textarea.value); }
+  };
+
+  document.getElementById("match-btn").addEventListener("click", function () { runMatch(textarea.value); });
+  Array.prototype.forEach.call(document.querySelectorAll(".sample-chip"), function (b) {
+    b.addEventListener("click", function () { textarea.value = SAMPLES[b.dataset.sample]; runMatch(textarea.value); });
+  });
+
+  textarea.value = SAMPLES.typical;
+  runMatch(textarea.value);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>RFQ &amp; PO line matching template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .rfq-textarea { width: 100%; min-height: 200px; font-family: var(--mono); font-size: 0.82rem; padding: 1rem 1.1rem; border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--surface-2); color: var(--ink); resize: vertical; line-height: 1.65; }
+  .rfq-textarea:focus { outline: none; border-color: var(--brand); }
+  .rfq-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; margin-top: 0.9rem; }
+  .rfq-samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.7rem; }
+  .rfq-summary-stats { display: flex; gap: 1.4rem; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); }
+  .rfq-summary-stats b { color: var(--ink); font-weight: 660; }
+  .rfq-table { display: flex; flex-direction: column; gap: 10px; margin-top: 1.5rem; }
+  .rfq-row { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.2rem; box-shadow: var(--shadow-sm); }
+  .rfq-row-top { display: grid; grid-template-columns: 1.9rem 1fr auto; gap: 0.9rem; align-items: start; }
+  .rfq-num { font-family: var(--mono); font-size: 0.75rem; color: var(--faint); padding-top: 0.25rem; }
+  .rfq-raw { font-family: var(--mono); font-size: 0.8rem; color: var(--muted); word-break: break-word; }
+  .rfq-match { margin-top: 0.4rem; font-size: 0.96rem; }
+  .rfq-match .name { font-weight: 630; }
+  .rfq-sku { font-family: var(--mono); font-size: 0.76rem; color: var(--brand); margin-left: 0.4rem; }
+  .rfq-mfr { color: var(--muted); font-size: 0.82rem; margin-left: 0.4rem; }
+  .badge { font-family: var(--mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.32rem 0.62rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.exact, .badge.high { color: var(--good); background: var(--good-bg); }
+  .badge.review { color: var(--warn); background: var(--warn-bg); }
+  .badge.notfound { color: var(--hot); background: var(--hot-bg); }
+  .badge.confirmed { color: var(--brand); background: var(--brand-soft); }
+  .rfq-side { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; min-width: 6.5rem; }
+  .rfq-price { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 0.92rem; text-align: right; }
+  .rfq-price.muted { color: var(--muted); font-size: 0.76rem; font-style: italic; }
+  .rfq-qty { color: var(--muted); font-size: 0.76rem; text-align: right; }
+  .rfq-candidates { margin-top: 0.85rem; padding-left: 2.8rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .rfq-cand { text-align: left; font: inherit; font-size: 0.87rem; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: 10px; padding: 0.65rem 0.85rem; cursor: pointer; display: flex; justify-content: space-between; gap: 1rem; align-items: center; transition: border-color .12s ease, background .12s ease; }
+  .rfq-cand:hover { border-color: color-mix(in srgb, var(--brand) 55%, var(--rule)); background: var(--surface); }
+  .rfq-cand .cn { font-family: var(--mono); color: var(--brand); font-size: 0.78rem; }
+  .rfq-cand .cp { font-family: var(--mono); color: var(--muted); flex-shrink: 0; }
+  .rfq-flag-btn { text-align: left; font: inherit; font-size: 0.85rem; color: var(--muted); background: none; border: 1px dashed var(--rule); border-radius: 10px; padding: 0.6rem 0.85rem; cursor: pointer; margin-left: 2.8rem; margin-top: 0.7rem; }
+  .rfq-flag-btn:hover { color: var(--ink); border-color: var(--muted); }
+  .rfq-override { margin-top: 0.6rem; padding-left: 2.8rem; }
+  .rfq-override button { font: inherit; font-size: 0.78rem; color: var(--faint); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 0; }
+  .rfq-override button:hover { color: var(--ink-2); }
+  .rfq-approve-bar { display: flex; flex-direction: column; gap: 0.6rem; align-items: flex-start; margin-top: 1.7rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); }
+  .rfq-approve-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .rfq-total-amt { font-family: var(--serif); font-size: 2rem; }
+  .rfq-done { background: var(--good-bg); border: 1px solid color-mix(in srgb, var(--good) 30%, var(--rule)); border-radius: var(--radius-md); padding: 1rem 1.2rem; color: var(--ink-2); font-size: 0.92rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  .rfq-done b { color: var(--good); }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .lim a { color: var(--brand); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / RFQ &amp; PO line matching</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Match a messy order to your catalog, and flag what it isn't sure about</h1>
+  <p class="fx-lede">Distributors get purchase orders with the buyer's own part numbers, a typo, or a vague description instead of a real SKU. Someone on staff has to figure out what each line actually is, by hand, before it can be priced and keyed in. This page uses a fictional catalog to show what a first pass looks like, matched, flagged for review, or marked as not carried, never guessed and never auto-finalized.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> The catalog and the sample orders are made up for this template. When this gets built for a real distributor, it reads their actual catalog export or product feed, the way the example below does with a real supplier's real public pricing.</p></div>
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Paste or edit an incoming order</div>
+      <textarea class="rfq-textarea" id="order-input" spellcheck="false"></textarea>
+      <div class="rfq-actions">
+        <button class="fx-btn" id="match-btn">Match against the catalog</button>
+        <span style="font-size:0.82rem; color:var(--muted);">14 fictional SKUs loaded</span>
+      </div>
+      <div class="rfq-samples">
+        <span style="font-size:0.82rem; color:var(--muted);">Try a sample order:</span>
+        <button class="sample-chip" data-sample="mixed">Mixed order (7 lines)</button>
+        <button class="sample-chip" data-sample="quick">Quick reorder (3 lines)</button>
+      </div>
+    </div>
+    <div id="result-root"></div>
+  </div>
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>A real catalog, not this fictional one.</b> A real build reads whatever export or feed the distributor already keeps current, all of it, not a hand-picked slice.</div>
+      <div class="lim"><b>It never places or finalizes an order.</b> Every line either gets a person's yes or gets flagged for one. This produces a clean draft for staff to key in, not a submitted order.</div>
+      <div class="lim"><b>See it built for a real distributor: <a href="examples/dale-electric-supply/">Dale Electric Supply</a></b>, matched against their real, public catalog and pricing.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p>Prepared by Shlok Sarnayak. Fictional catalog and order data on this page, not connected to any real supplier.</p></footer>
+<script>
+(function () {
+  "use strict";
+
+  var CATALOG = [
+    { sku: "RC-2040-TR", mfr: "Voltline", desc: "20 Amp 125 Volt duplex receptacle tamper resistant", price: 7.40, unit: "EA" },
+    { sku: "RC-2040-HG", mfr: "Voltline", desc: "20 Amp 125 Volt duplex receptacle tamper resistant hospital grade", price: 38.60, unit: "EA" },
+    { sku: "WN-YEL-100", mfr: "Nutcore", desc: "Yellow wire nut connector 18-10 AWG box of 100", price: 8.90, unit: "BOX" },
+    { sku: "CD-EMT-050", mfr: "Ferrotube", desc: "1/2 inch thinwall EMT metallic conduit 10 foot stick", price: 5.65, unit: "EA" },
+    { sku: "CD-EMT-300", mfr: "Ferrotube", desc: "3 inch thinwall EMT metallic conduit 10 foot stick", price: 52.10, unit: "EA" },
+    { sku: "JB-4X4X4", mfr: "Boxwell", desc: "4x4x4 schedule 40 PVC junction box", price: 21.15, unit: "EA" },
+    { sku: "JB-4X4X2", mfr: "Boxwell", desc: "4x4x2 schedule 40 PVC junction box", price: 12.30, unit: "EA" },
+    { sku: "BRK-200-3P", mfr: "Cascade Electric", desc: "200 Amp 3-pole molded case circuit breaker 240 Volt", price: 940.00, unit: "EA" },
+    { sku: "CT-BLK-050", mfr: "Fastenwrap", desc: "Cable tie 7.5 in length 50 lb UV black", price: 10.80, unit: "EA" },
+    { sku: "CT-BLK-110", mfr: "Fastenwrap", desc: "Cable tie 11 in length 50 lb UV black bulk pack", price: 18.40, unit: "EA" },
+    { sku: "EX-RED-LED", mfr: "Beacon", desc: "LED exit sign red letters surface mounted", price: 21.00, unit: "EA" },
+    { sku: "WP-1G-WHT", mfr: "Rainguard", desc: "Weatherproof cover single gang white", price: 6.10, unit: "EA" },
+    { sku: "WP-1G-BLK", mfr: "Rainguard", desc: "Weatherproof cover single gang black", price: 6.10, unit: "EA" },
+    { sku: "DISC-60-GFCI", mfr: "Cascade Electric", desc: "60 Amp residential AC disconnect with GFCI protection", price: 98.00, unit: "EA" }
+  ];
+
+  var SAMPLES = {
+    mixed:
+"1. Duplex receptacles tamper resistant 20A, qty 30\n" +
+"2. yellow wire nuts box of 100, qty 4\n" +
+"3. RC-EMT-050 1/2 conduit 10 foot sticks, qty 40\n" +
+"4. JB4X4X4 PVC junction box 4x4x4, qty 15\n" +
+"5. black cable ties 50 lb, qty 12\n" +
+"6. 3 phase 480V contactor 40A Square D, qty 1\n" +
+"7. AC disconnect with GFCI, qty 2",
+    quick:
+"1. JB-4X4X2 PVC box, qty 10\n" +
+"2. EX-RED-LED exit sign, qty 3\n" +
+"3. CT-BLK-050 cable ties, qty 8"
+  };
+
+  var STOPWORDS = { a:1,an:1,the:1,and:1,or:1,with:1,for:1,of:1,in:1,per:1,need:1,needed:1,needs:1,please:1,we:1,qty:1,to:1,at:1,on:1,only:1 };
+  var UNIT_EXPAND = [[/(\d+)a\b/g,"$1 amp"],[/(\d+)v\b/g,"$1 volt"],[/(\d+)ft\b/g,"$1 foot"],[/(\d+)'/g,"$1 foot"],[/(\d+)lb\b/g,"$1 lb"]];
+
+  function preprocess(s) {
+    var t = (s || "").toLowerCase();
+    t = t.replace(/["'()]/g, " ").replace(/[,;:]/g, " ");
+    UNIT_EXPAND.forEach(function (pair) { t = t.replace(pair[0], pair[1]); });
+    t = t.replace(/(?<!\d)[-/](?!\d)/g, " ").replace(/(?<=\D)[-/]/g, " ").replace(/[-/](?=\D)/g, " ");
+    t = t.replace(/[^a-z0-9./ ]/g, " ");
+    return t;
+  }
+  function tokenize(s) {
+    return preprocess(s).split(/\s+/).map(function (t) { return t.trim(); })
+      .filter(function (t) { return t.length > 0 && !STOPWORDS[t]; })
+      .map(function (t) { return (t.length > 3 && t.slice(-1) === "s" && t.slice(-2) !== "ss") ? t.slice(0, -1) : t; });
+  }
+  function normCode(s) { return (s || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+  function levenshtein(a, b) {
+    var m = a.length, n = b.length;
+    if (m === 0) return n; if (n === 0) return m;
+    var dp = []; for (var i = 0; i <= m; i++) { dp.push(new Array(n + 1).fill(0)); dp[i][0] = i; }
+    for (var j = 0; j <= n; j++) dp[0][j] = j;
+    for (i = 1; i <= m; i++) for (j = 1; j <= n; j++) {
+      var cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+    }
+    return dp[m][n];
+  }
+
+  var CATALOG_PREP = CATALOG.map(function (item) {
+    return { item: item, normSku: normCode(item.sku), tokens: tokenize(item.mfr + " " + item.desc + " " + item.sku) };
+  });
+  var DF = {};
+  CATALOG_PREP.forEach(function (entry) {
+    var seen = {};
+    entry.tokens.forEach(function (t) { if (!seen[t]) { seen[t] = 1; DF[t] = (DF[t] || 0) + 1; } });
+  });
+  var N = CATALOG_PREP.length;
+  function idf(t) { return Math.log(1 + N / (DF[t] || 1)); }
+  CATALOG_PREP.forEach(function (entry) {
+    var set = {}; entry.tokens.forEach(function (t) { set[t] = 1; });
+    entry.tokenSet = set;
+    var sum = 0; Object.keys(set).forEach(function (t) { sum += idf(t) * idf(t); });
+    entry.norm = Math.sqrt(sum) || 1;
+  });
+  function cosine(qTokens, entry) {
+    var dot = 0;
+    qTokens.forEach(function (t) { if (entry.tokenSet[t]) dot += idf(t) * idf(t); });
+    var qSum = 0; qTokens.forEach(function (t) { qSum += idf(t) * idf(t); });
+    var qNorm = Math.sqrt(qSum) || 1;
+    return dot / (qNorm * entry.norm);
+  }
+  function uniq(arr) { var seen = {}, out = []; arr.forEach(function (t) { if (!seen[t]) { seen[t] = 1; out.push(t); } }); return out; }
+
+  function scoreLine(queryText) {
+    var qTokens = uniq(tokenize(queryText));
+    var codeTokens = qTokens.filter(function (t) { return /[0-9]/.test(t) && t.replace(/[^a-z0-9]/gi, "").length >= 3; });
+    var scored = CATALOG_PREP.map(function (entry) {
+      var codeBonus = 0;
+      codeTokens.forEach(function (ct) {
+        var nc = normCode(ct);
+        if (nc.length < 3) return;
+        var d = levenshtein(nc, entry.normSku);
+        if (d === 0) codeBonus = Math.max(codeBonus, 1.0);
+        else if (d <= 1 && nc.length >= 5) codeBonus = Math.max(codeBonus, 0.8);
+        else if (d <= 2 && nc.length >= 7) codeBonus = Math.max(codeBonus, 0.6);
+      });
+      var descScore = cosine(qTokens, entry);
+      return { item: entry.item, score: Math.max(codeBonus, descScore) };
+    });
+    scored.sort(function (a, b) { return b.score - a.score; });
+    var top = scored[0], second = scored[1];
+    var tier;
+    if (top.score >= 0.9) tier = "EXACT";
+    else if (top.score >= 0.4 && (top.score - second.score) >= 0.15) tier = "HIGH";
+    else if (top.score >= 0.22) tier = "AMBIGUOUS";
+    else tier = "NO_MATCH";
+    var candidates = tier === "AMBIGUOUS"
+      ? scored.filter(function (s) { return s.score >= top.score - 0.12 && s.score >= 0.2; }).slice(0, 4)
+      : [top];
+    return { tier: tier, top: top, candidates: candidates };
+  }
+
+  function parseOrderText(text) {
+    return text.split("\n").map(function (l) { return l.trim(); })
+      .filter(function (l) { return /^\d+[.)]/.test(l); })
+      .map(function (l) { return l.replace(/^\d+[.)]\s*/, ""); })
+      .filter(function (body) { return body.length > 0; })
+      .map(function (body) {
+        var m = body.match(/qty\s*(\d+)/i);
+        return { raw: body, qty: m ? parseInt(m[1], 10) : 1 };
+      });
+  }
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+  function money(n) { return "$" + n.toFixed(2); }
+
+  var textarea = document.getElementById("order-input");
+  var resultRoot = document.getElementById("result-root");
+  var lineState = [];
+
+  function badgeFor(tier, hasPrice, isManualPick) {
+    if (isManualPick) return { cls: "confirmed", label: "Confirmed by you" };
+    if (tier === "EXACT") return { cls: "exact", label: "Exact match" };
+    if (tier === "HIGH") return hasPrice ? { cls: "high", label: "Likely match" } : { cls: "noprice", label: "Matched, no price" };
+    if (tier === "AMBIGUOUS") return { cls: "review", label: "Needs a quick check" };
+    return { cls: "notfound", label: "Not in this catalog" };
+  }
+
+  function decide(i, decision) { lineState[i].decision = decision; render(); }
+
+  function rowHtml(line, i) {
+    var st = lineState[i];
+    var tier = st.tier;
+    var html = '<div class="rfq-row">';
+    html += '<div class="rfq-row-top"><div class="rfq-num">' + (i + 1) + '.</div><div><div class="rfq-raw">' + escapeHtml(line.raw) + '</div>';
+
+    if (st.decision && st.decision.type === "accept") {
+      var it = st.decision.item;
+      var wasManualPick = tier === "AMBIGUOUS" || tier === "NO_MATCH";
+      var b = badgeFor(tier, it.price !== null, wasManualPick);
+      html += '<div class="rfq-match"><span class="badge ' + b.cls + '">' + b.label + '</span> <span class="name">' + escapeHtml(it.desc) + '</span><span class="rfq-sku">' + escapeHtml(it.sku) + '</span><span class="rfq-mfr">' + escapeHtml(it.mfr) + '</span></div>';
+      html += '<div class="rfq-override"><button onclick="__rfq.flag(' + i + ')">Not right? Flag this line for a person instead</button></div>';
+    } else if (tier === "AMBIGUOUS") {
+      var b2 = badgeFor(tier, true);
+      html += '<div class="rfq-match"><span class="badge ' + b2.cls + '">' + b2.label + '</span> ' + st.candidates.length + ' catalog items are close enough that this needs a person to pick.</div>';
+      html += '<div class="rfq-candidates">';
+      st.candidates.forEach(function (c, ci) {
+        html += '<button class="rfq-cand" onclick="__rfq.pick(' + i + ',' + ci + ')"><span><span class="cn">' + escapeHtml(c.item.sku) + '</span> ' + escapeHtml(c.item.desc) + '</span><span class="cp">' + money(c.item.price) + ' / ' + c.item.unit + '</span></button>';
+      });
+      html += '</div>';
+      html += '<button class="rfq-flag-btn" onclick="__rfq.flag(' + i + ')">None of these, flag for a person to source</button>';
+    } else if (tier === "NO_MATCH") {
+      var b3 = badgeFor(tier, false);
+      html += '<div class="rfq-match"><span class="badge ' + b3.cls + '">' + b3.label + '</span> Nothing in this catalog scores as a plausible match.</div>';
+      html += '<button class="rfq-flag-btn" onclick="__rfq.flag(' + i + ')">Acknowledge, source this separately</button>';
+    }
+
+    html += '</div><div class="rfq-side">';
+    if (st.decision && st.decision.type === "accept") {
+      var it2 = st.decision.item;
+      html += '<div class="rfq-price">' + money(it2.price) + ' / ' + it2.unit + '</div>';
+      html += '<div class="rfq-qty">qty ' + line.qty + '</div>';
+      html += '<div class="rfq-price">' + money(it2.price * line.qty) + '</div>';
+    } else if (st.decision && st.decision.type === "flag") {
+      html += '<div class="rfq-price muted">flagged</div><div class="rfq-qty">qty ' + line.qty + '</div>';
+    } else {
+      html += '<div class="rfq-price muted">pending</div><div class="rfq-qty">qty ' + line.qty + '</div>';
+    }
+    html += '</div></div></div>';
+    return html;
+  }
+
+  function render() {
+    if (!lineState.length) {
+      resultRoot.innerHTML = '<p style="color:var(--muted); font-style:italic; font-size:0.92rem;">Paste an order above, or try a sample, then click "Match against the catalog."</p>';
+      return;
+    }
+    var html = '<div class="rfq-table">';
+    lineState.forEach(function (st, i) { html += rowHtml(st.line, i); });
+    html += '</div>';
+
+    var subtotal = 0, autoCount = 0, flaggedOrReviewCount = 0, pendingCount = 0;
+    lineState.forEach(function (st) {
+      if (st.decision && st.decision.type === "accept") {
+        if (st.tier === "EXACT" || st.tier === "HIGH") autoCount++;
+        subtotal += st.decision.item.price * st.line.qty;
+      } else if (st.decision && st.decision.type === "flag") {
+        flaggedOrReviewCount++;
+      } else {
+        pendingCount++;
+      }
+    });
+
+    var allResolved = pendingCount === 0;
+    html += '<div class="rfq-approve-bar">';
+    html += '<div class="rfq-summary-stats"><span><b>' + autoCount + '</b> auto-matched</span><span><b>' + flaggedOrReviewCount + '</b> flagged for a person</span>' + (pendingCount ? '<span><b>' + pendingCount + '</b> still need a decision</span>' : '') + '</div>';
+    html += '<div class="rfq-approve-row"><span class="rfq-total-amt">' + money(subtotal) + '</span><span style="color:var(--muted); font-size:0.85rem;">running subtotal, resolved lines only</span></div>';
+    if (window.__rfq_done) {
+      html += '<div class="rfq-done"><b>Marked ready.</b><span>In a real build, this hands staff a clean, confirmed list to key into their order system. Nothing sent, nothing ordered, nothing decided without a person.</span><span><button class="fx-btn-ghost" onclick="__rfq.reset()" style="margin-top:0.4rem;">Start over</button></span></div>';
+    } else {
+      html += '<div><button class="fx-btn" id="approve-btn" ' + (allResolved ? '' : 'disabled') + ' onclick="__rfq.approve()">Approve draft order' + (allResolved ? '' : ' (' + pendingCount + ' line' + (pendingCount === 1 ? '' : 's') + ' still need a decision)') + '</button></div>';
+    }
+    html += '</div>';
+    resultRoot.innerHTML = html;
+  }
+
+  function runMatch(text) {
+    window.__rfq_done = false;
+    var lines = parseOrderText(text);
+    lineState = lines.map(function (line) {
+      var r = scoreLine(line.raw);
+      var decision = null;
+      if (r.tier === "EXACT" || r.tier === "HIGH") decision = { type: "accept", item: r.top.item };
+      return { line: line, tier: r.tier, candidates: r.candidates, decision: decision };
+    });
+    render();
+  }
+
+  window.__rfq = {
+    pick: function (i, ci) { decide(i, { type: "accept", item: lineState[i].candidates[ci].item }); },
+    flag: function (i) { decide(i, { type: "flag" }); },
+    approve: function () { window.__rfq_done = true; render(); },
+    reset: function () { window.__rfq_done = false; runMatch(textarea.value); }
+  };
+
+  document.getElementById("match-btn").addEventListener("click", function () { runMatch(textarea.value); });
+  Array.prototype.forEach.call(document.querySelectorAll(".sample-chip"), function (b) {
+    b.addEventListener("click", function () { textarea.value = SAMPLES[b.dataset.sample]; runMatch(textarea.value); });
+  });
+
+  textarea.value = SAMPLES.mixed;
+  runMatch(textarea.value);
+})();
+</script>
+</body>
+</html>
