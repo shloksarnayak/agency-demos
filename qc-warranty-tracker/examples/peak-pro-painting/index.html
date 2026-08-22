@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Job QC sign-off &amp; warranty-claim tracker template</title>
-<link rel="stylesheet" href="../assets/theme.css">
+<title>Job QC sign-off &amp; warranty tracker: working example for Peak Pro Painting</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
 <style>
   .qwt-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
   @media (max-width: 900px) { .qwt-cols { grid-template-columns: 1fr; } }
@@ -49,24 +49,29 @@
 <body>
 <nav class="fx-nav">
   <div class="fx-nav-row">
-    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
-    <span class="fx-crumb"><a href="../index.html">Templates</a> / Job QC &amp; warranty tracker</span>
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Job QC &amp; warranty tracker</a> / Peak Pro Painting</span>
   </div>
 </nav>
 <header class="fx-hero">
-  <span class="fx-kicker">Template, not built for a specific business</span>
-  <h1 class="fx-h1">Catch the defect before the customer does, then never lose a warranty call again</h1>
-  <p class="fx-lede">Many multi-crew, multi-location install and repair businesses have no gate between "the crew says it's done" and "it's invoiced", and no shared log of who called in a warranty problem or whether anyone followed up. This page uses a fictional business to show what that gate and that log look like as one small, working tool, not a redesign of how jobs get scheduled or billed.</p>
+  <span class="fx-kicker">Working example, built for Peak Professional Painting (Peak Pro Painting)</span>
+  <h1 class="fx-h1">Catch a streaky coat before it's invoiced, and never let a warranty callback go unanswered</h1>
+  <p class="fx-lede">Your own site promises a "2-year warranty that covers our craftsmanship and materials," and markets excellent communication throughout the process. Independent BBB complaints and Yelp reviews describe the opposite more than once: a promised warranty callback or paint-analysis follow-up that goes unanswered for weeks or months, and finished jobs with uneven coverage, visible streaks, or old paint showing through. Your own live site shows no CRM, booking widget, or customer portal, only a manual "Schedule Free Estimate" form, and your own currently-open Office Administrator posting describes one person manually scheduling projects and managing calendars across Denver, Austin, and Dallas. Below is a small, working version of the two gates that pattern is missing: a QC checklist a crew lead completes before a job is marked ready to invoice, and a warranty-claim log that ages visibly across all three markets instead of sitting in an inbox until a customer escalates to BBB.</p>
 </header>
 <main class="fx-main">
-  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, it plugs into wherever job and customer data already lives, a scheduling tool, a shared spreadsheet, a CRM, rather than replacing it. This page shows the workflow, not the integration.</p></div>
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the "2-year warranty on craftsmanship and materials" language is quoted directly from Peak Pro Painting's own About page. The complaint pattern this tool targets is drawn from dated BBB complaints (Sept 2023: warranty department unresponsive for months; Oct 2023: a month of silence after a promised two-week paint-analysis turnaround; Aug 2024: a disputed, unreturned callback) and from independently found Yelp reviews describing warranty coverage concerns and "uneven paint coverage... visible streaks and old paint showing through." The absence of any CRM or scheduling software was confirmed by fetching the live homepage, /contact/, and /about-peak-pro-painting/ pages directly. The Denver (Lakewood, CO) headquarters and separately registered Austin, TX operation are both independently verified; Dallas is included as a market tag because Peak Pro Painting's own site markets itself as serving "Denver, Dallas and Austin."</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> every job, customer name, and warranty claim below is a fictional example built to show the pattern, not a real Peak Pro Painting job or customer record. Nothing here is connected to a live system.</p>
+  </div>
   <div class="qwt-cols">
     <div>
       <h2 class="qwt-section-title">Jobs pending sign-off</h2>
       <div id="jobs-root"></div>
     </div>
     <div>
-      <h2 class="qwt-section-title">Warranty claims</h2>
+      <h2 class="qwt-section-title">Warranty claims, all markets</h2>
       <button class="fx-btn-ghost" id="new-claim-toggle" style="margin-bottom:0.85rem;">+ Log a new warranty claim</button>
       <div id="new-claim-form-root"></div>
       <div id="claims-root"></div>
@@ -74,25 +79,26 @@
   </div>
   <div class="qwt-reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
   <section>
-    <h2 class="fx-h2">How this gets built for real</h2>
+    <h2 class="fx-h2">What I'd flag before this goes anywhere near a real job</h2>
     <div class="limits">
-      <div class="lim"><b>The checklist items and claim fields are placeholders.</b> A real build starts from the specific defects and complaint patterns that actually show up for that business, not a generic list.</div>
-      <div class="lim"><b>Sign-off is a gate, not a redesign of the workflow.</b> It sits in front of whatever already marks a job "complete" or "invoiced", it doesn't replace scheduling, billing, or CRM software.</div>
-      <div class="lim"><b>"Overdue" here is a simple day-count.</b> A real build matches whatever response-time commitment the business already makes, in writing or in practice.</div>
-      <div class="lim"><b>See it built for real businesses: <a href="examples/hurricane-fence/">Hurricane Fence Company</a> and <a href="examples/peak-pro-painting/">Peak Pro Painting</a>.</b></div>
+      <div class="lim"><b>This checklist is a starting point, not your final one.</b> It's built from the coverage/streaking pattern in your public reviews and BBB record, a real rollout should be checked against what your own crew leads and the Office Administrator already know goes wrong on site.</div>
+      <div class="lim"><b>It doesn't replace your estimate, scheduling, or invoicing process.</b> This sits as a gate in front of "mark complete," it doesn't touch how a job gets quoted, scheduled across Denver, Austin, and Dallas, or billed.</div>
+      <div class="lim"><b>"Overdue" here is a placeholder threshold (5 business days).</b> A real build uses whatever response-time commitment you want to hold yourselves to for the 2-year warranty, and can route by market instead of pooling all three into one list.</div>
+      <div class="lim"><b>Nothing here emails or calls a customer.</b> It's an internal tracking tool for your team; it doesn't change what the customer sees or send anything on your behalf.</div>
     </div>
   </section>
 </main>
-<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job and claim data on this page, not connected to any live system.</p></footer>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Peak Professional Painting / Peak Pro Painting.</strong></p><p>Prepared by Shlok Sarnayak. Warranty language, market footprint, and complaint pattern drawn from Peak Pro Painting's public site, BBB complaint record, and independently found Yelp reviews. All job and claim records shown are a fictional labeled sample, not real customer data.</p></footer>
 <script>
 (function () {
   "use strict";
-  var STORAGE_KEY = "qwt_template_v1";
+  var STORAGE_KEY = "qwt_peakpropainting_v1";
   var CHECKLIST_LABELS = [
-    "Work matches the approved job spec",
-    "Finish/fit checked against the order (no misalignment, gaps, or reversed parts)",
-    "Site cleaned up, no leftover material or debris",
-    "Customer walkthrough completed"
+    "Surface prep complete: scraping, sanding, and priming match the approved job spec",
+    "Coverage checked coat-by-coat for streaks, thin spots, or old paint showing through",
+    "Color and sheen match the approved sample, checked in daylight",
+    "Trim, edges, and adjacent surfaces (siding, deck, fence, or cabinet hardware) clean of overspray or drips",
+    "Site cleaned up, customer walkthrough completed"
   ];
 
   function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); return d; }
@@ -104,31 +110,37 @@
     return {
       jobs: [
         {
-          id: "J-2214", title: "Chain-link installation, Halloran residence", location: "Richmond office",
+          id: "PP-3312", title: "Exterior repaint, Whitcombe residence", location: "Denver market",
+          checklist: CHECKLIST_LABELS.map(function (l, i) { return { label: l, done: i !== 1 }; }),
+          signedOff: null
+        },
+        {
+          id: "PP-3305", title: "Interior repaint &amp; trim, Marner Ave. unit", location: "Austin market",
+          checklist: CHECKLIST_LABELS.map(function (l) { return { label: l, done: true }; }),
+          signedOff: null
+        },
+        {
+          id: "PP-3298", title: "Deck &amp; fence staining, Colburn property", location: "Dallas market",
+          checklist: CHECKLIST_LABELS.map(function (l) { return { label: l, done: true }; }),
+          signedOff: { by: "R.P.", at: daysAgo(4).toISOString() }
+        },
+        {
+          id: "PP-3320", title: "Cabinet painting, Osei kitchen", location: "Denver market",
           checklist: CHECKLIST_LABELS.map(function (l, i) { return { label: l, done: i < 2 }; }),
           signedOff: null
-        },
-        {
-          id: "J-2201", title: "Ornamental fence, west lot", location: "Coastal office",
-          checklist: CHECKLIST_LABELS.map(function (l) { return { label: l, done: true }; }),
-          signedOff: null
-        },
-        {
-          id: "J-2198", title: "Automatic gate operator install", location: "Inland office",
-          checklist: CHECKLIST_LABELS.map(function (l) { return { label: l, done: true }; }),
-          signedOff: { by: "T.M.", at: daysAgo(2).toISOString() }
         }
       ],
       claims: [
-        { id: "C-501", customer: "Sample Customer A", office: "Richmond office", issue: "Gate does not latch fully after installation.", loggedAt: daysAgo(6).toISOString(), lastTouchedAt: daysAgo(6).toISOString(), status: "New" },
-        { id: "C-502", customer: "Sample Customer B", office: "Coastal office", issue: "Gap under fence line, pet escaped yard.", loggedAt: daysAgo(2).toISOString(), lastTouchedAt: daysAgo(1).toISOString(), status: "Contacted" },
-        { id: "C-503", customer: "Sample Customer C", office: "Inland office", issue: "Panel section installed facing the wrong direction.", loggedAt: daysAgo(1).toISOString(), lastTouchedAt: daysAgo(1).toISOString(), status: "Scheduled" }
+        { id: "WC-241", customer: "Halden residence", office: "Denver market", issue: "Requested paint-analysis on a peeling section; office promised a two-week turnaround, nothing back since.", loggedAt: daysAgo(9).toISOString(), lastTouchedAt: daysAgo(9).toISOString(), status: "New" },
+        { id: "WC-242", customer: "Marisol Vega", office: "Austin market", issue: "Peeling near south-facing trim, requesting inspection under the 2-year craftsmanship warranty.", loggedAt: daysAgo(4).toISOString(), lastTouchedAt: daysAgo(2).toISOString(), status: "Contacted" },
+        { id: "WC-243", customer: "Prentiss Auto Body", office: "Dallas market", issue: "Visible streaks and old paint showing through on a repainted garage door; customer disputes job was finished to spec.", loggedAt: daysAgo(6).toISOString(), lastTouchedAt: daysAgo(6).toISOString(), status: "New" },
+        { id: "WC-244", customer: "Odom residence", office: "Denver market", issue: "Uneven coverage on fence staining, customer asking for a redo before winter.", loggedAt: daysAgo(2).toISOString(), lastTouchedAt: daysAgo(1).toISOString(), status: "Scheduled" }
       ]
     };
   }
 
   var STATUS_ORDER = ["New", "Contacted", "Scheduled", "Resolved"];
-  var OVERDUE_DAYS = 3;
+  var OVERDUE_DAYS = 5;
 
   var data = load();
   function load() {
@@ -153,13 +165,13 @@
     pending.forEach(function (job) {
       var idx = data.jobs.indexOf(job);
       var allChecked = job.checklist.every(function (c) { return c.done; });
-      html += '<div class="qwt-job"><div class="qwt-job-head"><div><div class="qwt-job-title">' + escapeHtml(job.title) + '</div><div class="qwt-job-meta">' + escapeHtml(job.id) + ' &middot; ' + escapeHtml(job.location) + '</div></div></div>';
+      html += '<div class="qwt-job"><div class="qwt-job-head"><div><div class="qwt-job-title">' + job.title + '</div><div class="qwt-job-meta">' + escapeHtml(job.id) + ' &middot; ' + escapeHtml(job.location) + '</div></div></div>';
       html += '<div class="qwt-check-list">';
       job.checklist.forEach(function (c, ci) {
         html += '<label class="qwt-check' + (c.done ? ' checked' : '') + '"><input type="checkbox" ' + (c.done ? 'checked' : '') + ' onchange="__qwt.toggleCheck(' + idx + ',' + ci + ')"><span>' + escapeHtml(c.label) + '</span></label>';
       });
       html += '</div>';
-      html += '<div class="qwt-signoff-row"><input type="text" class="qwt-initials" id="initials-' + idx + '" placeholder="PM initials" maxlength="6"><button class="fx-btn" onclick="__qwt.signOff(' + idx + ')">Sign off &amp; mark ready to invoice</button></div>';
+      html += '<div class="qwt-signoff-row"><input type="text" class="qwt-initials" id="initials-' + idx + '" placeholder="Crew lead initials" maxlength="6"><button class="fx-btn" onclick="__qwt.signOff(' + idx + ')">Sign off &amp; mark ready to invoice</button></div>';
       if (!allChecked) html += '<div class="qwt-block-msg">' + job.checklist.filter(function (c) { return !c.done; }).length + ' checklist item(s) still unchecked, sign-off is blocked until all are done.</div>';
       html += '<div class="qwt-block-msg" id="signoff-err-' + idx + '" style="display:none;"></div>';
       html += '</div>';
@@ -167,7 +179,7 @@
     if (done.length) {
       html += '<h3 style="font-size:0.85rem; color:var(--muted); margin:1.4rem 0 0.6rem;">Signed off, ready to invoice</h3>';
       done.forEach(function (job) {
-        html += '<div class="qwt-job is-done"><div class="qwt-job-head"><div><div class="qwt-job-title">' + escapeHtml(job.title) + '</div><div class="qwt-job-meta">' + escapeHtml(job.id) + ' &middot; ' + escapeHtml(job.location) + '</div></div><span class="qwt-done-badge">Signed off by ' + escapeHtml(job.signedOff.by) + ', ' + fmtDate(new Date(job.signedOff.at)) + '</span></div></div>';
+        html += '<div class="qwt-job is-done"><div class="qwt-job-head"><div><div class="qwt-job-title">' + job.title + '</div><div class="qwt-job-meta">' + escapeHtml(job.id) + ' &middot; ' + escapeHtml(job.location) + '</div></div><span class="qwt-done-badge">Signed off by ' + escapeHtml(job.signedOff.by) + ', ' + fmtDate(new Date(job.signedOff.at)) + '</span></div></div>';
       });
     }
     jobsRoot.innerHTML = html || '<p style="color:var(--muted); font-style:italic; font-size:0.9rem;">No jobs loaded.</p>';
@@ -177,7 +189,7 @@
     if (claim.status === "Resolved") return { cls: "resolved", label: "Resolved" };
     var days = daysBetween(new Date(claim.lastTouchedAt), new Date());
     if (days >= OVERDUE_DAYS) return { cls: "overdue", label: days + " day" + (days === 1 ? "" : "s") + " since last update, overdue" };
-    if (days >= OVERDUE_DAYS - 1) return { cls: "watch", label: days + " day" + (days === 1 ? "" : "s") + " since last update" };
+    if (days >= OVERDUE_DAYS - 2) return { cls: "watch", label: days + " day" + (days === 1 ? "" : "s") + " since last update" };
     return { cls: "ok", label: days === 0 ? "Updated today" : days + " day" + (days === 1 ? "" : "s") + " since last update" };
   }
 
@@ -198,12 +210,11 @@
     claimsRoot.innerHTML = html || '<p style="color:var(--muted); font-style:italic; font-size:0.9rem;">No claims logged.</p>';
   }
 
+  var MARKETS = ["Denver market", "Austin market", "Dallas market"];
+
   function renderNewClaimForm(open) {
     if (!open) { newClaimFormRoot.innerHTML = ""; return; }
-    var offices = [];
-    data.claims.concat(data.jobs.map(function (j) { return { office: j.location }; })).forEach(function (c) { if (c.office && offices.indexOf(c.office) === -1) offices.push(c.office); });
-    if (!offices.length) offices = ["Main office"];
-    var opts = offices.map(function (o) { return '<option value="' + escapeHtml(o) + '">' + escapeHtml(o) + '</option>'; }).join("");
+    var opts = MARKETS.map(function (o) { return '<option value="' + escapeHtml(o) + '">' + escapeHtml(o) + '</option>'; }).join("");
     newClaimFormRoot.innerHTML =
       '<div class="qwt-new-form">' +
       '<input type="text" id="nc-customer" placeholder="Customer name">' +
@@ -226,7 +237,7 @@
       var allChecked = job.checklist.every(function (c) { return c.done; });
       var initials = document.getElementById("initials-" + jobIdx).value.trim();
       if (!allChecked) { errEl.style.display = "block"; errEl.textContent = "Every checklist item must be checked before this job can be signed off."; return; }
-      if (!initials) { errEl.style.display = "block"; errEl.textContent = "Enter PM initials to sign off."; return; }
+      if (!initials) { errEl.style.display = "block"; errEl.textContent = "Enter crew lead initials to sign off."; return; }
       job.signedOff = { by: initials, at: new Date().toISOString() };
       save(); renderJobs();
     },
@@ -238,7 +249,7 @@
       if (!customer || !issue) { alert("Enter a customer name and issue before logging the claim."); return; }
       var n = data.claims.length + 1;
       var now = new Date().toISOString();
-      data.claims.push({ id: "C-" + (500 + n), customer: customer, office: office, issue: issue, loggedAt: now, lastTouchedAt: now, status: "New" });
+      data.claims.push({ id: "WC-" + (241 + n), customer: customer, office: office, issue: issue, loggedAt: now, lastTouchedAt: now, status: "New" });
       save(); newClaimOpen = false; renderNewClaimForm(false); renderClaims();
     },
     advance: function (claimIdx) {
