@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Stalled-job &amp; billing alert board template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .jat-cols { display: grid; grid-template-columns: 1.35fr 1fr; gap: 1.2rem; }
+  @media (max-width: 900px) { .jat-cols { grid-template-columns: 1fr; } }
+  .jat-section-title { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.9rem; }
+  .jat-job { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .jat-job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .jat-job-title { font-weight: 660; }
+  .jat-job-meta { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .jat-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+  .jat-badge { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.3rem 0.62rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .jat-badge.ok { color: var(--good); background: var(--good-bg); }
+  .jat-badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .jat-badge.overdue { color: var(--hot); background: var(--hot-bg); }
+  .jat-badge.done { color: var(--muted); background: var(--surface-2); }
+  .jat-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.75rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .jat-btn-sm { font: inherit; font-size: 0.78rem; font-weight: 650; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.4rem 0.8rem; cursor: pointer; }
+  .jat-btn-sm:disabled { opacity: 0.5; cursor: not-allowed; }
+  .jat-block-msg { font-size: 0.82rem; color: var(--hot); margin-top: 0.5rem; }
+  .jat-refund { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .jat-refund-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .jat-refund-title { font-weight: 660; }
+  .jat-refund-meta { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .jat-new-form { display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 1.1rem; padding: 1rem 1.1rem; border: 1px dashed var(--rule); border-radius: 16px; }
+  .jat-new-form input, .jat-new-form select, .jat-new-form textarea { font: inherit; font-size: 0.88rem; padding: 0.55rem 0.75rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  .jat-new-form input:focus, .jat-new-form select:focus, .jat-new-form textarea:focus { outline: none; border-color: var(--brand); }
+  .jat-reset-row { margin-top: 1.3rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Stalled-job &amp; billing alert board</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Catch the job that's quietly gone off track, before a customer has to complain to get it fixed</h1>
+  <p class="fx-lede">Many repair and field-service businesses have no single place that flags a job stuck on repeat visits without the right parts on order, a "no charge until it's fixed" promise about to be invoiced anyway, or a refund that was promised and never followed up on. Each of those is invisible to office staff individually until a customer escalates. This page uses a fictional business to show what a lightweight rule-based alert layer over that looks like, not a redesign of the underlying intake or billing system.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, it plugs into wherever job, parts, and billing data already lives, an intake sheet, a scheduling tool, a billing system, and adds the missing alert layer on top rather than replacing any of it.</p></div>
+  <div class="jat-cols">
+    <div>
+      <h2 class="jat-section-title">Open repair jobs</h2>
+      <button class="fx-btn-ghost" id="new-job-toggle" style="margin-bottom:0.85rem;">+ Log a new job</button>
+      <div id="new-job-form-root"></div>
+      <div id="jobs-root"></div>
+    </div>
+    <div>
+      <h2 class="jat-section-title">Open refunds</h2>
+      <button class="fx-btn-ghost" id="new-refund-toggle" style="margin-bottom:0.85rem;">+ Log a promised refund</button>
+      <div id="new-refund-form-root"></div>
+      <div id="refunds-root"></div>
+    </div>
+  </div>
+  <div class="jat-reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The thresholds here are placeholders.</b> "Stalled" (3 visits or 21 days without the right parts confirmed on order) and "refund overdue" (14 days) are round numbers for this demo. A real build uses whatever commitment the business actually makes, spoken or written.</div>
+      <div class="lim"><b>This is an alert layer, not a new system of record.</b> It sits alongside whatever already tracks jobs, parts orders, and invoices, it doesn't replace intake, dispatch, parts ordering, or billing software.</div>
+      <div class="lim"><b>The invoice block is a soft gate.</b> It stops one specific mistake, billing a job that was promised as no-charge before the repair is actually done, it isn't a full billing workflow.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/happy-home-appliance-repair/">Happy Home Appliance Repair</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job and refund data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "jat_template_v1";
+  var STALL_VISITS = 3;
+  var STALL_DAYS = 21;
+  var REFUND_OVERDUE_DAYS = 14;
+  var REGIONS = ["North office", "South office", "East office"];
+  var PARTS_STAGES = ["not_ordered", "wrong_ordered", "correct_ordered", "installed"];
+  var PARTS_LABELS = { not_ordered: "Parts not yet ordered", wrong_ordered: "Wrong parts ordered", correct_ordered: "Correct parts confirmed on order", installed: "Correct parts installed, repair complete" };
+
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); return d; }
+  function fmtDate(d) { return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+  function daysBetween(a, b) { return Math.floor((b - a) / (1000 * 60 * 60 * 24)); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function defaultData() {
+    return {
+      jobs: [
+        {
+          id: "J-4401", customer: "Sample Customer A", appliance: "Refrigerator", region: "North office",
+          openedAt: daysAgo(29).toISOString(), visits: 3, partsStatus: "wrong_ordered",
+          noChargeUntilFixed: false, invoiced: false
+        },
+        {
+          id: "J-4407", customer: "Sample Customer B", appliance: "Range", region: "South office",
+          openedAt: daysAgo(10).toISOString(), visits: 1, partsStatus: "correct_ordered",
+          noChargeUntilFixed: true, invoiced: false
+        },
+        {
+          id: "J-4390", customer: "Sample Customer C", appliance: "Dishwasher", region: "East office",
+          openedAt: daysAgo(6).toISOString(), visits: 1, partsStatus: "installed",
+          noChargeUntilFixed: false, invoiced: true
+        }
+      ],
+      refunds: [
+        { id: "R-118", customer: "Sample Customer D", region: "North office", amount: "$210.00", promisedAt: daysAgo(19).toISOString(), sent: false },
+        { id: "R-121", customer: "Sample Customer E", region: "South office", amount: "$95.00", promisedAt: daysAgo(3).toISOString(), sent: false }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return defaultData();
+  }
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  var jobsRoot = document.getElementById("jobs-root");
+  var refundsRoot = document.getElementById("refunds-root");
+  var newJobFormRoot = document.getElementById("new-job-form-root");
+  var newRefundFormRoot = document.getElementById("new-refund-form-root");
+
+  function isStalled(job) {
+    if (job.partsStatus === "installed") return false;
+    var days = daysBetween(new Date(job.openedAt), new Date());
+    return job.visits >= STALL_VISITS || days >= STALL_DAYS;
+  }
+
+  function renderJobs() {
+    var html = "";
+    var sorted = data.jobs.slice().sort(function (a, b) { return new Date(a.openedAt) - new Date(b.openedAt); });
+    sorted.forEach(function (job) {
+      var idx = data.jobs.indexOf(job);
+      var days = daysBetween(new Date(job.openedAt), new Date());
+      var stalled = isStalled(job);
+      html += '<div class="jat-job"><div class="jat-job-head"><div><div class="jat-job-title">' + escapeHtml(job.customer) + ' &middot; ' + escapeHtml(job.appliance) + '</div><div class="jat-job-meta">' + escapeHtml(job.id) + ' &middot; ' + escapeHtml(job.region) + ' &middot; opened ' + fmtDate(new Date(job.openedAt)) + ' (' + days + 'd ago) &middot; ' + job.visits + ' visit' + (job.visits === 1 ? '' : 's') + '</div></div></div>';
+      html += '<div class="jat-badges">';
+      var partsCls = job.partsStatus === "installed" ? "done" : job.partsStatus === "correct_ordered" ? "ok" : "watch";
+      html += '<span class="jat-badge ' + partsCls + '">' + escapeHtml(PARTS_LABELS[job.partsStatus]) + '</span>';
+      if (stalled) html += '<span class="jat-badge overdue">Stalled: ' + job.visits + ' visit' + (job.visits === 1 ? '' : 's') + ', ' + days + ' days, no correct parts confirmed</span>';
+      if (job.noChargeUntilFixed) html += '<span class="jat-badge ' + (job.invoiced ? "done" : job.partsStatus !== "installed" ? "watch" : "ok") + '">' + (job.invoiced ? "Invoiced" : "No-charge-until-fixed promise open") + '</span>';
+      html += '</div>';
+      html += '<div class="jat-row">';
+      if (job.partsStatus !== "installed") {
+        html += '<button class="jat-btn-sm" onclick="__jat.logVisit(' + idx + ')">Log another visit</button>';
+        var stageIdx = PARTS_STAGES.indexOf(job.partsStatus);
+        if (stageIdx < PARTS_STAGES.length - 1) html += '<button class="jat-btn-sm" onclick="__jat.advanceParts(' + idx + ')">Mark: ' + escapeHtml(PARTS_LABELS[PARTS_STAGES[stageIdx + 1]]) + '</button>';
+      }
+      if (!job.invoiced) html += '<button class="jat-btn-sm" onclick="__jat.sendInvoice(' + idx + ')">Send invoice</button>';
+      html += '</div>';
+      html += '<div class="jat-block-msg" id="job-err-' + idx + '" style="display:none;"></div>';
+      html += '</div>';
+    });
+    jobsRoot.innerHTML = html || '<p style="color:var(--muted); font-style:italic; font-size:0.9rem;">No jobs logged.</p>';
+  }
+
+  function refundBadge(refund) {
+    if (refund.sent) return { cls: "done", label: "Sent" };
+    var days = daysBetween(new Date(refund.promisedAt), new Date());
+    if (days >= REFUND_OVERDUE_DAYS) return { cls: "overdue", label: days + " days since promised, overdue" };
+    if (days >= REFUND_OVERDUE_DAYS - 5) return { cls: "watch", label: days + " days since promised" };
+    return { cls: "ok", label: days === 0 ? "Promised today" : days + " days since promised" };
+  }
+
+  function renderRefunds() {
+    var html = "";
+    var sorted = data.refunds.slice().sort(function (a, b) { return new Date(a.promisedAt) - new Date(b.promisedAt); });
+    sorted.forEach(function (refund) {
+      var idx = data.refunds.indexOf(refund);
+      var badge = refundBadge(refund);
+      html += '<div class="jat-refund"><div class="jat-refund-head"><div><div class="jat-refund-title">' + escapeHtml(refund.customer) + ' &middot; ' + escapeHtml(refund.amount) + '</div><div class="jat-refund-meta">' + escapeHtml(refund.id) + ' &middot; ' + escapeHtml(refund.region) + ' &middot; promised ' + fmtDate(new Date(refund.promisedAt)) + '</div></div><span class="jat-badge ' + badge.cls + '">' + badge.label + '</span></div>';
+      if (!refund.sent) html += '<div class="jat-row"><button class="jat-btn-sm" onclick="__jat.markRefundSent(' + idx + ')">Mark refund sent</button></div>';
+      html += '</div>';
+    });
+    refundsRoot.innerHTML = html || '<p style="color:var(--muted); font-style:italic; font-size:0.9rem;">No refunds logged.</p>';
+  }
+
+  function renderNewJobForm(open) {
+    if (!open) { newJobFormRoot.innerHTML = ""; return; }
+    var opts = REGIONS.map(function (o) { return '<option value="' + escapeHtml(o) + '">' + escapeHtml(o) + '</option>'; }).join("");
+    newJobFormRoot.innerHTML =
+      '<div class="jat-new-form">' +
+      '<input type="text" id="nj-customer" placeholder="Customer name">' +
+      '<input type="text" id="nj-appliance" placeholder="Appliance / job type">' +
+      '<select id="nj-region">' + opts + '</select>' +
+      '<label style="font-size:0.85rem; display:flex; gap:0.4rem; align-items:center;"><input type="checkbox" id="nj-nocharge"> No-charge-until-fixed promise made</label>' +
+      '<div><button class="fx-btn" onclick="__jat.addJob()">Log job</button> <button class="fx-btn-ghost" onclick="__jat.toggleNewJob()">Cancel</button></div>' +
+      "</div>";
+  }
+
+  function renderNewRefundForm(open) {
+    if (!open) { newRefundFormRoot.innerHTML = ""; return; }
+    var opts = REGIONS.map(function (o) { return '<option value="' + escapeHtml(o) + '">' + escapeHtml(o) + '</option>'; }).join("");
+    newRefundFormRoot.innerHTML =
+      '<div class="jat-new-form">' +
+      '<input type="text" id="nr-customer" placeholder="Customer name">' +
+      '<input type="text" id="nr-amount" placeholder="Amount, e.g. $150.00">' +
+      '<select id="nr-region">' + opts + '</select>' +
+      '<div><button class="fx-btn" onclick="__jat.addRefund()">Log refund</button> <button class="fx-btn-ghost" onclick="__jat.toggleNewRefund()">Cancel</button></div>' +
+      "</div>";
+  }
+
+  var newJobOpen = false;
+  var newRefundOpen = false;
+  var jobSeq = 4410;
+  var refundSeq = 125;
+
+  window.__jat = {
+    logVisit: function (idx) { data.jobs[idx].visits += 1; save(); renderJobs(); },
+    advanceParts: function (idx) {
+      var job = data.jobs[idx];
+      var stageIdx = PARTS_STAGES.indexOf(job.partsStatus);
+      if (stageIdx < PARTS_STAGES.length - 1) job.partsStatus = PARTS_STAGES[stageIdx + 1];
+      save(); renderJobs();
+    },
+    sendInvoice: function (idx) {
+      var job = data.jobs[idx];
+      var errEl = document.getElementById("job-err-" + idx);
+      if (job.noChargeUntilFixed && job.partsStatus !== "installed") {
+        errEl.style.display = "block";
+        errEl.textContent = "Blocked: this job was promised as no-charge until fixed, and the repair isn't marked complete yet. Invoicing now would break that promise.";
+        return;
+      }
+      errEl.style.display = "none";
+      job.invoiced = true;
+      save(); renderJobs();
+    },
+    toggleNewJob: function () { newJobOpen = !newJobOpen; renderNewJobForm(newJobOpen); },
+    addJob: function () {
+      var customer = document.getElementById("nj-customer").value.trim();
+      var appliance = document.getElementById("nj-appliance").value.trim();
+      var region = document.getElementById("nj-region").value;
+      var noCharge = document.getElementById("nj-nocharge").checked;
+      if (!customer || !appliance) { alert("Enter a customer name and appliance/job type before logging."); return; }
+      jobSeq += 1;
+      data.jobs.push({ id: "J-" + jobSeq, customer: customer, appliance: appliance, region: region, openedAt: new Date().toISOString(), visits: 1, partsStatus: "not_ordered", noChargeUntilFixed: noCharge, invoiced: false });
+      save(); newJobOpen = false; renderNewJobForm(false); renderJobs();
+    },
+    toggleNewRefund: function () { newRefundOpen = !newRefundOpen; renderNewRefundForm(newRefundOpen); },
+    addRefund: function () {
+      var customer = document.getElementById("nr-customer").value.trim();
+      var amount = document.getElementById("nr-amount").value.trim();
+      var region = document.getElementById("nr-region").value;
+      if (!customer || !amount) { alert("Enter a customer name and amount before logging."); return; }
+      refundSeq += 1;
+      data.refunds.push({ id: "R-" + refundSeq, customer: customer, amount: amount, region: region, promisedAt: new Date().toISOString(), sent: false });
+      save(); newRefundOpen = false; renderNewRefundForm(false); renderRefunds();
+    },
+    markRefundSent: function (idx) { data.refunds[idx].sent = true; save(); renderRefunds(); }
+  };
+
+  document.getElementById("new-job-toggle").addEventListener("click", function () { __jat.toggleNewJob(); });
+  document.getElementById("new-refund-toggle").addEventListener("click", function () { __jat.toggleNewRefund(); });
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset all jobs and refunds back to the original sample data?")) return;
+    data = defaultData(); save(); renderJobs(); renderRefunds();
+  });
+
+  renderJobs(); renderRefunds();
+})();
+</script>
+</body>
+</html>
