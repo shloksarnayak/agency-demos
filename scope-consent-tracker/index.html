@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Scope, consent &amp; documentation packet template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .sct-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .sct-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input[type="text"], .field input[type="number"], .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .rate-note { font-size: 0.74rem; color: var(--muted); margin-top: -0.35rem; }
+  .line-list { display: flex; flex-direction: column; gap: 1px; background: var(--rule-soft); border-radius: var(--radius-sm); overflow: hidden; margin: 0.8rem 0; }
+  .line-row { background: #fff; padding: 0.5rem 0.7rem; display: flex; justify-content: space-between; gap: 0.6rem; font-size: 0.85rem; align-items: center; }
+  .line-row .li-desc { flex: 1; }
+  .line-row .li-meta { color: var(--muted); font-size: 0.74rem; }
+  .line-row button { background: none; border: 0; color: var(--hot); font-weight: 700; cursor: pointer; font-size: 0.78rem; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .estimate-doc { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.2rem; background: #fff; box-shadow: var(--shadow-sm); margin-top: 0.9rem; }
+  .estimate-doc h4 { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.15rem; }
+  .estimate-doc .sub { font-size: 0.76rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .estimate-total { display: flex; justify-content: space-between; font-weight: 750; font-size: 0.98rem; padding-top: 0.6rem; border-top: 2px solid var(--ink); }
+  .range-note { font-size: 0.72rem; color: var(--muted); margin-top: 0.3rem; }
+  .job-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .job-title { font-weight: 660; }
+  .job-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.draft { color: var(--muted); background: var(--surface-2); }
+  .badge.ready { color: var(--brand); background: var(--brand-soft); }
+  .badge.signed { color: var(--good); background: var(--good-bg); }
+  .badge.complete { color: var(--ink); background: var(--lime); }
+  .sig-block { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px dashed var(--rule); }
+  .sig-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.5rem; }
+  .sig-row input[type="text"] { flex: 1; min-width: 160px; font: inherit; font-size: 0.82rem; padding: 0.4rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .consent-line { font-size: 0.8rem; color: var(--ink-2); display: flex; gap: 0.4rem; align-items: flex-start; }
+  .sig-fact { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin-top: 0.4rem; }
+  .doc-log { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .doc-entry { font-size: 0.8rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .doc-entry .tag { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; color: var(--brand); margin-right: 0.4rem; }
+  .doc-add-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.6rem; align-items: center; }
+  .doc-add-row select, .doc-add-row input { font: inherit; font-size: 0.8rem; padding: 0.38rem 0.55rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); }
+  .doc-add-row input[type="text"] { flex: 1; min-width: 140px; }
+  .job-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .packet-view { margin-top: 0.6rem; padding: 0.7rem 0.8rem; background: var(--surface-2); border-radius: var(--radius-sm); font-size: 0.8rem; }
+  .packet-line { padding: 0.3rem 0; border-bottom: 1px solid var(--rule-soft); }
+  .packet-line:last-child { border-bottom: none; }
+  .packet-line b { display: block; }
+  .packet-line .no-evidence { color: var(--hot); font-size: 0.74rem; }
+  .reset-row { margin-top: 1.3rem; }
+  .guard-wrap { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.2rem; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .guard-wrap textarea { width: 100%; min-height: 90px; resize: vertical; }
+  .flag-card { margin-top: 0.7rem; padding: 0.8rem 1rem; border-left: 4px solid var(--hot); background: var(--hot-bg); border-radius: var(--radius-sm); font-size: 0.86rem; }
+  .flag-card b { display: block; margin-bottom: 0.25rem; }
+  .flag-ok { margin-top: 0.7rem; padding: 0.7rem 1rem; border-left: 4px solid var(--good); background: var(--good-bg); border-radius: var(--radius-sm); font-size: 0.86rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Scope, consent &amp; documentation packet</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">A written estimate the customer signs off on, before anyone touches the job</h1>
+  <p class="fx-lede">Field-service and restoration businesses that price after the fact, or give a verbal number before a crew starts, tend to accumulate the same dispute: a customer or an insurer sees a final bill that does not match what they thought they agreed to. This page shows one small, working tool that closes that gap: an itemized estimate generated before work starts, a timestamped customer sign-off on that estimate, and a documentation packet that ties each billed line item to real evidence, so a disputed invoice gets resolved by pulling a record instead of a manager re-litigating it by phone.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, it reads from whatever already captures a site visit or job intake, a paper form, a tablet app, and adds the itemized estimate, the sign-off, and the documentation packet on top, without replacing how the visit itself happens.</p></div>
+
+  <div class="sct-cols">
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Build the itemized estimate</h2>
+      <form id="line-form" class="form-grid">
+        <div class="field span2"><label for="f-customer">Customer / job name</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer"></div>
+        <div class="field span2"><label for="f-cat">Scope category</label>
+          <select id="f-cat"></select>
+        </div>
+        <div class="field span2"><label for="f-desc">Line description</label><input type="text" id="f-desc" placeholder="e.g. Living room and hallway, 2 units"></div>
+        <div class="field"><label for="f-qty">Quantity</label><input type="number" id="f-qty" min="0" step="0.5" value="1"></div>
+        <div class="field"><label for="f-rate">Rate ($)</label><input type="number" id="f-rate" min="0" step="0.01"></div>
+        <div class="rate-note span2">Sample rates, editable. These illustrate the calculation, not any business's actual price list.</div>
+        <div class="field span2"><button type="submit" class="fx-btn-ghost">Add line item</button></div>
+      </form>
+      <div id="lines-root"></div>
+      <div class="field"><label for="f-contingency">Estimate range, contingency %</label><input type="number" id="f-contingency" min="0" max="50" value="10" style="max-width:120px;"></div>
+      <div class="field span2"><button id="gen-btn" class="fx-btn" type="button">Generate written estimate</button></div>
+      <div id="doc-root"></div>
+    </div>
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Job record &amp; documentation packet</h2>
+      <div id="jobs-root"></div>
+      <div class="reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">Staff message guardrail check</h2>
+    <div class="guard-wrap">
+      <p style="margin-top:0; color: var(--ink-2); font-size: 0.9rem;">Paste a draft customer message or call note. This checks it against a short list of phrasing patterns that read as promising insurance coverage, promising to negotiate with a customer's insurer directly, or skipping a written estimate, patterns that in at least one published case have been found to cross into unlicensed public-adjusting conduct or unlicensed-practice exposure. It is a simple keyword check for illustration, not legal advice or a substitute for compliance review.</p>
+      <textarea id="guard-input" placeholder="e.g. Don't worry about the cost, we'll deal with your insurance company directly and make sure it's covered."></textarea>
+      <div style="margin-top:0.6rem;"><button id="guard-btn" class="fx-btn-ghost" type="button">Check message</button></div>
+      <div id="guard-root"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The estimate categories are illustrative.</b> A real build maps to whatever pricing structure the business already uses, whether that's Xactimate-style line items or its own price book, it doesn't require adopting new software elsewhere.</div>
+      <div class="lim"><b>"Signed" here is a typed name and a timestamp.</b> A real build can use an actual e-signature provider if the business wants a stronger legal record, this demo shows the workflow, not a specific vendor integration.</div>
+      <div class="lim"><b>The guardrail check is a keyword list, not legal review.</b> It catches obvious phrasing patterns as a first line of defense; it does not replace training or a compliance sign-off on communication templates.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/chicago-water-fire-restoration/">Chicago Water &amp; Fire Restoration</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job and estimate data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "sct_template_generic_v1";
+
+  var CATEGORIES = [
+    { name: "Mitigation - Extraction", unit: "sq ft", rate: 1.75 },
+    { name: "Structural Drying - Equipment Placement", unit: "unit/day", rate: 45 },
+    { name: "Antimicrobial / Sanitization Treatment", unit: "flat", rate: 350 },
+    { name: "Content Manipulation & Pack-Out", unit: "room", rate: 180 },
+    { name: "Demolition / Tear-Out", unit: "sq ft", rate: 3.25 },
+    { name: "Reconstruction Labor", unit: "hour", rate: 65 },
+    { name: "Reconstruction Materials", unit: "flat", rate: 500 },
+    { name: "Documentation & Project Management", unit: "flat", rate: 150 }
+  ];
+
+  var GUARD_PATTERNS = [
+    {
+      key: "insurer-negotiation",
+      test: /(deal with|handle|negotiat\w*|talk to)[^.?!]{0,25}(your )?insur\w*|leave the insurance to us/i,
+      label: "Reads as offering to negotiate with the customer's insurer on their behalf",
+      note: "One published appellate case involving a restoration contractor found this exact pattern, applying loss circumstances to the homeowner's policy language on the customer's behalf, constituted unlicensed public adjusting and voided the underlying contract."
+    },
+    {
+      key: "coverage-guarantee",
+      test: /insurance (will|should|is going to) cover|(fully|100%) covered by (your )?insurance|don'?t worry about the cost/i,
+      label: "Promises insurance coverage before any claim has been reviewed or approved",
+      note: "Coverage decisions belong to the insurer, not the contractor. A promise like this can become the basis of a dispute if the claim comes back lower than expected."
+    },
+    {
+      key: "no-estimate",
+      test: /figure out (the )?pric\w+ (after|later)|(send|bill) you (the invoice )?after|no need for a (written )?estimate/i,
+      label: "Skips a written estimate before work begins",
+      note: "Starting work before a customer has seen and agreed to a scope and price range is the single most common root cause of billing disputes in the underlying research for this tool."
+    }
+  ];
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtMoney(n) { return "$" + n.toFixed(2).replace(/\.00$/, ""); }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function daysAgo(n, h) { var d = new Date(); d.setDate(d.getDate() - n); d.setHours(h || 9, 0, 0, 0); return d.getTime(); }
+
+  function defaultData() {
+    var lines1 = [
+      { desc: "Basement, main living area", cat: "Mitigation - Extraction", qty: 800, rate: 1.75 },
+      { desc: "Air movers + dehumidifiers, 4 days", cat: "Structural Drying - Equipment Placement", qty: 4, rate: 45 },
+      { desc: "Whole affected area", cat: "Antimicrobial / Sanitization Treatment", qty: 1, rate: 350 }
+    ];
+    var job1 = makeJob("Sample Customer A", lines1, 10);
+    job1.status = "complete";
+    job1.signerName = "Sample Customer A";
+    job1.signedAt = daysAgo(6);
+    job1.createdAt = daysAgo(7);
+    job1.docLog = [
+      { at: daysAgo(6, 11), type: "Photo reference", note: "Pre-work moisture-affected drywall, basement north wall", lineIdx: 0 },
+      { at: daysAgo(5, 14), type: "Moisture reading", note: "18% at baseboard, day 1", lineIdx: 1 },
+      { at: daysAgo(3, 14), type: "Moisture reading", note: "11% at baseboard, day 4, within dry standard", lineIdx: 1 },
+      { at: daysAgo(3, 15), type: "Time log", note: "Antimicrobial application completed, 2 technicians, 1.5 hrs", lineIdx: 2 }
+    ];
+    var lines2 = [
+      { desc: "Kitchen + hallway", cat: "Mitigation - Extraction", qty: 420, rate: 1.75 },
+      { desc: "Air movers, 2 days", cat: "Structural Drying - Equipment Placement", qty: 2, rate: 45 }
+    ];
+    var job2 = makeJob("Sample Customer B", lines2, 10);
+    job2.status = "signed";
+    job2.signerName = "Sample Customer B";
+    job2.signedAt = daysAgo(1);
+    job2.createdAt = daysAgo(1);
+    var lines3 = [
+      { desc: "Garage, water intrusion", cat: "Mitigation - Extraction", qty: 260, rate: 1.75 }
+    ];
+    var job3 = makeJob("Sample Customer C", lines3, 15);
+    job3.status = "ready";
+    job3.createdAt = daysAgo(0);
+    return { seq: 3, jobs: [job1, job2, job3] };
+  }
+
+  function makeJob(customer, lineDefs, contingency) {
+    var lines = lineDefs.map(function (l) { return { desc: l.desc, cat: l.cat, qty: l.qty, rate: l.rate }; });
+    return {
+      id: "JOB-" + Math.floor(1000 + Math.random() * 1),
+      customer: customer,
+      lines: lines,
+      contingency: contingency,
+      status: "ready",
+      createdAt: Date.now(),
+      signerName: null,
+      signedAt: null,
+      docLog: []
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  var draftLines = [];
+
+  function populateCategorySelect() {
+    var sel = document.getElementById("f-cat");
+    sel.innerHTML = CATEGORIES.map(function (c) { return '<option value="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + " (" + c.unit + ")</option>"; }).join("");
+    sel.addEventListener("change", fillRate);
+    fillRate();
+  }
+  function fillRate() {
+    var sel = document.getElementById("f-cat");
+    var cat = CATEGORIES.filter(function (c) { return c.name === sel.value; })[0];
+    if (cat) document.getElementById("f-rate").value = cat.rate;
+  }
+
+  function renderDraftLines() {
+    var root = document.getElementById("lines-root");
+    if (!draftLines.length) { root.innerHTML = '<p class="empty">No line items added yet.</p>'; return; }
+    var html = '<div class="line-list">';
+    draftLines.forEach(function (l, i) {
+      html += '<div class="line-row"><span class="li-desc">' + escapeHtml(l.cat) + (l.desc ? " &middot; " + escapeHtml(l.desc) : "") + '<br><span class="li-meta">' + l.qty + " &times; " + fmtMoney(l.rate) + " = " + fmtMoney(l.qty * l.rate) + '</span></span><button type="button" onclick="__sct.removeLine(' + i + ')">Remove</button></div>';
+    });
+    html += "</div>";
+    root.innerHTML = html;
+  }
+
+  function lineTotal(l) { return l.qty * l.rate; }
+  function sumLines(lines) { return lines.reduce(function (s, l) { return s + lineTotal(l); }, 0); }
+
+  function renderEstimateDoc(job) {
+    var root = document.getElementById("doc-root");
+    var total = sumLines(job.lines);
+    var low = total * (1 - job.contingency / 200);
+    var high = total * (1 + job.contingency / 200);
+    var html = '<div class="estimate-doc" id="doc-print">' +
+      "<h4>Written Estimate</h4>" +
+      '<div class="sub">' + job.id + " &middot; " + escapeHtml(job.customer) + " &middot; generated " + fmtDate(job.createdAt) + "</div>" +
+      '<div class="line-list">' +
+      job.lines.map(function (l) { return '<div class="line-row"><span class="li-desc">' + escapeHtml(l.cat) + (l.desc ? " &middot; " + escapeHtml(l.desc) : "") + '</span><span>' + fmtMoney(lineTotal(l)) + "</span></div>"; }).join("") +
+      "</div>" +
+      '<div class="estimate-total"><span>Estimated total</span><span>' + fmtMoney(total) + "</span></div>" +
+      '<div class="range-note">Estimated range shown to customer: ' + fmtMoney(low) + " &ndash; " + fmtMoney(high) + " (&plusmn;" + job.contingency + "%). Any cost outside this range requires a new signed change order before work continues.</div>" +
+      '<div style="margin-top:0.9rem;"><button class="fx-btn-ghost" onclick="window.print()">Print / save as PDF</button></div>' +
+      "</div>";
+    root.innerHTML = html;
+  }
+
+  var STATUS_LABEL = { draft: "Draft", ready: "Estimate ready", signed: "Signed, work authorized", complete: "Documentation complete" };
+  var STATUS_CLASS = { draft: "draft", ready: "ready", signed: "signed", complete: "complete" };
+
+  function renderJobs() {
+    var root = document.getElementById("jobs-root");
+    if (!data.jobs.length) { root.innerHTML = '<p class="empty">No jobs yet. Generate a written estimate to start one.</p>'; return; }
+    var html = "";
+    data.jobs.slice().sort(function (a, b) { return b.createdAt - a.createdAt; }).forEach(function (job) {
+      var idx = data.jobs.indexOf(job);
+      var total = sumLines(job.lines);
+      var low = total * (1 - job.contingency / 200);
+      var high = total * (1 + job.contingency / 200);
+      html += '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(job.customer) + '</div><div class="job-meta">' + job.id + " &middot; " + fmtMoney(low) + " &ndash; " + fmtMoney(high) + '</div></div><span class="badge ' + STATUS_CLASS[job.status] + '">' + STATUS_LABEL[job.status] + "</span></div>";
+
+      if (job.status === "ready") {
+        html += '<div class="sig-block"><div class="consent-line"><input type="checkbox" id="consent-' + idx + '"> <label for="consent-' + idx + '">Customer has reviewed the itemized scope and estimated cost range above and authorizes work to begin.</label></div>' +
+          '<div class="sig-row"><input type="text" id="signer-' + idx + '" placeholder="Customer typed full name"><button class="fx-btn-ghost" onclick="__sct.sign(' + idx + ')">Capture signature</button></div></div>';
+      }
+      if (job.signerName) {
+        html += '<div class="sig-fact">Signed by ' + escapeHtml(job.signerName) + " at " + fmtDate(job.signedAt) + "</div>";
+      }
+      if (job.status === "signed" || job.status === "complete") {
+        html += '<div class="doc-log">';
+        if (!job.docLog.length) { html += '<p class="empty">No documentation logged yet.</p>'; }
+        else {
+          job.docLog.slice().reverse().forEach(function (d) {
+            var lineName = job.lines[d.lineIdx] ? job.lines[d.lineIdx].cat : "General";
+            html += '<div class="doc-entry"><span class="tag">' + escapeHtml(d.type) + '</span>' + escapeHtml(d.note) + " &middot; linked to: " + escapeHtml(lineName) + " &middot; " + fmtDate(d.at) + "</div>";
+          });
+        }
+        html += "</div>";
+        if (job.status === "signed") {
+          html += '<div class="doc-add-row"><select id="doctype-' + idx + '"><option>Photo reference</option><option>Moisture reading</option><option>Time log</option></select><select id="docline-' + idx + '">' +
+            job.lines.map(function (l, i) { return '<option value="' + i + '">' + escapeHtml(l.cat) + "</option>"; }).join("") +
+            '</select><input type="text" id="docnote-' + idx + '" placeholder="What was recorded"><button class="fx-btn-ghost" onclick="__sct.addDoc(' + idx + ')">Add to packet</button></div>';
+          html += '<div class="job-actions"><button class="fx-btn-ghost" onclick="__sct.complete(' + idx + ')">Mark documentation complete</button></div>';
+        }
+      }
+      if (job.status === "complete") {
+        html += '<div class="job-actions"><button class="fx-btn-ghost" onclick="__sct.togglePacket(' + idx + ')">View documentation packet</button></div><div id="packet-' + idx + '"></div>';
+      }
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  window.__sct = {
+    removeLine: function (i) { draftLines.splice(i, 1); renderDraftLines(); },
+    sign: function (idx) {
+      var job = data.jobs[idx];
+      var box = document.getElementById("consent-" + idx);
+      var name = document.getElementById("signer-" + idx).value.trim();
+      if (!box.checked) { alert("Check the consent box before capturing a signature."); return; }
+      if (!name) { alert("Enter the customer's typed name."); return; }
+      job.signerName = name;
+      job.signedAt = Date.now();
+      job.status = "signed";
+      save(); renderJobs();
+    },
+    addDoc: function (idx) {
+      var job = data.jobs[idx];
+      var type = document.getElementById("doctype-" + idx).value;
+      var lineIdx = parseInt(document.getElementById("docline-" + idx).value, 10);
+      var note = document.getElementById("docnote-" + idx).value.trim();
+      if (!note) { alert("Describe what was recorded before adding it to the packet."); return; }
+      job.docLog.push({ at: Date.now(), type: type, note: note, lineIdx: lineIdx });
+      save(); renderJobs();
+    },
+    complete: function (idx) {
+      data.jobs[idx].status = "complete";
+      save(); renderJobs();
+    },
+    togglePacket: function (idx) {
+      var job = data.jobs[idx];
+      var root = document.getElementById("packet-" + idx);
+      if (root.innerHTML) { root.innerHTML = ""; return; }
+      var html = '<div class="packet-view">';
+      job.lines.forEach(function (l, i) {
+        var entries = job.docLog.filter(function (d) { return d.lineIdx === i; });
+        html += '<div class="packet-line"><b>' + escapeHtml(l.cat) + " &middot; " + fmtMoney(lineTotal(l)) + "</b>";
+        if (!entries.length) html += '<span class="no-evidence">No supporting documentation logged for this line item.</span>';
+        else entries.forEach(function (d) { html += "<div>" + escapeHtml(d.type) + ": " + escapeHtml(d.note) + " (" + fmtDate(d.at) + ")</div>"; });
+        html += "</div>";
+      });
+      html += "</div>";
+      root.innerHTML = html;
+    }
+  };
+
+  document.getElementById("line-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var cat = document.getElementById("f-cat").value;
+    var desc = document.getElementById("f-desc").value.trim();
+    var qty = parseFloat(document.getElementById("f-qty").value) || 0;
+    var rate = parseFloat(document.getElementById("f-rate").value) || 0;
+    if (qty <= 0) { alert("Enter a quantity greater than zero."); return; }
+    draftLines.push({ cat: cat, desc: desc, qty: qty, rate: rate });
+    document.getElementById("f-desc").value = "";
+    renderDraftLines();
+  });
+
+  document.getElementById("gen-btn").addEventListener("click", function () {
+    var customer = document.getElementById("f-customer").value.trim();
+    if (!customer) { alert("Enter a customer or job name."); return; }
+    if (!draftLines.length) { alert("Add at least one line item first."); return; }
+    var contingency = parseFloat(document.getElementById("f-contingency").value) || 0;
+    var job = makeJob(customer, draftLines, contingency);
+    data.jobs.unshift(job);
+    save();
+    renderEstimateDoc(job);
+    renderJobs();
+    draftLines = [];
+    renderDraftLines();
+    document.getElementById("f-customer").value = "";
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset all jobs back to the original sample data?")) return;
+    data = defaultData(); save(); renderJobs();
+    document.getElementById("doc-root").innerHTML = "";
+  });
+
+  document.getElementById("guard-btn").addEventListener("click", function () {
+    var text = document.getElementById("guard-input").value;
+    var root = document.getElementById("guard-root");
+    if (!text.trim()) { root.innerHTML = ""; return; }
+    var hits = GUARD_PATTERNS.filter(function (p) { return p.test.test(text); });
+    if (!hits.length) { root.innerHTML = '<div class="flag-ok">No flagged phrasing patterns found in this message.</div>'; return; }
+    root.innerHTML = hits.map(function (p) { return '<div class="flag-card"><b>' + escapeHtml(p.label) + "</b>" + escapeHtml(p.note) + "</div>"; }).join("");
+  });
+
+  populateCategorySelect();
+  renderDraftLines();
+  renderJobs();
+})();
+</script>
+</body>
+</html>
