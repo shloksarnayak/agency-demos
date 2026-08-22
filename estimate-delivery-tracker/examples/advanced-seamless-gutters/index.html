@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Advanced Seamless Gutters, estimate delivery &amp; follow-up tracker example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .edt-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .edt-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input[type="text"], .field input[type="number"], .field select {
+    font: inherit; font-size: 0.92rem; padding: 0.6rem 0.75rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.85rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .elev-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
+  @media (max-width: 560px) { .elev-grid { grid-template-columns: repeat(2, 1fr); } }
+  .rate-note { font-size: 0.76rem; color: var(--muted); margin-top: -0.4rem; }
+  .estimate-doc { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.3rem; background: #fff; box-shadow: var(--shadow-sm); }
+  .estimate-doc h4 { font-family: var(--serif); font-size: 1.2rem; margin: 0 0 0.2rem; }
+  .estimate-doc .sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.9rem; }
+  .estimate-lines { display: flex; flex-direction: column; gap: 1px; background: var(--rule-soft); border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 0.8rem; }
+  .estimate-line { background: #fff; padding: 0.5rem 0.7rem; display: flex; justify-content: space-between; font-size: 0.87rem; }
+  .estimate-total { display: flex; justify-content: space-between; font-weight: 750; font-size: 1rem; padding-top: 0.6rem; border-top: 2px solid var(--ink); }
+  .drawing-wrap { margin-top: 1rem; border: 1px dashed var(--rule); border-radius: var(--radius-sm); padding: 0.8rem; background: var(--surface-2); }
+  .drawing-wrap svg { width: 100%; height: auto; display: block; }
+  .drawing-caption { font-size: 0.72rem; color: var(--muted); text-align: center; margin-top: 0.4rem; }
+  .doc-actions { display: flex; gap: 0.5rem; margin-top: 0.9rem; flex-wrap: wrap; }
+  .job-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .job-title { font-weight: 660; }
+  .job-meta { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.28rem 0.6rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.sent { color: var(--brand); background: var(--brand-soft); }
+  .badge.scheduled { color: var(--good); background: var(--good-bg); }
+  .badge.done { color: var(--muted); background: var(--surface-2); }
+  .badge.overdue { color: var(--hot); background: var(--hot-bg); }
+  .followup-log { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); font-size: 0.83rem; }
+  .followup-entry { color: var(--ink-2); padding: 0.2rem 0; }
+  .job-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .fu-input { font: inherit; font-size: 0.82rem; padding: 0.4rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 160px; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.9rem; }
+  .reset-row { margin-top: 1.3rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
+  .quote-box { margin: 1.4rem 0; padding: 1rem 1.2rem; border-left: 3px solid var(--brand); background: var(--brand-soft); font-size: 0.92rem; color: var(--ink-2); }
+  .quote-box cite { display: block; margin-top: 0.5rem; font-size: 0.76rem; color: var(--muted); font-style: normal; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Estimate delivery &amp; follow-up tracker</a> / Advanced Seamless Gutters</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">Advanced Seamless Gutters: the written estimate they already promise, delivered the same day</h1>
+  <p class="fx-lede">Advanced Seamless Gutters' own site tells every prospect to expect &ldquo;a written estimate along with a detailed drawing of what is proposed&rdquo; after a site visit. This example shows that promise generated automatically the moment a visit is logged, plus a follow-up log so a customer calling back about their estimate gets a tracked callback instead of silence.</p>
+  <div class="fact-strip">
+    <span class="fact">Family owned, North Fort Myers FL, founded 1998</span>
+    <span class="fact">Serves Lee &amp; Collier County, SW Florida</span>
+    <span class="fact">Seamless gutters, soffit &amp; fascia, Clean &amp; Seal</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Advanced Seamless Gutters, Inc.</strong> All customer names, addresses, and estimate amounts below are fictional and clearly for illustration only. The business description, service area, and quoted promise are drawn from Advanced Seamless Gutters' own published site and BBB profile.</p></div>
+
+  <div class="quote-box">
+    &ldquo;A written estimate along with a detailed drawing of what is proposed&rdquo;
+    <cite>Advanced Seamless Gutters' own About page, describing what every estimate visit is meant to include.</cite>
+  </div>
+  <p style="color:var(--ink-2); font-size:0.92rem; max-width:74ch;">An independent Google/Birdeye reviewer reported the opposite experience: an estimate visit that produced no estimate and no follow-up. A separate BBB complaint (Oct 2023) describes a customer making roughly ten calls over several months after an estimate visit with no callback received. Both are a small minority against an otherwise strong record (BBB A+, 4.5 to 4.6 rating across 400+ reviews) but they point at the same root gap: nothing forces the estimate to actually go out, and nothing keeps a repeat caller visible until someone answers them. The tool below targets exactly that gap.</p>
+
+  <div class="edt-cols">
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Log a site visit</h2>
+      <form id="job-form" class="form-grid">
+        <div class="field span2"><label for="f-customer">Customer name</label><input type="text" id="f-customer" required placeholder="e.g. Sample Homeowner"></div>
+        <div class="field span2"><label for="f-job-type">Job type</label>
+          <select id="f-job-type">
+            <option>New gutter installation</option>
+            <option>Gutter replacement</option>
+            <option>Gutter repair</option>
+            <option>Clean &amp; Seal maintenance</option>
+            <option>Soffit &amp; fascia work</option>
+          </select>
+        </div>
+        <div class="field span2"><label>Elevation footage (linear feet of gutter run per side)</label>
+          <div class="elev-grid">
+            <input type="number" id="f-front" min="0" placeholder="Front" title="Front, ft">
+            <input type="number" id="f-back" min="0" placeholder="Back" title="Back, ft">
+            <input type="number" id="f-left" min="0" placeholder="Left" title="Left, ft">
+            <input type="number" id="f-right" min="0" placeholder="Right" title="Right, ft">
+          </div>
+        </div>
+        <div class="field"><label for="f-downspouts">Downspouts (total)</label><input type="number" id="f-downspouts" min="0" value="4"></div>
+        <div class="field"><label for="f-rate">Rate per linear foot ($)</label><input type="number" id="f-rate" min="0" step="0.5" value="8.5"></div>
+        <div class="rate-note span2">Sample rate, editable. This illustrates the calculation, it is not Advanced Seamless Gutters' actual price list, which was not published and could not be verified.</div>
+        <div class="field span2"><button type="submit" class="fx-btn">Generate written estimate &amp; drawing</button></div>
+      </form>
+      <div id="doc-root" style="margin-top:1rem;"></div>
+    </div>
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Job status board</h2>
+      <div id="jobs-root"></div>
+      <div class="reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The drawing is a schematic, not a CAD elevation.</b> It's a to-scale-ish plan diagram built from the same footage numbers already on the estimate, enough to hand to a customer as the &ldquo;detailed drawing&rdquo; already promised, not a replacement for a full design drawing on a complex roofline.</div>
+      <div class="lim"><b>&ldquo;Sent&rdquo; here means generated and ready to email.</b> A real build wires this into the business's actual outbound email at (239) 482-1186's Lee County office and the (239) 513-1175 Collier County line's intake flow, this demo only shows the document and the status change.</div>
+      <div class="lim"><b>Follow-up tracking targets the ten-calls-no-callback pattern directly.</b> Any estimate untouched for 5 days surfaces as needing follow-up on the status board, so a repeat caller doesn't go three months without a return call.</div>
+      <div class="lim"><b>Back to the template: <a href="../../">estimate delivery &amp; follow-up tracker</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Advanced Seamless Gutters, Inc.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job and estimate data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "edt_asg_v1";
+  var OVERDUE_DAYS = 5;
+
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); d.setHours(9,0,0,0); return d.getTime(); }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+  function fmtMoney(n) { return "$" + n.toFixed(2).replace(/\.00$/, ""); }
+  function daysSince(ts) { return Math.max(0, Math.floor((Date.now() - ts) / 86400000)); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function defaultData() {
+    return {
+      seq: 3,
+      jobs: [
+        {
+          id: "EST-4401", customer: "Sample Homeowner, Cape Coral", jobType: "Gutter replacement",
+          elevations: { front: 46, back: 44, left: 24, right: 24 }, downspouts: 4, rate: 8.5,
+          status: "Sent", sentAt: daysAgo(8), lastTouchAt: daysAgo(8), followups: []
+        },
+        {
+          id: "EST-4402", customer: "Sample Homeowner, Naples", jobType: "Soffit &amp; fascia work",
+          elevations: { front: 38, back: 36, left: 20, right: 20 }, downspouts: 5, rate: 9,
+          status: "Sent", sentAt: daysAgo(2), lastTouchAt: daysAgo(1),
+          followups: [{ at: daysAgo(1), note: "Called to confirm scope, left voicemail." }]
+        },
+        {
+          id: "EST-4403", customer: "Sample Commercial Account, Bonita Springs", jobType: "Clean &amp; Seal maintenance",
+          elevations: { front: 60, back: 60, left: 30, right: 30 }, downspouts: 8, rate: 6,
+          status: "Scheduled", sentAt: daysAgo(12), lastTouchAt: daysAgo(4),
+          followups: [{ at: daysAgo(7), note: "Spoke with property manager, comparing vendors." }, { at: daysAgo(4), note: "Approved, scheduled maintenance visit." }]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function lineTotal(ft, rate) { return (ft || 0) * rate; }
+  function estimateTotal(job) {
+    var e = job.elevations;
+    var gutterTotal = lineTotal(e.front, job.rate) + lineTotal(e.back, job.rate) + lineTotal(e.left, job.rate) + lineTotal(e.right, job.rate);
+    var downspoutTotal = (job.downspouts || 0) * 65;
+    return { gutterTotal: gutterTotal, downspoutTotal: downspoutTotal, grand: gutterTotal + downspoutTotal };
+  }
+
+  function buildDrawingSVG(elevations, downspouts) {
+    var e = elevations;
+    var W = Math.max(140, Math.min(300, ((e.front + e.back) / 2 || 20) * 3.4));
+    var H = Math.max(90, Math.min(180, ((e.left + e.right) / 2 || 12) * 3.4));
+    var vbW = 380, vbH = 240;
+    var x0 = (vbW - W) / 2, y0 = (vbH - H) / 2;
+    function dsMarks(count, x1, y1, x2, y2) {
+      var out = "";
+      if (!count) return out;
+      for (var i = 0; i < count; i++) {
+        var t = (i + 1) / (count + 1);
+        var cx = x1 + (x2 - x1) * t, cy = y1 + (y2 - y1) * t;
+        out += '<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="#3f55ff" stroke="#151428" stroke-width="1"></circle>';
+      }
+      return out;
+    }
+    var dsPer = Math.ceil((downspouts || 0) / 4);
+    var svg = '<svg viewBox="0 0 ' + vbW + ' ' + vbH + '" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect x="' + x0 + '" y="' + y0 + '" width="' + W + '" height="' + H + '" fill="#fffdf8" stroke="#151428" stroke-width="2.5"></rect>' +
+      '<rect x="' + (x0 - 6) + '" y="' + (y0 - 6) + '" width="' + (W + 12) + '" height="' + (H + 12) + '" fill="none" stroke="#151428" stroke-width="1.5" stroke-dasharray="4 3"></rect>' +
+      dsMarks(dsPer, x0, y0, x0 + W, y0) +
+      dsMarks(dsPer, x0, y0 + H, x0 + W, y0 + H) +
+      dsMarks(dsPer, x0, y0, x0, y0 + H) +
+      dsMarks(dsPer, x0 + W, y0, x0 + W, y0 + H) +
+      '<text x="' + (x0 + W / 2) + '" y="' + (y0 - 12) + '" text-anchor="middle" font-size="11" font-family="DM Mono, monospace" fill="#151428">Front, ' + (e.front || 0) + ' ft</text>' +
+      '<text x="' + (x0 + W / 2) + '" y="' + (y0 + H + 20) + '" text-anchor="middle" font-size="11" font-family="DM Mono, monospace" fill="#151428">Back, ' + (e.back || 0) + ' ft</text>' +
+      '<text x="' + (x0 - 10) + '" y="' + (y0 + H / 2) + '" text-anchor="end" font-size="11" font-family="DM Mono, monospace" fill="#151428" transform="rotate(-90 ' + (x0 - 10) + ' ' + (y0 + H / 2) + ')">Left, ' + (e.left || 0) + ' ft</text>' +
+      '<text x="' + (x0 + W + 10) + '" y="' + (y0 + H / 2) + '" text-anchor="start" font-size="11" font-family="DM Mono, monospace" fill="#151428" transform="rotate(90 ' + (x0 + W + 10) + ' ' + (y0 + H / 2) + ')">Right, ' + (e.right || 0) + ' ft</text>' +
+      '</svg>';
+    return svg;
+  }
+
+  function renderDoc(job) {
+    var docRoot = document.getElementById("doc-root");
+    var t = estimateTotal(job);
+    var html = '<div class="estimate-doc" id="doc-print">' +
+      '<h4>Written Estimate</h4>' +
+      '<div class="sub">' + job.id + ' &middot; ' + escapeHtml(job.customer) + ' &middot; ' + escapeHtml(job.jobType) + ' &middot; generated ' + fmtDate(job.sentAt) + '</div>' +
+      '<div class="estimate-lines">' +
+      '<div class="estimate-line"><span>Front gutter run, ' + (job.elevations.front || 0) + ' ft &times; ' + fmtMoney(job.rate) + '/ft</span><span>' + fmtMoney(lineTotal(job.elevations.front, job.rate)) + '</span></div>' +
+      '<div class="estimate-line"><span>Back gutter run, ' + (job.elevations.back || 0) + ' ft &times; ' + fmtMoney(job.rate) + '/ft</span><span>' + fmtMoney(lineTotal(job.elevations.back, job.rate)) + '</span></div>' +
+      '<div class="estimate-line"><span>Left gutter run, ' + (job.elevations.left || 0) + ' ft &times; ' + fmtMoney(job.rate) + '/ft</span><span>' + fmtMoney(lineTotal(job.elevations.left, job.rate)) + '</span></div>' +
+      '<div class="estimate-line"><span>Right gutter run, ' + (job.elevations.right || 0) + ' ft &times; ' + fmtMoney(job.rate) + '/ft</span><span>' + fmtMoney(lineTotal(job.elevations.right, job.rate)) + '</span></div>' +
+      '<div class="estimate-line"><span>Downspouts, ' + (job.downspouts || 0) + ' &times; $65</span><span>' + fmtMoney(t.downspoutTotal) + '</span></div>' +
+      '</div>' +
+      '<div class="estimate-total"><span>Estimated total</span><span>' + fmtMoney(t.grand) + '</span></div>' +
+      '<div class="drawing-wrap">' + buildDrawingSVG(job.elevations, job.downspouts) + '<div class="drawing-caption">Schematic gutter-run diagram, not to scale. Blue dots mark downspout locations.</div></div>' +
+      '</div>' +
+      '<div class="doc-actions"><button class="fx-btn-ghost" onclick="window.print()">Print / save as PDF</button></div>';
+    docRoot.innerHTML = html;
+  }
+
+  var STATUS_ORDER = ["Sent", "Scheduled", "Completed"];
+
+  function jobBadge(job) {
+    if (job.status === "Completed") return { cls: "done", label: "Completed" };
+    var days = daysSince(job.lastTouchAt);
+    if (days >= OVERDUE_DAYS) return { cls: "overdue", label: days + " day" + (days === 1 ? "" : "s") + " since last contact, needs follow-up" };
+    return { cls: job.status === "Scheduled" ? "scheduled" : "sent", label: job.status };
+  }
+
+  function renderJobs() {
+    var root = document.getElementById("jobs-root");
+    if (!data.jobs.length) { root.innerHTML = '<p class="empty">No estimates logged yet.</p>'; return; }
+    var html = "";
+    data.jobs.slice().sort(function (a, b) { return b.sentAt - a.sentAt; }).forEach(function (job) {
+      var idx = data.jobs.indexOf(job);
+      var badge = jobBadge(job);
+      var nextIdx = STATUS_ORDER.indexOf(job.status) + 1;
+      var nextStatus = STATUS_ORDER[nextIdx];
+      html += '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(job.customer) + '</div><div class="job-meta">' + job.id + ' &middot; ' + escapeHtml(job.jobType) + ' &middot; sent ' + fmtDate(job.sentAt) + '</div></div><span class="badge ' + badge.cls + '">' + badge.label + '</span></div>';
+      if (job.followups.length) {
+        html += '<div class="followup-log">';
+        job.followups.slice().reverse().forEach(function (f) {
+          html += '<div class="followup-entry">' + fmtDate(f.at) + ': ' + escapeHtml(f.note) + '</div>';
+        });
+        html += '</div>';
+      }
+      html += '<div class="job-actions">';
+      html += '<input type="text" class="fu-input" id="fu-note-' + idx + '" placeholder="Log a call or update...">';
+      html += '<button class="fx-btn-ghost" onclick="__edt.addFollowup(' + idx + ')">Log</button>';
+      if (nextStatus) html += '<button class="fx-btn-ghost" onclick="__edt.advance(' + idx + ')">Mark &ldquo;' + nextStatus + '&rdquo;</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+  }
+
+  window.__edt = {
+    addFollowup: function (idx) {
+      var input = document.getElementById("fu-note-" + idx);
+      var note = input.value.trim();
+      if (!note) { alert("Enter what happened on this call or update before logging it."); return; }
+      var job = data.jobs[idx];
+      var now = Date.now();
+      job.followups.push({ at: now, note: note });
+      job.lastTouchAt = now;
+      save(); renderJobs();
+    },
+    advance: function (idx) {
+      var job = data.jobs[idx];
+      var i = STATUS_ORDER.indexOf(job.status);
+      if (i < STATUS_ORDER.length - 1) job.status = STATUS_ORDER[i + 1];
+      job.lastTouchAt = Date.now();
+      save(); renderJobs();
+    }
+  };
+
+  document.getElementById("job-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("f-customer").value.trim();
+    if (!customer) { alert("Enter a customer name."); return; }
+    var elevations = {
+      front: parseFloat(document.getElementById("f-front").value) || 0,
+      back: parseFloat(document.getElementById("f-back").value) || 0,
+      left: parseFloat(document.getElementById("f-left").value) || 0,
+      right: parseFloat(document.getElementById("f-right").value) || 0
+    };
+    var job = {
+      id: "EST-" + (4400 + (++data.seq)),
+      customer: customer,
+      jobType: document.getElementById("f-job-type").value,
+      elevations: elevations,
+      downspouts: parseInt(document.getElementById("f-downspouts").value, 10) || 0,
+      rate: parseFloat(document.getElementById("f-rate").value) || 0,
+      status: "Sent",
+      sentAt: Date.now(),
+      lastTouchAt: Date.now(),
+      followups: []
+    };
+    data.jobs.unshift(job);
+    save();
+    renderDoc(job);
+    renderJobs();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset all estimates back to the original sample data?")) return;
+    data = defaultData(); save(); renderJobs();
+    document.getElementById("doc-root").innerHTML = "";
+  });
+
+  renderJobs();
+})();
+</script>
+</body>
+</html>
