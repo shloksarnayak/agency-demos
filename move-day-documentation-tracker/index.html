@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Move-day documentation &amp; claims tracker template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .mdt-section { margin-top: 2.4rem; }
+  .mdt-section-title { font-family: var(--serif); font-size: 1.25rem; margin: 0 0 0.3rem; }
+  .mdt-section-sub { color: var(--muted); font-size: 0.86rem; margin: 0 0 1rem; max-width: 68ch; }
+  .mdt-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.6rem; align-items: end; margin-bottom: 1.1rem; padding: 1rem 1.1rem; border: 1px dashed var(--rule); border-radius: 16px; }
+  .mdt-field { display: flex; flex-direction: column; gap: 0.3rem; }
+  .mdt-field label { font-size: 0.72rem; font-weight: 700; color: var(--ink-2); }
+  .mdt-field input, .mdt-field select, .mdt-field textarea { font: inherit; font-size: 0.85rem; padding: 0.5rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  .mdt-field textarea { min-height: 4.2rem; resize: vertical; }
+  .mdt-field input:focus, .mdt-field select:focus, .mdt-field textarea:focus { outline: none; border-color: var(--brand); }
+  .mdt-form .mdt-submit-cell { display: flex; }
+  .mdt-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 0.9rem 1.1rem; box-shadow: var(--shadow-sm); margin-bottom: 0.75rem; }
+  .mdt-card-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .mdt-card-title { font-weight: 660; font-size: 0.94rem; }
+  .mdt-card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .mdt-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+  .mdt-badge { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.3rem 0.6rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .mdt-badge.ok { color: var(--good); background: var(--good-bg); }
+  .mdt-badge.hot { color: var(--hot); background: var(--hot-bg); }
+  .mdt-badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .mdt-badge.done { color: var(--muted); background: var(--surface-2); }
+  .mdt-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.7rem; padding-top: 0.6rem; border-top: 1px solid var(--rule-soft); }
+  .mdt-btn-sm { font: inherit; font-size: 0.76rem; font-weight: 650; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.38rem 0.75rem; cursor: pointer; }
+  .mdt-btn-sm:disabled { opacity: 0.5; cursor: not-allowed; }
+  .mdt-empty { color: var(--muted); font-style: italic; font-size: 0.86rem; }
+  .mdt-job-picker { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
+  .mdt-job-picker select { font: inherit; font-size: 0.86rem; padding: 0.5rem 0.7rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); }
+  .mdt-timeline { display: flex; flex-direction: column; gap: 1px; background: var(--rule-soft); border-radius: var(--radius-sm); overflow: hidden; margin: 0.6rem 0; }
+  .mdt-tl-row { background: #fff; padding: 0.5rem 0.7rem; display: flex; justify-content: space-between; gap: 0.6rem; font-size: 0.84rem; align-items: center; }
+  .mdt-tl-row .mdt-tl-stage { flex: 1; }
+  .mdt-tl-row .mdt-tl-time { color: var(--muted); font-family: var(--mono); font-size: 0.76rem; }
+  .mdt-tl-note { color: var(--muted); font-size: 0.78rem; margin-top: 0.15rem; }
+  .mdt-checklist { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.86rem; margin-top: 0.7rem; }
+  .mdt-checklist input { margin-top: 0.2rem; }
+  .mdt-draft { background: var(--surface-2); border-left: 3px solid var(--brand); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem; margin-top: 0.6rem; font-size: 0.84rem; line-height: 1.5; white-space: pre-wrap; }
+  .mdt-reset-row { margin-top: 1.6rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Move-day documentation &amp; claims tracker</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Turn a "he said, she said" move into three tracked records</h1>
+  <p class="fx-lede">Moving and relocation companies that coordinate crews by phone and estimate visually tend to accumulate the same three disputes: a job that runs long with no objective record of when it actually started and finished, a high-value item that gets damaged with no proof it was flagged for extra coverage beforehand, and a complaint or claim that sits unanswered until the customer escalates publicly. This page shows three small, working tools that make each of those a tracked record instead of a phone argument.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, it reads from whatever already takes quotes and schedules crews, a booking form, a dispatch board, and adds these three checks on top, without replacing how the work itself gets done.</p></div>
+
+  <section class="mdt-section">
+    <h2 class="mdt-section-title">1. Move-day timeline log</h2>
+    <p class="mdt-section-sub">Crews (or office staff) log the four stage timestamps for a job, an estimated-hours figure is captured up front, and any job that runs over its estimate is flagged automatically instead of surfacing only when the customer disputes the final bill.</p>
+    <div class="mdt-job-picker">
+      <label for="job-select" style="font-size:0.8rem; font-weight:700; color:var(--ink-2);">Job:</label>
+      <select id="job-select"></select>
+      <button class="mdt-btn-sm" id="new-job-btn" type="button">+ New job</button>
+    </div>
+    <form id="event-form" class="mdt-form">
+      <div class="mdt-field"><label for="e-stage">Stage</label><select id="e-stage"><option>Pickup start</option><option>Pickup complete</option><option>Delivery start</option><option>Delivery complete</option></select></div>
+      <div class="mdt-field"><label for="e-time">Time</label><input type="datetime-local" id="e-time" required></div>
+      <div class="mdt-field"><label for="e-note">Condition note (optional)</label><input type="text" id="e-note" placeholder="e.g. Scratch noted on dresser, left side"></div>
+      <div class="mdt-field"><label for="e-photo">Photo (optional)</label><input type="file" id="e-photo" accept="image/*"></div>
+      <div class="mdt-submit-cell"><button type="submit" class="fx-btn-ghost">Log timestamp</button></div>
+    </form>
+    <div id="timeline-root"></div>
+  </section>
+
+  <section class="mdt-section">
+    <h2 class="mdt-section-title">2. High-value item intake flag</h2>
+    <p class="mdt-section-sub">Every quote-request inventory list is scanned for high-value keywords. A match blocks the quote from being marked ready until someone confirms extra valuation coverage was actually offered, so a $40,000 item never travels on standard released-value coverage by accident.</p>
+    <form id="quote-form" class="mdt-form" style="grid-template-columns: 1fr 200px auto;">
+      <div class="mdt-field"><label for="q-customer">Customer</label><input type="text" id="q-customer" placeholder="e.g. Sample Customer A" required></div>
+      <div class="mdt-field"><label for="q-items">Inventory list (one item per line)</label><textarea id="q-items" placeholder="Sofa&#10;Dining table&#10;Antique grandfather clock" required></textarea></div>
+      <div class="mdt-submit-cell"><button type="submit" class="fx-btn-ghost">Scan inventory</button></div>
+    </form>
+    <div id="quotes-root"></div>
+  </section>
+
+  <section class="mdt-section">
+    <h2 class="mdt-section-title">3. Same-day acknowledgment draft</h2>
+    <p class="mdt-section-sub">The moment a complaint, claim, or negative review is logged, an acknowledgment draft is generated immediately, so a customer never sits for weeks with no response while the company decides who should call back.</p>
+    <form id="intake-form" class="mdt-form">
+      <div class="mdt-field"><label for="i-customer">Customer</label><input type="text" id="i-customer" placeholder="e.g. Sample Customer B" required></div>
+      <div class="mdt-field"><label for="i-channel">Channel</label><select id="i-channel"><option>Voicemail</option><option>Email</option><option>Online review</option><option>BBB complaint</option></select></div>
+      <div class="mdt-field"><label for="i-summary">Summary</label><input type="text" id="i-summary" placeholder="e.g. Damaged item, requesting claim status" required></div>
+      <div class="mdt-submit-cell"><button type="submit" class="fx-btn-ghost">Log &amp; draft acknowledgment</button></div>
+    </form>
+    <div id="intake-root"></div>
+  </section>
+
+  <div class="mdt-reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+
+  <section class="mdt-section">
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The timestamp entry is manual here.</b> A real build can be a mobile-friendly page crews open on their own phone at each stage, with the time stamped automatically rather than typed in.</div>
+      <div class="lim"><b>The keyword scan is a simple word match.</b> A real build ties the keyword list to the company's actual valuation-coverage policy and its own quote form, so it fires at the moment a customer submits, not after.</div>
+      <div class="lim"><b>The acknowledgment is a draft shown on screen, never sent.</b> A real build wires it to the company's own email or SMS provider so it goes out automatically, with a human still reviewing anything beyond the first acknowledgment.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/ab-moving/">AB Moving</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job, quote, and claim data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "mdt_template_v1";
+  var KEYWORDS = ["piano", "grand piano", "antique", "artwork", "art work", "chandelier", "safe", "grandfather clock", "jewelry", "fine art", "sculpture", "china cabinet", "wine collection"];
+
+  function todayStr() { return new Date().toISOString().slice(0, 10); }
+  function nowLocalInput(offsetMin) {
+    var d = new Date(Date.now() + (offsetMin || 0) * 60000);
+    d.setSeconds(0, 0);
+    var tzOffset = d.getTimezoneOffset() * 60000;
+    return new Date(d - tzOffset).toISOString().slice(0, 16);
+  }
+  function fmtDateTime(s) { if (!s) return ""; var d = new Date(s); return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function uid(prefix) { return prefix + Math.random().toString(36).slice(2, 8); }
+
+  function defaultData() {
+    return {
+      jobs: [
+        { id: "j1", name: "Sample Customer A, local move", estHours: 7,
+          events: [
+            { stage: "Pickup start", time: nowLocalInput(-9 * 60), note: "" },
+            { stage: "Pickup complete", time: nowLocalInput(-7 * 60), note: "Sofa arm scuffed at loading, pre-existing" },
+            { stage: "Delivery start", time: nowLocalInput(-6 * 60), note: "" },
+            { stage: "Delivery complete", time: nowLocalInput(-2 * 60), note: "" }
+          ] },
+        { id: "j2", name: "Sample Customer B, long-distance move", estHours: 5, events: [ { stage: "Pickup start", time: nowLocalInput(-2 * 60), note: "" } ] }
+      ],
+      jobs_selected: "j1",
+      quotes: [
+        { id: "q1", customer: "Sample Customer C", items: ["Sofa", "Dining table", "Antique grandfather clock", "Boxes (12)"], flagged: ["antique grandfather clock"], acknowledged: false, loggedAt: nowLocalInput(-24 * 60) }
+      ],
+      intake: [
+        { id: "i1", customer: "Sample Customer D", channel: "Voicemail", summary: "No callback after two messages about a damaged mirror", loggedAt: nowLocalInput(-45) }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  var jobSelect = document.getElementById("job-select");
+  var timelineRoot = document.getElementById("timeline-root");
+  var quotesRoot = document.getElementById("quotes-root");
+  var intakeRoot = document.getElementById("intake-root");
+
+  function currentJob() {
+    var id = data.jobs_selected;
+    return data.jobs.filter(function (j) { return j.id === id; })[0] || data.jobs[0];
+  }
+
+  function renderJobSelect() {
+    jobSelect.innerHTML = data.jobs.map(function (j) { return '<option value="' + j.id + '"' + (j.id === data.jobs_selected ? " selected" : "") + '>' + escapeHtml(j.name) + '</option>'; }).join("");
+  }
+
+  function stageTime(job, stage) {
+    var matches = job.events.filter(function (e) { return e.stage === stage; });
+    if (!matches.length) return null;
+    return matches[matches.length - 1].time;
+  }
+
+  function renderTimeline() {
+    var job = currentJob();
+    if (!job) { timelineRoot.innerHTML = '<p class="mdt-empty">No job selected.</p>'; return; }
+    var sorted = job.events.slice().sort(function (a, b) { return a.time.localeCompare(b.time); });
+    var html = '<div class="mdt-card"><div class="mdt-card-head"><div><div class="mdt-card-title">' + escapeHtml(job.name) + '</div><div class="mdt-card-meta">Estimated ' + job.estHours + 'h</div></div></div>';
+    if (!sorted.length) {
+      html += '<p class="mdt-empty">No timestamps logged yet.</p>';
+    } else {
+      html += '<div class="mdt-timeline">' + sorted.map(function (e) {
+        return '<div class="mdt-tl-row"><span class="mdt-tl-stage">' + escapeHtml(e.stage) + (e.note ? '<div class="mdt-tl-note">' + escapeHtml(e.note) + '</div>' : '') + (e.photo ? '<div class="mdt-tl-note">Photo attached: ' + escapeHtml(e.photo) + '</div>' : '') + '</span><span class="mdt-tl-time">' + fmtDateTime(e.time) + '</span></div>';
+      }).join("") + '</div>';
+      var start = stageTime(job, "Pickup start");
+      var end = stageTime(job, "Delivery complete");
+      if (start && end) {
+        var hours = (new Date(end) - new Date(start)) / 3600000;
+        var over = hours > job.estHours;
+        html += '<div class="mdt-badges">' + (over
+          ? '<span class="mdt-badge hot">Ran ' + hours.toFixed(1) + 'h, over the ' + job.estHours + 'h estimate, flagged for review</span>'
+          : '<span class="mdt-badge ok">Completed in ' + hours.toFixed(1) + 'h, within the ' + job.estHours + 'h estimate</span>') + '</div>';
+      }
+    }
+    html += '</div>';
+    timelineRoot.innerHTML = html;
+  }
+
+  function scanKeywords(items) {
+    var found = [];
+    items.forEach(function (item) {
+      var low = item.toLowerCase();
+      KEYWORDS.forEach(function (kw) {
+        if (low.indexOf(kw) !== -1 && found.indexOf(kw) === -1) found.push(kw);
+      });
+    });
+    return found;
+  }
+
+  function renderQuotes() {
+    if (!data.quotes.length) { quotesRoot.innerHTML = '<p class="mdt-empty">No quotes logged yet.</p>'; return; }
+    var sorted = data.quotes.slice().sort(function (a, b) { return b.loggedAt.localeCompare(a.loggedAt); });
+    var html = "";
+    sorted.forEach(function (q) {
+      var idx = data.quotes.indexOf(q);
+      html += '<div class="mdt-card"><div class="mdt-card-head"><div><div class="mdt-card-title">' + escapeHtml(q.customer) + '</div><div class="mdt-card-meta">' + fmtDateTime(q.loggedAt) + ' &middot; ' + q.items.length + ' item(s)</div></div></div>';
+      if (!q.flagged.length) {
+        html += '<div class="mdt-badges"><span class="mdt-badge ok">No high-value items detected, quote ready</span></div>';
+      } else {
+        html += '<div class="mdt-card-meta">Flagged: ' + q.flagged.map(escapeHtml).join(", ") + '</div>';
+        html += '<div class="mdt-badges">' + (q.acknowledged
+          ? '<span class="mdt-badge ok">Valuation coverage disclosed, quote ready</span>'
+          : '<span class="mdt-badge hot">Blocked, valuation coverage disclosure required</span>') + '</div>';
+        if (!q.acknowledged) {
+          html += '<div class="mdt-checklist"><input type="checkbox" id="ack-' + q.id + '"><label for="ack-' + q.id + '">I have disclosed additional valuation coverage options to the customer for the flagged item(s).</label></div>';
+          html += '<div class="mdt-row"><button class="mdt-btn-sm" onclick="__mdt.acknowledgeQuote(' + idx + ')">Confirm disclosure</button></div>';
+        }
+      }
+      html += '</div>';
+    });
+    quotesRoot.innerHTML = html;
+  }
+
+  function draftAck(entry) {
+    return "Subject: We received your message, " + entry.customer + "\n\n" +
+      "Hi " + entry.customer + ",\n\n" +
+      "This confirms we received your " + entry.channel.toLowerCase() + " regarding: \"" + entry.summary + "\". " +
+      "A team member will follow up with next steps within one business day. " +
+      "This is an automatic same-day acknowledgment, not a final resolution.\n\n" +
+      "Thank you for your patience.";
+  }
+
+  function renderIntake() {
+    if (!data.intake.length) { intakeRoot.innerHTML = '<p class="mdt-empty">Nothing logged yet.</p>'; return; }
+    var sorted = data.intake.slice().sort(function (a, b) { return b.loggedAt.localeCompare(a.loggedAt); });
+    var html = "";
+    sorted.forEach(function (i) {
+      html += '<div class="mdt-card"><div class="mdt-card-head"><div><div class="mdt-card-title">' + escapeHtml(i.customer) + ' &middot; ' + escapeHtml(i.channel) + '</div><div class="mdt-card-meta">Received ' + fmtDateTime(i.loggedAt) + '</div></div></div>';
+      html += '<div class="mdt-card-meta">' + escapeHtml(i.summary) + '</div>';
+      html += '<div class="mdt-badges"><span class="mdt-badge ok">Acknowledgment drafted ' + fmtDateTime(i.loggedAt) + '</span></div>';
+      html += '<div class="mdt-draft">' + escapeHtml(draftAck(i)) + '</div>';
+      html += '</div>';
+    });
+    intakeRoot.innerHTML = html;
+  }
+
+  function renderAll() { renderJobSelect(); renderTimeline(); renderQuotes(); renderIntake(); }
+
+  jobSelect.addEventListener("change", function () { data.jobs_selected = jobSelect.value; save(); renderTimeline(); });
+
+  document.getElementById("new-job-btn").addEventListener("click", function () {
+    var name = prompt("New job name (customer + move type):");
+    if (!name || !name.trim()) return;
+    var est = parseFloat(prompt("Estimated hours for this move:", "6")) || 6;
+    var job = { id: uid("j"), name: name.trim(), estHours: est, events: [] };
+    data.jobs.push(job); data.jobs_selected = job.id; save(); renderJobSelect(); renderTimeline();
+  });
+
+  document.getElementById("event-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var job = currentJob();
+    if (!job) return;
+    var photoInput = document.getElementById("e-photo");
+    var photoName = photoInput.files && photoInput.files[0] ? photoInput.files[0].name : "";
+    job.events.push({
+      stage: document.getElementById("e-stage").value,
+      time: document.getElementById("e-time").value || nowLocalInput(0),
+      note: document.getElementById("e-note").value.trim(),
+      photo: photoName
+    });
+    save(); renderTimeline(); e.target.reset();
+  });
+
+  document.getElementById("quote-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("q-customer").value.trim();
+    var itemsRaw = document.getElementById("q-items").value;
+    var items = itemsRaw.split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
+    if (!customer || !items.length) return;
+    var flagged = scanKeywords(items);
+    data.quotes.push({ id: uid("q"), customer: customer, items: items, flagged: flagged, acknowledged: false, loggedAt: nowLocalInput(0) });
+    save(); renderQuotes(); e.target.reset();
+  });
+
+  document.getElementById("intake-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("i-customer").value.trim();
+    var summary = document.getElementById("i-summary").value.trim();
+    if (!customer || !summary) return;
+    data.intake.push({ id: uid("i"), customer: customer, channel: document.getElementById("i-channel").value, summary: summary, loggedAt: nowLocalInput(0) });
+    save(); renderIntake(); e.target.reset();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    data = defaultData(); save(); renderAll();
+  });
+
+  window.__mdt = {
+    acknowledgeQuote: function (idx) { data.quotes[idx].acknowledged = true; save(); renderQuotes(); }
+  };
+
+  document.getElementById("e-time").value = nowLocalInput(0);
+  renderAll();
+})();
+</script>
+</body>
+</html>
