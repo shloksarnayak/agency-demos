@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Booking &amp; service-ticket portal template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .bst-section { margin-top: 2.4rem; }
+  .bst-section-title { font-family: var(--serif); font-size: 1.25rem; margin: 0 0 0.3rem; }
+  .bst-section-sub { color: var(--muted); font-size: 0.86rem; margin: 0 0 1rem; max-width: 72ch; }
+  .bst-days { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .bst-day { font: inherit; font-size: 0.8rem; font-weight: 650; padding: 0.5rem 0.85rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .bst-day.active { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+  .bst-day:disabled { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
+  .bst-type-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .bst-type { font: inherit; font-size: 0.78rem; font-weight: 650; padding: 0.45rem 0.8rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .bst-type.active { background: var(--brand-soft); border-color: var(--brand); color: var(--ink); }
+  .bst-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.5rem; margin-bottom: 1.2rem; }
+  .bst-slot { font: inherit; font-size: 0.8rem; font-weight: 650; padding: 0.6rem 0.5rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); cursor: pointer; text-align: center; }
+  .bst-slot:hover { background: var(--brand-soft); }
+  .bst-slot.taken { text-decoration: line-through; color: var(--faint); background: var(--surface-2); cursor: not-allowed; }
+  .bst-hours-note { font-size: 0.74rem; color: var(--faint); font-style: italic; margin: -0.5rem 0 1rem; }
+  .bst-owner-toggle { margin-top: 0.6rem; }
+  .bst-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 0.8rem; }
+  .bst-table th, .bst-table td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--rule-soft); }
+  .bst-table th { color: var(--ink-2); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .bst-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.6rem; align-items: end; margin-bottom: 1.1rem; padding: 1rem 1.1rem; border: 1px dashed var(--rule); border-radius: 16px; }
+  .bst-field { display: flex; flex-direction: column; gap: 0.3rem; }
+  .bst-field label { font-size: 0.72rem; font-weight: 700; color: var(--ink-2); }
+  .bst-field input, .bst-field select, .bst-field textarea { font: inherit; font-size: 0.85rem; padding: 0.5rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  .bst-field input:focus, .bst-field select:focus { outline: none; border-color: var(--brand); }
+  .bst-submit-cell { display: flex; }
+  .bst-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 0.95rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.8rem; }
+  .bst-card-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .bst-card-title { font-weight: 660; font-size: 0.95rem; }
+  .bst-card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .bst-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem; }
+  .bst-badge { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.3rem 0.6rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .bst-badge.ok { color: var(--good); background: var(--good-bg); }
+  .bst-badge.hot { color: var(--hot); background: var(--hot-bg); }
+  .bst-badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .bst-badge.done { color: var(--muted); background: var(--surface-2); }
+  .bst-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.75rem; padding-top: 0.65rem; border-top: 1px solid var(--rule-soft); }
+  .bst-btn-sm { font: inherit; font-size: 0.76rem; font-weight: 650; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.4rem 0.8rem; cursor: pointer; }
+  .bst-btn-sm:hover { filter: brightness(0.97); }
+  .bst-btn-sm:disabled { opacity: 0.45; cursor: not-allowed; }
+  .bst-empty { color: var(--muted); font-style: italic; font-size: 0.86rem; }
+  .bst-log { margin-top: 0.65rem; padding-top: 0.6rem; border-top: 1px solid var(--rule-soft); }
+  .bst-log-item { font-size: 0.76rem; color: var(--ink-2); display: flex; justify-content: space-between; gap: 0.6rem; padding: 0.15rem 0; }
+  .bst-log-item span:last-child { color: var(--muted); font-family: var(--mono); font-size: 0.7rem; white-space: nowrap; }
+  .bst-price-box { margin-top: 0.7rem; padding: 0.6rem 0.8rem; border: 1px dashed var(--rule); border-radius: var(--radius-sm); display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  .bst-price-box input { font: inherit; font-size: 0.85rem; padding: 0.4rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); width: 110px; }
+  .bst-reset-row { margin-top: 1.6rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Booking &amp; service-ticket portal</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Let a customer self-book a visit, then see a real ticket instead of calling to check</h1>
+  <p class="fx-lede">Businesses that handle every appointment and every "what's going on with my service" question by phone tend to develop two related gaps: a prospective or existing customer has no way to see open time slots and claim one, so they call and wait on hold or leave a message; and once something goes wrong, the only way to check status, who is assigned, and what it will actually cost is another phone call, often a repeat one. This page shows two small, working tools that close both gaps: a real time-slot booking calendar, and a service ticket that shows an assigned technician, an ETA, and a price that has to be confirmed in writing before anything can be marked billed.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the calendar reads from whatever already tracks the team's real availability, and the ticket tracker sits in front of whatever system already handles billing, it does not replace either one.</p></div>
+
+  <section class="bst-section">
+    <h2 class="bst-section-title">1. Self-service booking calendar</h2>
+    <p class="bst-section-sub">Pick a visit type and a day, then claim an open slot. No phone call, no waiting for a callback to find out what's available.</p>
+    <div class="bst-type-row" id="type-row"></div>
+    <div class="bst-days" id="day-row"></div>
+    <p class="bst-hours-note">Hours and days shown are illustrative placeholders for this template. A real build uses the business's own published hours.</p>
+    <div class="bst-slots" id="slot-grid"></div>
+    <div class="bst-owner-toggle"><button class="fx-btn-ghost" id="owner-toggle-1">Show owner view (all bookings)</button></div>
+    <div id="bookings-owner" style="display:none;"></div>
+  </section>
+
+  <section class="bst-section">
+    <h2 class="bst-section-title">2. Service ticket &amp; price-confirmation tracker</h2>
+    <p class="bst-section-sub">Every ticket shows its real stage, the technician assigned, and an ETA. A ticket cannot be marked billed until a price has been confirmed in writing here, visible to the customer before any charge posts.</p>
+    <form id="ticket-form" class="bst-form">
+      <div class="bst-field"><label for="t-customer">Customer / property</label><input type="text" id="t-customer" placeholder="e.g. Sample Customer" required></div>
+      <div class="bst-field"><label for="t-issue">Issue type</label><select id="t-issue"></select></div>
+      <div class="bst-field"><label for="t-notes">Notes</label><input type="text" id="t-notes" placeholder="brief description"></div>
+      <div class="bst-submit-cell"><button type="submit" class="fx-btn-ghost">Open ticket</button></div>
+    </form>
+    <div id="tickets-root"></div>
+  </section>
+
+  <div class="bst-reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+
+  <section class="bst-section">
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The calendar is a standalone log here.</b> A real build reads and writes whatever calendar or scheduling system the team already uses, so staff see one schedule, not a second one to keep in sync.</div>
+      <div class="lim"><b>Booking confirmation is on-screen and in local storage only.</b> A real build sends an actual confirmation email or text, and can sync to the business's own calendar.</div>
+      <div class="lim"><b>The price-confirmation gate is a field, not a payment system.</b> It only needs to record one thing: has the customer been given a written price, and what was it, so that number is checkable if a dispute ever comes up.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional booking and ticket data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "bst_template_v1";
+  var BUSINESS_NAME = "{{BUSINESS_NAME}}";
+
+  var VISIT_TYPES = ["Free water test", "Service call / repair visit"];
+  var SLOT_MINUTES = 30;
+  var OPEN_HOUR = 8;
+  var CLOSE_HOUR = 17;
+  var DAYS_AHEAD = 7;
+  var CLOSED_WEEKDAYS = [0];
+  var ISSUE_TYPES = ["Leak / repeat service issue", "Billing / price question", "Installation follow-up"];
+
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function todayStr() { var d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function dateStrFromOffset(n) { var d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function weekdayOf(dateStr) { return new Date(dateStr + "T00:00:00").getDay(); }
+  function fmtDate(s) { if (!s) return ""; var d = new Date(s + "T00:00:00"); return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }); }
+  function fmtTimeFromMinutes(mins) { var h = Math.floor(mins / 60); var m = mins % 60; var ap = h >= 12 ? "PM" : "AM"; var h12 = h % 12; if (h12 === 0) h12 = 12; return h12 + ":" + pad(m) + " " + ap; }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function money(n) { return "$" + Number(n || 0).toFixed(2); }
+  function uid(prefix) { return prefix + Math.random().toString(36).slice(2, 8); }
+  function nowStamp() { return new Date().toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+
+  function defaultData() {
+    return {
+      selectedType: VISIT_TYPES[0],
+      selectedDay: dateStrFromOffset(1),
+      bookings: [
+        { id: "bk1", type: VISIT_TYPES[0], date: dateStrFromOffset(1), startMin: OPEN_HOUR * 60, customer: "Sample Customer A", bookedAt: "2 days ago" }
+      ],
+      tickets: [
+        {
+          id: "tk1", customer: "Sample Customer B", issue: ISSUE_TYPES[0], notes: "recurring issue reported after an earlier visit",
+          stage: "assigned", technician: "Sample Tech 1", eta: "Tomorrow, 10:00 AM-12:00 PM", confirmedPrice: null,
+          log: [{ status: "Ticket received", at: "3 days ago" }, { status: "Technician assigned: Sample Tech 1", at: "1 day ago" }]
+        },
+        {
+          id: "tk2", customer: "Sample Customer C", issue: ISSUE_TYPES[1], notes: "quoted price did not match amount charged",
+          stage: "received", technician: null, eta: null, confirmedPrice: null,
+          log: [{ status: "Ticket received", at: "6 hours ago" }]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function upcomingDays() {
+    var out = [];
+    for (var i = 0; i < DAYS_AHEAD; i++) {
+      var ds = dateStrFromOffset(i);
+      out.push({ date: ds, closed: CLOSED_WEEKDAYS.indexOf(weekdayOf(ds)) !== -1 });
+    }
+    return out;
+  }
+
+  function slotsForDay() {
+    var out = [];
+    for (var m = OPEN_HOUR * 60; m < CLOSE_HOUR * 60; m += SLOT_MINUTES) out.push(m);
+    return out;
+  }
+
+  function isTaken(date, startMin, type) {
+    return data.bookings.some(function (b) { return b.date === date && b.startMin === startMin && b.type === type; });
+  }
+
+  function renderTypeRow() {
+    var root = document.getElementById("type-row");
+    root.innerHTML = VISIT_TYPES.map(function (t) {
+      return '<button type="button" class="bst-type' + (t === data.selectedType ? " active" : "") + '" data-type="' + escapeHtml(t) + '">' + escapeHtml(t) + "</button>";
+    }).join("");
+    Array.prototype.forEach.call(root.querySelectorAll(".bst-type"), function (btn) {
+      btn.addEventListener("click", function () { data.selectedType = btn.getAttribute("data-type"); renderTypeRow(); renderSlots(); });
+    });
+  }
+
+  function renderDayRow() {
+    var root = document.getElementById("day-row");
+    var days = upcomingDays();
+    root.innerHTML = days.map(function (d) {
+      return '<button type="button" class="bst-day' + (d.date === data.selectedDay ? " active" : "") + '" data-date="' + d.date + '"' + (d.closed ? " disabled" : "") + ">" + fmtDate(d.date) + (d.closed ? " (closed)" : "") + "</button>";
+    }).join("");
+    Array.prototype.forEach.call(root.querySelectorAll(".bst-day:not(:disabled)"), function (btn) {
+      btn.addEventListener("click", function () { data.selectedDay = btn.getAttribute("data-date"); renderDayRow(); renderSlots(); });
+    });
+  }
+
+  function renderSlots() {
+    var root = document.getElementById("slot-grid");
+    var slots = slotsForDay();
+    root.innerHTML = slots.map(function (m) {
+      var taken = isTaken(data.selectedDay, m, data.selectedType);
+      return '<button type="button" class="bst-slot' + (taken ? " taken" : "") + '"' + (taken ? " disabled" : "") + ' data-min="' + m + '">' + fmtTimeFromMinutes(m) + (taken ? "" : "") + "</button>";
+    }).join("");
+    Array.prototype.forEach.call(root.querySelectorAll(".bst-slot:not(.taken)"), function (btn) {
+      btn.addEventListener("click", function () {
+        var name = prompt("Name for this booking:");
+        if (!name) return;
+        data.bookings.push({ id: uid("bk"), type: data.selectedType, date: data.selectedDay, startMin: parseInt(btn.getAttribute("data-min"), 10), customer: name, bookedAt: nowStamp() });
+        save(); renderSlots(); renderOwnerBookings();
+        alert("Booked: " + data.selectedType + " on " + fmtDate(data.selectedDay) + " at " + fmtTimeFromMinutes(parseInt(btn.getAttribute("data-min"), 10)) + ".");
+      });
+    });
+  }
+
+  function renderOwnerBookings() {
+    var root = document.getElementById("bookings-owner");
+    var sorted = data.bookings.slice().sort(function (a, b) { return (a.date + a.startMin).toString().localeCompare((b.date + b.startMin).toString()); });
+    if (!sorted.length) { root.innerHTML = '<p class="bst-empty">No bookings yet.</p>'; return; }
+    var rows = sorted.map(function (b) {
+      return "<tr><td>" + escapeHtml(b.customer) + "</td><td>" + escapeHtml(b.type) + "</td><td>" + fmtDate(b.date) + "</td><td>" + fmtTimeFromMinutes(b.startMin) + "</td><td>" + escapeHtml(b.bookedAt) + "</td></tr>";
+    }).join("");
+    root.innerHTML = '<table class="bst-table"><thead><tr><th>Customer</th><th>Visit type</th><th>Date</th><th>Time</th><th>Booked</th></tr></thead><tbody>' + rows + "</tbody></table>";
+  }
+
+  var STAGE_LABEL = { received: "Received", assigned: "Technician assigned", priced: "Price confirmed", scheduled: "Scheduled", resolved: "Resolved" };
+  var STAGE_BADGE_CLASS = { received: "watch", assigned: "watch", priced: "ok", scheduled: "ok", resolved: "done" };
+  var STAGE_ORDER = ["received", "assigned", "priced", "scheduled", "resolved"];
+
+  function renderTickets() {
+    var root = document.getElementById("tickets-root");
+    if (!data.tickets.length) { root.innerHTML = '<p class="bst-empty">No tickets yet.</p>'; return; }
+    var html = "";
+    data.tickets.slice().reverse().forEach(function (t) {
+      html += '<div class="bst-card"><div class="bst-card-head"><div><div class="bst-card-title">' + escapeHtml(t.customer) + " &middot; " + escapeHtml(t.issue) + '</div><div class="bst-card-meta">' + escapeHtml(t.notes || "") + '</div></div></div>';
+      html += '<div class="bst-badges"><span class="bst-badge ' + STAGE_BADGE_CLASS[t.stage] + '">' + STAGE_LABEL[t.stage] + '</span>';
+      html += t.technician ? '<span class="bst-badge watch">Technician: ' + escapeHtml(t.technician) + '</span>' : '<span class="bst-badge hot">No technician assigned yet</span>';
+      html += t.eta ? '<span class="bst-badge watch">ETA: ' + escapeHtml(t.eta) + '</span>' : '';
+      html += t.confirmedPrice != null ? '<span class="bst-badge ok">Price confirmed in writing: ' + money(t.confirmedPrice) + '</span>' : '<span class="bst-badge hot">Price not yet confirmed</span>';
+      html += '</div>';
+      html += '<div class="bst-log">' + t.log.slice().reverse().map(function (l) { return '<div class="bst-log-item"><span>' + escapeHtml(l.status) + '</span><span>' + escapeHtml(l.at) + '</span></div>'; }).join("") + '</div>';
+      html += '<div class="bst-row">';
+      if (t.stage === "received") html += '<button class="bst-btn-sm" onclick="__bst.assign(\'' + t.id + '\')">Assign technician &amp; ETA</button>';
+      if (t.stage === "assigned") html += '<div class="bst-price-box"><input type="number" min="0" step="0.01" id="price-' + t.id + '" placeholder="price"><button class="bst-btn-sm" onclick="__bst.confirmPrice(\'' + t.id + '\')">Confirm price in writing</button></div>';
+      if (t.stage === "priced") html += '<button class="bst-btn-sm" onclick="__bst.advance(\'' + t.id + '\',\'scheduled\',\'Visit scheduled\')">Mark scheduled</button>';
+      if (t.stage === "scheduled") html += '<button class="bst-btn-sm" onclick="__bst.advance(\'' + t.id + '\',\'resolved\',\'Resolved\')">Mark resolved</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+  }
+
+  window.__bst = {
+    assign: function (id) {
+      var t = data.tickets.filter(function (x) { return x.id === id; })[0];
+      if (!t) return;
+      var tech = prompt("Technician name:", "Sample Tech");
+      if (!tech) return;
+      var eta = prompt("ETA (e.g. 'Tomorrow, 10:00 AM-12:00 PM'):", "Tomorrow, 10:00 AM-12:00 PM");
+      if (!eta) return;
+      t.technician = tech; t.eta = eta; t.stage = "assigned";
+      t.log.push({ status: "Technician assigned: " + tech + ", ETA " + eta, at: nowStamp() });
+      save(); renderTickets();
+    },
+    confirmPrice: function (id) {
+      var t = data.tickets.filter(function (x) { return x.id === id; })[0];
+      if (!t) return;
+      var input = document.getElementById("price-" + id);
+      var val = parseFloat(input.value);
+      if (isNaN(val) || val < 0) { alert("Enter a price before confirming."); return; }
+      t.confirmedPrice = val; t.stage = "priced";
+      t.log.push({ status: "Price confirmed in writing: " + money(val), at: nowStamp() });
+      save(); renderTickets();
+    },
+    advance: function (id, stage, label) {
+      var t = data.tickets.filter(function (x) { return x.id === id; })[0];
+      if (!t) return;
+      t.stage = stage;
+      t.log.push({ status: label, at: nowStamp() });
+      save(); renderTickets();
+    }
+  };
+
+  document.getElementById("owner-toggle-1").addEventListener("click", function () {
+    var el = document.getElementById("bookings-owner");
+    var showing = el.style.display !== "none";
+    el.style.display = showing ? "none" : "block";
+    this.textContent = showing ? "Show owner view (all bookings)" : "Hide owner view";
+    if (!showing) renderOwnerBookings();
+  });
+
+  function populateIssueSelect() {
+    document.getElementById("t-issue").innerHTML = ISSUE_TYPES.map(function (s) { return "<option>" + escapeHtml(s) + "</option>"; }).join("");
+  }
+
+  document.getElementById("ticket-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("t-customer").value.trim();
+    if (!customer) return;
+    data.tickets.push({
+      id: uid("tk"), customer: customer, issue: document.getElementById("t-issue").value, notes: document.getElementById("t-notes").value.trim(),
+      stage: "received", technician: null, eta: null, confirmedPrice: null, log: [{ status: "Ticket received", at: nowStamp() }]
+    });
+    save(); renderTickets(); e.target.reset(); populateIssueSelect();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the calendar and ticket tracker back to the original sample data?")) return;
+    data = defaultData(); save(); renderTypeRow(); renderDayRow(); renderSlots(); renderOwnerBookings(); renderTickets();
+  });
+
+  populateIssueSelect();
+  renderTypeRow();
+  renderDayRow();
+  renderSlots();
+  renderTickets();
+})();
+</script>
+</body>
+</html>
