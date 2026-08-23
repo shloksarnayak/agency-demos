@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Dispatch ETA &amp; billing-reminder guard template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .deb-section { margin-top: 2.4rem; }
+  .deb-section-title { font-family: var(--serif); font-size: 1.25rem; margin: 0 0 0.3rem; }
+  .deb-section-sub { color: var(--muted); font-size: 0.86rem; margin: 0 0 1rem; max-width: 70ch; }
+  .deb-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.6rem; align-items: end; margin-bottom: 1.1rem; padding: 1rem 1.1rem; border: 1px dashed var(--rule); border-radius: 16px; }
+  .deb-field { display: flex; flex-direction: column; gap: 0.3rem; }
+  .deb-field label { font-size: 0.72rem; font-weight: 700; color: var(--ink-2); }
+  .deb-field input, .deb-field select { font: inherit; font-size: 0.85rem; padding: 0.5rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  .deb-field input:focus, .deb-field select:focus { outline: none; border-color: var(--brand); }
+  .deb-submit-cell { display: flex; }
+  .deb-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 0.95rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.8rem; }
+  .deb-card-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .deb-card-title { font-weight: 660; font-size: 0.95rem; }
+  .deb-card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .deb-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem; }
+  .deb-badge { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.3rem 0.6rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .deb-badge.ok { color: var(--good); background: var(--good-bg); }
+  .deb-badge.hot { color: var(--hot); background: var(--hot-bg); }
+  .deb-badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .deb-badge.done { color: var(--muted); background: var(--surface-2); }
+  .deb-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.75rem; padding-top: 0.65rem; border-top: 1px solid var(--rule-soft); }
+  .deb-btn-sm { font: inherit; font-size: 0.76rem; font-weight: 650; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.4rem 0.8rem; cursor: pointer; }
+  .deb-btn-sm:hover { filter: brightness(0.97); }
+  .deb-btn-sm:disabled { opacity: 0.45; cursor: not-allowed; }
+  .deb-btn-sm.danger { color: var(--hot); background: var(--hot-bg); }
+  .deb-empty { color: var(--muted); font-style: italic; font-size: 0.86rem; }
+  .deb-log { margin-top: 0.65rem; padding-top: 0.6rem; border-top: 1px solid var(--rule-soft); }
+  .deb-log-item { font-size: 0.76rem; color: var(--ink-2); display: flex; justify-content: space-between; gap: 0.6rem; padding: 0.15rem 0; }
+  .deb-log-item span:last-child { color: var(--muted); font-family: var(--mono); font-size: 0.7rem; white-space: nowrap; }
+  .deb-account { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 0.95rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.9rem; }
+  .deb-reminder { border-left: 2px solid var(--rule-soft); margin-top: 0.7rem; padding: 0.55rem 0 0.55rem 0.8rem; display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  .deb-reminder-info { font-size: 0.84rem; }
+  .deb-reminder-info b { display: block; font-size: 0.87rem; }
+  .deb-reminder-info span { color: var(--muted); font-size: 0.75rem; }
+  .deb-reset-row { margin-top: 1.6rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Dispatch ETA &amp; billing-reminder guard</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Replace verbal ETA guesses and blind automated reminders with a logged record</h1>
+  <p class="fx-lede">Field-service businesses that dispatch by phone tend to develop two quiet failure modes at the same time: front-desk staff reassure a waiting customer that a technician is "on the way" or "30 minutes out" because that is the only information they have, not because anyone actually knows, and an automated billing or reminder system keeps firing on its own schedule with no check for whether the job it is billing was ever confirmed, declined, or canceled. This page shows two small, working tools that close both gaps: a dispatch board that only shows a technician's real logged status, and turns a scheduled window nobody arrived for into a visible flag instead of a silent no-show, and a billing-reminder queue that is automatically blocked the moment an account is marked declined or canceled, before anything goes out.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the dispatch board reads from whatever already schedules jobs and dispatches crews, and the billing guard sits in front of whatever system already sends reminders, it does not replace either one.</p></div>
+
+  <section class="deb-section">
+    <h2 class="deb-section-title">1. Dispatch &amp; appointment-window board</h2>
+    <p class="deb-section-sub">Every scheduled job shows its real logged status instead of a guess. If the scheduled window closes with no arrival logged, the job is flagged automatically instead of staying silent until a customer calls to complain.</p>
+    <form id="job-form" class="deb-form">
+      <div class="deb-field"><label for="j-customer">Customer / property</label><input type="text" id="j-customer" placeholder="e.g. Sample Customer A" required></div>
+      <div class="deb-field"><label for="j-service">Service</label><select id="j-service"></select></div>
+      <div class="deb-field"><label for="j-date">Date</label><input type="date" id="j-date" required></div>
+      <div class="deb-field"><label for="j-start">Window start</label><input type="time" id="j-start" required></div>
+      <div class="deb-field"><label for="j-end">Window end</label><input type="time" id="j-end" required></div>
+      <div class="deb-submit-cell"><button type="submit" class="fx-btn-ghost">Schedule job</button></div>
+    </form>
+    <div id="jobs-root"></div>
+  </section>
+
+  <section class="deb-section">
+    <h2 class="deb-section-title">2. Automated billing-reminder audit &amp; hold</h2>
+    <p class="deb-section-sub">Every pending reminder is checked against its account's current status before it can send. Marking an account declined or canceled blocks every reminder tied to it immediately, closing the exact gap where a reminder or collections notice fires on an account nobody actually owes.</p>
+    <form id="account-form" class="deb-form">
+      <div class="deb-field"><label for="a-customer">Customer</label><input type="text" id="a-customer" placeholder="e.g. Sample Customer D" required></div>
+      <div class="deb-field"><label for="a-amount">Estimate / balance ($)</label><input type="number" id="a-amount" min="0" step="0.01" required></div>
+      <div class="deb-field"><label for="a-type">Reminder type</label><select id="a-type"></select></div>
+      <div class="deb-field"><label for="a-due">Reminder due</label><input type="date" id="a-due" required></div>
+      <div class="deb-submit-cell"><button type="submit" class="fx-btn-ghost">Add account &amp; reminder</button></div>
+    </form>
+    <div id="accounts-root"></div>
+  </section>
+
+  <div class="deb-reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+
+  <section class="deb-section">
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The dispatch board is shown as a standalone log here.</b> A real build reads and writes the same scheduling system dispatch already uses, so staff have one screen, not a second one to keep updated.</div>
+      <div class="lim"><b>The window-passed flag is a simple time comparison.</b> A real build can also trigger an internal alert (a message to a manager, a task) the moment a window closes with no arrival logged, not just a page badge.</div>
+      <div class="lim"><b>The billing guard is a gate, not a replacement.</b> It sits in front of whatever system already sends reminders or collection notices and only needs one signal per account: hold or release.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job and billing data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "deb_template_v1";
+
+  var SERVICES = ["Standard service call", "Estimate visit", "Follow-up visit", "Install / repair"];
+  var REMINDER_TYPES = ["Estimate follow-up", "Balance-due reminder", "Renewal reminder"];
+
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function todayStr() { var d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function daysFromNowStr(n) { var d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function fmtDate(s) { if (!s) return ""; var d = new Date(s + "T00:00:00"); return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+  function fmtTime(t) { if (!t) return ""; var p = t.split(":"); var h = parseInt(p[0], 10); var m = p[1]; var ap = h >= 12 ? "PM" : "AM"; var h12 = h % 12; if (h12 === 0) h12 = 12; return h12 + ":" + m + " " + ap; }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function money(n) { return "$" + Number(n || 0).toFixed(2); }
+  function uid(prefix) { return prefix + Math.random().toString(36).slice(2, 8); }
+  function windowEndAt(job) { return new Date(job.date + "T" + job.winEnd + ":00"); }
+  function nowStamp() { return new Date().toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+
+  function defaultData() {
+    return {
+      jobs: [
+        {
+          id: "j1", customer: "Sample Customer A", service: "Standard service call", date: todayStr(), winStart: "10:00", winEnd: "12:00",
+          status: "scheduled", log: [{ status: "Scheduled", at: "3 days ago" }]
+        },
+        {
+          id: "j2", customer: "Sample Customer B", service: "Estimate visit", date: todayStr(), winStart: "08:00", winEnd: "10:00",
+          status: "en_route", log: [{ status: "Scheduled", at: "5 days ago" }, { status: "Technician en route", at: "9 minutes ago" }]
+        },
+        {
+          id: "j3", customer: "Sample Customer C", service: "Follow-up visit", date: daysFromNowStr(-1), winStart: "13:00", winEnd: "15:00",
+          status: "arrived", log: [{ status: "Scheduled", at: "6 days ago" }, { status: "Technician en route", at: "2 days ago" }, { status: "Arrived", at: "2 days ago" }]
+        }
+      ],
+      accounts: [
+        {
+          id: "a1", customer: "Sample Customer D", amount: 1800, status: "active",
+          reminders: [{ id: "r1", type: "Balance-due reminder", dueAt: todayStr(), sent: false, sentAt: null }]
+        },
+        {
+          id: "a2", customer: "Sample Customer E", amount: 5400, status: "declined",
+          reminders: [{ id: "r2", type: "Estimate follow-up", dueAt: daysFromNowStr(-1), sent: false, sentAt: null }]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function populateSelects() {
+    document.getElementById("j-service").innerHTML = SERVICES.map(function (s) { return "<option>" + escapeHtml(s) + "</option>"; }).join("");
+    document.getElementById("a-type").innerHTML = REMINDER_TYPES.map(function (s) { return "<option>" + escapeHtml(s) + "</option>"; }).join("");
+  }
+
+  var STATUS_LABEL = { scheduled: "Scheduled", en_route: "Technician en route", arrived: "Arrived", complete: "Complete" };
+  var STATUS_BADGE_CLASS = { scheduled: "watch", en_route: "watch", arrived: "ok", complete: "done" };
+
+  function jobIntegrity(job) {
+    var pastWindow = Date.now() > windowEndAt(job).getTime();
+    if (job.status === "arrived" || job.status === "complete") return { cls: "ok", text: "Arrival logged" };
+    if (pastWindow) return { cls: "hot", text: "Window passed, no arrival logged, flag for callback" };
+    return { cls: "watch", text: "Window open" };
+  }
+
+  function renderJobs() {
+    var root = document.getElementById("jobs-root");
+    var sorted = data.jobs.slice().sort(function (a, b) { return (a.date + a.winStart).localeCompare(b.date + b.winStart); });
+    if (!sorted.length) { root.innerHTML = '<p class="deb-empty">No jobs scheduled yet.</p>'; return; }
+    var html = "";
+    sorted.forEach(function (job) {
+      var integ = jobIntegrity(job);
+      html += '<div class="deb-card"><div class="deb-card-head"><div><div class="deb-card-title">' + escapeHtml(job.customer) + " &middot; " + escapeHtml(job.service) + '</div><div class="deb-card-meta">' + fmtDate(job.date) + ", " + fmtTime(job.winStart) + "&ndash;" + fmtTime(job.winEnd) + '</div></div></div>';
+      html += '<div class="deb-badges"><span class="deb-badge ' + STATUS_BADGE_CLASS[job.status] + '">' + STATUS_LABEL[job.status] + '</span><span class="deb-badge ' + integ.cls + '">' + integ.text + '</span></div>';
+      html += '<div class="deb-log">' + job.log.slice().reverse().map(function (l) { return '<div class="deb-log-item"><span>' + escapeHtml(l.status) + '</span><span>' + escapeHtml(l.at) + '</span></div>'; }).join("") + '</div>';
+      html += '<div class="deb-row">';
+      if (job.status === "scheduled") html += '<button class="deb-btn-sm" onclick="__deb.advance(\'' + job.id + '\',\'en_route\',\'Technician en route\')">Mark technician en route</button>';
+      if (job.status === "en_route") html += '<button class="deb-btn-sm" onclick="__deb.advance(\'' + job.id + '\',\'arrived\',\'Arrived\')">Mark arrived</button>';
+      if (job.status === "arrived") html += '<button class="deb-btn-sm" onclick="__deb.advance(\'' + job.id + '\',\'complete\',\'Job complete\')">Mark complete</button>';
+      if (job.status !== "complete") html += '<button class="deb-btn-sm" onclick="__deb.reschedule(\'' + job.id + '\')">Reschedule</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+  }
+
+  function renderAccounts() {
+    var root = document.getElementById("accounts-root");
+    if (!data.accounts.length) { root.innerHTML = '<p class="deb-empty">No accounts yet.</p>'; return; }
+    var html = "";
+    data.accounts.forEach(function (acc) {
+      html += '<div class="deb-account"><div class="deb-card-head"><div><div class="deb-card-title">' + escapeHtml(acc.customer) + '</div><div class="deb-card-meta">' + money(acc.amount) + '</div></div>';
+      html += '<span class="deb-badge ' + (acc.status === "active" ? "watch" : "hot") + '">' + (acc.status === "active" ? "Active" : acc.status === "declined" ? "Declined" : "Canceled") + '</span></div>';
+      html += '<div class="deb-row">';
+      if (acc.status === "active") {
+        html += '<button class="deb-btn-sm danger" onclick="__deb.setAccountStatus(\'' + acc.id + '\',\'declined\')">Mark declined</button>';
+        html += '<button class="deb-btn-sm danger" onclick="__deb.setAccountStatus(\'' + acc.id + '\',\'canceled\')">Mark canceled</button>';
+      } else {
+        html += '<button class="deb-btn-sm" onclick="__deb.setAccountStatus(\'' + acc.id + '\',\'active\')">Reactivate account</button>';
+      }
+      html += '</div>';
+      acc.reminders.forEach(function (r) {
+        var blocked = acc.status !== "active";
+        var badge, action;
+        if (r.sent) { badge = '<span class="deb-badge done">Sent ' + fmtDate(r.sentAt) + '</span>'; action = ""; }
+        else if (blocked) { badge = '<span class="deb-badge hot">Blocked, account ' + acc.status + '</span>'; action = '<button class="deb-btn-sm" disabled>Send now</button>'; }
+        else { badge = r.dueAt <= todayStr() ? '<span class="deb-badge watch">Ready to send</span>' : '<span class="deb-badge done">Scheduled for ' + fmtDate(r.dueAt) + '</span>'; action = '<button class="deb-btn-sm" onclick="__deb.sendReminder(\'' + acc.id + '\',\'' + r.id + '\')">Send now (simulated)</button>'; }
+        html += '<div class="deb-reminder"><div class="deb-reminder-info"><b>' + escapeHtml(r.type) + '</b><span>Due ' + fmtDate(r.dueAt) + '</span></div><div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">' + badge + action + '</div></div>';
+      });
+      html += '</div>';
+    });
+    root.innerHTML = html;
+  }
+
+  window.__deb = {
+    advance: function (id, status, label) {
+      var job = data.jobs.filter(function (j) { return j.id === id; })[0];
+      if (!job) return;
+      job.status = status;
+      job.log.push({ status: label, at: nowStamp() });
+      save(); renderJobs();
+    },
+    reschedule: function (id) {
+      var job = data.jobs.filter(function (j) { return j.id === id; })[0];
+      if (!job) return;
+      var newDate = prompt("New date (YYYY-MM-DD):", job.date);
+      if (!newDate) return;
+      var newStart = prompt("New window start (HH:MM, 24h):", job.winStart);
+      if (!newStart) return;
+      var newEnd = prompt("New window end (HH:MM, 24h):", job.winEnd);
+      if (!newEnd) return;
+      job.date = newDate; job.winStart = newStart; job.winEnd = newEnd; job.status = "scheduled";
+      job.log.push({ status: "Rescheduled to " + newDate + " " + newStart + "-" + newEnd, at: nowStamp() });
+      save(); renderJobs();
+    },
+    setAccountStatus: function (id, status) {
+      var acc = data.accounts.filter(function (a) { return a.id === id; })[0];
+      if (!acc) return;
+      acc.status = status;
+      save(); renderAccounts();
+    },
+    sendReminder: function (accId, remId) {
+      var acc = data.accounts.filter(function (a) { return a.id === accId; })[0];
+      if (!acc) return;
+      var r = acc.reminders.filter(function (x) { return x.id === remId; })[0];
+      if (!r || acc.status !== "active") return;
+      r.sent = true; r.sentAt = todayStr();
+      save(); renderAccounts();
+    }
+  };
+
+  document.getElementById("job-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("j-customer").value.trim();
+    var start = document.getElementById("j-start").value;
+    var end = document.getElementById("j-end").value;
+    if (!customer || !start || !end) return;
+    data.jobs.push({
+      id: uid("j"), customer: customer, service: document.getElementById("j-service").value,
+      date: document.getElementById("j-date").value || todayStr(), winStart: start, winEnd: end,
+      status: "scheduled", log: [{ status: "Scheduled", at: nowStamp() }]
+    });
+    save(); renderJobs(); e.target.reset();
+  });
+
+  document.getElementById("account-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("a-customer").value.trim();
+    var due = document.getElementById("a-due").value;
+    if (!customer || !due) return;
+    data.accounts.push({
+      id: uid("a"), customer: customer, amount: parseFloat(document.getElementById("a-amount").value) || 0, status: "active",
+      reminders: [{ id: uid("r"), type: document.getElementById("a-type").value, dueAt: due, sent: false, sentAt: null }]
+    });
+    save(); renderAccounts(); e.target.reset();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset both boards back to the original sample data?")) return;
+    data = defaultData(); save(); renderJobs(); renderAccounts();
+  });
+
+  populateSelects();
+  renderJobs();
+  renderAccounts();
+})();
+</script>
+</body>
+</html>
