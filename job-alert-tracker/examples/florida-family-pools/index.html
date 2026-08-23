@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Stalled-warranty &amp; billing alert board: working example for Florida Family Pools</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .jat-cols { display: grid; grid-template-columns: 1.35fr 1fr; gap: 1.2rem; }
+  @media (max-width: 900px) { .jat-cols { grid-template-columns: 1fr; } }
+  .jat-section-title { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.9rem; }
+  .jat-job { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .jat-job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .jat-job-title { font-weight: 660; }
+  .jat-job-meta { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .jat-job-issue { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.55rem; }
+  .jat-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+  .jat-badge { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.3rem 0.62rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .jat-badge.ok { color: var(--good); background: var(--good-bg); }
+  .jat-badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .jat-badge.overdue { color: var(--hot); background: var(--hot-bg); }
+  .jat-badge.done { color: var(--muted); background: var(--surface-2); }
+  .jat-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.75rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .jat-btn-sm { font: inherit; font-size: 0.78rem; font-weight: 650; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.4rem 0.8rem; cursor: pointer; }
+  .jat-btn-sm:disabled { opacity: 0.5; cursor: not-allowed; }
+  .jat-block-msg { font-size: 0.82rem; color: var(--hot); margin-top: 0.5rem; }
+  .jat-charge-initials { font: inherit; font-size: 0.85rem; padding: 0.5rem 0.7rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 8rem; }
+  .jat-charge-initials:focus { outline: none; border-color: var(--brand); }
+  .jat-refund { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .jat-refund-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .jat-refund-title { font-weight: 660; }
+  .jat-refund-meta { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .jat-refund-reason { font-size: 0.85rem; color: var(--ink-2); margin-top: 0.4rem; }
+  .jat-new-form { display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 1.1rem; padding: 1rem 1.1rem; border: 1px dashed var(--rule); border-radius: 16px; }
+  .jat-new-form input, .jat-new-form select, .jat-new-form textarea { font: inherit; font-size: 0.88rem; padding: 0.55rem 0.75rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  .jat-new-form input:focus, .jat-new-form select:focus, .jat-new-form textarea:focus { outline: none; border-color: var(--brand); }
+  .jat-reset-row { margin-top: 1.3rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Stalled-job &amp; billing alert board</a> / Florida Family Pools</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Florida Family Pools (Lautenschlager Pools LLC)</span>
+  <h1 class="fx-h1">Flag the warranty ticket that's gone quiet and the company-caused charge before either one reaches a customer as silence or a disputed invoice</h1>
+  <p class="fx-lede">Your site runs a dedicated page promising your warranty program "commits to responding promptly to covered claims, helping homeowners avoid lengthy downtime and extra expense" and "transparent communication." Three separate BBB complaints (Feb 2024 to Oct 2025) describe the opposite in practice: a paver-and-tile defect where the customer describes "nothing but crickets for around a month" and "no one has come to fix issue," a pool-siting and failed-electrical-inspection case where the company "ignored our calls" on a promised warranty repair while charging the customer $3,500 for a repositioning caused by the company's own siting error, and an October 2025 move-in complaint describing a non-functional pool, multiple leaks, a fried electrical board, and communication described flatly as "Nonexistent." Below is a small, working version of the alert layer that would have caught all three before a customer had to file a formal complaint: a warranty-ticket flag for tickets going too long without a logged site visit, a sign-off gate on any charge tied to a company-caused defect, and an aging tracker for open credit or refund promises.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the "Superior Warranties" page language above is quoted directly from your own site. The three complaints and their quotes are drawn from your BBB complaint record. Your own "Meet the Team" page lists a dedicated Warranty Specialist, a Director of Operations, and Finance Operations roles, so this isn't a company with no warranty process, it's a process with no systematic flag for a stalled ticket or a re-charge tied to your own error before it reaches BBB. A direct fetch of your homepage, /about/, /contact/, and /our-team/ pages found no signature of any client-portal or field-service platform (Buildertrend, JobTread, ServiceTitan, Housecall Pro, or similar), and no client-portal link anywhere on the public site. At least one directly verified Sarasota-area competitor, Alpha & Omega Pool Builders, markets a live JobTread client portal giving customers real-time updates on communications, schedule, progress, and cost tracking. Your two locations, the Sarasota headquarters and the Waterside Sales Center, are both taken from your own site.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> every customer name, ticket, charge, and credit below is a fictional example built to show the same shape as your documented complaint pattern, not a real Florida Family Pools customer, job, or billing record. Nothing here is connected to a live system.</p>
+  </div>
+  <div class="jat-cols">
+    <div>
+      <h2 class="jat-section-title">Open warranty tickets</h2>
+      <button class="fx-btn-ghost" id="new-job-toggle" style="margin-bottom:0.85rem;">+ Log a new warranty ticket</button>
+      <div id="new-job-form-root"></div>
+      <div id="jobs-root"></div>
+    </div>
+    <div>
+      <h2 class="jat-section-title">Open credit &amp; refund promises, both locations</h2>
+      <button class="fx-btn-ghost" id="new-refund-toggle" style="margin-bottom:0.85rem;">+ Log a promised credit or refund</button>
+      <div id="new-refund-form-root"></div>
+      <div id="refunds-root"></div>
+    </div>
+  </div>
+  <div class="jat-reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+  <section>
+    <h2 class="fx-h2">What I'd flag before this goes anywhere near a real job</h2>
+    <div class="limits">
+      <div class="lim"><b>The 14-day no-visit stall threshold and 14-day credit/refund overdue threshold are placeholders.</b> A real build uses whatever response-time commitment your Warranty Specialist and Director of Operations actually want to hold the office to.</div>
+      <div class="lim"><b>This is an alert layer, not a new system of record.</b> It sits alongside however warranty tickets, site visits, and invoices already get tracked across the Sarasota HQ and the Waterside Sales Center, it doesn't replace scheduling, permitting, or your existing Finance Operations workflow.</div>
+      <div class="lim"><b>The charge sign-off gate only catches one mistake.</b> Sending an invoice or re-charge tied to a company-caused defect, a failed inspection, a mis-sited excavation, before someone internally reviews it. It doesn't touch estimating, contracts, or payment processing.</div>
+      <div class="lim"><b>The underlying construction-quality issues aren't something this tool fixes.</b> A misaligned paver, a siting error, or a failed inspection is a workmanship or process problem. This tool only closes the gap where the follow-up, or the charge tied to the mistake, goes unnoticed by the office until a customer escalates.</div>
+      <div class="lim"><b>See it built for a real business: <a href="../happy-home-appliance-repair/">Happy Home Appliance Repair</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Florida Family Pools / Lautenschlager Pools LLC.</strong></p><p>Prepared by Shlok Sarnayak. Complaint pattern and quotes drawn from Florida Family Pools' public BBB complaint record; warranty-page language quoted from their own site. All ticket, customer, and credit/refund records shown are a fictional labeled sample, not real customer data.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "jat_floridafamilypools_v1";
+  var STALL_DAYS = 14;
+  var REFUND_OVERDUE_DAYS = 14;
+  var OFFICES = ["Sarasota HQ", "Waterside Sales Center"];
+
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); return d; }
+  function fmtDate(d) { return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+  function daysBetween(a, b) { return Math.floor((b - a) / (1000 * 60 * 60 * 24)); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function defaultData() {
+    return {
+      jobs: [
+        {
+          id: "FP-1102", customer: "Sample Customer A", office: "Sarasota HQ",
+          issue: "Paver and tile installation defect near the pool coping, reported by the customer.",
+          openedAt: daysAgo(34).toISOString(), lastVisitAt: null, resolved: false,
+          charge: null
+        },
+        {
+          id: "FP-1108", customer: "Sample Customer B", office: "Waterside Sales Center",
+          issue: "Pool sited too close to the setback line, failed the county electrical inspection twice.",
+          openedAt: daysAgo(19).toISOString(), lastVisitAt: daysAgo(19).toISOString(), resolved: false,
+          charge: { amount: "$3,500.00", reason: "Repositioning charge tied to the pool's original siting error", signedOff: null, sent: false }
+        },
+        {
+          id: "FP-1115", customer: "Sample Customer C", office: "Sarasota HQ",
+          issue: "Pool not filling correctly at move-in walkthrough; two active leaks and a fried electrical panel reported.",
+          openedAt: daysAgo(6).toISOString(), lastVisitAt: daysAgo(5).toISOString(), resolved: false,
+          charge: null
+        }
+      ],
+      refunds: [
+        { id: "FC-31", customer: "Sample Customer D", office: "Sarasota HQ", amount: "$500.00", reason: "Partial credit promised after a disputed line item on a completion invoice.", promisedAt: daysAgo(20).toISOString(), sent: false },
+        { id: "FC-34", customer: "Sample Customer E", office: "Waterside Sales Center", amount: "$150.00", reason: "Credit promised for a rescheduled final inspection visit.", promisedAt: daysAgo(3).toISOString(), sent: false }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return defaultData();
+  }
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  var jobsRoot = document.getElementById("jobs-root");
+  var refundsRoot = document.getElementById("refunds-root");
+  var newJobFormRoot = document.getElementById("new-job-form-root");
+  var newRefundFormRoot = document.getElementById("new-refund-form-root");
+
+  function isStalled(job) {
+    if (job.resolved) return false;
+    var days = daysBetween(new Date(job.lastVisitAt || job.openedAt), new Date());
+    return days >= STALL_DAYS;
+  }
+
+  function renderJobs() {
+    var html = "";
+    var open = data.jobs.filter(function (j) { return !j.resolved; });
+    var resolved = data.jobs.filter(function (j) { return j.resolved; });
+    var sorted = open.slice().sort(function (a, b) { return new Date(a.lastVisitAt || a.openedAt) - new Date(b.lastVisitAt || b.openedAt); });
+    sorted.forEach(function (job) {
+      var idx = data.jobs.indexOf(job);
+      var days = daysBetween(new Date(job.lastVisitAt || job.openedAt), new Date());
+      var stalled = isStalled(job);
+      html += '<div class="jat-job"><div class="jat-job-head"><div><div class="jat-job-title">' + escapeHtml(job.customer) + '</div><div class="jat-job-meta">' + escapeHtml(job.id) + ' &middot; ' + escapeHtml(job.office) + ' &middot; opened ' + fmtDate(new Date(job.openedAt)) + '</div></div></div>';
+      html += '<div class="jat-job-issue">' + escapeHtml(job.issue) + '</div>';
+      html += '<div class="jat-badges">';
+      html += '<span class="jat-badge ' + (job.lastVisitAt ? "ok" : "watch") + '">' + (job.lastVisitAt ? "Last site visit " + fmtDate(new Date(job.lastVisitAt)) + " (" + days + "d ago)" : "No site visit logged yet, " + days + "d since opened") + '</span>';
+      if (stalled) html += '<span class="jat-badge overdue">Stalled: ' + days + ' days, no site visit</span>';
+      if (job.charge) html += '<span class="jat-badge ' + (job.charge.sent ? "done" : "watch") + '">' + (job.charge.sent ? "Charge sent, signed off by " + escapeHtml(job.charge.signedOff.by) : "Charge pending sign-off: " + escapeHtml(job.charge.amount)) + '</span>';
+      html += '</div>';
+      html += '<div class="jat-row">';
+      html += '<button class="jat-btn-sm" onclick="__jat.logVisit(' + idx + ')">Log site visit</button>';
+      html += '<button class="jat-btn-sm" onclick="__jat.resolveJob(' + idx + ')">Mark resolved</button>';
+      if (job.charge && !job.charge.sent) {
+        html += '<input type="text" class="jat-charge-initials" id="charge-initials-' + idx + '" placeholder="Supervisor initials" maxlength="6">';
+        html += '<button class="jat-btn-sm" onclick="__jat.signOffAndSend(' + idx + ')">Sign off &amp; send charge (' + escapeHtml(job.charge.amount) + ')</button>';
+      }
+      html += '</div>';
+      html += '<div class="jat-block-msg" id="job-err-' + idx + '" style="display:none;"></div>';
+      html += '</div>';
+    });
+    if (resolved.length) {
+      html += '<h3 style="font-size:0.85rem; color:var(--muted); margin:1.4rem 0 0.6rem;">Resolved</h3>';
+      resolved.forEach(function (job) {
+        html += '<div class="jat-job"><div class="jat-job-head"><div><div class="jat-job-title">' + escapeHtml(job.customer) + '</div><div class="jat-job-meta">' + escapeHtml(job.id) + ' &middot; ' + escapeHtml(job.office) + '</div></div><span class="jat-badge done">Resolved</span></div></div>';
+      });
+    }
+    jobsRoot.innerHTML = html || '<p style="color:var(--muted); font-style:italic; font-size:0.9rem;">No warranty tickets logged.</p>';
+  }
+
+  function refundBadge(refund) {
+    if (refund.sent) return { cls: "done", label: "Sent" };
+    var days = daysBetween(new Date(refund.promisedAt), new Date());
+    if (days >= REFUND_OVERDUE_DAYS) return { cls: "overdue", label: days + " days since promised, overdue" };
+    if (days >= REFUND_OVERDUE_DAYS - 5) return { cls: "watch", label: days + " days since promised" };
+    return { cls: "ok", label: days === 0 ? "Promised today" : days + " days since promised" };
+  }
+
+  function renderRefunds() {
+    var html = "";
+    var sorted = data.refunds.slice().sort(function (a, b) { return new Date(a.promisedAt) - new Date(b.promisedAt); });
+    sorted.forEach(function (refund) {
+      var idx = data.refunds.indexOf(refund);
+      var badge = refundBadge(refund);
+      html += '<div class="jat-refund"><div class="jat-refund-head"><div><div class="jat-refund-title">' + escapeHtml(refund.customer) + ' &middot; ' + escapeHtml(refund.amount) + '</div><div class="jat-refund-meta">' + escapeHtml(refund.id) + ' &middot; ' + escapeHtml(refund.office) + ' &middot; promised ' + fmtDate(new Date(refund.promisedAt)) + '</div></div><span class="jat-badge ' + badge.cls + '">' + badge.label + '</span></div>';
+      html += '<div class="jat-refund-reason">' + escapeHtml(refund.reason) + '</div>';
+      if (!refund.sent) html += '<div class="jat-row"><button class="jat-btn-sm" onclick="__jat.markRefundSent(' + idx + ')">Mark issued</button></div>';
+      html += '</div>';
+    });
+    refundsRoot.innerHTML = html || '<p style="color:var(--muted); font-style:italic; font-size:0.9rem;">No credits or refunds logged.</p>';
+  }
+
+  function renderNewJobForm(open) {
+    if (!open) { newJobFormRoot.innerHTML = ""; return; }
+    var opts = OFFICES.map(function (o) { return '<option value="' + escapeHtml(o) + '">' + escapeHtml(o) + '</option>'; }).join("");
+    newJobFormRoot.innerHTML =
+      '<div class="jat-new-form">' +
+      '<input type="text" id="nj-customer" placeholder="Customer name">' +
+      '<select id="nj-office">' + opts + '</select>' +
+      '<textarea id="nj-issue" rows="2" placeholder="What did the customer report?"></textarea>' +
+      '<label style="font-size:0.85rem; display:flex; gap:0.4rem; align-items:center;"><input type="checkbox" id="nj-hascharge"> A charge tied to a company-caused defect is attached to this ticket</label>' +
+      '<input type="text" id="nj-chargeamount" placeholder="Charge amount, e.g. $500.00 (only if checked above)">' +
+      '<div><button class="fx-btn" onclick="__jat.addJob()">Log ticket</button> <button class="fx-btn-ghost" onclick="__jat.toggleNewJob()">Cancel</button></div>' +
+      "</div>";
+  }
+
+  function renderNewRefundForm(open) {
+    if (!open) { newRefundFormRoot.innerHTML = ""; return; }
+    var opts = OFFICES.map(function (o) { return '<option value="' + escapeHtml(o) + '">' + escapeHtml(o) + '</option>'; }).join("");
+    newRefundFormRoot.innerHTML =
+      '<div class="jat-new-form">' +
+      '<input type="text" id="nr-customer" placeholder="Customer name">' +
+      '<input type="text" id="nr-amount" placeholder="Amount, e.g. $150.00">' +
+      '<select id="nr-office">' + opts + '</select>' +
+      '<textarea id="nr-reason" rows="2" placeholder="What was promised?"></textarea>' +
+      '<div><button class="fx-btn" onclick="__jat.addRefund()">Log credit/refund</button> <button class="fx-btn-ghost" onclick="__jat.toggleNewRefund()">Cancel</button></div>' +
+      "</div>";
+  }
+
+  var newJobOpen = false;
+  var newRefundOpen = false;
+  var jobSeq = 1115;
+  var refundSeq = 34;
+
+  window.__jat = {
+    logVisit: function (idx) { data.jobs[idx].lastVisitAt = new Date().toISOString(); save(); renderJobs(); },
+    resolveJob: function (idx) { data.jobs[idx].resolved = true; save(); renderJobs(); },
+    signOffAndSend: function (idx) {
+      var job = data.jobs[idx];
+      var errEl = document.getElementById("job-err-" + idx);
+      var initialsEl = document.getElementById("charge-initials-" + idx);
+      var initials = initialsEl ? initialsEl.value.trim() : "";
+      if (!initials) {
+        errEl.style.display = "block";
+        errEl.textContent = "Blocked: this charge is tied to a company-caused defect (" + job.charge.reason + ") and needs a supervisor's initials to sign off before it can go out.";
+        return;
+      }
+      errEl.style.display = "none";
+      job.charge.signedOff = { by: initials, at: new Date().toISOString() };
+      job.charge.sent = true;
+      save(); renderJobs();
+    },
+    toggleNewJob: function () { newJobOpen = !newJobOpen; renderNewJobForm(newJobOpen); },
+    addJob: function () {
+      var customer = document.getElementById("nj-customer").value.trim();
+      var office = document.getElementById("nj-office").value;
+      var issue = document.getElementById("nj-issue").value.trim();
+      var hasCharge = document.getElementById("nj-hascharge").checked;
+      var chargeAmount = document.getElementById("nj-chargeamount").value.trim();
+      if (!customer || !issue) { alert("Enter a customer name and issue before logging the ticket."); return; }
+      jobSeq += 1;
+      var charge = null;
+      if (hasCharge) charge = { amount: chargeAmount || "$0.00", reason: "Charge tied to a company-caused defect on this ticket", signedOff: null, sent: false };
+      data.jobs.push({ id: "FP-" + jobSeq, customer: customer, office: office, issue: issue, openedAt: new Date().toISOString(), lastVisitAt: null, resolved: false, charge: charge });
+      save(); newJobOpen = false; renderNewJobForm(false); renderJobs();
+    },
+    toggleNewRefund: function () { newRefundOpen = !newRefundOpen; renderNewRefundForm(newRefundOpen); },
+    addRefund: function () {
+      var customer = document.getElementById("nr-customer").value.trim();
+      var amount = document.getElementById("nr-amount").value.trim();
+      var office = document.getElementById("nr-office").value;
+      var reason = document.getElementById("nr-reason").value.trim();
+      if (!customer || !amount) { alert("Enter a customer name and amount before logging."); return; }
+      refundSeq += 1;
+      data.refunds.push({ id: "FC-" + refundSeq, customer: customer, amount: amount, office: office, reason: reason || "Credit or refund promised.", promisedAt: new Date().toISOString(), sent: false });
+      save(); newRefundOpen = false; renderNewRefundForm(false); renderRefunds();
+    },
+    markRefundSent: function (idx) { data.refunds[idx].sent = true; save(); renderRefunds(); }
+  };
+
+  document.getElementById("new-job-toggle").addEventListener("click", function () { __jat.toggleNewJob(); });
+  document.getElementById("new-refund-toggle").addEventListener("click", function () { __jat.toggleNewRefund(); });
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset all tickets and credits/refunds back to the original sample data?")) return;
+    data = defaultData(); save(); renderJobs(); renderRefunds();
+  });
+
+  renderJobs(); renderRefunds();
+})();
+</script>
+</body>
+</html>
