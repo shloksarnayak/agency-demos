@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>Multi-location booking &amp; boarding-intake console template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .mlc-section { margin-top: 2.4rem; }
+  .mlc-section-title { font-family: var(--serif); font-size: 1.25rem; margin: 0 0 0.3rem; }
+  .mlc-section-sub { color: var(--muted); font-size: 0.86rem; margin: 0 0 1rem; max-width: 68ch; }
+  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+  .field { margin-top: 1.15rem; }
+  .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  input[type="text"], input[type="date"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; max-width: 26rem; }
+  input[type="text"]:focus, input[type="date"]:focus { outline: none; border-color: var(--brand); }
+  .policy-box { border-radius: var(--radius-md); background: var(--surface-2); box-shadow: var(--shadow-inset); padding: 1.1rem 1.3rem; margin-top: 0.4rem; }
+  .policy-box h4 { margin: 0 0 0.5rem; font-size: 0.92rem; }
+  .policy-box .rate { font-family: var(--serif); font-size: 1.7rem; color: var(--brand); margin: 0.2rem 0 0.6rem; }
+  .policy-box ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; color: var(--ink-2); line-height: 1.6; }
+  .policy-box .sample-tag { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--hot); background: var(--hot-bg); border-radius: 999px; padding: 0.2rem 0.55rem; display: inline-block; margin-bottom: 0.6rem; }
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.8rem; }
+  .confirm h3 { margin: 0; font-size: 1.05rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+  .confirm dl { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; }
+  .confirm dt { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .confirm dd { margin: 0 0 0.5rem; font-size: 0.94rem; color: var(--ink); }
+  .load-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.8rem; margin-bottom: 1.2rem; }
+  .load-card { border: 1px solid var(--rule); border-radius: 16px; padding: 0.9rem 1rem; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .load-card .loc-name { font-weight: 660; font-size: 0.92rem; }
+  .load-card .loc-count { font-family: var(--serif); font-size: 1.9rem; margin-top: 0.2rem; }
+  .load-card .loc-label { color: var(--muted); font-size: 0.72rem; }
+  .load-bar { height: 6px; border-radius: 8px; background: var(--surface-2); overflow: hidden; margin-top: 0.6rem; }
+  .load-bar i { display: block; height: 100%; background: var(--brand); }
+  .req-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 0.9rem 1.1rem; box-shadow: var(--shadow-sm); margin-bottom: 0.75rem; }
+  .req-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .req-title { font-weight: 660; font-size: 0.94rem; }
+  .req-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .req-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+  .req-badge { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.3rem 0.6rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .req-badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .req-badge.ok { color: var(--good); background: var(--good-bg); }
+  .req-badge.loc { color: var(--ink-2); background: var(--surface-2); }
+  .req-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.7rem; padding-top: 0.6rem; border-top: 1px solid var(--rule-soft); }
+  .req-btn-sm { font: inherit; font-size: 0.76rem; font-weight: 650; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.38rem 0.75rem; cursor: pointer; }
+  .req-btn-sm:disabled { opacity: 0.5; cursor: not-allowed; }
+  .req-empty { color: var(--muted); font-style: italic; font-size: 0.86rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .lim a { color: var(--brand); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Multi-location booking &amp; boarding-intake console</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">One shared request queue instead of a phone line at every location</h1>
+  <p class="fx-lede">A business with several locations and no online booking usually runs each site's phone or inbox on its own, with no shared view of how full any one location already is. This page shows two linked pieces: a client-facing request form that also locks in published pricing and policy for any add-on service before someone commits to it, and a front-desk view that shows every location's incoming load side by side so staff are not blind to how busy a site already is before adding to it.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the location list, service list, and any locked pricing/policy come from the business's own published rates, the way the example below shows.</p></div>
+
+  <section class="mlc-section">
+    <h2 class="mlc-section-title">1. Client-facing request</h2>
+    <p class="mlc-section-sub">A request, not a live booking calendar. It replaces a phone call or a shared inbox with a form that reaches every location the same way, and locks in pricing and policy before someone submits an add-on request.</p>
+    <div class="fx-card" id="form-root"></div>
+  </section>
+
+  <section class="mlc-section">
+    <h2 class="mlc-section-title">2. Front-desk view, across every location</h2>
+    <p class="mlc-section-sub">Every request lands here the moment it's submitted, grouped by location, so staff can see at a glance which site already has a full queue before saying yes to one more.</p>
+    <div class="load-grid" id="load-root"></div>
+    <div id="requests-root"></div>
+    <div class="mlc-section" style="margin-top:1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+  </section>
+
+  <section class="mlc-section">
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>A request, not a live schedule.</b> It doesn't know which exact times are actually free at a location unless it's connected to that location's real calendar. Staff still confirm the exact time, the same way a phone call would, just captured through one shared channel instead of a different inbox per site.</div>
+      <div class="lim"><b>The locked price and policy shown at request time is exactly what gets echoed back on the confirmation.</b> A real build pulls both from whatever the business has actually published, and updates in one place if either changes, so every location quotes the same thing.</div>
+      <div class="lim"><b>The load view is a count, not a true capacity model.</b> A real build can weight it by appointment length or staffing on a given day; this demo shows the mechanism; a shared, visible queue instead of five separate blind spots, not a finished capacity planner.</div>
+      <div class="lim"><b>Nothing here actually sends anything.</b> A real version would notify the relevant location's staff the moment a request comes in. This demo just shows what that request would look like once captured.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/callanan-veterinary-group/">Callanan Veterinary Group</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional location and request data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "mlbc_template_v1";
+
+  var LOCATIONS = [
+    { id: "a", name: "Location A" },
+    { id: "b", name: "Location B" },
+    { id: "c", name: "Location C" }
+  ];
+  var SERVICES = ["General appointment", "Follow-up visit", "New client intake"];
+  var DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+  var TIMES = ["Morning", "Early afternoon", "Late afternoon or evening"];
+  var ADDON_RATE = 42; // SAMPLE, fictional placeholder
+  var ADDON_POLICY = [
+    "Drop off between 8:00 and 9:30 AM on the start date",
+    "Pick up by 6:00 PM on the end date",
+    "Rate below is locked at the time of this request and will not change without notice"
+  ];
+
+  function todayStr() { return new Date().toISOString().slice(0, 10); }
+  function daysAgoStr(n) { var d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function uid(prefix) { return prefix + Math.random().toString(36).slice(2, 8); }
+  function locName(id) { var m = LOCATIONS.filter(function (l) { return l.id === id; })[0]; return m ? m.name : id; }
+
+  function defaultData() {
+    return {
+      requests: [
+        { id: "r1", locationId: "a", kind: "appointment", service: "General appointment", day: "Tuesday", time: "Morning", name: "Sample Client A", contact: "sample.a@example.com", status: "new", submittedAt: daysAgoStr(1) },
+        { id: "r2", locationId: "a", kind: "addon", nights: 2, name: "Sample Client B", contact: "sample.b@example.com", rate: ADDON_RATE, status: "new", submittedAt: daysAgoStr(1) },
+        { id: "r3", locationId: "b", kind: "appointment", service: "New client intake", day: "Wednesday", time: "Late afternoon or evening", name: "Sample Client C", contact: "sample.c@example.com", status: "confirmed", submittedAt: daysAgoStr(2) },
+        { id: "r4", locationId: "c", kind: "appointment", service: "Follow-up visit", day: "Monday", time: "Early afternoon", name: "Sample Client D", contact: "sample.d@example.com", status: "new", submittedAt: todayStr() }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  var formRoot = document.getElementById("form-root");
+  var loadRoot = document.getElementById("load-root");
+  var requestsRoot = document.getElementById("requests-root");
+
+  var state = { locationId: null, kind: null, service: null, day: null, time: null, nights: 1, name: "", contact: "", submitted: false };
+
+  function canSubmit() {
+    if (!state.locationId || !state.kind || !state.name.trim() || !state.contact.trim()) return false;
+    if (state.kind === "appointment") return !!(state.service && state.day && state.time);
+    if (state.kind === "addon") return state.nights > 0;
+    return false;
+  }
+
+  function renderForm() {
+    if (state.submitted) { renderConfirm(); return; }
+    var html = "";
+    html += '<div class="field"><div class="field-label">Which location?</div><div class="choices">';
+    LOCATIONS.forEach(function (l) { html += '<button class="fx-opt' + (state.locationId === l.id ? ' sel' : '') + '" style="padding:0.65rem 1rem;" data-loc="' + l.id + '">' + escapeHtml(l.name) + '</button>'; });
+    html += '</div></div>';
+
+    html += '<div class="field"><div class="field-label">What do you need?</div><div class="choices">';
+    html += '<button class="fx-opt' + (state.kind === "appointment" ? ' sel' : '') + '" style="padding:0.65rem 1rem;" data-kind="appointment">Appointment</button>';
+    html += '<button class="fx-opt' + (state.kind === "addon" ? ' sel' : '') + '" style="padding:0.65rem 1rem;" data-kind="addon">Boarding / overnight stay</button>';
+    html += '</div></div>';
+
+    if (state.kind === "appointment") {
+      html += '<div class="field"><div class="field-label">Service</div><div class="choices">';
+      SERVICES.forEach(function (s) { html += '<button class="fx-opt' + (state.service === s ? ' sel' : '') + '" style="padding:0.65rem 1rem;" data-service="' + s + '">' + s + '</button>'; });
+      html += '</div></div>';
+      html += '<div class="field"><div class="field-label">Preferred day</div><div class="choices">';
+      DAYS.forEach(function (d) { html += '<button class="fx-opt' + (state.day === d ? ' sel' : '') + '" style="padding:0.65rem 1rem;" data-day="' + d + '">' + d + '</button>'; });
+      html += '</div></div>';
+      html += '<div class="field"><div class="field-label">Preferred time</div><div class="choices">';
+      TIMES.forEach(function (t) { html += '<button class="fx-opt' + (state.time === t ? ' sel' : '') + '" style="padding:0.65rem 1rem;" data-time="' + t + '">' + t + '</button>'; });
+      html += '</div></div>';
+    } else if (state.kind === "addon") {
+      html += '<div class="field"><div class="field-label">Nights</div><input type="text" id="nights-input" value="' + state.nights + '" style="max-width:6rem;"></div>';
+      html += '<div class="field policy-box"><span class="sample-tag">Sample rate, replace with the real published rate</span>';
+      html += '<h4>Locked price and policy for this request</h4>';
+      html += '<div class="rate">$' + ADDON_RATE + ' / night &times; ' + Math.max(1, parseInt(state.nights, 10) || 1) + ' = $' + (ADDON_RATE * Math.max(1, parseInt(state.nights, 10) || 1)) + '</div>';
+      html += '<ul>'; ADDON_POLICY.forEach(function (p) { html += '<li>' + escapeHtml(p) + '</li>'; }); html += '</ul></div>';
+    }
+
+    html += '<div class="field"><div class="field-label">Your name</div><input type="text" id="name-input" value="' + state.name.replace(/"/g, '&quot;') + '" placeholder="First and last name"></div>';
+    html += '<div class="field"><div class="field-label">Phone or email</div><input type="text" id="contact-input" value="' + state.contact.replace(/"/g, '&quot;') + '" placeholder="How should we reach you?"></div>';
+    html += '<button class="fx-btn" id="submit-btn" style="margin-top:1.3rem;"' + (canSubmit() ? '' : ' disabled') + '>Send this request</button>';
+
+    formRoot.innerHTML = html;
+
+    Array.prototype.forEach.call(formRoot.querySelectorAll('[data-loc]'), function (b) { b.addEventListener('click', function () { state.locationId = b.dataset.loc; renderForm(); }); });
+    Array.prototype.forEach.call(formRoot.querySelectorAll('[data-kind]'), function (b) { b.addEventListener('click', function () { state.kind = b.dataset.kind; renderForm(); }); });
+    Array.prototype.forEach.call(formRoot.querySelectorAll('[data-service]'), function (b) { b.addEventListener('click', function () { state.service = b.dataset.service; renderForm(); }); });
+    Array.prototype.forEach.call(formRoot.querySelectorAll('[data-day]'), function (b) { b.addEventListener('click', function () { state.day = b.dataset.day; renderForm(); }); });
+    Array.prototype.forEach.call(formRoot.querySelectorAll('[data-time]'), function (b) { b.addEventListener('click', function () { state.time = b.dataset.time; renderForm(); }); });
+
+    var nightsInput = document.getElementById('nights-input');
+    if (nightsInput) nightsInput.addEventListener('input', function () { state.nights = parseInt(nightsInput.value, 10) || 1; renderForm(); });
+
+    var nameInput = document.getElementById('name-input');
+    var contactInput = document.getElementById('contact-input');
+    nameInput.addEventListener('input', function () { state.name = nameInput.value; syncSubmit(); });
+    contactInput.addEventListener('input', function () { state.contact = contactInput.value; syncSubmit(); });
+    document.getElementById('submit-btn').addEventListener('click', function () { if (!canSubmit()) return; submitRequest(); });
+  }
+
+  function syncSubmit() { var b = document.getElementById('submit-btn'); if (b) b.disabled = !canSubmit(); }
+
+  function submitRequest() {
+    var req = { id: uid("r"), locationId: state.locationId, kind: state.kind, name: state.name, contact: state.contact, status: "new", submittedAt: todayStr() };
+    if (state.kind === "appointment") { req.service = state.service; req.day = state.day; req.time = state.time; }
+    else { req.nights = Math.max(1, parseInt(state.nights, 10) || 1); req.rate = ADDON_RATE; }
+    data.requests.push(req);
+    save();
+    state.submitted = true;
+    renderForm();
+    renderLoad();
+    renderRequests();
+  }
+
+  function renderConfirm() {
+    var last = data.requests[data.requests.length - 1];
+    var html = '<div class="confirm"><h3>Request captured</h3><dl>';
+    html += '<dt>Location</dt><dd>' + escapeHtml(locName(last.locationId)) + '</dd>';
+    if (last.kind === "appointment") {
+      html += '<dt>Service</dt><dd>' + escapeHtml(last.service) + '</dd>';
+      html += '<dt>Preferred day</dt><dd>' + escapeHtml(last.day) + '</dd>';
+      html += '<dt>Preferred time</dt><dd>' + escapeHtml(last.time) + '</dd>';
+    } else {
+      html += '<dt>Nights</dt><dd>' + last.nights + '</dd>';
+      html += '<dt>Locked price</dt><dd>$' + last.rate + ' / night &times; ' + last.nights + ' = $' + (last.rate * last.nights) + ' (sample rate)</dd>';
+      html += '<dt>Policy</dt><dd>' + ADDON_POLICY.map(escapeHtml).join('; ') + '</dd>';
+    }
+    html += '<dt>Name</dt><dd>' + escapeHtml(last.name) + '</dd>';
+    html += '<dt>Contact</dt><dd>' + escapeHtml(last.contact) + '</dd>';
+    html += '</dl><button class="fx-btn-ghost" id="reset-form-btn">Start another request</button></div>';
+    formRoot.innerHTML = html;
+    document.getElementById('reset-form-btn').addEventListener('click', function () {
+      state = { locationId: null, kind: null, service: null, day: null, time: null, nights: 1, name: "", contact: "", submitted: false };
+      renderForm();
+    });
+  }
+
+  function renderLoad() {
+    var max = 1;
+    var counts = {};
+    LOCATIONS.forEach(function (l) { counts[l.id] = 0; });
+    data.requests.forEach(function (r) { if (r.status === "new") { counts[r.locationId] = (counts[r.locationId] || 0) + 1; } });
+    LOCATIONS.forEach(function (l) { if (counts[l.id] > max) max = counts[l.id]; });
+    var html = "";
+    LOCATIONS.forEach(function (l) {
+      var c = counts[l.id] || 0;
+      var pct = Math.round((c / max) * 100);
+      html += '<div class="load-card"><div class="loc-name">' + escapeHtml(l.name) + '</div><div class="loc-count">' + c + '</div><div class="loc-label">open request' + (c === 1 ? '' : 's') + '</div><div class="load-bar"><i style="width:' + pct + '%;"></i></div></div>';
+    });
+    loadRoot.innerHTML = html;
+  }
+
+  function renderRequests() {
+    if (!data.requests.length) { requestsRoot.innerHTML = '<p class="req-empty">No requests yet.</p>'; return; }
+    var sorted = data.requests.slice().sort(function (a, b) { return b.submittedAt.localeCompare(a.submittedAt); });
+    var html = "";
+    sorted.forEach(function (r) {
+      var idx = data.requests.indexOf(r);
+      var title = r.kind === "appointment" ? r.service : ('Boarding, ' + r.nights + ' night' + (r.nights === 1 ? '' : 's'));
+      html += '<div class="req-card"><div class="req-head"><div><div class="req-title">' + escapeHtml(r.name) + ' &middot; ' + escapeHtml(title) + '</div><div class="req-meta">Submitted ' + r.submittedAt + ' &middot; ' + escapeHtml(r.contact) + '</div></div></div>';
+      html += '<div class="req-badges"><span class="req-badge loc">' + escapeHtml(locName(r.locationId)) + '</span>' + (r.status === "confirmed" ? '<span class="req-badge ok">Confirmed</span>' : '<span class="req-badge watch">New</span>') + '</div>';
+      if (r.status !== "confirmed") html += '<div class="req-row"><button class="req-btn-sm" onclick="__mlbc.confirm(' + idx + ')">Mark confirmed</button></div>';
+      html += '</div>';
+    });
+    requestsRoot.innerHTML = html;
+  }
+
+  document.getElementById('reset-btn').addEventListener('click', function () {
+    data = defaultData(); save();
+    state = { locationId: null, kind: null, service: null, day: null, time: null, nights: 1, name: "", contact: "", submitted: false };
+    renderForm(); renderLoad(); renderRequests();
+  });
+
+  window.__mlbc = {
+    confirm: function (idx) { data.requests[idx].status = "confirmed"; save(); renderLoad(); renderRequests(); }
+  };
+
+  renderForm();
+  renderLoad();
+  renderRequests();
+})();
+</script>
+</body>
+</html>
