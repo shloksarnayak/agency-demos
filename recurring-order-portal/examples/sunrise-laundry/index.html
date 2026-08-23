@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>Sunrise Laundry Services, client order &amp; scheduling portal (prototype)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .layout { display: grid; grid-template-columns: 260px 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+  .site-picker { display: flex; flex-direction: column; gap: .6rem; }
+  .client-list { display: flex; flex-direction: column; gap: .55rem; }
+  .client-btn { padding: .75rem .85rem; text-align: left; }
+  .client-btn .sub { display: block; margin-top: .1rem; }
+  .tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+  .tab { padding: .55rem 1rem; font: 700 .82rem/1 var(--sans); background: var(--surface-2); border: 2px solid var(--ink); border-radius: var(--radius-sm); cursor: pointer; box-shadow: 2px 2px 0 var(--ink); }
+  .tab.active { background: var(--brand); color: #fff; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .8rem; margin: 1rem 0; }
+  .item-row { display: flex; justify-content: space-between; align-items: center; gap: .6rem; padding: .7rem .85rem; background: var(--surface-2); border: 2px solid var(--ink); border-radius: var(--radius-sm); }
+  .item-row label { font-size: .86rem; font-weight: 650; }
+  .item-row input[type="number"] { width: 4.2rem; padding: .35rem .4rem !important; }
+  .row-actions { display: flex; gap: .7rem; flex-wrap: wrap; margin-top: 1rem; }
+  table.orders { width: 100%; border-collapse: collapse; font-size: .87rem; }
+  table.orders th, table.orders td { text-align: left; padding: .55rem .6rem; border-bottom: 1px solid var(--rule-soft); }
+  table.orders th { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .badge { display: inline-block; padding: .2rem .55rem; border-radius: 999px; font: 700 .72rem/1.4 var(--sans); }
+  .badge.scheduled { background: var(--warn-bg); color: var(--warn); }
+  .badge.collected { background: var(--surface-2); color: var(--ink-2); }
+  .badge.delivered { background: var(--good-bg); color: var(--good); }
+  .template-chip { display: inline-flex; align-items: center; gap: .4rem; }
+  .empty { color: var(--muted); font-style: italic; font-size: .88rem; }
+  .field-row { display: flex; gap: .8rem; flex-wrap: wrap; align-items: end; }
+  .field { display: flex; flex-direction: column; gap: .3rem; font-size: .82rem; font-weight: 650; }
+  .field select, .field input { padding: .55rem .7rem !important; }
+  .usage-total { font-family: var(--serif); font-size: 1.6rem; }
+  .note-inline { font-size: .78rem; color: var(--muted); margin-top: .3rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">FP</span><span class="fx-brand-name">FixPoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Client order &amp; scheduling portal</a> / Sunrise Laundry Services</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Sunrise Laundry Services</span>
+  <h1 class="fx-h1">Order and schedule without a phone call</h1>
+  <p class="fx-lede">Sunrise's own site, and the owners' own words in last year's acquisition
+  coverage, describe every order and pickup running through phone or email, with a
+  customer-facing app promised but not yet live. This is a prototype of that portal: pick a
+  client account, place an order sized to what that account actually buys, schedule
+  collection or delivery across either site, and see order history and usage in one place.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything on this page is a fictional sample account, fictional order data, and an illustrative per-item rate.</strong> Sunrise Laundry Services' real client list, real pricing, and real operational data are never used here. This prototype is not connected to Sunrise's phone lines, email, or any live system.</p></div>
+
+  <div class="layout">
+    <aside class="fx-card">
+      <div style="font-family:var(--mono); font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted);">Sample client accounts</div>
+      <div class="client-list" id="client-list" style="margin-top:.8rem;"></div>
+      <div class="note-inline">Account types match Sunrise's own published client sectors (hotels/hospitality, care &amp; residential via ResiCare, restaurants, retail, industrial/warehousing, holiday lettings, events). Account names below are invented.</div>
+    </aside>
+
+    <section class="fx-card" id="workspace">
+      <div class="tabs">
+        <button class="tab active" data-tab="order">New order</button>
+        <button class="tab" data-tab="schedule">Schedule collection/delivery</button>
+        <button class="tab" data-tab="history">Order history</button>
+        <button class="tab" data-tab="usage">Usage summary</button>
+      </div>
+
+      <div class="panel active" data-panel="order">
+        <div id="order-templates" class="row-actions"></div>
+        <div id="item-grid" class="item-grid"></div>
+        <div class="row-actions">
+          <button class="fx-btn" id="add-to-order">Add to order</button>
+          <button class="fx-btn-ghost" id="save-template">Save as recurring template</button>
+        </div>
+        <div id="draft-summary" class="note-inline"></div>
+      </div>
+
+      <div class="panel" data-panel="schedule">
+        <div class="field-row">
+          <div class="field"><span>Site</span>
+            <select id="site-select">
+              <option value="Gateway Industrial Estate">Gateway Industrial Estate</option>
+              <option value="Nantwich Road, Crewe">Nantwich Road, Crewe</option>
+            </select>
+          </div>
+          <div class="field"><span>Type</span>
+            <select id="movement-type">
+              <option value="Collection">Collection (from client)</option>
+              <option value="Delivery">Delivery (to client)</option>
+            </select>
+          </div>
+          <div class="field"><span>Date</span><input type="date" id="sched-date"></div>
+          <div class="field"><span>Slot</span>
+            <select id="sched-slot"><option>AM</option><option>PM</option></select>
+          </div>
+          <button class="fx-btn" id="confirm-schedule">Confirm</button>
+        </div>
+        <p class="note-inline">The current draft order (from the "New order" tab, or the last saved order for this account) is scheduled against the site and slot chosen here.</p>
+      </div>
+
+      <div class="panel" data-panel="history">
+        <table class="orders" id="history-table"><thead><tr><th>Date logged</th><th>Site</th><th>Type</th><th>Items</th><th>Status</th></tr></thead><tbody></tbody></table>
+        <p class="empty" id="history-empty" style="display:none;">No orders yet for this account. Add and schedule one first.</p>
+      </div>
+
+      <div class="panel" data-panel="usage">
+        <table class="orders" id="usage-table"><thead><tr><th>Item</th><th>Total units ordered</th><th>Sample rate</th><th>Illustrative subtotal</th></tr></thead><tbody></tbody></table>
+        <p class="usage-total" id="usage-grand-total"></p>
+        <p class="note-inline">Rates shown are placeholder figures for illustration only, not Sunrise's actual pricing, which is not published and was not used here.</p>
+      </div>
+    </section>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">Grounded in what's actually published</h2>
+    <div class="limits">
+      <div class="lim"><b>The gap, in Sunrise's own words.</b> Covering the August 2025 acquisition of the former XL Cleaning Services site on Nantwich Road, Crewe Nub News quoted the owners directly: "Our customers will also be able to request a pick up or delivery simply by using our app." A year on, no such app is listed on the App Store or Play Store, and the live site (sunriselaundryservices.co.uk) still routes every order through phone or email only, confirmed by checking the homepage, the care/residential-homes page, and the site's own testimonials.</div>
+      <div class="lim"><b>Two real sites, coordinated by phone.</b> The Gateway Industrial Estate site and the newly acquired Nantwich Road site are both independently confirmed (Crewe Nub News, August 2025). This prototype's scheduling tab treats "which site" as a first-class choice, since a self-serve portal for a two-site operation needs that distinction that a single phone line doesn't naturally surface.</div>
+      <div class="lim"><b>Client types match their own site, not invented segments.</b> Hotels, care/residential homes (branded "ResiCare"), restaurants, retail, industrial/warehousing, holiday lettings and events are the sectors Sunrise's own site markets to. The account list on this page uses fictional business names, but the account types are real client categories Sunrise names for itself.</div>
+      <div class="lim"><b>What a real build adds.</b> A production version would connect to whichever system Sunrise's team actually uses for order intake and delivery routing (or replace the current phone/email intake with this portal directly), add authentication per client account, and use Sunrise's real published rates rather than the placeholder figures shown in the usage tab.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Sunrise Laundry Services, Sunrise Laundry Ltd, or the Gillard family.</strong></p>
+  <p>Prepared by Shlok Sarnayak. All client accounts, orders and usage figures on this page are fictional sample data, not connected to any live system.</p>
+</footer>
+<script>
+(function () {
+  var STORAGE_KEY = "sunrise-portal-demo-v1";
+
+  var ITEM_CATALOG = {
+    hotel: ["Bed sheet (double)", "Bed sheet (single)", "Pillowcase", "Bath towel", "Hand towel", "Bathrobe"],
+    care: ["Bed sheet", "Pillowcase", "Bath towel", "Flat sheet (incontinence-grade)", "Patient gown", "Staff tunic"],
+    restaurant: ["Tablecloth", "Napkin", "Chef whites (jacket)", "Chef apron", "Tea towel"],
+    retail: ["Staff uniform shirt", "Staff apron", "Floor mat"],
+    industrial: ["Coverall", "Hi-vis vest", "Workwear trousers", "Industrial floor mat"],
+    holiday: ["Bed sheet (double)", "Pillowcase", "Bath towel", "Hand towel", "Tea towel"],
+    events: ["Tablecloth (round)", "Chair cover", "Napkin", "Table runner"]
+  };
+  var TYPE_LABEL = { hotel: "Hotel / hospitality", care: "Care & residential (ResiCare)", restaurant: "Restaurant", retail: "Retail", industrial: "Industrial / warehousing", holiday: "Holiday lettings", events: "Events" };
+
+  var CLIENTS = [
+    { id: "c1", name: "Crewe Grange Hotel (sample)", type: "hotel" },
+    { id: "c2", name: "Oakfield Residential Care, ResiCare account (sample)", type: "care" },
+    { id: "c3", name: "The Kitchen on Nantwich Road (sample)", type: "restaurant" },
+    { id: "c4", name: "Willow Retail Group (sample)", type: "retail" },
+    { id: "c5", name: "Crewe Logistics Park Unit 4 (sample)", type: "industrial" },
+    { id: "c6", name: "Cheshire Holiday Lets Co. (sample)", type: "holiday" },
+    { id: "c7", name: "Nantwich Road Events Hire (sample)", type: "events" }
+  ];
+
+  function defaultState() {
+    var accounts = {};
+    CLIENTS.forEach(function (c) { accounts[c.id] = { templates: [], orders: [] }; });
+    return { activeClient: CLIENTS[0].id, draft: {}, accounts: accounts };
+  }
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return defaultState();
+      var parsed = JSON.parse(raw);
+      if (!parsed.accounts) return defaultState();
+      return parsed;
+    } catch (e) { return defaultState(); }
+  }
+  function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function resetAll() { state = defaultState(); save(); renderAll(); }
+
+  var state = load();
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+  function currentClient() { return CLIENTS.filter(function (c) { return c.id === state.activeClient; })[0]; }
+  function currentAccount() { return state.accounts[state.activeClient]; }
+
+  function renderClientList() {
+    var root = document.getElementById("client-list");
+    root.innerHTML = "";
+    CLIENTS.forEach(function (c) {
+      var btn = document.createElement("button");
+      btn.className = "fx-opt client-btn" + (c.id === state.activeClient ? " sel" : "");
+      btn.innerHTML = "<b>" + escapeHtml(c.name) + "</b><span class=\"sub\">" + escapeHtml(TYPE_LABEL[c.type]) + "</span>";
+      btn.addEventListener("click", function () {
+        state.activeClient = c.id;
+        state.draft = {};
+        save();
+        renderAll();
+      });
+      root.appendChild(btn);
+    });
+  }
+
+  function renderItemGrid() {
+    var client = currentClient();
+    var items = ITEM_CATALOG[client.type];
+    var grid = document.getElementById("item-grid");
+    grid.innerHTML = "";
+    items.forEach(function (item) {
+      var row = document.createElement("div");
+      row.className = "item-row";
+      var val = state.draft[item] || 0;
+      row.innerHTML = "<label>" + escapeHtml(item) + "</label><input type=\"number\" min=\"0\" data-item=\"" + escapeHtml(item) + "\" value=\"" + val + "\">";
+      grid.appendChild(row);
+    });
+    Array.prototype.forEach.call(grid.querySelectorAll("input"), function (inp) {
+      inp.addEventListener("input", function () {
+        var q = parseInt(inp.value, 10);
+        if (isNaN(q) || q < 0) q = 0;
+        state.draft[inp.dataset.item] = q;
+        save();
+        renderDraftSummary();
+      });
+    });
+  }
+
+  function draftEntries() {
+    return Object.keys(state.draft).map(function (k) { return { item: k, qty: state.draft[k] }; }).filter(function (e) { return e.qty > 0; });
+  }
+
+  function renderDraftSummary() {
+    var entries = draftEntries();
+    var el = document.getElementById("draft-summary");
+    if (!entries.length) { el.textContent = "No quantities entered yet."; return; }
+    var totalUnits = entries.reduce(function (s, e) { return s + e.qty; }, 0);
+    el.textContent = entries.length + " item type(s), " + totalUnits + " unit(s) in this draft order.";
+  }
+
+  function renderTemplates() {
+    var acc = currentAccount();
+    var root = document.getElementById("order-templates");
+    root.innerHTML = "";
+    if (!acc.templates.length) {
+      var span = document.createElement("span");
+      span.className = "empty";
+      span.textContent = "No saved recurring templates for this account yet.";
+      root.appendChild(span);
+      return;
+    }
+    acc.templates.forEach(function (tpl, i) {
+      var chip = document.createElement("button");
+      chip.className = "fx-btn-ghost template-chip";
+      chip.textContent = "Repeat: " + tpl.name;
+      chip.addEventListener("click", function () {
+        state.draft = Object.assign({}, tpl.items);
+        save();
+        renderItemGrid();
+        renderDraftSummary();
+      });
+      root.appendChild(chip);
+    });
+  }
+
+  document.getElementById("add-to-order").addEventListener("click", function () {
+    var entries = draftEntries();
+    if (!entries.length) { alert("Enter at least one item quantity before adding to the order."); return; }
+    var acc = currentAccount();
+    acc.orders.push({
+      id: "ORD-" + Date.now().toString().slice(-6),
+      loggedAt: new Date().toISOString().slice(0, 10),
+      site: null,
+      type: null,
+      items: Object.assign({}, state.draft),
+      status: "drafted"
+    });
+    save();
+    switchTab("schedule");
+  });
+
+  document.getElementById("save-template").addEventListener("click", function () {
+    var entries = draftEntries();
+    if (!entries.length) { alert("Enter at least one item quantity before saving a template."); return; }
+    var name = prompt("Name this recurring template (e.g. \"Weekly Tuesday order\"):");
+    if (!name) return;
+    var acc = currentAccount();
+    acc.templates.push({ name: name, items: Object.assign({}, state.draft) });
+    save();
+    renderTemplates();
+  });
+
+  document.getElementById("confirm-schedule").addEventListener("click", function () {
+    var acc = currentAccount();
+    var pending = acc.orders.filter(function (o) { return o.status === "drafted"; }).pop();
+    if (!pending) { alert("Add an order on the \"New order\" tab first."); return; }
+    var date = document.getElementById("sched-date").value;
+    if (!date) { alert("Choose a date."); return; }
+    pending.site = document.getElementById("site-select").value;
+    pending.type = document.getElementById("movement-type").value;
+    pending.slot = document.getElementById("sched-slot").value;
+    pending.scheduledFor = date;
+    pending.status = "scheduled";
+    save();
+    state.draft = {};
+    save();
+    renderAll();
+    switchTab("history");
+  });
+
+  function statusBadge(status) {
+    if (status === "scheduled") return "<span class=\"badge scheduled\">Scheduled</span>";
+    if (status === "collected") return "<span class=\"badge collected\">Collected</span>";
+    if (status === "delivered") return "<span class=\"badge delivered\">Delivered</span>";
+    return "<span class=\"badge\">Drafted</span>";
+  }
+
+  function renderHistory() {
+    var acc = currentAccount();
+    var tbody = document.querySelector("#history-table tbody");
+    tbody.innerHTML = "";
+    var confirmed = acc.orders.filter(function (o) { return o.status !== "drafted"; });
+    document.getElementById("history-empty").style.display = confirmed.length ? "none" : "block";
+    confirmed.slice().reverse().forEach(function (o) {
+      var itemCount = Object.keys(o.items).reduce(function (s, k) { return s + o.items[k]; }, 0);
+      var tr = document.createElement("tr");
+      var advance = o.status === "scheduled" ? "<button class=\"fx-btn-ghost advance-btn\" data-id=\"" + o.id + "\">Mark " + (o.type === "Delivery" ? "delivered" : "collected") + "</button>" : "";
+      tr.innerHTML = "<td>" + o.scheduledFor + " (" + o.slot + ")</td><td>" + escapeHtml(o.site) + "</td><td>" + escapeHtml(o.type) + "</td><td>" + itemCount + " units</td><td>" + statusBadge(o.status) + " " + advance + "</td>";
+      tbody.appendChild(tr);
+    });
+    Array.prototype.forEach.call(tbody.querySelectorAll(".advance-btn"), function (btn) {
+      btn.addEventListener("click", function () {
+        var order = acc.orders.filter(function (o) { return o.id === btn.dataset.id; })[0];
+        if (!order) return;
+        order.status = order.type === "Delivery" ? "delivered" : "collected";
+        save();
+        renderHistory();
+      });
+    });
+  }
+
+  var SAMPLE_RATES = { "default": 1.2 };
+  function rateFor(item) { return SAMPLE_RATES[item] || SAMPLE_RATES["default"]; }
+
+  function renderUsage() {
+    var acc = currentAccount();
+    var totals = {};
+    acc.orders.filter(function (o) { return o.status !== "drafted"; }).forEach(function (o) {
+      Object.keys(o.items).forEach(function (k) {
+        totals[k] = (totals[k] || 0) + o.items[k];
+      });
+    });
+    var tbody = document.querySelector("#usage-table tbody");
+    tbody.innerHTML = "";
+    var grand = 0;
+    var keys = Object.keys(totals);
+    if (!keys.length) {
+      tbody.innerHTML = "<tr><td colspan=\"4\" class=\"empty\">No scheduled or completed orders yet for this account.</td></tr>";
+    } else {
+      keys.forEach(function (k) {
+        var rate = rateFor(k);
+        var subtotal = totals[k] * rate;
+        grand += subtotal;
+        var tr = document.createElement("tr");
+        tr.innerHTML = "<td>" + escapeHtml(k) + "</td><td>" + totals[k] + "</td><td>£" + rate.toFixed(2) + "</td><td>£" + subtotal.toFixed(2) + "</td>";
+        tbody.appendChild(tr);
+      });
+    }
+    document.getElementById("usage-grand-total").textContent = keys.length ? ("Illustrative total: £" + grand.toFixed(2)) : "";
+  }
+
+  function switchTab(name) {
+    Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (t) { t.classList.toggle("active", t.dataset.tab === name); });
+    Array.prototype.forEach.call(document.querySelectorAll(".panel"), function (p) { p.classList.toggle("active", p.dataset.panel === name); });
+    if (name === "history") renderHistory();
+    if (name === "usage") renderUsage();
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (t) {
+    t.addEventListener("click", function () { switchTab(t.dataset.tab); });
+  });
+
+  function renderAll() {
+    renderClientList();
+    renderItemGrid();
+    renderDraftSummary();
+    renderTemplates();
+    renderHistory();
+    renderUsage();
+  }
+
+  var today = new Date().toISOString().slice(0, 10);
+  document.getElementById("sched-date").min = today;
+
+  renderAll();
+})();
+</script>
+</body>
+</html>

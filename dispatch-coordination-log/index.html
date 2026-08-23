@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Dispatch, locate &amp; invoice coordination log template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .dcl-section { margin-top: 2.4rem; }
+  .dcl-section-title { font-family: var(--serif); font-size: 1.25rem; margin: 0 0 0.3rem; }
+  .dcl-section-sub { color: var(--muted); font-size: 0.86rem; margin: 0 0 1rem; max-width: 68ch; }
+  .dcl-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.6rem; align-items: end; margin-bottom: 1.1rem; padding: 1rem 1.1rem; border: 1px dashed var(--rule); border-radius: 16px; }
+  .dcl-field { display: flex; flex-direction: column; gap: 0.3rem; }
+  .dcl-field label { font-size: 0.72rem; font-weight: 700; color: var(--ink-2); }
+  .dcl-field input, .dcl-field select { font: inherit; font-size: 0.85rem; padding: 0.5rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  .dcl-field input:focus, .dcl-field select:focus { outline: none; border-color: var(--brand); }
+  .dcl-form .dcl-submit-cell { display: flex; }
+  .dcl-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 0.9rem 1.1rem; box-shadow: var(--shadow-sm); margin-bottom: 0.75rem; }
+  .dcl-card-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .dcl-card-title { font-weight: 660; font-size: 0.94rem; }
+  .dcl-card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .dcl-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+  .dcl-badge { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.3rem 0.6rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .dcl-badge.ok { color: var(--good); background: var(--good-bg); }
+  .dcl-badge.hot { color: var(--hot); background: var(--hot-bg); }
+  .dcl-badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .dcl-badge.done { color: var(--muted); background: var(--surface-2); }
+  .dcl-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.7rem; padding-top: 0.6rem; border-top: 1px solid var(--rule-soft); }
+  .dcl-btn-sm { font: inherit; font-size: 0.76rem; font-weight: 650; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.38rem 0.75rem; cursor: pointer; }
+  .dcl-btn-sm:disabled { opacity: 0.5; cursor: not-allowed; }
+  .dcl-empty { color: var(--muted); font-style: italic; font-size: 0.86rem; }
+  .dcl-recon-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 900px) { .dcl-recon-cols { grid-template-columns: 1fr; } }
+  .dcl-line-list { display: flex; flex-direction: column; gap: 1px; background: var(--rule-soft); border-radius: var(--radius-sm); overflow: hidden; margin: 0.6rem 0; }
+  .dcl-line-row { background: #fff; padding: 0.5rem 0.7rem; display: flex; justify-content: space-between; gap: 0.6rem; font-size: 0.84rem; align-items: center; }
+  .dcl-line-row .dcl-li-desc { flex: 1; }
+  .dcl-line-row .dcl-li-amt { color: var(--muted); font-family: var(--mono); font-size: 0.78rem; }
+  .dcl-job-picker { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
+  .dcl-job-picker select { font: inherit; font-size: 0.86rem; padding: 0.5rem 0.7rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); }
+  .dcl-reset-row { margin-top: 1.6rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Dispatch, locate &amp; invoice coordination log</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Turn four silent coordination gaps into tracked, visible records</h1>
+  <p class="fx-lede">Seasonal and field-service businesses that dispatch crews by phone and invoice from memory tend to accumulate the same four disputes: a threshold-based service (snow, ice, spraying) billed without proof the trigger condition was actually met; a dig or install job that starts before utility-locate coordination is confirmed; a final invoice with a line item the customer never agreed to; and a promised callback that quietly never happens. Each is invisible to the office until a customer escalates. This page shows four small, working logs that make each of those a tracked record instead of a phone call nobody remembers.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, it reads from whatever already tracks jobs and invoices, a dispatch board, a scheduling tool, a billing system, and adds these four checks on top, without replacing how the work itself gets done.</p></div>
+
+  <section class="dcl-section">
+    <h2 class="dcl-section-title">1. Weather/threshold-triggered dispatch log</h2>
+    <p class="dcl-section-sub">Every dispatched visit is logged against the customer's own contractual trigger threshold, so a billing dispute gets settled by pulling a record instead of a phone argument.</p>
+    <form id="dispatch-form" class="dcl-form">
+      <div class="dcl-field"><label for="d-property">Property / job</label><input type="text" id="d-property" placeholder="e.g. Sample Property A" required></div>
+      <div class="dcl-field"><label for="d-service">Service</label><select id="d-service"><option>Plow</option><option>Salt / ice treatment</option><option>Plow + salt</option></select></div>
+      <div class="dcl-field"><label for="d-threshold">Contract trigger (in)</label><input type="number" id="d-threshold" min="0" step="0.25" value="2" required></div>
+      <div class="dcl-field"><label for="d-measured">Measured depth at dispatch (in)</label><input type="number" id="d-measured" min="0" step="0.25" required></div>
+      <div class="dcl-field"><label for="d-date">Date</label><input type="date" id="d-date"></div>
+      <div class="dcl-submit-cell"><button type="submit" class="fx-btn-ghost">Log visit</button></div>
+    </form>
+    <div id="dispatch-root"></div>
+  </section>
+
+  <section class="dcl-section">
+    <h2 class="dcl-section-title">2. Utility / dig-safety locate gate</h2>
+    <p class="dcl-section-sub">A dig, drainage, or install job cannot move to "ready to schedule" until locate confirmation is logged, so a job can never start ahead of utility coordination by accident.</p>
+    <form id="locate-form" class="dcl-form">
+      <div class="dcl-field"><label for="l-property">Property / job</label><input type="text" id="l-property" placeholder="e.g. Sample Property B" required></div>
+      <div class="dcl-field"><label for="l-type">Job type</label><select id="l-type"><option>Drainage install</option><option>Hardscape dig</option><option>Irrigation trenching</option><option>Tree / stump removal</option></select></div>
+      <div class="dcl-submit-cell"><button type="submit" class="fx-btn-ghost">Log job</button></div>
+    </form>
+    <div id="locate-root"></div>
+  </section>
+
+  <section class="dcl-section">
+    <h2 class="dcl-section-title">3. Final-invoice-vs-quote reconciliation</h2>
+    <p class="dcl-section-sub">Every final invoice line is checked against the original quoted scope before it goes out. Anything not in the original quote is flagged for review instead of silently billed.</p>
+    <div class="dcl-job-picker">
+      <label for="recon-job-select" style="font-size:0.8rem; font-weight:700; color:var(--ink-2);">Job:</label>
+      <select id="recon-job-select"></select>
+      <button class="dcl-btn-sm" id="recon-new-job-btn" type="button">+ New job</button>
+    </div>
+    <div class="dcl-recon-cols">
+      <div>
+        <h3 style="font-size:0.9rem; margin:0 0 0.5rem;">Original quote</h3>
+        <form id="orig-line-form" class="dcl-form" style="grid-template-columns: 1fr 110px auto;">
+          <div class="dcl-field"><label for="o-desc">Line description</label><input type="text" id="o-desc" placeholder="e.g. Drainage install, front yard" required></div>
+          <div class="dcl-field"><label for="o-amt">Amount ($)</label><input type="number" id="o-amt" min="0" step="0.01" required></div>
+          <div class="dcl-submit-cell"><button type="submit" class="fx-btn-ghost">Add</button></div>
+        </form>
+        <div id="orig-lines-root"></div>
+      </div>
+      <div>
+        <h3 style="font-size:0.9rem; margin:0 0 0.5rem;">Final invoice</h3>
+        <form id="final-line-form" class="dcl-form" style="grid-template-columns: 1fr 110px auto;">
+          <div class="dcl-field"><label for="f-desc">Line description</label><input type="text" id="f-desc" placeholder="e.g. Drainage install, front yard" required></div>
+          <div class="dcl-field"><label for="f-amt">Amount ($)</label><input type="number" id="f-amt" min="0" step="0.01" required></div>
+          <div class="dcl-submit-cell"><button type="submit" class="fx-btn-ghost">Add</button></div>
+        </form>
+        <div id="final-lines-root"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="dcl-section">
+    <h2 class="dcl-section-title">4. Callback / promise tracking log</h2>
+    <p class="dcl-section-sub">A promised return call is logged as a tracked, visible commitment with a due date, not something that silently drops.</p>
+    <form id="callback-form" class="dcl-form">
+      <div class="dcl-field"><label for="c-customer">Customer</label><input type="text" id="c-customer" placeholder="e.g. Sample Customer C" required></div>
+      <div class="dcl-field"><label for="c-promise">Promise</label><input type="text" id="c-promise" placeholder="e.g. Call back with revised invoice" required></div>
+      <div class="dcl-field"><label for="c-due">Due by</label><input type="date" id="c-due" required></div>
+      <div class="dcl-submit-cell"><button type="submit" class="fx-btn-ghost">Log promise</button></div>
+    </form>
+    <div id="callback-root"></div>
+  </section>
+
+  <div class="dcl-reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+
+  <section class="dcl-section">
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The four logs are shown together here for illustration.</b> A real build wires each one into wherever the business already dispatches, schedules, and invoices, it does not require replacing that system.</div>
+      <div class="lim"><b>The threshold check is a simple comparison.</b> A real build can pull measured conditions from a weather-data API or a crew's logged reading; this demo shows the workflow, not a specific data source.</div>
+      <div class="lim"><b>The invoice match is a description comparison.</b> A real build can tie it to whatever line-item codes the business's invoicing software already uses, so it never depends on exact wording.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/ware-landscaping/">Ware Landscaping &amp; Snow Removal</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job and invoice data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "dcl_template_v1";
+
+  function todayStr() { return new Date().toISOString().slice(0, 10); }
+  function daysAgoStr(n) { var d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); }
+  function fmtDate(s) { if (!s) return ""; var d = new Date(s + "T00:00:00"); return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function money(n) { return "$" + Number(n || 0).toFixed(2); }
+  function normDesc(s) { return String(s || "").trim().toLowerCase(); }
+
+  function defaultData() {
+    return {
+      dispatch: [
+        { id: "v1", property: "Sample Property A", service: "Plow + salt", threshold: 2, measured: 2.75, date: daysAgoStr(6) },
+        { id: "v2", property: "Sample Property B", service: "Salt / ice treatment", threshold: 3, measured: 1.5, date: daysAgoStr(2) }
+      ],
+      locate: [
+        { id: "j1", property: "Sample Property C", jobType: "Drainage install", requestedAt: daysAgoStr(4), confirmed: false, confirmedAt: null },
+        { id: "j2", property: "Sample Property D", jobType: "Hardscape dig", requestedAt: daysAgoStr(9), confirmed: true, confirmedAt: daysAgoStr(7) }
+      ],
+      recon: [
+        {
+          id: "r1", job: "Sample Property A, drainage repair",
+          original: [{ desc: "Drainage install, front yard", amt: 2400 }, { desc: "Downspout tie-in", amt: 380 }],
+          final: [{ desc: "Drainage install, front yard", amt: 2400 }, { desc: "Downspout tie-in", amt: 380 }, { desc: "Soil grading, back yard", amt: 610 }]
+        }
+      ],
+      callbacks: [
+        { id: "c1", customer: "Sample Customer C", promise: "Call back with revised invoice", dueAt: daysAgoStr(3), fulfilled: false, fulfilledAt: null },
+        { id: "c2", customer: "Sample Customer D", promise: "Confirm next visit window", dueAt: todayStr(), fulfilled: true, fulfilledAt: daysAgoStr(1) }
+      ],
+      recon_selected: "r1"
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} }
+  function uid(prefix) { return prefix + Math.random().toString(36).slice(2, 8); }
+
+  var dispatchRoot = document.getElementById("dispatch-root");
+  var locateRoot = document.getElementById("locate-root");
+  var origRoot = document.getElementById("orig-lines-root");
+  var finalRoot = document.getElementById("final-lines-root");
+  var callbackRoot = document.getElementById("callback-root");
+  var jobSelect = document.getElementById("recon-job-select");
+
+  function renderDispatch() {
+    var sorted = data.dispatch.slice().sort(function (a, b) { return b.date.localeCompare(a.date); });
+    if (!sorted.length) { dispatchRoot.innerHTML = '<p class="dcl-empty">No dispatch visits logged yet.</p>'; return; }
+    var html = "";
+    sorted.forEach(function (v) {
+      var billable = v.measured >= v.threshold;
+      html += '<div class="dcl-card"><div class="dcl-card-head"><div><div class="dcl-card-title">' + escapeHtml(v.property) + ' &middot; ' + escapeHtml(v.service) + '</div><div class="dcl-card-meta">' + fmtDate(v.date) + ' &middot; trigger ' + v.threshold + '" &middot; measured ' + v.measured + '"</div></div></div>';
+      html += '<div class="dcl-badges">' + (billable
+        ? '<span class="dcl-badge ok">Billable, threshold met</span>'
+        : '<span class="dcl-badge hot">Flagged, below threshold, hold before invoicing</span>') + '</div></div>';
+    });
+    dispatchRoot.innerHTML = html;
+  }
+
+  function renderLocate() {
+    if (!data.locate.length) { locateRoot.innerHTML = '<p class="dcl-empty">No jobs logged yet.</p>'; return; }
+    var html = "";
+    data.locate.forEach(function (j, idx) {
+      html += '<div class="dcl-card"><div class="dcl-card-head"><div><div class="dcl-card-title">' + escapeHtml(j.property) + ' &middot; ' + escapeHtml(j.jobType) + '</div><div class="dcl-card-meta">Locate requested ' + fmtDate(j.requestedAt) + '</div></div></div>';
+      html += '<div class="dcl-badges">' + (j.confirmed
+        ? '<span class="dcl-badge ok">Ready to schedule, locate confirmed ' + fmtDate(j.confirmedAt) + '</span>'
+        : '<span class="dcl-badge hot">Blocked, awaiting locate confirmation</span>') + '</div>';
+      if (!j.confirmed) html += '<div class="dcl-row"><button class="dcl-btn-sm" onclick="__dcl.confirmLocate(' + idx + ')">Confirm locate</button></div>';
+      html += '</div>';
+    });
+    locateRoot.innerHTML = html;
+  }
+
+  function currentJob() {
+    var id = data.recon_selected;
+    return data.recon.filter(function (j) { return j.id === id; })[0] || data.recon[0];
+  }
+
+  function renderJobSelect() {
+    jobSelect.innerHTML = data.recon.map(function (j) { return '<option value="' + j.id + '"' + (j.id === data.recon_selected ? " selected" : "") + '>' + escapeHtml(j.job) + '</option>'; }).join("");
+  }
+
+  function renderRecon() {
+    var job = currentJob();
+    if (!job) { origRoot.innerHTML = finalRoot.innerHTML = '<p class="dcl-empty">No job selected.</p>'; return; }
+    origRoot.innerHTML = job.original.length ? '<div class="dcl-line-list">' + job.original.map(function (l, i) {
+      return '<div class="dcl-line-row"><span class="dcl-li-desc">' + escapeHtml(l.desc) + '</span><span class="dcl-li-amt">' + money(l.amt) + '</span></div>';
+    }).join("") + '</div>' : '<p class="dcl-empty">No original quote lines yet.</p>';
+
+    var origDescs = job.original.map(function (l) { return normDesc(l.desc); });
+    finalRoot.innerHTML = job.final.length ? '<div class="dcl-line-list">' + job.final.map(function (l) {
+      var matched = origDescs.indexOf(normDesc(l.desc)) !== -1;
+      return '<div class="dcl-line-row"><span class="dcl-li-desc">' + escapeHtml(l.desc) + '<br><span class="dcl-badge ' + (matched ? "ok" : "hot") + '" style="margin-top:0.3rem; display:inline-block;">' + (matched ? "Matches quoted scope" : "Not in original scope, confirm before sending") + '</span></span><span class="dcl-li-amt">' + money(l.amt) + '</span></div>';
+    }).join("") + '</div>' : '<p class="dcl-empty">No final invoice lines yet.</p>';
+  }
+
+  function renderCallbacks() {
+    if (!data.callbacks.length) { callbackRoot.innerHTML = '<p class="dcl-empty">No promises logged yet.</p>'; return; }
+    var sorted = data.callbacks.slice().sort(function (a, b) { return a.dueAt.localeCompare(b.dueAt); });
+    var today = todayStr();
+    var html = "";
+    sorted.forEach(function (c) {
+      var idx = data.callbacks.indexOf(c);
+      var overdue = !c.fulfilled && c.dueAt < today;
+      html += '<div class="dcl-card"><div class="dcl-card-head"><div><div class="dcl-card-title">' + escapeHtml(c.customer) + '</div><div class="dcl-card-meta">' + escapeHtml(c.promise) + ' &middot; due ' + fmtDate(c.dueAt) + '</div></div></div>';
+      html += '<div class="dcl-badges">' + (c.fulfilled
+        ? '<span class="dcl-badge done">Fulfilled ' + fmtDate(c.fulfilledAt) + '</span>'
+        : overdue ? '<span class="dcl-badge hot">Overdue</span>' : '<span class="dcl-badge watch">Open</span>') + '</div>';
+      if (!c.fulfilled) html += '<div class="dcl-row"><button class="dcl-btn-sm" onclick="__dcl.fulfillCallback(' + idx + ')">Mark fulfilled</button></div>';
+      html += '</div>';
+    });
+    callbackRoot.innerHTML = html;
+  }
+
+  function renderAll() { renderDispatch(); renderLocate(); renderJobSelect(); renderRecon(); renderCallbacks(); }
+
+  document.getElementById("dispatch-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var property = document.getElementById("d-property").value.trim();
+    if (!property) return;
+    data.dispatch.push({
+      id: uid("v"), property: property, service: document.getElementById("d-service").value,
+      threshold: parseFloat(document.getElementById("d-threshold").value) || 0,
+      measured: parseFloat(document.getElementById("d-measured").value) || 0,
+      date: document.getElementById("d-date").value || todayStr()
+    });
+    save(); renderDispatch(); e.target.reset(); document.getElementById("d-threshold").value = "2";
+  });
+
+  document.getElementById("locate-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var property = document.getElementById("l-property").value.trim();
+    if (!property) return;
+    data.locate.push({ id: uid("j"), property: property, jobType: document.getElementById("l-type").value, requestedAt: todayStr(), confirmed: false, confirmedAt: null });
+    save(); renderLocate(); e.target.reset();
+  });
+
+  jobSelect.addEventListener("change", function () { data.recon_selected = jobSelect.value; save(); renderRecon(); });
+
+  document.getElementById("recon-new-job-btn").addEventListener("click", function () {
+    var name = prompt("New job name (e.g. Property + job type):");
+    if (!name || !name.trim()) return;
+    var job = { id: uid("r"), job: name.trim(), original: [], final: [] };
+    data.recon.push(job); data.recon_selected = job.id; save(); renderJobSelect(); renderRecon();
+  });
+
+  document.getElementById("orig-line-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var desc = document.getElementById("o-desc").value.trim();
+    if (!desc) return;
+    currentJob().original.push({ desc: desc, amt: parseFloat(document.getElementById("o-amt").value) || 0 });
+    save(); renderRecon(); e.target.reset();
+  });
+
+  document.getElementById("final-line-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var desc = document.getElementById("f-desc").value.trim();
+    if (!desc) return;
+    currentJob().final.push({ desc: desc, amt: parseFloat(document.getElementById("f-amt").value) || 0 });
+    save(); renderRecon(); e.target.reset();
+  });
+
+  document.getElementById("callback-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("c-customer").value.trim();
+    var due = document.getElementById("c-due").value;
+    if (!customer || !due) return;
+    data.callbacks.push({ id: uid("c"), customer: customer, promise: document.getElementById("c-promise").value.trim(), dueAt: due, fulfilled: false, fulfilledAt: null });
+    save(); renderCallbacks(); e.target.reset();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    data = defaultData(); save(); renderAll();
+  });
+
+  window.__dcl = {
+    confirmLocate: function (idx) { data.locate[idx].confirmed = true; data.locate[idx].confirmedAt = todayStr(); save(); renderLocate(); },
+    fulfillCallback: function (idx) { data.callbacks[idx].fulfilled = true; data.callbacks[idx].fulfilledAt = todayStr(); save(); renderCallbacks(); }
+  };
+
+  renderAll();
+})();
+</script>
+</body>
+</html>

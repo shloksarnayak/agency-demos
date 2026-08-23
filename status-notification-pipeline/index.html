@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>Status notification pipeline template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; }
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; }
+  .bubble { max-width: 92%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .lim a { color: var(--brand); }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Status notification pipeline</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">The update that goes out the moment something changes</h1>
+  <p class="fx-lede">Many service businesses only tell a customer where their job stands when the customer calls to ask. This page uses two fictional jobs to show the opposite: the team marks a job's status, and the customer sees exactly what they'd have received automatically, no call needed.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, it connects to whatever system their team already uses to mark a job's status, and sends through a real SMS/email service, the way the example below shows.</p></div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Shop view: update a job</h3>
+      <div id="shop-root"></div>
+    </div>
+    <div class="fx-card">
+      <h3 class="panel-title">What the customer sees</h3>
+      <select id="customer-picker"></select>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>Real stages, matching how a business actually tracks a job.</b> The generic four-stage flow here is a placeholder, a real build asks how that business's team actually marks progress.</div>
+      <div class="lim"><b>An actual SMS/email service, not a simulation.</b> This demo only shows what a message would say, a real build sends it.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/carolina-appliance-service/">Carolina Appliance Service</a>, including a request-intake form and appointment-window narrowing.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  var STAGE_NAMES = ["Scheduled", "Parts ordered", "In progress", "Complete"];
+  var STAGE_MESSAGES = [null,
+    function () { return "We've ordered the part your job needs. We'll text you again the moment it's in."; },
+    function () { return "Your part is in and your job is now in progress."; },
+    function () { return "Your job is complete. Thanks for your business."; }
+  ];
+  var jobs = [
+    { id: "RQ-1001", customer: "J. Alvarez", contact: "(555) 010-1001", stage: 0, notifications: [] },
+    { id: "RQ-1002", customer: "R. Kim", contact: "(555) 010-1002", stage: 2, notifications: [
+      { text: "We've ordered the part your job needs. We'll text you again the moment it's in.", at: 1755878400000 },
+      { text: "Your part is in and your job is now in progress.", at: 1755882000000 }
+    ] }
+  ];
+
+  function fmtTime(ts) { var d = new Date(ts); return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    jobs.forEach(function (j) {
+      var atLast = j.stage >= STAGE_NAMES.length - 1;
+      html += '<div class="job-row"><div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.customer) + '</h4><span class="stage-pill">' + STAGE_NAMES[j.stage] + '</span></div>';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button></div>';
+    });
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceJob(btn.dataset.advance); });
+    });
+  }
+
+  function advanceJob(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGE_NAMES.length - 1) return;
+    j.stage += 1;
+    var msg = STAGE_MESSAGES[j.stage];
+    if (msg) j.notifications.push({ text: msg(), at: Date.now() });
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    sel.innerHTML = "";
+    jobs.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.customer;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = jobs.find(function (x) { return x.id === sel.value; }) || jobs[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet. Advance the job in the shop view on the left.</p>';
+      return;
+    }
+    var html = "";
+    j.notifications.forEach(function (n) {
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-time">Text to ' + escapeHtml(j.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+  }
+
+  renderShop();
+  populatePicker();
+  renderThread();
+})();
+</script>
+</body>
+</html>

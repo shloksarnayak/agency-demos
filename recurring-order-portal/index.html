@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>Client order &amp; scheduling portal template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .8rem; margin: 1rem 0; }
+  .item-row { display: flex; justify-content: space-between; align-items: center; gap: .6rem; padding: .7rem .85rem; background: var(--surface-2); border: 2px solid var(--ink); border-radius: var(--radius-sm); }
+  .item-row label { font-size: .86rem; font-weight: 650; }
+  .item-row input[type="number"] { width: 4.2rem; padding: .35rem .4rem !important; }
+  .row-actions { display: flex; gap: .7rem; flex-wrap: wrap; margin-top: 1rem; }
+  table.orders { width: 100%; border-collapse: collapse; font-size: .87rem; }
+  table.orders th, table.orders td { text-align: left; padding: .55rem .6rem; border-bottom: 1px solid var(--rule-soft); }
+  table.orders th { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .badge { display: inline-block; padding: .2rem .55rem; border-radius: 999px; font: 700 .72rem/1.4 var(--sans); background: var(--warn-bg); color: var(--warn); }
+  .empty { color: var(--muted); font-style: italic; font-size: .88rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">FP</span><span class="fx-brand-name">FixPoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Client order &amp; scheduling portal</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Order and schedule without picking up the phone</h1>
+  <p class="fx-lede">Recurring B2B service businesses (linen hire, supply delivery, waste pickup) often take every order the same way a one-off customer would: a phone call or an email, re-typed from scratch each time. This template uses one fictional account to show a self-serve alternative: place an order, save it as a repeatable template, schedule the pickup or delivery, and keep a running history.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> "Example Linen Co." is not a real business. When this gets built for a real one, the item list, client types, and site options are drawn from what that business actually offers, the way the Sunrise Laundry example below does.</p></div>
+
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.2rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted);">Sample account: Example Linen Co. &mdash; Fictional Hotel Client</div>
+      <div id="item-grid" class="item-grid"></div>
+      <div class="row-actions">
+        <button class="fx-btn" id="add-to-order">Add to order</button>
+        <button class="fx-btn-ghost" id="save-template">Save as recurring template</button>
+      </div>
+      <div id="draft-summary" class="note-inline" style="margin-top:.6rem; font-size:.85rem; color:var(--muted);"></div>
+      <div id="order-templates" class="row-actions"></div>
+    </div>
+    <div>
+      <div style="font-family:var(--mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:.5rem;">Order history</div>
+      <table class="orders" id="history-table"><thead><tr><th>Logged</th><th>Items</th><th>Status</th></tr></thead><tbody></tbody></table>
+      <p class="empty" id="history-empty" style="display:none;">No orders logged yet. Add one above.</p>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The item list and client types are the real work.</b> The generic hotel-linen list here is a placeholder; a real build starts from that business's actual product/service catalog and its own client segments.</div>
+      <div class="lim"><b>Repeat orders, not full CRM.</b> This template deliberately stays narrow: order intake, a recurring-template shortcut, scheduling, history and a usage summary. Payment, authentication and route optimization are separate scope.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/sunrise-laundry/">Sunrise Laundry Services</a></b>, a two-site commercial linen hire business, scoped from their own published client sectors and a gap the owners themselves described publicly.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional account and order data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  var ITEMS = ["Bed sheet (double)", "Pillowcase", "Bath towel", "Hand towel", "Bathrobe"];
+  var draft = {};
+  var templates = [];
+  var orders = [];
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+
+  function renderItemGrid() {
+    var grid = document.getElementById("item-grid");
+    grid.innerHTML = "";
+    ITEMS.forEach(function (item) {
+      var row = document.createElement("div");
+      row.className = "item-row";
+      var val = draft[item] || 0;
+      row.innerHTML = "<label>" + escapeHtml(item) + "</label><input type=\"number\" min=\"0\" data-item=\"" + escapeHtml(item) + "\" value=\"" + val + "\">";
+      grid.appendChild(row);
+    });
+    Array.prototype.forEach.call(grid.querySelectorAll("input"), function (inp) {
+      inp.addEventListener("input", function () {
+        var q = parseInt(inp.value, 10);
+        if (isNaN(q) || q < 0) q = 0;
+        draft[inp.dataset.item] = q;
+        renderDraftSummary();
+      });
+    });
+  }
+
+  function draftEntries() {
+    return Object.keys(draft).map(function (k) { return { item: k, qty: draft[k] }; }).filter(function (e) { return e.qty > 0; });
+  }
+
+  function renderDraftSummary() {
+    var entries = draftEntries();
+    var el = document.getElementById("draft-summary");
+    if (!entries.length) { el.textContent = "No quantities entered yet."; return; }
+    var totalUnits = entries.reduce(function (s, e) { return s + e.qty; }, 0);
+    el.textContent = entries.length + " item type(s), " + totalUnits + " unit(s) in this draft order.";
+  }
+
+  function renderTemplates() {
+    var root = document.getElementById("order-templates");
+    root.innerHTML = "";
+    if (!templates.length) {
+      var span = document.createElement("span");
+      span.className = "empty";
+      span.textContent = "No saved recurring templates yet.";
+      root.appendChild(span);
+      return;
+    }
+    templates.forEach(function (tpl) {
+      var chip = document.createElement("button");
+      chip.className = "fx-btn-ghost";
+      chip.textContent = "Repeat: " + tpl.name;
+      chip.addEventListener("click", function () {
+        draft = Object.assign({}, tpl.items);
+        renderItemGrid();
+        renderDraftSummary();
+      });
+      root.appendChild(chip);
+    });
+  }
+
+  function renderHistory() {
+    var tbody = document.querySelector("#history-table tbody");
+    tbody.innerHTML = "";
+    document.getElementById("history-empty").style.display = orders.length ? "none" : "block";
+    orders.slice().reverse().forEach(function (o) {
+      var itemCount = Object.keys(o.items).reduce(function (s, k) { return s + o.items[k]; }, 0);
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td>" + o.loggedAt + "</td><td>" + itemCount + " units</td><td><span class=\"badge\">Scheduled</span></td>";
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.getElementById("add-to-order").addEventListener("click", function () {
+    var entries = draftEntries();
+    if (!entries.length) { alert("Enter at least one item quantity first."); return; }
+    orders.push({ loggedAt: new Date().toISOString().slice(0, 10), items: Object.assign({}, draft) });
+    draft = {};
+    renderItemGrid();
+    renderDraftSummary();
+    renderHistory();
+  });
+
+  document.getElementById("save-template").addEventListener("click", function () {
+    var entries = draftEntries();
+    if (!entries.length) { alert("Enter at least one item quantity before saving a template."); return; }
+    var name = prompt("Name this recurring template (e.g. \"Weekly Monday order\"):");
+    if (!name) return;
+    templates.push({ name: name, items: Object.assign({}, draft) });
+    renderTemplates();
+  });
+
+  renderItemGrid();
+  renderDraftSummary();
+  renderTemplates();
+  renderHistory();
+})();
+</script>
+</body>
+</html>

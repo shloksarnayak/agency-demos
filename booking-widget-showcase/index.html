@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Booking &amp; Availability Widget, Pattern Preview</title>
+<style>
+  :root {
+    --accent: #2d6a4f;
+    --accent-light: #d8f3dc;
+    --bg: #f7f7f5;
+    --card: #ffffff;
+    --text: #1b1b1b;
+    --muted: #6b6b6b;
+    --border: #e2e2df;
+    --danger: #b3261e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+  }
+  header h1 { margin: 0 0 4px; font-size: 1.4rem; }
+  header p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+
+  .disclaimer {
+    background: #fff8e1;
+    border: 1px solid #e8d477;
+    color: #5c4a00;
+    font-size: 0.82rem;
+    padding: 10px 24px;
+  }
+
+  .intro {
+    background: #eef4ff;
+    border-bottom: 1px solid #cfe0fb;
+    color: #1f3a63;
+    font-size: 0.88rem;
+    padding: 12px 24px;
+  }
+  .intro a { color: #1f3a63; }
+
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px;
+    display: grid;
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .sample-tag {
+    display: inline-block;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+
+  .day-picker {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+  .day-btn {
+    flex: 0 0 auto;
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+    text-align: center;
+    min-width: 68px;
+    font-size: 0.85rem;
+  }
+  .day-btn .dow { display: block; color: var(--muted); font-size: 0.72rem; }
+  .day-btn .num { display: block; font-weight: 600; font-size: 1.05rem; }
+  .day-btn.selected { border-color: var(--accent); background: var(--accent-light); }
+  .day-btn.closed { opacity: 0.4; cursor: not-allowed; }
+
+  .slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .slot-btn {
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 7px;
+    padding: 9px 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .slot-btn:hover { border-color: var(--accent); }
+  .slot-btn.booked {
+    background: #f1f1ee;
+    color: var(--muted);
+    text-decoration: line-through;
+    cursor: not-allowed;
+  }
+  .slot-btn.mine { background: var(--accent-light); border-color: var(--accent); font-weight: 600; }
+
+  .empty-note { color: var(--muted); font-size: 0.9rem; }
+
+  form.confirm { display: grid; gap: 10px; max-width: 380px; }
+  form.confirm label { font-size: 0.82rem; color: var(--muted); }
+  form.confirm input {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+  button.primary {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 10px 16px;
+    font-size: 0.92rem;
+    cursor: pointer;
+    width: fit-content;
+  }
+  button.primary:hover { opacity: 0.92; }
+  button.secondary {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+
+  .confirmation {
+    border: 1px solid var(--accent);
+    background: var(--accent-light);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+
+  table.owner-view { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  table.owner-view th, table.owner-view td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  table.owner-view th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; }
+
+  .toggle-row { display: flex; justify-content: space-between; align-items: center; }
+
+  footer {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px 24px 40px;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  footer a { color: var(--muted); }
+
+  .config-note {
+    font-size: 0.78rem;
+    color: var(--muted);
+    border-top: 1px dashed var(--border);
+    margin-top: 16px;
+    padding-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Self-Serve Booking &amp; Availability, Pattern Preview</h1>
+  <p>Pick a day, see open time slots, book instantly. No calls or back-and-forth email needed.</p>
+</header>
+
+<div class="disclaimer">
+  Independent work sample prepared by Shlok Sarnayak (freelance/automation practice) for evaluation purposes.
+  This is a generic pattern preview, not affiliated with, associated with, or endorsed by any specific
+  business. The business name and all data below are fictional/illustrative.
+</div>
+
+<div class="intro">
+  This is a public, generic preview of a widget pattern used in client work, no specific business, just the
+  mechanism. If a business has published hours and no working online booking, this is the shape of what a
+  working self-serve booking flow can look like, running entirely in the browser with no backend. Interested
+  in a version scoped to your own business? Reach out to Shlok Sarnayak.
+</div>
+
+<main>
+  <div class="card">
+    <span class="sample-tag">Sample data, illustrative only, fictional business</span>
+    <div id="daypicker" class="day-picker"></div>
+
+    <div id="slotsWrap">
+      <div class="slots" id="slots"></div>
+      <p class="empty-note" id="emptyNote" style="display:none;">This day is closed. Pick another date above.</p>
+    </div>
+
+    <div id="bookingForm" style="display:none; margin-top:18px;">
+      <h3 style="margin:0 0 10px; font-size:1rem;">Confirm your slot</h3>
+      <form class="confirm" id="confirmForm">
+        <div>
+          <label>Name</label>
+          <input type="text" id="custName" required>
+        </div>
+        <div>
+          <label>Email or phone</label>
+          <input type="text" id="custContact" required>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button type="submit" class="primary">Confirm booking</button>
+          <button type="button" class="secondary" id="cancelForm">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="confirmationBox" style="display:none; margin-top:18px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="toggle-row">
+      <h3 style="margin:0; font-size:1rem;">Owner view</h3>
+      <button class="secondary" id="ownerToggle">Show all bookings</button>
+    </div>
+    <div id="ownerView" style="display:none; margin-top:14px;">
+      <table class="owner-view">
+        <thead><tr><th>Date</th><th>Time</th><th>Name</th><th>Contact</th></tr></thead>
+        <tbody id="ownerRows"></tbody>
+      </table>
+      <p class="empty-note" id="noBookings" style="display:none;">No bookings yet, try booking a slot above.</p>
+    </div>
+    <p class="config-note">
+      This is a generic pattern preview: business name, open days/hours, slot length, and existing-booking
+      sample data are all set in one config object at the top of the script, a real version is scoped to a
+      specific business's own published hours in minutes, not weeks.
+    </p>
+  </div>
+</main>
+
+<footer>
+  Public pattern preview, not tied to any specific client or business. Part of an independent freelance
+  automation practice run by Shlok Sarnayak.
+</footer>
+
+<script>
+// ---- CONFIG: this is a generic/fictional business used only to demonstrate the pattern ----
+const CONFIG = {
+  businessName: "Sample Local Business",
+  slotMinutes: 60,
+  openDays: [1, 2, 3, 4, 5, 6], // 0=Sun ... 6=Sat; this sample is closed Sundays
+  openHour: 9,   // 9am
+  closeHour: 17, // 5pm (last slot starts before this)
+  daysAhead: 10,
+  // Sample pre-existing bookings (illustrative only, fictional) to show the calendar isn't empty by default.
+  sampleBooked: [
+    { dayOffset: 1, hour: 10 },
+    { dayOffset: 1, hour: 14 },
+    { dayOffset: 2, hour: 9 },
+    { dayOffset: 4, hour: 11 },
+  ],
+};
+
+const STORAGE_KEY = "booking-widget-showcase-bookings";
+const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+function loadBookings() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  // seed with sample data on first load
+  const today = new Date();
+  const seeded = CONFIG.sampleBooked.map(b => {
+    const d = new Date(today);
+    d.setDate(d.getDate() + b.dayOffset);
+    return {
+      dateKey: dateKey(d),
+      hour: b.hour,
+      name: "Sample booking",
+      contact: "N/A",
+      sample: true,
+    };
+  });
+  saveBookings(seeded);
+  return seeded;
+}
+function saveBookings(list) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+function dateKey(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+let bookings = loadBookings();
+let selectedDate = null;
+let selectedHour = null;
+
+function buildDayPicker() {
+  const wrap = document.getElementById("daypicker");
+  wrap.innerHTML = "";
+  const today = new Date();
+  for (let i = 0; i < CONFIG.daysAhead; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() + i);
+    const closed = !CONFIG.openDays.includes(d.getDay());
+    const btn = document.createElement("button");
+    btn.className = "day-btn" + (closed ? " closed" : "");
+    btn.innerHTML = `<span class="dow">${DOW[d.getDay()]}</span><span class="num">${d.getDate()}</span>`;
+    if (!closed) {
+      btn.addEventListener("click", () => selectDate(d, btn));
+    } else {
+      btn.disabled = true;
+    }
+    wrap.appendChild(btn);
+    if (i === 0 && !closed) selectDate(d, btn);
+  }
+}
+
+function selectDate(d, btnEl) {
+  document.querySelectorAll(".day-btn").forEach(b => b.classList.remove("selected"));
+  if (btnEl) btnEl.classList.add("selected");
+  selectedDate = d;
+  hideForm();
+  renderSlots();
+}
+
+function renderSlots() {
+  const slotsEl = document.getElementById("slots");
+  const emptyNote = document.getElementById("emptyNote");
+  slotsEl.innerHTML = "";
+  if (!selectedDate) return;
+  const key = dateKey(selectedDate);
+  const closed = !CONFIG.openDays.includes(selectedDate.getDay());
+  emptyNote.style.display = closed ? "block" : "none";
+  if (closed) return;
+
+  for (let h = CONFIG.openHour; h < CONFIG.closeHour; h++) {
+    const existing = bookings.find(b => b.dateKey === key && b.hour === h);
+    const btn = document.createElement("button");
+    btn.className = "slot-btn" + (existing ? " booked" : "");
+    const label = h > 12 ? `${h - 12}:00 PM` : (h === 12 ? "12:00 PM" : `${h}:00 AM`);
+    btn.textContent = label;
+    if (existing) {
+      btn.disabled = true;
+      btn.title = existing.sample ? "Sample existing booking" : `Booked by ${existing.name}`;
+    } else {
+      btn.addEventListener("click", () => openForm(h));
+    }
+    slotsEl.appendChild(btn);
+  }
+}
+
+function openForm(hour) {
+  selectedHour = hour;
+  document.getElementById("bookingForm").style.display = "block";
+  document.getElementById("confirmationBox").style.display = "none";
+  document.getElementById("bookingForm").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+function hideForm() {
+  document.getElementById("bookingForm").style.display = "none";
+  document.getElementById("confirmationBox").style.display = "none";
+}
+
+document.getElementById("cancelForm").addEventListener("click", hideForm);
+
+document.getElementById("confirmForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const name = document.getElementById("custName").value.trim();
+  const contact = document.getElementById("custContact").value.trim();
+  if (!name || !contact || selectedHour === null || !selectedDate) return;
+
+  const key = dateKey(selectedDate);
+  bookings.push({ dateKey: key, hour: selectedHour, name, contact, sample: false });
+  saveBookings(bookings);
+
+  const label = selectedHour > 12 ? `${selectedHour - 12}:00 PM` : (selectedHour === 12 ? "12:00 PM" : `${selectedHour}:00 AM`);
+  const box = document.getElementById("confirmationBox");
+  box.innerHTML = `<div class="confirmation"><strong>Booked!</strong> ${selectedDate.toDateString()} at ${label} for ${name}. A real deployment would send a confirmation email/SMS here.</div>`;
+  box.style.display = "block";
+  document.getElementById("bookingForm").style.display = "none";
+  document.getElementById("custName").value = "";
+  document.getElementById("custContact").value = "";
+  renderSlots();
+  renderOwnerView();
+});
+
+function renderOwnerView() {
+  const rows = document.getElementById("ownerRows");
+  const noBookings = document.getElementById("noBookings");
+  rows.innerHTML = "";
+  const sorted = [...bookings].sort((a, b) => (a.dateKey + a.hour).localeCompare(b.dateKey + b.hour));
+  if (sorted.length === 0) {
+    noBookings.style.display = "block";
+    return;
+  }
+  noBookings.style.display = "none";
+  sorted.forEach(b => {
+    const label = b.hour > 12 ? `${b.hour - 12}:00 PM` : (b.hour === 12 ? "12:00 PM" : `${b.hour}:00 AM`);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${b.dateKey}</td><td>${label}</td><td>${b.name}${b.sample ? " (sample)" : ""}</td><td>${b.contact}</td>`;
+    rows.appendChild(tr);
+  });
+}
+
+document.getElementById("ownerToggle").addEventListener("click", () => {
+  const view = document.getElementById("ownerView");
+  const showing = view.style.display === "block";
+  view.style.display = showing ? "none" : "block";
+  document.getElementById("ownerToggle").textContent = showing ? "Show all bookings" : "Hide bookings";
+  if (!showing) renderOwnerView();
+});
+
+buildDayPicker();
+</script>
+
+</body>
+</html>
