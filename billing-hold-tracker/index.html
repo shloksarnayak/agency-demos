@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Equipment pickup-to-billing-hold tracker template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .bht-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .bht-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .bht-tab.active { background: var(--ink); color: var(--surface); }
+  .bht-view { display: none; }
+  .bht-view.active { display: block; }
+  .bht-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .bht-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .field-check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--ink-2); }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .event-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .event-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .event-title { font-weight: 660; }
+  .event-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.pickup { color: var(--hot); background: var(--hot-bg); }
+  .badge.return { color: var(--warn); background: var(--warn-bg); }
+  .badge.delivery { color: var(--brand); background: var(--brand-soft); }
+  .badge.hold { color: var(--hot); background: var(--hot-bg); }
+  .badge.cleared { color: var(--good); background: var(--good-bg); }
+  .event-notes { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; }
+  .event-flags { display: flex; gap: 0.5rem; margin-top: 0.6rem; flex-wrap: wrap; }
+  .hold-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .hold-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .hold-actions { margin-top: 0.7rem; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Equipment pickup-to-billing-hold tracker</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">The moment equipment leaves a patient's home, billing should already know.</h1>
+  <p class="fx-lede">A warehouse or delivery team picks up or takes back a piece of equipment, but that fact lives in one person's head or a paper ticket, not in the billing system. Weeks or months later the customer is still being charged, calls to dispute it, and the office cannot find any record the pickup ever happened. This page shows a small, working tool that closes that gap: a place for field staff to log every pickup, return, or delivery the moment it happens, which automatically raises a billing hold on that patient and equipment pairing until someone in billing clears it, plus a search so billing can instantly answer "do we have a record of that" instead of guessing.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the field-log view is what warehouse or delivery staff actually use on a phone or tablet at the point of pickup, and the billing-hold logic connects to whatever billing system already runs the recurring charges, it does not replace that system.</p></div>
+
+  <div class="bht-tabs">
+    <button class="bht-tab active" data-view="field" type="button">Field log</button>
+    <button class="bht-tab" data-view="billing" type="button">Billing desk</button>
+  </div>
+
+  <section class="bht-view active" id="view-field">
+    <div class="bht-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Log a pickup, return, or delivery</h2>
+        <form id="add-form" class="form-grid">
+          <div class="field span2"><label for="f-patient">Patient / account label</label><input type="text" id="f-patient" placeholder="e.g. Sample Patient A"></div>
+          <div class="field"><label for="f-equip">Equipment</label><select id="f-equip"></select></div>
+          <div class="field"><label for="f-tag">Serial / asset tag (optional)</label><input type="text" id="f-tag" placeholder="e.g. SN-44219"></div>
+          <div class="field span2"><label for="f-type">Event type</label><select id="f-type"></select></div>
+          <div class="field span2"><label for="f-notes">Notes</label><textarea id="f-notes" placeholder="e.g. Picked up from patient's home, family signed release."></textarea></div>
+          <div class="field span2 field-check"><input type="checkbox" id="f-notify" checked><label for="f-notify" style="font-weight:400;">Send the patient a confirmation by text or email once logged (simulated)</label></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Log event</button></div>
+        </form>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Recent events, newest first</h2>
+        <div id="event-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bht-view" id="view-billing">
+    <h2 class="fx-h2" style="margin-top:0;">Active billing holds</h2>
+    <p style="color:var(--ink-2); font-size:0.9rem; max-width:70ch;">Every logged pickup or return automatically raises a hold here, stopping the recurring charge from being taken for granted until someone in billing has actually looked at it.</p>
+    <div id="holds-root"></div>
+
+    <h2 class="fx-h2" style="margin-top:2rem;">Search the event log</h2>
+    <div class="lookup-box">
+      <label for="lookup-name" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Patient / account name</label>
+      <input type="text" id="lookup-name" placeholder="e.g. Sample Patient A">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Search history</button></div>
+      <div id="lookup-root" class="lookup-result"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>This is a bridge, not a replacement.</b> It sits between field operations and whatever billing platform already runs recurring charges, and only needs to push one signal: stop billing this patient for this equipment until cleared.</div>
+      <div class="lim"><b>The field-log form is the whole point.</b> It has to be fast enough that a driver or warehouse worker actually fills it out at the truck or the door, a barcode or serial scan can replace most of the typing in a real build.</div>
+      <div class="lim"><b>Clearing a hold is a deliberate billing action, not automatic.</b> The tool raises the flag, a person in billing still decides when the account is actually settled.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional patient and equipment data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "bht_template_generic_v1";
+
+  var EQUIP = [
+    { key: "cpap", label: "CPAP / BiPAP machine" },
+    { key: "oxygen", label: "Oxygen concentrator" },
+    { key: "hospitalbed", label: "Hospital bed" },
+    { key: "cpm", label: "CPM machine" },
+    { key: "mobility", label: "Wheelchair / mobility equipment" },
+    { key: "other", label: "Other equipment" }
+  ];
+  var EQUIP_LABEL = {}; EQUIP.forEach(function (e) { EQUIP_LABEL[e.key] = e.label; });
+
+  var TYPES = [
+    { key: "delivery", label: "Delivery" },
+    { key: "pickup", label: "Pickup (equipment retrieved)" },
+    { key: "return", label: "Return (patient returned equipment)" }
+  ];
+  var TYPE_LABEL = {}; TYPES.forEach(function (t) { TYPE_LABEL[t.key] = t.label; });
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function hoursFromNow(h) { return Date.now() + h * 3600000; }
+  function ageLabel(ts) {
+    var h = Math.max(0, Math.round((Date.now() - ts) / 3600000));
+    if (h < 24) return h + "h";
+    return Math.round(h / 24) + "d";
+  }
+
+  function defaultData() {
+    var events = [
+      {
+        ref: "BHT-1001", patient: "Sample Patient A", equip: "hospitalbed", tag: "SN-77104",
+        type: "pickup", loggedAt: hoursFromNow(-70), notes: "Bed picked up, family signed release at the door.", notify: true
+      },
+      {
+        ref: "BHT-1002", patient: "Sample Patient B", equip: "cpap", tag: "SN-31220",
+        type: "return", loggedAt: hoursFromNow(-30), notes: "Mask and machine returned by mail, matched against original order.", notify: true
+      },
+      {
+        ref: "BHT-1003", patient: "Sample Patient C", equip: "cpm", tag: "SN-90042",
+        type: "delivery", loggedAt: hoursFromNow(-8), notes: "Delivered post-op, 30-day rental agreement signed.", notify: false
+      }
+    ];
+    var holds = [
+      { id: "H-1", ref: "BHT-1001", patient: "Sample Patient A", equip: "hospitalbed", createdAt: hoursFromNow(-70), status: "active" },
+      { id: "H-2", ref: "BHT-1002", patient: "Sample Patient B", equip: "cpap", createdAt: hoursFromNow(-30), status: "active" }
+    ];
+    return { seq: 1003, holdSeq: 2, events: events, holds: holds };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function populateSelects() {
+    document.getElementById("f-equip").innerHTML = EQUIP.map(function (e) { return '<option value="' + e.key + '">' + escapeHtml(e.label) + "</option>"; }).join("");
+    document.getElementById("f-type").innerHTML = TYPES.map(function (t) { return '<option value="' + t.key + '">' + escapeHtml(t.label) + "</option>"; }).join("");
+  }
+
+  function renderEvents() {
+    var root = document.getElementById("event-root");
+    var sorted = data.events.slice().sort(function (a, b) { return b.loggedAt - a.loggedAt; });
+    var html = "";
+    if (!sorted.length) html += '<p class="empty">No events logged yet.</p>';
+    sorted.slice(0, 8).forEach(function (ev) {
+      html += '<div class="event-card"><div class="event-head"><div><div class="event-title">' + escapeHtml(ev.patient) + " &middot; " + ev.ref + '</div><div class="event-meta">' + EQUIP_LABEL[ev.equip] + (ev.tag ? " &middot; " + escapeHtml(ev.tag) : "") + " &middot; " + fmtDate(ev.loggedAt) + '</div></div><span class="badge ' + ev.type + '">' + TYPE_LABEL[ev.type] + "</span></div>";
+      if (ev.notes) html += '<div class="event-notes">' + escapeHtml(ev.notes) + "</div>";
+      html += '<div class="event-flags">';
+      if (ev.type === "pickup" || ev.type === "return") html += '<span class="badge hold">Billing hold raised</span>';
+      if (ev.notify) html += '<span class="badge cleared" style="color:var(--brand);background:var(--brand-soft);">Patient notified (simulated)</span>';
+      html += "</div></div>";
+    });
+    root.innerHTML = html;
+  }
+
+  function renderHolds() {
+    var root = document.getElementById("holds-root");
+    var active = data.holds.filter(function (h) { return h.status === "active"; }).slice().sort(function (a, b) { return a.createdAt - b.createdAt; });
+    var cleared = data.holds.filter(function (h) { return h.status === "cleared"; }).slice().sort(function (a, b) { return b.clearedAt - a.clearedAt; });
+    var html = "";
+    if (!active.length) html += '<p class="empty">No active holds. Everything logged has been cleared by billing.</p>';
+    active.forEach(function (h) {
+      html += '<div class="hold-card"><div class="hold-head"><div><div class="event-title">' + escapeHtml(h.patient) + " &middot; " + EQUIP_LABEL[h.equip] + '</div><div class="event-meta">Ref ' + h.ref + " &middot; open " + ageLabel(h.createdAt) + '</div></div><span class="badge hold">On hold</span></div>';
+      html += '<div class="hold-actions"><button class="fx-btn-ghost" onclick="__bht.clear(\'' + h.id + '\')">Clear hold, billing adjusted</button></div></div>';
+    });
+    if (cleared.length) {
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently cleared</h3>';
+      cleared.slice(0, 5).forEach(function (h) {
+        html += '<div class="hold-card"><div class="hold-head"><div><div class="event-title">' + escapeHtml(h.patient) + " &middot; " + EQUIP_LABEL[h.equip] + '</div><div class="event-meta">Ref ' + h.ref + " &middot; cleared " + fmtDate(h.clearedAt) + '</div></div><span class="badge cleared">Cleared</span></div></div>';
+      });
+    }
+    root.innerHTML = html;
+  }
+
+  window.__bht = {
+    clear: function (id) {
+      var h = data.holds.filter(function (x) { return x.id === id; })[0];
+      if (!h) return;
+      h.status = "cleared";
+      h.clearedAt = Date.now();
+      save(); renderHolds();
+    }
+  };
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var patient = document.getElementById("f-patient").value.trim();
+    var equip = document.getElementById("f-equip").value;
+    var tag = document.getElementById("f-tag").value.trim();
+    var type = document.getElementById("f-type").value;
+    var notes = document.getElementById("f-notes").value.trim();
+    var notify = document.getElementById("f-notify").checked;
+    if (!patient) { alert("Enter a patient or account label."); return; }
+    data.seq += 1;
+    var ref = "BHT-" + data.seq;
+    data.events.push({ ref: ref, patient: patient, equip: equip, tag: tag, type: type, loggedAt: Date.now(), notes: notes, notify: notify });
+    if (type === "pickup" || type === "return") {
+      data.holdSeq += 1;
+      data.holds.push({ id: "H-" + data.holdSeq, ref: ref, patient: patient, equip: equip, createdAt: Date.now(), status: "active" });
+    }
+    save(); renderEvents(); renderHolds();
+    document.getElementById("add-form").reset();
+    document.getElementById("f-notify").checked = true;
+    populateSelects();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the log back to the original sample data?")) return;
+    data = defaultData(); save(); renderEvents(); renderHolds();
+  });
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var name = document.getElementById("lookup-name").value.trim().toLowerCase();
+    var root = document.getElementById("lookup-root");
+    if (!name) { root.innerHTML = ""; return; }
+    var matches = data.events.filter(function (ev) { return ev.patient.toLowerCase().indexOf(name) !== -1; }).sort(function (a, b) { return b.loggedAt - a.loggedAt; });
+    if (!matches.length) { root.innerHTML = '<p class="not-found">No logged events found for that name.</p>'; return; }
+    var html = "";
+    matches.forEach(function (ev) {
+      html += '<div class="event-card"><div class="event-head"><div><div class="event-title">' + escapeHtml(ev.patient) + " &middot; " + ev.ref + '</div><div class="event-meta">' + EQUIP_LABEL[ev.equip] + (ev.tag ? " &middot; " + escapeHtml(ev.tag) : "") + " &middot; " + fmtDate(ev.loggedAt) + '</div></div><span class="badge ' + ev.type + '">' + TYPE_LABEL[ev.type] + "</span></div>";
+      if (ev.notes) html += '<div class="event-notes">' + escapeHtml(ev.notes) + "</div>";
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  });
+
+  document.querySelectorAll(".bht-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".bht-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".bht-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  populateSelects();
+  renderEvents();
+  renderHolds();
+})();
+</script>
+</body>
+</html>
