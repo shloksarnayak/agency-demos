@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Season-renewal consent &amp; billing-integrity console template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .rct-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .rct-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .rct-tab.active { background: var(--ink); color: var(--surface); }
+  .rct-view { display: none; }
+  .rct-view.active { display: block; }
+  .account-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .account-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .account-title { font-weight: 660; }
+  .account-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.pending { color: var(--muted); background: var(--surface-2); }
+  .badge.notice_sent { color: var(--warn); background: var(--warn-bg); }
+  .badge.confirmed { color: var(--good); background: var(--good-bg); }
+  .badge.declined { color: var(--hot); background: var(--hot-bg); }
+  .svc-list { margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px dashed var(--rule-soft); }
+  .svc-col-label { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-top: 0.5rem; }
+  .svc-row { display: flex; justify-content: space-between; gap: 0.6rem; font-size: 0.85rem; padding: 0.2rem 0; }
+  .svc-row.new-svc .svc-name::after { content: " (new)"; color: var(--warn); font-size: 0.7rem; }
+  .svc-total { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.86rem; padding-top: 0.3rem; margin-top: 0.2rem; border-top: 1px solid var(--rule-soft); }
+  .account-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .ref-note { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin-top: 0.4rem; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 520px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: #fff; color: var(--ink); }
+  .lookup-result { margin-top: 1.1rem; padding: 1rem 1.1rem; border-radius: var(--radius-sm); background: var(--surface-2); }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.15rem; }
+  .lookup-result .lr-detail { font-size: 0.86rem; color: var(--ink-2); margin-top: 0.5rem; line-height: 1.5; }
+  .lookup-result .lr-actions { display: flex; gap: 0.5rem; margin-top: 0.9rem; flex-wrap: wrap; align-items: center; }
+  .lookup-result input[type="text"] { flex: 1; min-width: 180px; font: inherit; font-size: 0.85rem; padding: 0.45rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .batch-row { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.75rem 0.95rem; margin-bottom: 0.6rem; font-size: 0.86rem; }
+  .batch-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .batch-verdict { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .batch-verdict.ok { color: var(--good); background: var(--good-bg); }
+  .batch-verdict.hold { color: var(--warn); background: var(--warn-bg); }
+  .batch-verdict.flag { color: var(--warn); background: var(--warn-bg); }
+  .batch-verdict.block { color: var(--hot); background: var(--hot-bg); }
+  .batch-reason { color: var(--ink-2); font-size: 0.82rem; margin-top: 0.35rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Season-renewal consent &amp; billing-integrity console</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">An explicit yes before a season renews, and a check before a charge posts</h1>
+  <p class="fx-lede">Any business that re-enrolls customers season to season, a lawn or pest-control program, a maintenance plan, a subscription service box, tends to accumulate the same dispute: a customer says they never agreed to keep going, or a charge shows up that does not match what was actually contracted, and the only defense on file is a fine-print clause. This page shows one small, working tool that closes that gap: a plain-language renewal notice the customer has to actively confirm or decline, and a billing-integrity check that flags any charge that does not match what was actually confirmed, before it posts.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, it reads from whatever already tracks customer accounts and last season's billed services, a spreadsheet, a CRM, a field-service tool, and adds the renewal-consent step and the billing check on top, without replacing whatever handles day-to-day scheduling.</p></div>
+
+  <div class="rct-tabs">
+    <button class="rct-tab active" data-view="office" type="button">Office view</button>
+    <button class="rct-tab" data-view="customer" type="button">Customer renewal check</button>
+  </div>
+
+  <section class="rct-view active" id="view-office">
+    <h2 class="fx-h2" style="margin-top:0;">Season-renewal queue</h2>
+    <p style="color:var(--ink-2); font-size:0.88rem; max-width:70ch; margin-top:-0.4rem;">Every account due for renewal, with exactly what it was billed last season next to exactly what it would renew for. A new or changed line item is marked so it never reaches a customer as a surprise.</p>
+    <div id="accounts-root"></div>
+    <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+
+    <h2 class="fx-h2" style="margin-top:2.2rem;">Billing-integrity check</h2>
+    <p style="color:var(--ink-2); font-size:0.88rem; max-width:70ch; margin-top:-0.4rem;">Today's batch of charges about to post, checked against what each customer actually confirmed. A charge on an account that never re-confirmed is blocked outright, and a charge that drifts from the confirmed amount is flagged before it reaches a customer's statement.</p>
+    <div style="margin-top:0.8rem;"><button class="fx-btn" id="run-batch-btn" type="button">Run billing-integrity check on today's batch</button></div>
+    <div id="batch-root" style="margin-top:1rem;"></div>
+  </section>
+
+  <section class="rct-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Confirm or decline your season renewal</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code (from your renewal notice)</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. SR-1002">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Look up my renewal</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try SR-1002, SR-1003, SR-1004 or SR-1005 from the office view's sample queue. SR-1001 has no notice yet, so it will not be found here until the office sends one.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The renewal notice is sent from the office view here.</b> A real build would email or text the plain-language notice automatically, a set number of days before the account would otherwise renew, using whatever account list the business already keeps.</div>
+      <div class="lim"><b>The billing-integrity check compares two lists the business already has.</b> What was confirmed for the season, and what the billing run is about to charge. It sits on top of the existing renewal and invoicing step, it doesn't replace whatever scheduling or CRM tool is already in place.</div>
+      <div class="lim"><b>"Confirmed" here is a typed name and a timestamp.</b> A real build can log it the same way a signed estimate would be logged, this demo shows the workflow, not a specific e-signature vendor.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/barter-lawns/">Barter Lawns</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional account and billing data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "rct_template_generic_v1";
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtMoney(n) { return "$" + n.toFixed(2).replace(/\.00$/, ""); }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function daysAgo(n, h) { var d = new Date(); d.setDate(d.getDate() - n); d.setHours(h || 9, 0, 0, 0); return d.getTime(); }
+
+  var STATUS_LABEL = { pending: "Not yet noticed", notice_sent: "Awaiting response", confirmed: "Confirmed", declined: "Declined" };
+
+  function svcTotal(services) { return services.reduce(function (s, x) { return s + x.price; }, 0); }
+  function findSvc(list, name) { return list.filter(function (x) { return x.name === name; })[0]; }
+
+  function defaultData() {
+    return {
+      accounts: [
+        {
+          ref: "SR-1001", customer: "Sample Customer A", status: "pending",
+          priorSeason: { year: 2025, services: [{ name: "Standard Service Plan", price: 420 }, { name: "Seasonal Add-on", price: 85 }] },
+          proposedRenewal: { year: 2026, services: [{ name: "Standard Service Plan", price: 420 }, { name: "Seasonal Add-on", price: 85 }] },
+          confirmedBy: null, confirmedAt: null, declinedAt: null, noticeSentAt: null
+        },
+        {
+          ref: "SR-1002", customer: "Sample Customer B", status: "notice_sent",
+          priorSeason: { year: 2025, services: [{ name: "Standard Service Plan", price: 395 }] },
+          proposedRenewal: { year: 2026, services: [{ name: "Standard Service Plan", price: 395 }, { name: "New Add-on Service", price: 65 }] },
+          confirmedBy: null, confirmedAt: null, declinedAt: null, noticeSentAt: daysAgo(2)
+        },
+        {
+          ref: "SR-1003", customer: "Sample Commercial Account C", status: "confirmed",
+          priorSeason: { year: 2025, services: [{ name: "Commercial Program (6 rounds)", price: 1450 }] },
+          proposedRenewal: { year: 2026, services: [{ name: "Commercial Program (6 rounds)", price: 1450 }] },
+          confirmedBy: "Sample Site Manager", confirmedAt: daysAgo(3), declinedAt: null, noticeSentAt: daysAgo(9)
+        },
+        {
+          ref: "SR-1004", customer: "Sample Customer D", status: "declined",
+          priorSeason: { year: 2025, services: [{ name: "Standard Service Plan", price: 410 }, { name: "Seasonal Add-on", price: 260 }] },
+          proposedRenewal: { year: 2026, services: [{ name: "Standard Service Plan", price: 410 }, { name: "Seasonal Add-on", price: 260 }] },
+          confirmedBy: null, confirmedAt: null, declinedAt: daysAgo(2), noticeSentAt: daysAgo(6)
+        },
+        {
+          ref: "SR-1005", customer: "Sample Customer E", status: "confirmed",
+          priorSeason: { year: 2025, services: [{ name: "Standard Service Plan", price: 430 }] },
+          proposedRenewal: { year: 2026, services: [{ name: "Standard Service Plan", price: 430 }] },
+          confirmedBy: "Sample Customer E", confirmedAt: daysAgo(1), declinedAt: null, noticeSentAt: daysAgo(5)
+        }
+      ],
+      batch: [
+        { ref: "SR-1002", service: "Standard Service Plan", amount: 395 },
+        { ref: "SR-1003", service: "Commercial Program (6 rounds)", amount: 1650 },
+        { ref: "SR-1004", service: "Standard Service Plan", amount: 410 },
+        { ref: "SR-1004", service: "Seasonal Add-on", amount: 260 },
+        { ref: "SR-1005", service: "Standard Service Plan", amount: 430 }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function renderServiceDiff(account) {
+    var prior = account.priorSeason.services;
+    var proposed = account.proposedRenewal.services;
+    var html = '<div class="svc-list">';
+    html += '<div class="svc-col-label">' + account.priorSeason.year + ' season (billed)</div>';
+    prior.forEach(function (s) { html += '<div class="svc-row"><span class="svc-name">' + escapeHtml(s.name) + '</span><span>' + fmtMoney(s.price) + '</span></div>'; });
+    html += '<div class="svc-total"><span>Total</span><span>' + fmtMoney(svcTotal(prior)) + '</span></div>';
+    html += '<div class="svc-col-label" style="margin-top:0.8rem;">' + account.proposedRenewal.year + ' season (proposed renewal)</div>';
+    proposed.forEach(function (s) {
+      var isNew = !findSvc(prior, s.name);
+      var wasP = findSvc(prior, s.name);
+      var changed = wasP && wasP.price !== s.price;
+      html += '<div class="svc-row' + (isNew ? ' new-svc' : '') + '"><span class="svc-name">' + escapeHtml(s.name) + (changed ? ' (was ' + fmtMoney(wasP.price) + ')' : '') + '</span><span>' + fmtMoney(s.price) + '</span></div>';
+    });
+    html += '<div class="svc-total"><span>Total</span><span>' + fmtMoney(svcTotal(proposed)) + '</span></div>';
+    html += '</div>';
+    return html;
+  }
+
+  function renderAccounts() {
+    var root = document.getElementById("accounts-root");
+    if (!data.accounts.length) { root.innerHTML = '<p class="empty">No accounts in the renewal queue.</p>'; return; }
+    var html = "";
+    data.accounts.forEach(function (a) {
+      html += '<div class="account-card"><div class="account-head"><div><div class="account-title">' + escapeHtml(a.customer) + " &middot; " + a.ref + '</div><div class="account-meta">Reference code for customer lookup: ' + a.ref + '</div></div><span class="badge ' + a.status + '">' + STATUS_LABEL[a.status] + "</span></div>";
+      html += renderServiceDiff(a);
+      if (a.status === "pending") {
+        html += '<div class="account-actions"><button class="fx-btn-ghost" onclick="__rct.sendNotice(\'' + a.ref + '\')">Send renewal notice</button></div>';
+      }
+      if (a.status === "notice_sent") {
+        html += '<div class="ref-note">Notice sent ' + fmtDate(a.noticeSentAt) + '. Awaiting customer response, check the customer tab with this reference code.</div>';
+      }
+      if (a.status === "confirmed") {
+        html += '<div class="ref-note">Confirmed by ' + escapeHtml(a.confirmedBy) + ' at ' + fmtDate(a.confirmedAt) + '.</div>';
+      }
+      if (a.status === "declined") {
+        html += '<div class="ref-note">Declined at ' + fmtDate(a.declinedAt) + '. Do not schedule or bill this account for the new season.</div>';
+      }
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  function runBatchCheck() {
+    var root = document.getElementById("batch-root");
+    var html = "";
+    data.batch.forEach(function (charge) {
+      var acct = data.accounts.filter(function (a) { return a.ref === charge.ref; })[0];
+      var verdict = "ok", reason = "Matches the confirmed renewal. Safe to post.";
+      if (!acct) {
+        verdict = "block"; reason = "No account record found for this reference code. Do not post.";
+      } else if (acct.status === "declined") {
+        verdict = "block"; reason = "Account declined renewal on " + fmtDate(acct.declinedAt) + ". This charge must not post.";
+      } else if (acct.status !== "confirmed") {
+        verdict = "hold"; reason = "Renewal has not been confirmed by the customer yet. Hold until confirmed.";
+      } else {
+        var confirmedSvc = findSvc(acct.proposedRenewal.services, charge.service);
+        if (!confirmedSvc) {
+          verdict = "flag"; reason = "\"" + charge.service + "\" was never part of what " + acct.customer + " confirmed for " + acct.proposedRenewal.year + ". Flag before posting.";
+        } else if (confirmedSvc.price !== charge.amount) {
+          var diff = charge.amount - confirmedSvc.price;
+          verdict = "flag"; reason = "Confirmed at " + fmtMoney(confirmedSvc.price) + ", batch charge is " + fmtMoney(charge.amount) + " (" + (diff > 0 ? "+" : "-") + fmtMoney(Math.abs(diff)) + "). Flag before posting.";
+        }
+      }
+      html += '<div class="batch-row"><div class="batch-head"><span>' + (acct ? escapeHtml(acct.customer) : "Unknown account") + " &middot; " + charge.ref + " &middot; " + escapeHtml(charge.service) + " &middot; " + fmtMoney(charge.amount) + '</span><span class="batch-verdict ' + verdict + '">' + verdict.toUpperCase() + '</span></div><div class="batch-reason">' + escapeHtml(reason) + '</div></div>';
+    });
+    root.innerHTML = html;
+  }
+
+  window.__rct = {
+    sendNotice: function (ref) {
+      var acct = data.accounts.filter(function (a) { return a.ref === ref; })[0];
+      if (!acct) return;
+      acct.status = "notice_sent";
+      acct.noticeSentAt = Date.now();
+      save(); renderAccounts();
+    },
+    confirmLookup: function (ref) {
+      var acct = data.accounts.filter(function (a) { return a.ref === ref; })[0];
+      var name = document.getElementById("lu-name").value.trim();
+      if (!name) { alert("Enter your typed name to confirm."); return; }
+      acct.status = "confirmed";
+      acct.confirmedBy = name;
+      acct.confirmedAt = Date.now();
+      save();
+      runLookup(ref);
+      renderAccounts();
+    },
+    declineLookup: function (ref) {
+      var acct = data.accounts.filter(function (a) { return a.ref === ref; })[0];
+      acct.status = "declined";
+      acct.declinedAt = Date.now();
+      save();
+      runLookup(ref);
+      renderAccounts();
+    }
+  };
+
+  function runLookup(refRaw) {
+    var ref = refRaw.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var acct = data.accounts.filter(function (a) { return a.ref.toUpperCase() === ref; })[0];
+    if (!acct || acct.status === "pending") {
+      root.innerHTML = '<div class="lookup-result"><p class="not-found">No renewal notice found for that reference code yet. Please call the office directly.</p></div>';
+      return;
+    }
+    var proposed = acct.proposedRenewal.services;
+    var html = '<div class="lookup-result"><h3>' + acct.proposedRenewal.year + ' season renewal for ' + escapeHtml(acct.customer) + '</h3><span class="badge ' + acct.status + '">' + STATUS_LABEL[acct.status] + '</span>';
+    html += '<div class="lr-detail">You are being renewed for:<br>';
+    proposed.forEach(function (s) { html += "&bull; " + escapeHtml(s.name) + ": " + fmtMoney(s.price) + "<br>"; });
+    html += '<b>Total: ' + fmtMoney(svcTotal(proposed)) + '</b></div>';
+    if (acct.status === "notice_sent") {
+      html += '<div class="lr-actions"><input type="text" id="lu-name" placeholder="Your typed full name"><button class="fx-btn" onclick="__rct.confirmLookup(\'' + acct.ref + '\')">Confirm renewal</button><button class="fx-btn-ghost" onclick="__rct.declineLookup(\'' + acct.ref + '\')">Decline, cancel for next season</button></div>';
+    } else if (acct.status === "confirmed") {
+      html += '<div class="lr-detail">Confirmed by ' + escapeHtml(acct.confirmedBy) + ' at ' + fmtDate(acct.confirmedAt) + '.</div>';
+    } else if (acct.status === "declined") {
+      html += '<div class="lr-detail">Declined at ' + fmtDate(acct.declinedAt) + '. No service will be scheduled or billed for the new season.</div>';
+    }
+    html += '</div>';
+    root.innerHTML = html;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    runLookup(document.getElementById("lookup-ref").value);
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the renewal queue and billing batch back to the original sample data?")) return;
+    data = defaultData(); save(); renderAccounts();
+    document.getElementById("batch-root").innerHTML = "";
+  });
+
+  document.getElementById("run-batch-btn").addEventListener("click", runBatchCheck);
+
+  document.querySelectorAll(".rct-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".rct-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".rct-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderAccounts();
+})();
+</script>
+</body>
+</html>
