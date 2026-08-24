@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Hometown Property Management &mdash; deposit itemization &amp; deadline tracker example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .dit-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .dit-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input[type="text"], .field input[type="number"], .field input[type="date"], .field select {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .fee-note { font-size: 0.74rem; color: var(--muted); margin-top: -0.35rem; }
+  .fee-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.6rem; }
+  .fee-table th, .fee-table td { text-align: left; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--rule-soft); }
+  .fee-table th { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+  .item-list { display: flex; flex-direction: column; gap: 1px; background: var(--rule-soft); border-radius: var(--radius-sm); overflow: hidden; margin: 0.8rem 0; }
+  .item-row { background: #fff; padding: 0.55rem 0.7rem; display: flex; justify-content: space-between; gap: 0.6rem; font-size: 0.85rem; align-items: center; }
+  .item-row .li-desc { flex: 1; }
+  .item-row .li-meta { color: var(--muted); font-size: 0.74rem; }
+  .item-row button { background: none; border: 0; color: var(--hot); font-weight: 700; cursor: pointer; font-size: 0.78rem; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .statement-doc { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.2rem; background: #fff; box-shadow: var(--shadow-sm); margin-top: 0.9rem; }
+  .statement-doc h4 { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.15rem; }
+  .statement-doc .sub { font-size: 0.76rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .statement-total { display: flex; justify-content: space-between; font-weight: 750; font-size: 0.98rem; padding-top: 0.6rem; border-top: 2px solid var(--ink); }
+  .statement-refund { display: flex; justify-content: space-between; font-weight: 750; font-size: 1.05rem; padding-top: 0.4rem; color: var(--good); }
+  .record-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .record-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .record-title { font-weight: 660; }
+  .record-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.ontrack { color: var(--brand); background: var(--brand-soft); }
+  .badge.duesoon { color: var(--warn); background: var(--warn-bg); }
+  .badge.overdue { color: var(--hot); background: var(--hot-bg); }
+  .badge.sent { color: var(--good); background: var(--good-bg); }
+  .record-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .deadline-line { font-size: 0.8rem; color: var(--ink-2); margin-top: 0.3rem; }
+  .reset-row { margin-top: 1.3rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .grounding { display: flex; flex-direction: column; gap: 0.9rem; }
+  .ground-item { border-left: 3px solid var(--brand); padding-left: 1rem; font-size: 0.9rem; line-height: 1.6; color: var(--ink-2); max-width: 80ch; }
+  .ground-item b { color: var(--ink); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Deposit itemization tracker</a> / Hometown Property Management example</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Grounded example, not affiliated with the business</span>
+  <h1 class="fx-h1">One published price list, one statement, before Washington's 21-day clock runs out</h1>
+  <p class="fx-lede">This example follows Hometown Property Management's own publicly documented pattern: security-deposit deductions written up inconsistently, and at least one BBB complaint that went unanswered. It shows a lightweight statement generator that plugs into the AppFolio workflow the company already pays for, a standardized fee schedule, a checklist that turns inspection notes into a line-itemized statement, and a countdown against Washington's statutory 21-day itemized-statement deadline (RCW 59.18.280).</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Hometown Property Management.</strong> Every tenant name, unit, and dollar figure entered or shown as sample data below is fictional and editable. It is not connected to any live system and does not use any of the company's real tenant or financial records.</p></div>
+
+  <section>
+    <h2 class="fx-h2">What this is grounded in</h2>
+    <div class="grounding">
+      <div class="ground-item"><b>The gap.</b> Hometown Property Management's own BBB complaint record describes a $121.55 charge for unreturned keys in one move-out and a $5 charge for the same category of item in a different move-out, plus a $440 flat house-cleaning charge that was only itemized and refunded after a tenant escalated with her own photos. Those are inconsistency and documentation problems, not one-off customer disputes.</div>
+      <div class="ground-item"><b>The unanswered complaint.</b> Hometown Property Management's BBB profile carries a B- rating, driven specifically by BBB's own note that the business failed to respond to one filed complaint, independent confirmation that at least one of these was never addressed rather than resolved.</div>
+      <div class="ground-item"><b>The existing tool.</b> The company already runs AppFolio for its tenant and owner portal (confirmed on hometownpm.com). AppFolio supports attaching move-in/move-out inspection photos to a unit record, but does not itself turn that inspection into a structured, line-itemized, tenant-facing statement, that step is a manual one industry-wide. This tool is a small layer on top of that existing workflow, not a replacement for it.</div>
+      <div class="ground-item"><b>The market signal.</b> Two other Olympia-area property managers, BCI Properties and Keyrenter Tacoma, already market timestamped, structured move-out inspection documentation as a customer-facing differentiator in the same market.</div>
+      <div class="ground-item"><b>The deadline.</b> Washington's RCW 59.18.280 requires a landlord to provide a full and specific statement of any claims against a deposit within 21 days of the tenant vacating. The tracker below counts down to that date for every open move-out.</div>
+    </div>
+  </section>
+
+  <div class="dit-cols">
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Build the itemized statement</h2>
+      <form id="record-form" class="form-grid">
+        <div class="field span2"><label for="f-tenant">Tenant / unit</label><input type="text" id="f-tenant" placeholder="e.g. Sample Tenant, Unit 4"></div>
+        <div class="field"><label for="f-moveout">Move-out date</label><input type="date" id="f-moveout"></div>
+        <div class="field"><label for="f-deposit">Deposit held ($)</label><input type="number" id="f-deposit" min="0" step="1"></div>
+        <div class="fee-note span2">Deadline is fixed at 21 days after move-out, Washington's RCW 59.18.280 window.</div>
+      </form>
+      <h3 class="fx-h2" style="font-size:1.1rem;">Add deductions from the published fee schedule</h3>
+      <select id="f-item"></select>
+      <input type="text" id="f-photo" placeholder="Photo / evidence reference (e.g. move-out photo #3)" style="margin-top:0.5rem;width:100%;">
+      <div style="margin-top:0.5rem;"><button type="button" id="add-item-btn" class="fx-btn-ghost">Add deduction line</button></div>
+      <div id="lines-root"></div>
+      <div><button id="gen-btn" class="fx-btn" type="button">Generate itemized statement</button></div>
+      <div id="doc-root"></div>
+
+      <h3 class="fx-h2" style="font-size:1.1rem; margin-top:1.6rem;">Published deduction fee schedule</h3>
+      <p class="fee-note" style="margin-top:0;">Sample standardized prices, illustrating the fix: one price per item, every time, instead of the $121.55-vs-$5 key-charge inconsistency described in the company's own BBB complaints.</p>
+      <table class="fee-table">
+        <thead><tr><th>Item</th><th>Standard charge</th></tr></thead>
+        <tbody id="fee-table-body"></tbody>
+      </table>
+    </div>
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Move-out records &amp; 21-day deadline tracker</h2>
+      <div id="records-root"></div>
+      <div class="reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The fee schedule is illustrative.</b> A real build uses Hometown Property Management's own published per-item price list, replacing the inconsistent amounts described in its BBB complaints with one documented number per item, applied the same way every time.</div>
+      <div class="lim"><b>The photo reference here is a text field.</b> A real build pulls the actual timestamped inspection photos already attached in AppFolio, it does not require a new place to store them or a change to how the inspection itself happens.</div>
+      <div class="lim"><b>This does not replace AppFolio.</b> It is a scoped statement-generation layer on top of the platform the company already pays for and already uses for rent collection and portals.</div>
+      <div class="lim"><b>Back to the generic template: <a href="../../">Deposit itemization &amp; statutory-deadline tracker</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Hometown Property Management, Inc.</strong></p><p>Prepared by Shlok Sarnayak. Fictional tenant and move-out data on this page, not connected to any live system or the company's real records.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "dit_hometownpm_v1";
+  var DEADLINE_DAYS = 21;
+
+  var FEE_ITEMS = [
+    { name: "Unreturned key / fob", rate: 85 },
+    { name: "Standard house cleaning (flat)", rate: 175 },
+    { name: "Carpet cleaning, per room", rate: 65 },
+    { name: "Wall patch / paint touch-up, per hole", rate: 30 },
+    { name: "Appliance deep clean (flat)", rate: 95 },
+    { name: "Yard / landscaping restoration (flat)", rate: 150 },
+    { name: "Trash / debris removal (flat)", rate: 120 }
+  ];
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtMoney(n) { return "$" + n.toFixed(2).replace(/\.00$/, ""); }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); }
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); d.setHours(9, 0, 0, 0); return d.getTime(); }
+  var DAY_MS = 24 * 60 * 60 * 1000;
+
+  function defaultData() {
+    var r1 = makeRecord("Sample Tenant A, Unit 4", daysAgo(24), 1400);
+    r1.lines = [
+      { item: "Standard house cleaning (flat)", rate: 175, photo: "Move-out photo, kitchen" },
+      { item: "Unreturned key / fob", rate: 85, photo: "Front-office key log" }
+    ];
+    var r2 = makeRecord("Sample Tenant B, Unit 11", daysAgo(5), 1100);
+    r2.lines = [
+      { item: "Wall patch / paint touch-up, per hole", rate: 30, photo: "Move-out photo, hallway wall" }
+    ];
+    var r3 = makeRecord("Sample Tenant C, Unit 2", daysAgo(19), 1250);
+    r3.lines = [
+      { item: "Carpet cleaning, per room", rate: 65, photo: "Move-out photo, living room carpet" }
+    ];
+    var r4 = makeRecord("Sample Tenant D, Unit 7", daysAgo(30), 1500);
+    r4.lines = [
+      { item: "Yard / landscaping restoration (flat)", rate: 150, photo: "Move-out photo, backyard" }
+    ];
+    r4.status = "sent";
+    r4.sentAt = daysAgo(22);
+    return { seq: 4, records: [r1, r2, r3, r4] };
+  }
+
+  function makeRecord(tenant, moveOutAt, deposit) {
+    return {
+      id: "REC-" + Math.floor(1000 + Math.random() * 9000),
+      tenant: tenant,
+      moveOutAt: moveOutAt,
+      deposit: deposit,
+      deadlineDays: DEADLINE_DAYS,
+      lines: [],
+      status: "open",
+      sentAt: null,
+      createdAt: Date.now()
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  var draftLines = [];
+
+  function populateItemSelect() {
+    var sel = document.getElementById("f-item");
+    sel.innerHTML = FEE_ITEMS.map(function (c) { return '<option value="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + " (" + fmtMoney(c.rate) + ")</option>"; }).join("");
+  }
+  function renderFeeTable() {
+    document.getElementById("fee-table-body").innerHTML = FEE_ITEMS.map(function (c) {
+      return "<tr><td>" + escapeHtml(c.name) + "</td><td>" + fmtMoney(c.rate) + "</td></tr>";
+    }).join("");
+  }
+
+  function renderDraftLines() {
+    var root = document.getElementById("lines-root");
+    if (!draftLines.length) { root.innerHTML = '<p class="empty">No deduction lines added yet.</p>'; return; }
+    var html = '<div class="item-list">';
+    draftLines.forEach(function (l, i) {
+      html += '<div class="item-row"><span class="li-desc">' + escapeHtml(l.item) + '<br><span class="li-meta">' + fmtMoney(l.rate) + (l.photo ? " &middot; " + escapeHtml(l.photo) : "") + '</span></span><button type="button" onclick="__dit.removeLine(' + i + ')">Remove</button></div>';
+    });
+    html += "</div>";
+    root.innerHTML = html;
+  }
+
+  function sumLines(lines) { return lines.reduce(function (s, l) { return s + l.rate; }, 0); }
+
+  function renderStatementDoc(rec) {
+    var root = document.getElementById("doc-root");
+    var total = sumLines(rec.lines);
+    var refund = rec.deposit - total;
+    var deadlineAt = rec.moveOutAt + rec.deadlineDays * DAY_MS;
+    var html = '<div class="statement-doc" id="doc-print">' +
+      "<h4>Security Deposit Itemized Statement</h4>" +
+      '<div class="sub">' + rec.id + " &middot; " + escapeHtml(rec.tenant) + " &middot; move-out " + fmtDate(rec.moveOutAt) + "</div>" +
+      '<div class="item-list">' +
+      rec.lines.map(function (l) { return '<div class="item-row"><span class="li-desc">' + escapeHtml(l.item) + (l.photo ? " &middot; " + escapeHtml(l.photo) : "") + '</span><span>' + fmtMoney(l.rate) + "</span></div>"; }).join("") +
+      "</div>" +
+      '<div class="statement-total"><span>Deposit held</span><span>' + fmtMoney(rec.deposit) + "</span></div>" +
+      '<div class="statement-total"><span>Total deductions</span><span>-' + fmtMoney(total) + "</span></div>" +
+      '<div class="statement-refund"><span>Refund due to tenant</span><span>' + fmtMoney(refund) + "</span></div>" +
+      '<div class="deadline-line">Must be sent by ' + fmtDate(deadlineAt) + " under RCW 59.18.280 (21 days after move-out).</div>" +
+      '<div style="margin-top:0.9rem;"><button class="fx-btn-ghost" onclick="window.print()">Print / save as PDF</button></div>' +
+      "</div>";
+    root.innerHTML = html;
+  }
+
+  function deadlineStatus(rec) {
+    var deadlineAt = rec.moveOutAt + rec.deadlineDays * DAY_MS;
+    var msLeft = deadlineAt - Date.now();
+    var daysLeft = Math.ceil(msLeft / DAY_MS);
+    if (rec.status === "sent") return { cls: "sent", label: "Statement sent" };
+    if (daysLeft < 0) return { cls: "overdue", label: "OVERDUE by " + Math.abs(daysLeft) + " day" + (Math.abs(daysLeft) === 1 ? "" : "s") };
+    if (daysLeft <= 5) return { cls: "duesoon", label: "Due in " + daysLeft + " day" + (daysLeft === 1 ? "" : "s") };
+    return { cls: "ontrack", label: "Due in " + daysLeft + " days" };
+  }
+
+  function renderRecords() {
+    var root = document.getElementById("records-root");
+    if (!data.records.length) { root.innerHTML = '<p class="empty">No move-out records yet. Generate an itemized statement to start one.</p>'; return; }
+    var html = "";
+    data.records.slice().sort(function (a, b) { return a.moveOutAt - b.moveOutAt; }).forEach(function (rec) {
+      var idx = data.records.indexOf(rec);
+      var total = sumLines(rec.lines);
+      var refund = rec.deposit - total;
+      var st = deadlineStatus(rec);
+      html += '<div class="record-card"><div class="record-head"><div><div class="record-title">' + escapeHtml(rec.tenant) + '</div><div class="record-meta">' + rec.id + " &middot; moved out " + fmtDate(rec.moveOutAt) + " &middot; refund " + fmtMoney(refund) + '</div></div><span class="badge ' + st.cls + '">' + st.label + "</span></div>";
+      if (!rec.lines.length) {
+        html += '<p class="empty">No deduction lines recorded.</p>';
+      }
+      if (rec.status !== "sent") {
+        html += '<div class="record-actions"><button class="fx-btn-ghost" onclick="__dit.markSent(' + idx + ')">Mark statement sent</button></div>';
+      } else {
+        html += '<div class="deadline-line">Sent ' + fmtDate(rec.sentAt) + "</div>";
+      }
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  window.__dit = {
+    removeLine: function (i) { draftLines.splice(i, 1); renderDraftLines(); },
+    markSent: function (idx) {
+      data.records[idx].status = "sent";
+      data.records[idx].sentAt = Date.now();
+      save(); renderRecords();
+    }
+  };
+
+  document.getElementById("add-item-btn").addEventListener("click", function () {
+    var sel = document.getElementById("f-item");
+    var item = FEE_ITEMS.filter(function (c) { return c.name === sel.value; })[0];
+    if (!item) return;
+    var photo = document.getElementById("f-photo").value.trim();
+    draftLines.push({ item: item.name, rate: item.rate, photo: photo });
+    document.getElementById("f-photo").value = "";
+    renderDraftLines();
+  });
+
+  document.getElementById("gen-btn").addEventListener("click", function () {
+    var tenant = document.getElementById("f-tenant").value.trim();
+    var moveoutStr = document.getElementById("f-moveout").value;
+    var deposit = parseFloat(document.getElementById("f-deposit").value) || 0;
+    if (!tenant) { alert("Enter a tenant or unit."); return; }
+    if (!moveoutStr) { alert("Enter the move-out date."); return; }
+    var moveOutAt = new Date(moveoutStr + "T09:00:00").getTime();
+    var rec = makeRecord(tenant, moveOutAt, deposit);
+    rec.lines = draftLines.slice();
+    data.records.unshift(rec);
+    save();
+    renderStatementDoc(rec);
+    renderRecords();
+    draftLines = [];
+    renderDraftLines();
+    document.getElementById("f-tenant").value = "";
+    document.getElementById("f-moveout").value = "";
+    document.getElementById("f-deposit").value = "";
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset all records back to the original sample data?")) return;
+    data = defaultData(); save(); renderRecords();
+    document.getElementById("doc-root").innerHTML = "";
+  });
+
+  populateItemSelect();
+  renderFeeTable();
+  renderDraftLines();
+  renderRecords();
+})();
+</script>
+</body>
+</html>
