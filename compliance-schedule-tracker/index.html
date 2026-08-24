@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Recurring service compliance scheduler template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .intake-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+  .intake-grid label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.82rem; font-weight: 700; color: var(--ink-2); }
+  .intake-grid input, .intake-grid select { width: 100%; padding: 0.65rem 0.8rem; }
+  .intake-full { grid-column: 1 / -1; }
+  @media (max-width: 640px) { .intake-grid { grid-template-columns: 1fr; } }
+  .board { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .row { background: var(--surface); padding: 0.95rem 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr auto auto; gap: 1rem; align-items: center; }
+  .row-name { font-weight: 700; }
+  .row-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .row-due { font-family: var(--mono); font-size: 0.82rem; }
+  .status { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.3rem 0.65rem; border-radius: 999px; white-space: nowrap; text-align: center; }
+  .status.ok { color: var(--good); background: var(--good-bg); }
+  .status.soon { color: var(--warn); background: var(--warn-bg); }
+  .status.late { color: var(--hot); background: var(--hot-bg); }
+  .remind-btn { font: 700 0.72rem/1 var(--sans); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 2px solid var(--ink); background: var(--aqua); cursor: pointer; box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
+  .remind-btn:hover { transform: translateY(-1px); }
+  .remind-btn.sent { background: var(--surface-2); cursor: default; }
+  .remind-note { font-size: 0.68rem; color: var(--muted); margin-top: 0.2rem; }
+  .confirm-box { border-left: 6px solid var(--good); padding: 0.9rem 1.1rem; background: var(--good-bg); border-radius: var(--radius-sm); font-size: 0.9rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  @media (max-width: 700px) { .row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Recurring service compliance scheduler</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Track who's due, before the client has to ask</h1>
+  <p class="fx-lede">Many code-mandated recurring services (fire-code cleanings, safety inspections, equipment servicing) are still run off a phone and a paper calendar, with nothing that flags a client's next due date before it's missed. This page uses fictional accounts to show what a due-date board and a structured intake request look like.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, "send reminder" would connect to however the business actually contacts clients (email, text). Nothing on this page sends a real message to anyone, it only logs a simulated timestamp in your browser.</p></div>
+
+  <section class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Client due-date board</div>
+      <div id="board-root" class="board" style="margin-top:0.7rem;"></div>
+    </div>
+  </section>
+
+  <section class="fx-card" style="display:flex; flex-direction:column; gap:1.1rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">New service request</div>
+      <p style="margin:0.5rem 0 0; font-size:0.88rem; color:var(--ink-2);">Fill this in the way a client or office staff would. The required cleaning interval and next due date are computed automatically, not typed in by hand.</p>
+    </div>
+    <form id="intake-form" class="intake-grid">
+      <label>Business / account name<input type="text" id="f-name" placeholder="e.g. Example Diner" required></label>
+      <label>Number of locations<input type="number" id="f-locations" min="1" value="1" required></label>
+      <label>Cooking / service volume
+        <select id="f-volume">
+          <option value="solid_fuel">Solid fuel cooking (wood, charcoal), monthly</option>
+          <option value="high" selected>High-volume, 24-hour operation, quarterly</option>
+          <option value="moderate">Typical full-service kitchen, semi-annual</option>
+          <option value="low">Low-volume / seasonal, annual</option>
+        </select>
+      </label>
+      <label>Last cleaning date<input type="date" id="f-lastdate" required></label>
+      <label class="intake-full">Contact email<input type="email" id="f-email" placeholder="name@example.com" required></label>
+      <div class="intake-full" style="display:flex; gap:0.7rem; align-items:center; flex-wrap:wrap;">
+        <button type="submit" class="fx-btn">Add to schedule</button>
+        <span id="intake-msg" style="font-size:0.85rem; color:var(--muted);"></span>
+      </div>
+    </form>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>Interval rule is configurable per business.</b> The four bands shown here are a common pattern for code-mandated cleaning intervals; a real build uses whatever schedule the business (or the code it operates under) actually requires.</div>
+      <div class="lim"><b>Reminders, not bookings.</b> This tracks due dates and flags who to contact, it doesn't replace the actual visit or take a payment. Keeping the first version narrow is deliberate.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/drs-hoods/">DRS Hoods</a>, <a href="examples/accurate-backflow/">Accurate Backflow Testing &amp; Plumbing</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional account data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  var STORE_KEY = "fx-compliance-demo-generic";
+  var INTERVALS = { solid_fuel: { months: 1, label: "Monthly" }, high: { months: 3, label: "Quarterly" }, moderate: { months: 6, label: "Semi-annual" }, low: { months: 12, label: "Annual" } };
+  var SEED = [
+    { id: "seed-1", name: "Example Diner", sub: "1 location · quarterly interval", lastCleaned: daysAgo(70), months: 3 },
+    { id: "seed-2", name: "Sample Restaurant Group", sub: "4 locations · monthly interval (solid fuel)", lastCleaned: daysAgo(40), months: 1 },
+    { id: "seed-3", name: "Example Banquet Hall", sub: "1 location · annual interval", lastCleaned: daysAgo(200), months: 12 }
+  ];
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); }
+  function addMonths(iso, months) { var d = new Date(iso + "T00:00:00"); d.setMonth(d.getMonth() + months); return d; }
+  function fmt(d) { return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
+  function loadExtra() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); } catch (e) { return []; } }
+  function saveExtra(list) { try { localStorage.setItem(STORE_KEY, JSON.stringify(list)); } catch (e) {} }
+  function loadReminders() { try { return JSON.parse(localStorage.getItem(STORE_KEY + "-reminders") || "{}"); } catch (e) { return {}; } }
+  function saveReminders(obj) { try { localStorage.setItem(STORE_KEY + "-reminders", JSON.stringify(obj)); } catch (e) {} }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function render() {
+    var all = SEED.concat(loadExtra());
+    var reminders = loadReminders();
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var html = "";
+    all.forEach(function (c) {
+      var due = addMonths(c.lastCleaned, c.months);
+      var days = Math.round((due - today) / 86400000);
+      var cls = "ok", label = "Compliant";
+      if (days < 0) { cls = "late"; label = "Overdue"; }
+      else if (days <= 14) { cls = "soon"; label = "Due soon"; }
+      var sentAt = reminders[c.id];
+      html += '<div class="row">' +
+        '<div><div class="row-name">' + escapeHtml(c.name) + '</div><div class="row-sub">' + escapeHtml(c.sub) + '</div></div>' +
+        '<div class="row-due">Next due: ' + fmt(due) + '</div>' +
+        '<div class="status ' + cls + '">' + label + '</div>' +
+        '<div><button class="remind-btn' + (sentAt ? ' sent' : '') + '" data-id="' + c.id + '">' + (sentAt ? "Reminder sent ✓" : "Send reminder") + '</button>' +
+        (sentAt ? '<div class="remind-note">' + sentAt + ' (simulated)</div>' : '<div class="remind-note">simulated, no message sent</div>') +
+        '</div></div>';
+    });
+    document.getElementById("board-root").innerHTML = html;
+    Array.prototype.forEach.call(document.querySelectorAll(".remind-btn"), function (b) {
+      b.addEventListener("click", function () {
+        if (b.classList.contains("sent")) return;
+        var reminders2 = loadReminders();
+        reminders2[b.dataset.id] = new Date().toLocaleString();
+        saveReminders(reminders2);
+        render();
+      });
+    });
+  }
+
+  document.getElementById("intake-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = document.getElementById("f-name").value.trim();
+    var locations = document.getElementById("f-locations").value;
+    var volume = document.getElementById("f-volume").value;
+    var lastdate = document.getElementById("f-lastdate").value || new Date().toISOString().slice(0, 10);
+    var email = document.getElementById("f-email").value.trim();
+    if (!name || !email) return;
+    var interval = INTERVALS[volume];
+    var extra = loadExtra();
+    extra.push({ id: "custom-" + Date.now(), name: name, sub: locations + " location" + (locations == 1 ? "" : "s") + " · " + interval.label.toLowerCase() + " interval · " + email, lastCleaned: lastdate, months: interval.months });
+    saveExtra(extra);
+    var due = addMonths(lastdate, interval.months);
+    document.getElementById("intake-msg").textContent = "Added. Next due date computed: " + fmt(due) + " (" + interval.label.toLowerCase() + " interval).";
+    document.getElementById("intake-form").reset();
+    document.getElementById("f-volume").value = "high";
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

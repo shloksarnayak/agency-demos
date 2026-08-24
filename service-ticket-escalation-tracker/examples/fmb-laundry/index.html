@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>FMB Laundry service-ticket tracker example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .stt-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .stt-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .stt-tab.active { background: var(--ink); color: var(--surface); }
+  .stt-view { display: none; }
+  .stt-view.active { display: block; }
+  .stt-cols { display: grid; grid-template-columns: 1fr 1.35fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .stt-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .ticket-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .ticket-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .ticket-title { font-weight: 660; }
+  .ticket-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.overdue { color: var(--hot); background: var(--hot-bg); }
+  .badge.repeat { color: #5c1030; background: var(--pink); }
+  .badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .badge.ontrack { color: var(--brand); background: var(--brand-soft); }
+  .badge.done { color: var(--good); background: var(--good-bg); }
+  .ticket-summary { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; }
+  .ticket-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .log { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.8rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); margin-right: 0.4rem; }
+  .notif { margin-top: 0.5rem; }
+  .notif summary { font-size: 0.76rem; font-weight: 700; color: var(--brand); cursor: pointer; }
+  .notif-entry { font-size: 0.76rem; color: var(--muted); padding: 0.2rem 0 0.2rem 0.9rem; font-style: italic; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 460px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.2rem; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.5rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+  .visit-note { font-size: 0.8rem; color: var(--muted); margin-top: 0.7rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Service-ticket escalation tracker</a> / FMB Laundry example</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Grounded in a real business, still a work sample</span>
+  <h1 class="fx-h1">The third visit to the same machine should not look like the first</h1>
+  <p class="fx-lede">FMB Laundry's own site offers two ways to report a broken washer or dryer: a one-way Service Request form and the service@fmblaundry.com inbox listed on its FAQ page. Neither returns a ticket number or a status a property manager can check. FMB's own BBB complaint file (11 complaints over 3 years, all answered or resolved) shows the actual gap is not that requests go unanswered, it's that a property or resident contact gets no visible update while a case drags on, and has to re-explain the same problem from scratch on every call. This example adds a stage-tracked ticket, an overdue flag, and a repeat-visit counter behind the existing form and inbox, without touching or replacing the separate Clothesline Mobile payment and machine-availability app FMB already sells.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional sample data.</strong> Property names, tickets, and notes are illustrative, not FMB Laundry's real customers or records. This independent work sample is not affiliated with or endorsed by FMB Laundry, Inc.</p></div>
+
+  <div class="stt-tabs">
+    <button class="stt-tab active" data-view="office" type="button">FMB dispatch view</button>
+    <button class="stt-tab" data-view="requester" type="button">Property manager status check</button>
+  </div>
+
+  <section class="stt-view active" id="view-office">
+    <div class="stt-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new ticket</h2>
+        <p style="color:var(--muted);font-size:0.82rem;margin-top:-0.6rem;">In a real build, this logs automatically the moment the Service Request form or the service@ inbox receives a message, instead of someone re-typing it here.</p>
+        <form id="add-form" class="form-grid">
+          <div class="field span2"><label for="f-property">Property / community</label><input type="text" id="f-property" placeholder="e.g. Sample Ridgeline Apartments"></div>
+          <div class="field span2"><label for="f-issue">Issue description</label><input type="text" id="f-issue" placeholder="e.g. Laundry room 2, washer 5 will not spin"></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
+        </form>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Open tickets, worst first</h2>
+        <div id="queue-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stt-view" id="view-requester">
+    <h2 class="fx-h2" style="margin-top:0;">Check the status of a service ticket</h2>
+    <p style="color:var(--ink-2);font-size:0.92rem;margin-top:-0.6rem;max-width:66ch;">The BBB record shows property contacts, not just residents, chasing FMB for status on an open case. This gives a property manager a way to check without another call to the office.</p>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. FMB-1001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try FMB-1001, FMB-1002, FMB-1003 or FMB-1004 from the dispatch view's sample queue.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this maps to FMB Laundry specifically</h2>
+    <div class="limits">
+      <div class="lim"><b>Stages match the offer: received, dispatched, visited, resolved and verified.</b> The overdue window shown here (5 days sitting in one stage) is illustrative; FMB's own BBB record shows gaps running weeks to months, so the real cutoff would be set with FMB's dispatch team, not guessed.</div>
+      <div class="lim"><b>Repeat-visit counter is tuned to the documented pattern.</b> At least two of FMB's 11 BBB complaints describe a machine needing multiple service calls without a resolved fix. The FMB-1001 sample ticket below models that: three visits logged, the ticket stays one ticket instead of restarting, and it surfaces at the top of the queue once it crosses that count.</div>
+      <div class="lim"><b>Notifications here are a log entry only, nothing is actually sent.</b> A real build would text or email the property contact at each stage change through FMB's existing service email, addressing the specific "no one told me anything" pattern in the complaint file, without requiring FMB to adopt a new communication channel.</div>
+      <div class="lim"><b>Deliberately out of scope: Clothesline Mobile / QuickView.</b> Those are FMB's existing resident-payment and owner-facing uptime tools, confirmed via their own product pages. This tracker sits behind the separate Service Request form and service@ inbox and does not duplicate or touch that system.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by FMB Laundry, Inc.</strong></p><p>Prepared by Shlok Sarnayak. Fictional property and ticket data on this page, not connected to any live FMB Laundry system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "stt_fmb_laundry_v1";
+
+  var STAGES = [
+    { key: "received", label: "Received" },
+    { key: "dispatched", label: "Dispatched" },
+    { key: "visited", label: "Visited" },
+    { key: "resolved", label: "Resolved & verified" }
+  ];
+  var STAGE_INDEX = {}; STAGES.forEach(function (s, i) { STAGE_INDEX[s.key] = i; });
+  var VISITED_IDX = STAGE_INDEX.visited;
+  var RESOLVED_IDX = STAGE_INDEX.resolved;
+  var OVERDUE_HOURS = 120; // illustrative: 5 days sitting in one open stage
+  var WATCH_HOURS = OVERDUE_HOURS * 0.6;
+  var REPEAT_VISIT_THRESHOLD = 3;
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function hoursFromNow(h) { return Date.now() + h * 3600000; }
+  function hoursAgo(ts) { return (Date.now() - ts) / 3600000; }
+  function fmtDuration(hrs) {
+    if (hrs < 1) return "under an hour";
+    var days = Math.floor(hrs / 24), rem = Math.round(hrs % 24);
+    if (days < 1) return Math.round(hrs) + "h";
+    return days + "d " + rem + "h";
+  }
+
+  function defaultData() {
+    return {
+      seq: 1004,
+      tickets: [
+        {
+          ref: "FMB-1001", property: "Sample Ridgeline Apartments", issue: "Laundry room 2, washer 5 will not drain", visitCount: 3,
+          stageIdx: STAGE_INDEX.dispatched, enteredStageAt: hoursFromNow(-34),
+          history: [
+            { stage: "received", at: hoursFromNow(-620) }, { stage: "dispatched", at: hoursFromNow(-612) },
+            { stage: "visited", at: hoursFromNow(-460) }, { stage: "dispatched", at: hoursFromNow(-455) },
+            { stage: "visited", at: hoursFromNow(-210) }, { stage: "dispatched", at: hoursFromNow(-34) }
+          ],
+          notes: [{ at: hoursFromNow(-209), text: "Second visit, drain pump replaced, still not draining fully on spin cycle. Third technician dispatched, photo documentation attached to job file." }],
+          notifications: [
+            { at: hoursFromNow(-612), text: "Simulated update to requester: your ticket has been dispatched." },
+            { at: hoursFromNow(-210), text: "Simulated update to requester: technician visited, issue not resolved, another visit has been scheduled." },
+            { at: hoursFromNow(-34), text: "Simulated update to requester: your ticket has been dispatched." }
+          ]
+        },
+        {
+          ref: "FMB-1002", property: "Sample Harbor View Commons", issue: "Building C dryer 2, no heat", visitCount: 0,
+          stageIdx: STAGE_INDEX.received, enteredStageAt: hoursFromNow(-150),
+          history: [{ stage: "received", at: hoursFromNow(-150) }],
+          notes: [],
+          notifications: [{ at: hoursFromNow(-150), text: "Simulated update to requester: your ticket has been received." }]
+        },
+        {
+          ref: "FMB-1003", property: "Sample Westgate Senior Living", issue: "Laundry room 1, card reader on washer 3 not accepting payment", visitCount: 0,
+          stageIdx: STAGE_INDEX.visited, enteredStageAt: hoursFromNow(-9),
+          history: [{ stage: "received", at: hoursFromNow(-44) }, { stage: "dispatched", at: hoursFromNow(-40) }, { stage: "visited", at: hoursFromNow(-9) }],
+          notes: [{ at: hoursFromNow(-9), text: "Card reader reseated and tested through two payment cycles, working." }],
+          notifications: [
+            { at: hoursFromNow(-40), text: "Simulated update to requester: your ticket has been dispatched." },
+            { at: hoursFromNow(-9), text: "Simulated update to requester: technician visited, pending verification." }
+          ]
+        },
+        {
+          ref: "FMB-1004", property: "Sample Fort Bellwood Family Housing", issue: "Community center dryer, drum not turning", visitCount: 1,
+          stageIdx: STAGE_INDEX.resolved, enteredStageAt: hoursFromNow(-3),
+          history: [{ stage: "received", at: hoursFromNow(-98) }, { stage: "dispatched", at: hoursFromNow(-94) }, { stage: "visited", at: hoursFromNow(-22) }, { stage: "resolved", at: hoursFromNow(-3) }],
+          notes: [{ at: hoursFromNow(-3), text: "Drive belt replaced, tested through a full cycle, confirmed working. Photo documentation attached to job file." }],
+          notifications: [
+            { at: hoursFromNow(-94), text: "Simulated update to requester: your ticket has been dispatched." },
+            { at: hoursFromNow(-22), text: "Simulated update to requester: technician visited, pending verification." },
+            { at: hoursFromNow(-3), text: "Simulated update to requester: your issue is resolved and verified." }
+          ]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function badges(t) {
+    var out = [];
+    if (t.stageIdx >= RESOLVED_IDX) { out.push({ cls: "done", label: "Resolved" }); return out; }
+    if (t.visitCount >= REPEAT_VISIT_THRESHOLD) out.push({ cls: "repeat", label: "Repeat visit ×" + t.visitCount });
+    var stuckHrs = hoursAgo(t.enteredStageAt);
+    if (stuckHrs > OVERDUE_HOURS) out.push({ cls: "overdue", label: "Overdue" });
+    else if (stuckHrs > WATCH_HOURS) out.push({ cls: "watch", label: "Watch" });
+    else if (!out.length) out.push({ cls: "ontrack", label: "On track" });
+    return out;
+  }
+
+  function sortScore(t) {
+    if (t.stageIdx >= RESOLVED_IDX) return -1e9;
+    var score = hoursAgo(t.enteredStageAt);
+    if (t.visitCount >= REPEAT_VISIT_THRESHOLD) score += 10000;
+    return score;
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var open = data.tickets.filter(function (t) { return t.stageIdx < RESOLVED_IDX; })
+      .slice().sort(function (a, b) { return sortScore(b) - sortScore(a); });
+    var done = data.tickets.filter(function (t) { return t.stageIdx >= RESOLVED_IDX; })
+      .slice().sort(function (a, b) { return b.enteredStageAt - a.enteredStageAt; });
+    var html = "";
+    if (!open.length) html += '<p class="empty">Nothing open. Every ticket is resolved and verified.</p>';
+    open.forEach(function (t) { html += renderCard(t); });
+    if (done.length) {
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently resolved</h3>';
+      done.slice(0, 5).forEach(function (t) { html += renderCard(t); });
+    }
+    root.innerHTML = html;
+  }
+
+  function renderCard(t) {
+    var idx = data.tickets.indexOf(t);
+    var stageLabel = STAGES[t.stageIdx].label;
+    var bs = badges(t);
+    var html = '<div class="ticket-card"><div class="ticket-head"><div><div class="ticket-title">' + escapeHtml(t.property) + " &middot; " + t.ref + '</div><div class="ticket-meta">' + escapeHtml(t.issue) + "</div></div><div class=\"badge-row\">" + bs.map(function (b) { return '<span class="badge ' + b.cls + '">' + b.label + '</span>'; }).join("") + "</div></div>";
+    html += '<div class="ticket-summary">Stage: ' + stageLabel + " (" + fmtDuration(hoursAgo(t.enteredStageAt)) + " in this stage)</div>";
+    if (t.visitCount > 0) html += '<div class="visit-note">Visited ' + t.visitCount + " time" + (t.visitCount === 1 ? "" : "s") + " on this ticket without a confirmed fix so far.</div>";
+    if (t.notes.length) {
+      html += '<div class="log">';
+      t.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+      html += "</div>";
+    }
+    if (t.notifications.length) {
+      html += '<details class="notif"><summary>Notification log (' + t.notifications.length + ')</summary>';
+      t.notifications.slice().reverse().forEach(function (n) { html += '<div class="notif-entry">' + fmtDate(n.at) + " &middot; " + escapeHtml(n.text) + "</div>"; });
+      html += "</details>";
+    }
+    if (t.stageIdx < RESOLVED_IDX) {
+      html += '<div class="note-row" style="display:flex;gap:0.4rem;margin-top:0.6rem;"><input type="text" id="note-' + idx + '" placeholder="Add an internal note" style="flex:1;font:inherit;font-size:0.8rem;padding:0.4rem 0.6rem;border:1px solid var(--rule);border-radius:var(--radius-sm);"><button class="fx-btn-ghost" onclick="__stt.addNote(' + idx + ')">Add</button></div>';
+      html += '<div class="ticket-actions">';
+      if (t.stageIdx === VISITED_IDX) {
+        html += '<button class="fx-btn" onclick="__stt.resolve(' + idx + ')">Resolved, mark verified</button>';
+        html += '<button class="fx-btn-ghost" onclick="__stt.redispatch(' + idx + ')">Not fixed, redispatch</button>';
+      } else {
+        var nextLabel = STAGES[t.stageIdx + 1].label;
+        html += '<button class="fx-btn-ghost" onclick="__stt.advance(' + idx + ')">Advance to ' + escapeHtml(nextLabel) + '</button>';
+      }
+      html += '</div>';
+    }
+    html += "</div>";
+    return html;
+  }
+
+  function notify(t, text) { t.notifications.push({ at: Date.now(), text: "Simulated update to requester: " + text }); }
+
+  window.__stt = {
+    addNote: function (idx) {
+      var input = document.getElementById("note-" + idx);
+      var text = input.value.trim();
+      if (!text) return;
+      data.tickets[idx].notes.push({ at: Date.now(), text: text });
+      save(); renderQueue();
+    },
+    advance: function (idx) {
+      var t = data.tickets[idx];
+      t.stageIdx += 1;
+      t.enteredStageAt = Date.now();
+      t.history.push({ stage: STAGES[t.stageIdx].key, at: Date.now() });
+      var msgs = { dispatched: "your ticket has been dispatched.", visited: "technician visited, pending verification." };
+      notify(t, msgs[STAGES[t.stageIdx].key] || "your ticket status changed.");
+      save(); renderQueue();
+    },
+    resolve: function (idx) {
+      var t = data.tickets[idx];
+      t.stageIdx = RESOLVED_IDX;
+      t.enteredStageAt = Date.now();
+      t.history.push({ stage: "resolved", at: Date.now() });
+      notify(t, "your issue is resolved and verified.");
+      save(); renderQueue();
+    },
+    redispatch: function (idx) {
+      var t = data.tickets[idx];
+      t.visitCount += 1;
+      t.stageIdx = STAGE_INDEX.dispatched;
+      t.enteredStageAt = Date.now();
+      t.history.push({ stage: "dispatched", at: Date.now() });
+      notify(t, "technician visited, issue not resolved, another visit has been scheduled.");
+      save(); renderQueue();
+    }
+  };
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var property = document.getElementById("f-property").value.trim();
+    var issue = document.getElementById("f-issue").value.trim();
+    if (!property || !issue) { alert("Fill in the property/community and the issue description."); return; }
+    data.seq += 1;
+    var ref = "FMB-" + data.seq;
+    var now = Date.now();
+    var t = { ref: ref, property: property, issue: issue, visitCount: 0, stageIdx: STAGE_INDEX.received, enteredStageAt: now, history: [{ stage: "received", at: now }], notes: [], notifications: [] };
+    notify(t, "your ticket has been received.");
+    data.tickets.push(t);
+    save(); renderQueue();
+    document.getElementById("add-form").reset();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue();
+  });
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var t = data.tickets.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
+    if (!t) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No record found for that reference code. Please contact FMB Laundry directly.</p></div>'; return; }
+    var html = '<div class="lookup-result"><h3>' + escapeHtml(t.issue) + '</h3>';
+    if (t.visitCount > 0) html += '<p class="visit-note">This ticket has needed ' + t.visitCount + " visit" + (t.visitCount === 1 ? "" : "s") + " so far without a confirmed fix.</p>";
+    STAGES.forEach(function (s, i) {
+      var cls = i < t.stageIdx ? "done" : (i === t.stageIdx ? "active" : "pending");
+      var histEntry = t.history.filter(function (h) { return h.stage === s.key; })[0];
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === "pending" ? " pending-text" : "") + '">' + s.label + '</div><div class="stage-time">' + (histEntry ? fmtDate(histEntry.at) : (cls === "active" ? "In progress" : "Not started")) + "</div></div></div>";
+    });
+    html += "</div>";
+    root.innerHTML = html;
+  });
+
+  document.querySelectorAll(".stt-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".stt-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".stt-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderQueue();
+})();
+</script>
+</body>
+</html>

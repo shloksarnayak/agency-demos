@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Barter Lawns, season-renewal consent &amp; billing-integrity example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .rct-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .rct-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .rct-tab.active { background: var(--ink); color: var(--surface); }
+  .rct-view { display: none; }
+  .rct-view.active { display: block; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
+  .account-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .account-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .account-title { font-weight: 660; }
+  .account-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.pending { color: var(--muted); background: var(--surface-2); }
+  .badge.notice_sent { color: var(--warn); background: var(--warn-bg); }
+  .badge.confirmed { color: var(--good); background: var(--good-bg); }
+  .badge.declined { color: var(--hot); background: var(--hot-bg); }
+  .svc-list { margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px dashed var(--rule-soft); }
+  .svc-col-label { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-top: 0.5rem; }
+  .svc-row { display: flex; justify-content: space-between; gap: 0.6rem; font-size: 0.85rem; padding: 0.2rem 0; }
+  .svc-row.new-svc .svc-name::after { content: " (new)"; color: var(--warn); font-size: 0.7rem; }
+  .svc-total { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.86rem; padding-top: 0.3rem; margin-top: 0.2rem; border-top: 1px solid var(--rule-soft); }
+  .account-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .ref-note { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin-top: 0.4rem; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 520px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: #fff; color: var(--ink); }
+  .lookup-result { margin-top: 1.1rem; padding: 1rem 1.1rem; border-radius: var(--radius-sm); background: var(--surface-2); }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.15rem; }
+  .lookup-result .lr-detail { font-size: 0.86rem; color: var(--ink-2); margin-top: 0.5rem; line-height: 1.5; }
+  .lookup-result .lr-actions { display: flex; gap: 0.5rem; margin-top: 0.9rem; flex-wrap: wrap; align-items: center; }
+  .lookup-result input[type="text"] { flex: 1; min-width: 180px; font: inherit; font-size: 0.85rem; padding: 0.45rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .batch-row { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.75rem 0.95rem; margin-bottom: 0.6rem; font-size: 0.86rem; }
+  .batch-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .batch-verdict { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .batch-verdict.ok { color: var(--good); background: var(--good-bg); }
+  .batch-verdict.hold { color: var(--warn); background: var(--warn-bg); }
+  .batch-verdict.flag { color: var(--warn); background: var(--warn-bg); }
+  .batch-verdict.block { color: var(--hot); background: var(--hot-bg); }
+  .batch-reason { color: var(--ink-2); font-size: 0.82rem; margin-top: 0.35rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .case-box { margin: 1.4rem 0; padding: 1rem 1.2rem; border-left: 3px solid var(--warn); background: var(--warn-bg); font-size: 0.9rem; color: var(--ink); }
+  .case-box cite { display: block; margin-top: 0.5rem; font-size: 0.76rem; color: var(--ink-2); font-style: normal; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Season-renewal consent &amp; billing-integrity console</a> / Barter Lawns</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">Barter Lawns: an explicit yes before a season renews, and a check before a charge posts</h1>
+  <p class="fx-lede">A BBB complaint filed 8/21/2025 describes a customer who agreed to 5 treatments for the 2024 season, then found the company had continued applying treatments into 2025 without any new authorization and billed for it, a fine-print invoice clause and a January/February "prepaid notice" stood in for actual consent. A separate BBB customer review from 2023 describes an unrelated $36.50 charge that appeared on a paid-in-full account and stayed marked past due for months, attributed each time to "accounting software" but never corrected. This example shows a small tool that closes both gaps: a plain-language renewal notice the customer has to actively confirm or decline before next season starts, and a billing-integrity check that catches a charge that does not match what was actually confirmed before it posts.</p>
+  <div class="fact-strip">
+    <span class="fact">Barter Lawns LLC</span>
+    <span class="fact">Lewis Center, OH &middot; Columbus/Dublin metro</span>
+    <span class="fact">Lawn fertilization, weed &amp; pest control, since 1992</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Barter Lawns LLC.</strong> All customer names, accounts, and dollar amounts inside the tool below are fictional and clearly for illustration only. The business description and complaint pattern referenced here are drawn from the company's own published site and its public BBB complaint and review file.</p></div>
+
+  <div class="case-box">
+    Barter Lawns' own reply to the 8/2025 complaint confirms the underlying fact rather than disputing it: "service continues season to season" unless the customer proactively calls to cancel, based on invoice fine print and a January/February prepaid notice, not an explicit opt-in. A separate 2023 review documents a $36.50 charge that appeared without explanation and sat "over 120 days past due" on a paid-in-full account for months.
+    <cite>Barter Lawns BBB complaint, filed 8/21/2025, and BBB customer review, Gary T., filed 12/10/2023.</cite>
+  </div>
+  <p style="color:var(--ink-2); font-size:0.92rem; max-width:74ch;">Barter Lawns already runs a third-party field-service product, LawnGateway, for appointment-level scheduling reminders, that layer is not what's broken here. The gap is specifically the season-to-season re-enrollment and billing-accuracy layer: nothing in the business's own account of its process gives a customer a dated, explicit confirm-or-decline step before renewal, and nothing catches a changed or uncontracted charge before it posts. This is a narrow, real gap on an otherwise well-regarded, BBB-accredited small business, not a business in crisis.</p>
+
+  <div class="rct-tabs">
+    <button class="rct-tab active" data-view="office" type="button">Office view</button>
+    <button class="rct-tab" data-view="customer" type="button">Customer renewal check</button>
+  </div>
+
+  <section class="rct-view active" id="view-office">
+    <h2 class="fx-h2" style="margin-top:0;">Season-renewal queue</h2>
+    <p style="color:var(--ink-2); font-size:0.88rem; max-width:70ch; margin-top:-0.4rem;">Every account due for renewal, with exactly what it was billed last season next to exactly what it would renew for. A new or changed line item is marked so it never reaches a customer as a surprise.</p>
+    <div id="accounts-root"></div>
+    <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+
+    <h2 class="fx-h2" style="margin-top:2.2rem;">Billing-integrity check</h2>
+    <p style="color:var(--ink-2); font-size:0.88rem; max-width:70ch; margin-top:-0.4rem;">Today's batch of charges about to post, checked against what each customer actually confirmed. This is the exact check that would have caught both documented incidents: a charge posting on an account that was never re-confirmed, and a charge that doesn't match the confirmed amount.</p>
+    <div style="margin-top:0.8rem;"><button class="fx-btn" id="run-batch-btn" type="button">Run billing-integrity check on today's batch</button></div>
+    <div id="batch-root" style="margin-top:1rem;"></div>
+  </section>
+
+  <section class="rct-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Confirm or decline your season renewal</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code (from your renewal notice)</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. BL-1077">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Look up my renewal</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try BL-1077, BL-1103, BL-1128 or BL-1155 from the office view's sample queue. BL-1042 has no notice yet, so it will not be found here until the office sends one.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The renewal notice is sent from the office view here.</b> A real build would email or text the plain-language notice automatically, at a set number of days before the first spring treatment, using the account list Barter Lawns already keeps.</div>
+      <div class="lim"><b>The billing-integrity check compares two lists the business already has.</b> What was confirmed for the season, and what the billing run is about to charge. It does not touch LawnGateway or replace it, it sits on top of the renewal and invoicing step specifically.</div>
+      <div class="lim"><b>"Confirmed" here is a typed name and a timestamp.</b> A real build can log it the same way a signed estimate would be logged, this demo shows the workflow.</div>
+      <div class="lim"><b>Back to the general template: <a href="../../">Season-renewal consent &amp; billing-integrity console</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Barter Lawns LLC.</strong></p><p>Prepared by Shlok Sarnayak. Fictional account and billing data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "rct_barter_lawns_v1";
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtMoney(n) { return "$" + n.toFixed(2).replace(/\.00$/, ""); }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function daysAgo(n, h) { var d = new Date(); d.setDate(d.getDate() - n); d.setHours(h || 9, 0, 0, 0); return d.getTime(); }
+
+  var STATUS_LABEL = { pending: "Not yet noticed", notice_sent: "Awaiting response", confirmed: "Confirmed", declined: "Declined" };
+
+  function svcTotal(services) { return services.reduce(function (s, x) { return s + x.price; }, 0); }
+  function findSvc(list, name) { return list.filter(function (x) { return x.name === name; })[0]; }
+
+  function defaultData() {
+    return {
+      accounts: [
+        {
+          ref: "BL-1042", customer: "Sample Homeowner A", status: "pending",
+          priorSeason: { year: 2025, services: [{ name: "5-Step Fertilization & Weed Control", price: 420 }, { name: "Core Aeration (fall)", price: 85 }] },
+          proposedRenewal: { year: 2026, services: [{ name: "5-Step Fertilization & Weed Control", price: 420 }, { name: "Core Aeration (fall)", price: 85 }] },
+          confirmedBy: null, confirmedAt: null, declinedAt: null, noticeSentAt: null
+        },
+        {
+          ref: "BL-1077", customer: "Sample Homeowner B", status: "notice_sent",
+          priorSeason: { year: 2025, services: [{ name: "5-Step Fertilization & Weed Control", price: 395 }] },
+          proposedRenewal: { year: 2026, services: [{ name: "5-Step Fertilization & Weed Control", price: 395 }, { name: "Grub Control Treatment", price: 65 }] },
+          confirmedBy: null, confirmedAt: null, declinedAt: null, noticeSentAt: daysAgo(2)
+        },
+        {
+          ref: "BL-1103", customer: "Sample Commercial Property C", status: "confirmed",
+          priorSeason: { year: 2025, services: [{ name: "Commercial Turf Program (6 rounds)", price: 1450 }] },
+          proposedRenewal: { year: 2026, services: [{ name: "Commercial Turf Program (6 rounds)", price: 1450 }] },
+          confirmedBy: "Sample Property Manager", confirmedAt: daysAgo(3), declinedAt: null, noticeSentAt: daysAgo(9)
+        },
+        {
+          ref: "BL-1128", customer: "Sample Homeowner D", status: "declined",
+          priorSeason: { year: 2025, services: [{ name: "5-Step Fertilization & Weed Control", price: 410 }, { name: "Flea/Tick/Mosquito Control (seasonal)", price: 260 }] },
+          proposedRenewal: { year: 2026, services: [{ name: "5-Step Fertilization & Weed Control", price: 410 }, { name: "Flea/Tick/Mosquito Control (seasonal)", price: 260 }] },
+          confirmedBy: null, confirmedAt: null, declinedAt: daysAgo(2), noticeSentAt: daysAgo(6)
+        },
+        {
+          ref: "BL-1155", customer: "Sample Homeowner E", status: "confirmed",
+          priorSeason: { year: 2025, services: [{ name: "5-Step Fertilization & Weed Control", price: 430 }] },
+          proposedRenewal: { year: 2026, services: [{ name: "5-Step Fertilization & Weed Control", price: 430 }] },
+          confirmedBy: "Sample Homeowner E", confirmedAt: daysAgo(1), declinedAt: null, noticeSentAt: daysAgo(5)
+        }
+      ],
+      batch: [
+        { ref: "BL-1077", service: "5-Step Fertilization & Weed Control", amount: 395 },
+        { ref: "BL-1103", service: "Commercial Turf Program (6 rounds)", amount: 1650 },
+        { ref: "BL-1128", service: "5-Step Fertilization & Weed Control", amount: 410 },
+        { ref: "BL-1128", service: "Flea/Tick/Mosquito Control (seasonal)", amount: 260 },
+        { ref: "BL-1155", service: "5-Step Fertilization & Weed Control", amount: 430 }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function renderServiceDiff(account) {
+    var prior = account.priorSeason.services;
+    var proposed = account.proposedRenewal.services;
+    var html = '<div class="svc-list">';
+    html += '<div class="svc-col-label">' + account.priorSeason.year + ' season (billed)</div>';
+    prior.forEach(function (s) { html += '<div class="svc-row"><span class="svc-name">' + escapeHtml(s.name) + '</span><span>' + fmtMoney(s.price) + '</span></div>'; });
+    html += '<div class="svc-total"><span>Total</span><span>' + fmtMoney(svcTotal(prior)) + '</span></div>';
+    html += '<div class="svc-col-label" style="margin-top:0.8rem;">' + account.proposedRenewal.year + ' season (proposed renewal)</div>';
+    proposed.forEach(function (s) {
+      var isNew = !findSvc(prior, s.name);
+      var wasP = findSvc(prior, s.name);
+      var changed = wasP && wasP.price !== s.price;
+      html += '<div class="svc-row' + (isNew ? ' new-svc' : '') + '"><span class="svc-name">' + escapeHtml(s.name) + (changed ? ' (was ' + fmtMoney(wasP.price) + ')' : '') + '</span><span>' + fmtMoney(s.price) + '</span></div>';
+    });
+    html += '<div class="svc-total"><span>Total</span><span>' + fmtMoney(svcTotal(proposed)) + '</span></div>';
+    html += '</div>';
+    return html;
+  }
+
+  function renderAccounts() {
+    var root = document.getElementById("accounts-root");
+    if (!data.accounts.length) { root.innerHTML = '<p class="empty">No accounts in the renewal queue.</p>'; return; }
+    var html = "";
+    data.accounts.forEach(function (a) {
+      html += '<div class="account-card"><div class="account-head"><div><div class="account-title">' + escapeHtml(a.customer) + " &middot; " + a.ref + '</div><div class="account-meta">Reference code for customer lookup: ' + a.ref + '</div></div><span class="badge ' + a.status + '">' + STATUS_LABEL[a.status] + "</span></div>";
+      html += renderServiceDiff(a);
+      if (a.status === "pending") {
+        html += '<div class="account-actions"><button class="fx-btn-ghost" onclick="__rct.sendNotice(\'' + a.ref + '\')">Send renewal notice</button></div>';
+      }
+      if (a.status === "notice_sent") {
+        html += '<div class="ref-note">Notice sent ' + fmtDate(a.noticeSentAt) + '. Awaiting customer response, check the customer tab with this reference code.</div>';
+      }
+      if (a.status === "confirmed") {
+        html += '<div class="ref-note">Confirmed by ' + escapeHtml(a.confirmedBy) + ' at ' + fmtDate(a.confirmedAt) + '.</div>';
+      }
+      if (a.status === "declined") {
+        html += '<div class="ref-note">Declined at ' + fmtDate(a.declinedAt) + '. Do not schedule or bill this account for the new season.</div>';
+      }
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  function runBatchCheck() {
+    var root = document.getElementById("batch-root");
+    var html = "";
+    data.batch.forEach(function (charge) {
+      var acct = data.accounts.filter(function (a) { return a.ref === charge.ref; })[0];
+      var verdict = "ok", reason = "Matches the confirmed renewal. Safe to post.";
+      if (!acct) {
+        verdict = "block"; reason = "No account record found for this reference code. Do not post.";
+      } else if (acct.status === "declined") {
+        verdict = "block"; reason = "Account declined renewal on " + fmtDate(acct.declinedAt) + ". This charge must not post.";
+      } else if (acct.status !== "confirmed") {
+        verdict = "hold"; reason = "Renewal has not been confirmed by the customer yet. Hold until confirmed.";
+      } else {
+        var confirmedSvc = findSvc(acct.proposedRenewal.services, charge.service);
+        if (!confirmedSvc) {
+          verdict = "flag"; reason = "\"" + charge.service + "\" was never part of what " + acct.customer + " confirmed for " + acct.proposedRenewal.year + ". Flag before posting.";
+        } else if (confirmedSvc.price !== charge.amount) {
+          var diff = charge.amount - confirmedSvc.price;
+          verdict = "flag"; reason = "Confirmed at " + fmtMoney(confirmedSvc.price) + ", batch charge is " + fmtMoney(charge.amount) + " (" + (diff > 0 ? "+" : "-") + fmtMoney(Math.abs(diff)) + "). Flag before posting.";
+        }
+      }
+      html += '<div class="batch-row"><div class="batch-head"><span>' + (acct ? escapeHtml(acct.customer) : "Unknown account") + " &middot; " + charge.ref + " &middot; " + escapeHtml(charge.service) + " &middot; " + fmtMoney(charge.amount) + '</span><span class="batch-verdict ' + verdict + '">' + verdict.toUpperCase() + '</span></div><div class="batch-reason">' + escapeHtml(reason) + '</div></div>';
+    });
+    root.innerHTML = html;
+  }
+
+  window.__rct = {
+    sendNotice: function (ref) {
+      var acct = data.accounts.filter(function (a) { return a.ref === ref; })[0];
+      if (!acct) return;
+      acct.status = "notice_sent";
+      acct.noticeSentAt = Date.now();
+      save(); renderAccounts();
+    },
+    confirmLookup: function (ref) {
+      var acct = data.accounts.filter(function (a) { return a.ref === ref; })[0];
+      var name = document.getElementById("lu-name").value.trim();
+      if (!name) { alert("Enter your typed name to confirm."); return; }
+      acct.status = "confirmed";
+      acct.confirmedBy = name;
+      acct.confirmedAt = Date.now();
+      save();
+      runLookup(ref);
+      renderAccounts();
+    },
+    declineLookup: function (ref) {
+      var acct = data.accounts.filter(function (a) { return a.ref === ref; })[0];
+      acct.status = "declined";
+      acct.declinedAt = Date.now();
+      save();
+      runLookup(ref);
+      renderAccounts();
+    }
+  };
+
+  function runLookup(refRaw) {
+    var ref = refRaw.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var acct = data.accounts.filter(function (a) { return a.ref.toUpperCase() === ref; })[0];
+    if (!acct || acct.status === "pending") {
+      root.innerHTML = '<div class="lookup-result"><p class="not-found">No renewal notice found for that reference code yet. Please call the office directly.</p></div>';
+      return;
+    }
+    var proposed = acct.proposedRenewal.services;
+    var html = '<div class="lookup-result"><h3>' + acct.proposedRenewal.year + ' season renewal for ' + escapeHtml(acct.customer) + '</h3><span class="badge ' + acct.status + '">' + STATUS_LABEL[acct.status] + '</span>';
+    html += '<div class="lr-detail">You are being renewed for:<br>';
+    proposed.forEach(function (s) { html += "&bull; " + escapeHtml(s.name) + ": " + fmtMoney(s.price) + "<br>"; });
+    html += '<b>Total: ' + fmtMoney(svcTotal(proposed)) + '</b></div>';
+    if (acct.status === "notice_sent") {
+      html += '<div class="lr-actions"><input type="text" id="lu-name" placeholder="Your typed full name"><button class="fx-btn" onclick="__rct.confirmLookup(\'' + acct.ref + '\')">Confirm renewal</button><button class="fx-btn-ghost" onclick="__rct.declineLookup(\'' + acct.ref + '\')">Decline, cancel for next season</button></div>';
+    } else if (acct.status === "confirmed") {
+      html += '<div class="lr-detail">Confirmed by ' + escapeHtml(acct.confirmedBy) + ' at ' + fmtDate(acct.confirmedAt) + '.</div>';
+    } else if (acct.status === "declined") {
+      html += '<div class="lr-detail">Declined at ' + fmtDate(acct.declinedAt) + '. No service will be scheduled or billed for the new season.</div>';
+    }
+    html += '</div>';
+    root.innerHTML = html;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    runLookup(document.getElementById("lookup-ref").value);
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the renewal queue and billing batch back to the original sample data?")) return;
+    data = defaultData(); save(); renderAccounts();
+    document.getElementById("batch-root").innerHTML = "";
+  });
+
+  document.getElementById("run-batch-btn").addEventListener("click", runBatchCheck);
+
+  document.querySelectorAll(".rct-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".rct-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".rct-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderAccounts();
+})();
+</script>
+</body>
+</html>

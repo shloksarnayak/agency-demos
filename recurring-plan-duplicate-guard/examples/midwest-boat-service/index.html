@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Midwest Boat Service, recurring storage-billing duplicate guard example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .rpg-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .rpg-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .rpg-tab.active { background: var(--ink); color: var(--surface); }
+  .rpg-view { display: none; }
+  .rpg-view.active { display: block; }
+  .rpg-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .rpg-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .plan-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .plan-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .plan-title { font-weight: 660; }
+  .plan-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.active { color: var(--good); background: var(--good-bg); }
+  .badge.ended { color: var(--muted); background: var(--surface-2); }
+  .badge.dup { color: var(--hot); background: var(--hot-bg); }
+  .badge.flagged { color: var(--warn); background: var(--warn-bg); }
+  .badge.resolved { color: var(--good); background: var(--good-bg); }
+  .plan-actions { margin-top: 0.7rem; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .warn-box { border: 2px solid var(--hot); background: var(--hot-bg); border-radius: var(--radius-sm); padding: 0.9rem 1.05rem; margin-top: 0.7rem; font-size: 0.88rem; color: var(--ink); }
+  .warn-box b { display: block; margin-bottom: 0.3rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .lookup-box select { width: 100%; margin-top: 0.4rem; }
+  .charge-table { width: 100%; border-collapse: collapse; margin-top: 0.8rem; font-size: 0.86rem; }
+  .charge-table th, .charge-table td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--rule-soft); }
+  .charge-table th { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Recurring storage-plan duplicate guard</a> / Midwest Boat Service</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">Midwest Boat Service: catch a duplicate storage plan before it bills twice</h1>
+  <p class="fx-lede">Midwest Boat Service's own BBB complaint file documents a customer who was accidentally set up on two simultaneous storage billing plans at once, resulting in 15 charges over 8 months instead of 8, only resolved after a credit-card dispute over the roughly $199.50 still owed after partial refunds. A separate BBB customer review from February 2026 describes a pattern of unauthorized charges from November 2025 to February 2026, serious enough that the reviewer referenced a police report, which the business's own response called an honest mistake that was refunded in full. A direct fetch of the live site found WordPress with the BookingPress plugin for one-off service appointments and Square/PayPal for payment, but nothing that tracks recurring storage plans or lets a customer see their own billing. This example shows a small tool that closes both gaps: starting a new storage plan checks for an existing active one first, and a no-login customer portal lets an account holder see every plan and charge and flag one they do not recognize.</p>
+  <div class="fact-strip">
+    <span class="fact">Midwest Boat Service Inc, Woodstock, IL</span>
+    <span class="fact">15-acre outdoor storage yard</span>
+    <span class="fact">30,000 sq ft heated indoor storage building</span>
+    <span class="fact">Owner: Dave Piersall ("Captain Dave")</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Midwest Boat Service Inc.</strong> All customer names, plans, and charges inside the tool below are fictional and clearly for illustration only. Storage rates shown are illustrative sample amounts, not the business's real published pricing (its actual storage rates are not published). The business description and complaint pattern referenced here are drawn from the company's own site and its public BBB complaint and customer-review pages.</p></div>
+
+  <p style="color:var(--ink-2); font-size:0.92rem; max-width:74ch;">Two distinct billing-integrity incidents, roughly a year apart, both admitted or settled by the business rather than disputed as false, point to the same underlying gap: storage billing is run separately from the booking system with no automatic check for an existing plan and no way for a customer to see their own account without calling in or escalating.</p>
+
+  <div class="rpg-tabs">
+    <button class="rpg-tab active" data-view="office" type="button">Storage office</button>
+    <button class="rpg-tab" data-view="portal" type="button">Customer portal</button>
+  </div>
+
+  <section class="rpg-view active" id="view-office">
+    <div class="rpg-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Start a new storage plan</h2>
+        <form id="add-form" class="form-grid">
+          <div class="field span2"><label for="f-customer">Customer / account label</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
+          <div class="field"><label for="f-type">Storage type</label><select id="f-type"></select></div>
+          <div class="field"><label for="f-rate">Monthly rate ($), illustrative</label><input type="number" id="f-rate" min="1" step="1" placeholder="e.g. 95"></div>
+          <div id="dup-warning" class="span2"></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Start plan</button></div>
+        </form>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">All plans, newest first</h2>
+        <div id="plan-root"></div>
+        <h2 class="fx-h2" style="margin-top:1.4rem;">Flagged by a customer, awaiting review</h2>
+        <div id="flagged-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="rpg-view" id="view-portal">
+    <h2 class="fx-h2" style="margin-top:0;">Customer self-service portal</h2>
+    <p style="color:var(--ink-2); font-size:0.9rem; max-width:70ch;">No login in this sample, an account holder would sign in normally in a real build. Pick a sample customer to see exactly what they would see, including the exact self-service check that would have surfaced the documented duplicate-billing and unauthorized-charge complaints early instead of after months of billing.</p>
+    <div class="lookup-box">
+      <label for="portal-select" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Select a customer</label>
+      <select id="portal-select"></select>
+      <div id="portal-root" style="margin-top:1.1rem;"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:64ch;">Try Sample Customer B, whose charge history below reconstructs the shape of the documented BBB complaint, two plans billing the same months before the duplicate was caught and ended, and Sample Customer C, whose account has a charge already flagged the way the February 2026 review's disputed charges could have been surfaced immediately instead of escalating.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The duplicate check has to run against the real active-plan list.</b> A real build ties this into whatever tracks Midwest's actual storage customers today, not a separate spreadsheet, so the check is live at the moment staff try to start a plan.</div>
+      <div class="lim"><b>The customer portal reads billing, it does not decide it.</b> Flagging a charge raises it for a person in the office to review, matching how both documented complaints were ultimately resolved by a person, just much later than they should have been.</div>
+      <div class="lim"><b>This sits alongside BookingPress and Square/PayPal, it does not replace either.</b> One-off service appointments keep working exactly as they do today, this only adds the missing piece: recurring storage billing with a duplicate check and a customer-visible record.</div>
+      <div class="lim"><b>Back to the general template: <a href="../../">Recurring storage-plan duplicate guard</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Midwest Boat Service Inc.</strong></p><p>Prepared by Shlok Sarnayak. Fictional customer and billing data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "rpg_midwest_boat_service_v1";
+
+  var TYPES = [
+    { key: "outdoor", label: "Outdoor Yard Storage" },
+    { key: "indoor", label: "Heated Indoor Storage" }
+  ];
+  var TYPE_LABEL = {}; TYPES.forEach(function (t) { TYPE_LABEL[t.key] = t.label; });
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
+  function fmtMoney(n) { return "$" + Number(n).toFixed(2); }
+  function daysFromNow(d) { return Date.now() + d * 86400000; }
+
+  function defaultData() {
+    var plans = [
+      { id: "PL-1", customer: "Sample Customer A", type: "indoor", rate: 175, startedAt: daysFromNow(-150), status: "active" },
+      { id: "PL-2", customer: "Sample Customer B", type: "outdoor", rate: 95, startedAt: daysFromNow(-540), status: "active" },
+      { id: "PL-3", customer: "Sample Customer B", type: "outdoor", rate: 95, startedAt: daysFromNow(-480), status: "ended", endedAt: daysFromNow(-300), duplicateOf: "PL-2", historical: true },
+      { id: "PL-4", customer: "Sample Customer C", type: "outdoor", rate: 95, startedAt: daysFromNow(-90), status: "active" }
+    ];
+    var charges = [
+      { id: "CH-1", planId: "PL-1", customer: "Sample Customer A", type: "indoor", amount: 175, billedAt: daysFromNow(-30), flagged: false },
+      { id: "CH-2", planId: "PL-2", customer: "Sample Customer B", type: "outdoor", amount: 95, billedAt: daysFromNow(-450), flagged: false },
+      { id: "CH-3", planId: "PL-3", customer: "Sample Customer B", type: "outdoor", amount: 95, billedAt: daysFromNow(-450), flagged: false, note: "Duplicate-plan charge, historical, this is the shape of the documented BBB complaint" },
+      { id: "CH-4", planId: "PL-2", customer: "Sample Customer B", type: "outdoor", amount: 95, billedAt: daysFromNow(-420), flagged: false },
+      { id: "CH-5", planId: "PL-3", customer: "Sample Customer B", type: "outdoor", amount: 95, billedAt: daysFromNow(-420), flagged: false, note: "Duplicate-plan charge, historical, this is the shape of the documented BBB complaint" },
+      { id: "CH-6", planId: "PL-4", customer: "Sample Customer C", type: "outdoor", amount: 95, billedAt: daysFromNow(-20), flagged: true, flagNote: "I do not recognize this charge on my card", resolved: false }
+    ];
+    return { planSeq: 4, chargeSeq: 6, plans: plans, charges: charges };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function activePlansFor(customer) {
+    var c = customer.trim().toLowerCase();
+    return data.plans.filter(function (p) { return p.status === "active" && p.customer.trim().toLowerCase() === c; });
+  }
+
+  function populateSelects() {
+    document.getElementById("f-type").innerHTML = TYPES.map(function (t) { return '<option value="' + t.key + '">' + escapeHtml(t.label) + "</option>"; }).join("");
+    var customers = [];
+    data.plans.forEach(function (p) { if (customers.indexOf(p.customer) === -1) customers.push(p.customer); });
+    document.getElementById("portal-select").innerHTML = customers.map(function (c) { return '<option value="' + escapeHtml(c) + '">' + escapeHtml(c) + "</option>"; }).join("");
+  }
+
+  function renderPlans() {
+    var root = document.getElementById("plan-root");
+    var sorted = data.plans.slice().sort(function (a, b) { return b.startedAt - a.startedAt; });
+    var html = "";
+    if (!sorted.length) html += '<p class="empty">No plans yet.</p>';
+    sorted.forEach(function (p) {
+      var statusBadge = p.status === "active" ? '<span class="badge active">Active</span>' : '<span class="badge ended">Ended</span>';
+      html += '<div class="plan-card"><div class="plan-head"><div><div class="plan-title">' + escapeHtml(p.customer) + '</div><div class="plan-meta">' + TYPE_LABEL[p.type] + " &middot; " + fmtMoney(p.rate) + "/mo &middot; started " + fmtDate(p.startedAt) + '</div></div>' + statusBadge + "</div>";
+      if (p.duplicateOf) html += '<div class="plan-meta" style="margin-top:0.4rem;"><span class="badge dup">Historical duplicate, corrected</span></div>';
+      if (p.status === "active") html += '<div class="plan-actions"><button class="fx-btn-ghost" onclick="__rpg.endPlan(\'' + p.id + '\')">End this plan</button></div>';
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  function renderFlagged() {
+    var root = document.getElementById("flagged-root");
+    var flagged = data.charges.filter(function (c) { return c.flagged && !c.resolved; });
+    var html = "";
+    if (!flagged.length) html += '<p class="empty">Nothing flagged right now.</p>';
+    flagged.forEach(function (c) {
+      html += '<div class="plan-card"><div class="plan-head"><div><div class="plan-title">' + escapeHtml(c.customer) + " &middot; " + fmtMoney(c.amount) + '</div><div class="plan-meta">' + TYPE_LABEL[c.type] + " &middot; billed " + fmtDate(c.billedAt) + '</div></div><span class="badge flagged">Flagged</span></div>';
+      html += '<div class="plan-meta" style="margin-top:0.4rem;">Customer note: ' + escapeHtml(c.flagNote || "") + "</div>";
+      html += '<div class="plan-actions"><button class="fx-btn-ghost" onclick="__rpg.resolveCharge(\'' + c.id + '\')">Mark resolved / refunded (sample)</button></div></div>';
+    });
+    root.innerHTML = html;
+  }
+
+  function renderPortal() {
+    var customer = document.getElementById("portal-select").value;
+    var root = document.getElementById("portal-root");
+    if (!customer) { root.innerHTML = ""; return; }
+    var active = activePlansFor(customer);
+    var charges = data.charges.filter(function (c) { return c.customer === customer; }).sort(function (a, b) { return b.billedAt - a.billedAt; });
+    var html = "";
+    if (active.length > 1) {
+      html += '<div class="warn-box"><b>More than one active plan on this account.</b> This account is billed for ' + active.length + ' separate active plans at once, contact the office if this is not expected.</div>';
+    }
+    html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1rem;">Active plan' + (active.length === 1 ? "" : "s") + "</h3>";
+    if (!active.length) html += '<p class="empty">No active plan on this account.</p>';
+    active.forEach(function (p) {
+      html += '<div class="plan-card"><div class="plan-head"><div class="plan-title">' + TYPE_LABEL[p.type] + '</div><span class="badge active">' + fmtMoney(p.rate) + "/mo</span></div><div class=\"plan-meta\">Started " + fmtDate(p.startedAt) + "</div></div>";
+    });
+    html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.2rem;">Charge history</h3>';
+    if (!charges.length) {
+      html += '<p class="empty">No charges on file.</p>';
+    } else {
+      html += '<table class="charge-table"><thead><tr><th>Date</th><th>Plan</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>';
+      charges.forEach(function (c) {
+        var status = c.resolved ? '<span class="badge resolved">Resolved</span>' : (c.flagged ? '<span class="badge flagged">Flagged</span>' : "");
+        var action = c.flagged ? "" : '<button class="fx-btn-ghost" style="padding:0.3rem 0.7rem;font-size:0.72rem;" onclick="__rpg.flagCharge(\'' + c.id + '\')">Flag this charge</button>';
+        html += "<tr><td>" + fmtDate(c.billedAt) + "</td><td>" + TYPE_LABEL[c.type] + "</td><td>" + fmtMoney(c.amount) + "</td><td>" + status + "</td><td>" + action + "</td></tr>";
+      });
+      html += "</tbody></table>";
+    }
+    root.innerHTML = html;
+  }
+
+  window.__rpg = {
+    endPlan: function (id) {
+      var p = data.plans.filter(function (x) { return x.id === id; })[0];
+      if (!p) return;
+      p.status = "ended";
+      p.endedAt = Date.now();
+      save(); renderPlans(); renderPortal();
+    },
+    resolveCharge: function (id) {
+      var c = data.charges.filter(function (x) { return x.id === id; })[0];
+      if (!c) return;
+      c.resolved = true;
+      save(); renderFlagged(); renderPortal();
+    },
+    flagCharge: function (id) {
+      var note = prompt("Briefly describe why you are flagging this charge:");
+      if (note === null) return;
+      var c = data.charges.filter(function (x) { return x.id === id; })[0];
+      if (!c) return;
+      c.flagged = true;
+      c.flagNote = note.trim() || "No reason given";
+      c.resolved = false;
+      save(); renderFlagged(); renderPortal();
+    }
+  };
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("f-customer").value.trim();
+    var type = document.getElementById("f-type").value;
+    var rate = parseFloat(document.getElementById("f-rate").value);
+    var warnBox = document.getElementById("dup-warning");
+    if (!customer || !rate) { alert("Enter a customer label and a monthly rate."); return; }
+    var existing = activePlansFor(customer);
+    var forceEl = document.getElementById("f-force");
+    var forced = forceEl && forceEl.checked;
+    if (existing.length && !forced) {
+      var e0 = existing[0];
+      warnBox.innerHTML = '<div class="warn-box"><b>' + escapeHtml(customer) + " already has an active plan.</b> " + TYPE_LABEL[e0.type] + ", " + fmtMoney(e0.rate) + "/mo, started " + fmtDate(e0.startedAt) + '. Starting a second plan will bill this account twice a month, the exact pattern in the documented BBB complaint. End the existing plan first, or confirm this is intentional.<br><label style="margin-top:0.5rem;display:flex;gap:0.4rem;align-items:center;font-weight:400;font-size:0.85rem;"><input type="checkbox" id="f-force"> I understand, start a second active plan anyway</label></div>';
+      return;
+    }
+    data.planSeq += 1;
+    data.plans.push({ id: "PL-" + data.planSeq, customer: customer, type: type, rate: rate, startedAt: Date.now(), status: "active" });
+    save(); renderPlans(); populateSelects(); renderPortal();
+    document.getElementById("add-form").reset();
+    warnBox.innerHTML = "";
+    populateSelects();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the log back to the original sample data?")) return;
+    data = defaultData(); save(); renderPlans(); renderFlagged(); populateSelects(); renderPortal();
+  });
+
+  document.getElementById("portal-select").addEventListener("change", renderPortal);
+
+  document.querySelectorAll(".rpg-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".rpg-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".rpg-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  populateSelects();
+  renderPlans();
+  renderFlagged();
+  renderPortal();
+})();
+</script>
+</body>
+</html>

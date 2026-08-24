@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Accurate Backflow Testing & Plumbing, per-property compliance calendar (work sample)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .fact { font-family: var(--mono); font-size: 0.74rem; padding: 0.45rem 0.75rem; border: 1.5px solid var(--ink); border-radius: 999px; background: var(--surface-2); box-shadow: 2px 2px 0 var(--ink); }
+  .intake-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+  .intake-grid label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.82rem; font-weight: 700; color: var(--ink-2); }
+  .intake-grid input, .intake-grid select { width: 100%; padding: 0.65rem 0.8rem; }
+  .intake-full { grid-column: 1 / -1; }
+  @media (max-width: 640px) { .intake-grid { grid-template-columns: 1fr; } }
+  .account { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); margin-bottom: 1rem; }
+  .account:last-child { margin-bottom: 0; }
+  .account-head { background: var(--surface-2); padding: 0.7rem 1.1rem; font-weight: 700; font-size: 0.86rem; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; }
+  .account-head-note { font-weight: 400; font-size: 0.72rem; color: var(--muted); font-family: var(--mono); }
+  .row { background: var(--surface); padding: 0.95rem 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr auto auto; gap: 1rem; align-items: center; }
+  .row-name { font-weight: 700; }
+  .row-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .row-due { font-family: var(--mono); font-size: 0.82rem; }
+  .status { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.3rem 0.65rem; border-radius: 999px; white-space: nowrap; text-align: center; }
+  .status.ok { color: var(--good); background: var(--good-bg); }
+  .status.soon { color: var(--warn); background: var(--warn-bg); }
+  .status.late { color: var(--hot); background: var(--hot-bg); }
+  .remind-btn { font: 700 0.72rem/1 var(--sans); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 2px solid var(--ink); background: var(--aqua); cursor: pointer; box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
+  .remind-btn:hover { transform: translateY(-1px); }
+  .remind-btn.sent { background: var(--surface-2); cursor: default; }
+  .remind-note { font-size: 0.68rem; color: var(--muted); margin-top: 0.2rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  @media (max-width: 700px) { .row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Compliance scheduler</a> / Accurate Backflow Testing &amp; Plumbing</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Built as a work sample for Accurate Backflow Testing &amp; Plumbing, not a live system</span>
+  <h1 class="fx-h1">Two properties on one account, two due dates, tracked separately</h1>
+  <p class="fx-lede">Accurate Backflow Testing &amp; Plumbing already has online booking and payment for a single visit, that part works and isn't being reinvented here. What a single-job booking widget doesn't do is track a multi-property account, where each address has its own county-mandated annual retest date. This page shows what a per-property compliance calendar looks like, using fictional sample accounts.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Accurate Backflow Testing &amp; Plumbing.</strong> The account names, addresses, and testing history below are fictional. Nothing on this page sends a real email or text, "send reminder" only logs a simulated timestamp in your own browser.</p></div>
+
+  <section class="fx-card" style="display:flex; flex-direction:column; gap:1rem;">
+    <div class="fact-strip">
+      <span class="fact">Serves Manatee &amp; Sarasota counties, FL</span>
+      <span class="fact">FL DBPR license CFC1431720</span>
+      <span class="fact">BBB A+ rating, 23 years operating</span>
+      <span class="fact">Current booking: single-job only, per visit</span>
+    </div>
+    <p style="margin:0; font-size:0.85rem; color:var(--muted);">Facts above are drawn directly from accuratebackflow.com's own published copy and the business's BBB profile, nothing here is invented about the business itself.</p>
+  </section>
+
+  <section class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Per-property due-date board (fictional sample accounts)</div>
+      <p style="margin:0.5rem 0 0; font-size:0.85rem; color:var(--ink-2);">Each account can hold more than one property. Every property keeps its own last-test date and its own due date, scheduling one doesn't touch the other.</p>
+      <div id="board-root" style="margin-top:0.9rem;"></div>
+    </div>
+  </section>
+
+  <section class="fx-card" style="display:flex; flex-direction:column; gap:1.1rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">New property / test record</div>
+      <p style="margin:0.5rem 0 0; font-size:0.88rem; color:var(--ink-2);">Fills the role of the phone call or online booking Accurate Backflow gets today. Type an existing account name to add a second property to that same account, or a new name to start one. The next required test date is computed automatically from the last test date, not typed in by hand.</p>
+    </div>
+    <form id="intake-form" class="intake-grid">
+      <label>Account / customer name<input type="text" id="f-account" list="account-list" placeholder="e.g. Example Property Holdings LLC" required>
+        <datalist id="account-list"></datalist>
+      </label>
+      <label>County<select id="f-county"><option value="Manatee">Manatee</option><option value="Sarasota">Sarasota</option></select></label>
+      <label class="intake-full">Property address<input type="text" id="f-address" placeholder="e.g. 4210 Example Ave, Bradenton, FL" required></label>
+      <label>Last backflow test date<input type="date" id="f-lastdate" required></label>
+      <label>Contact email<input type="email" id="f-email" placeholder="name@example.com" required></label>
+      <div class="intake-full" style="display:flex; gap:0.7rem; align-items:center; flex-wrap:wrap;">
+        <button type="submit" class="fx-btn">Add property to schedule</button>
+        <span id="intake-msg" style="font-size:0.85rem; color:var(--muted);"></span>
+      </div>
+    </form>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">Why this, specifically, for Accurate Backflow</h2>
+    <div class="limits">
+      <div class="lim"><b>Targets a documented failure mode.</b> A BBB complaint (8/20/2024) describes a customer with two properties on the same account. Scheduling and testing the first property did not carry over to the second, its test lapsed, and the county issued late fees. Accurate Backflow's own reply to the complaint confirms the facts, it disputes only who should have called. The board above models exactly that shape of account, one name, two properties, two independent due dates.</div>
+      <div class="lim"><b>Doesn't duplicate what already works.</b> Accurate Backflow's live site already has single-job online booking and payment, real customer reviews describe it as easy. This demo doesn't re-pitch that, it fills the specific gap a single-job booking flow leaves open: nothing that watches a multi-property account as a whole.</div>
+      <div class="lim"><b>Comparable competitors already offer this.</b> Lee Backflow (Lee County, FL) markets support for "HOAs, multi-unit properties, commercial sites, and facilities with multiple backflow assemblies" with annual reminders. A Plus Backflow Test advertises bulk scheduling and annual reminders for HOA/property managers. Accurate Backflow's own site shows no equivalent multi-property tracking today.</div>
+      <div class="lim"><b>Back to the generic pattern: <a href="../../">recurring service compliance scheduler template</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Accurate Backflow Testing Pros, Inc.</strong></p><p>Prepared by Shlok Sarnayak. Fictional account data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  var STORE_KEY = "fx-compliance-demo-accuratebackflow";
+  var INTERVAL_MONTHS = 12;
+  var SEED_ACCOUNTS = [
+    {
+      id: "seed-acc-1",
+      name: "Example Property Holdings LLC",
+      properties: [
+        { id: "seed-1a", address: "118 Example Cir, Bradenton, FL (fictional)", county: "Manatee", lastTested: daysAgo(40) },
+        { id: "seed-1b", address: "902 Sample Key Rd, Longboat Key, FL (fictional)", county: "Manatee", lastTested: daysAgo(380) }
+      ]
+    },
+    {
+      id: "seed-acc-2",
+      name: "Example Coastal HOA",
+      properties: [
+        { id: "seed-2a", address: "Clubhouse irrigation backflow, Lakewood Ranch, FL (fictional)", county: "Manatee", lastTested: daysAgo(200) }
+      ]
+    },
+    {
+      id: "seed-acc-3",
+      name: "Sample Residence, Sarasota",
+      properties: [
+        { id: "seed-3a", address: "77 Example St, Sarasota, FL (fictional)", county: "Sarasota", lastTested: daysAgo(355) }
+      ]
+    }
+  ];
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); }
+  function addMonths(iso, months) { var d = new Date(iso + "T00:00:00"); d.setMonth(d.getMonth() + months); return d; }
+  function fmt(d) { return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
+  function loadExtra() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); } catch (e) { return []; } }
+  function saveExtra(list) { try { localStorage.setItem(STORE_KEY, JSON.stringify(list)); } catch (e) {} }
+  function loadReminders() { try { return JSON.parse(localStorage.getItem(STORE_KEY + "-reminders") || "{}"); } catch (e) { return {}; } }
+  function saveReminders(obj) { try { localStorage.setItem(STORE_KEY + "-reminders", JSON.stringify(obj)); } catch (e) {} }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function allAccounts() {
+    var extra = loadExtra();
+    var byName = {};
+    var order = [];
+    SEED_ACCOUNTS.forEach(function (a) { byName[a.name.toLowerCase()] = { id: a.id, name: a.name, properties: a.properties.slice() }; order.push(a.name.toLowerCase()); });
+    extra.forEach(function (p) {
+      var key = p.accountName.toLowerCase();
+      if (!byName[key]) { byName[key] = { id: "acc-" + key.replace(/[^a-z0-9]+/g, "-"), name: p.accountName, properties: [] }; order.push(key); }
+      byName[key].properties.push({ id: p.id, address: p.address, county: p.county, lastTested: p.lastTested });
+    });
+    return order.map(function (k) { return byName[k]; });
+  }
+
+  function render() {
+    var accounts = allAccounts();
+    var reminders = loadReminders();
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var html = "";
+    accounts.forEach(function (acc) {
+      html += '<div class="account">';
+      html += '<div class="account-head"><span>' + escapeHtml(acc.name) + '</span><span class="account-head-note">' + acc.properties.length + ' propert' + (acc.properties.length === 1 ? "y" : "ies") + ' on this account</span></div>';
+      acc.properties.forEach(function (p) {
+        var due = addMonths(p.lastTested, INTERVAL_MONTHS);
+        var days = Math.round((due - today) / 86400000);
+        var cls = "ok", label = "Compliant";
+        if (days < 0) { cls = "late"; label = "Overdue"; }
+        else if (days <= 30) { cls = "soon"; label = "Due soon"; }
+        var sentAt = reminders[p.id];
+        html += '<div class="row">' +
+          '<div><div class="row-name">' + escapeHtml(p.address) + '</div><div class="row-sub">' + escapeHtml(p.county) + ' County · annual retest</div></div>' +
+          '<div class="row-due">Next due: ' + fmt(due) + '</div>' +
+          '<div class="status ' + cls + '">' + label + '</div>' +
+          '<div><button class="remind-btn' + (sentAt ? ' sent' : '') + '" data-id="' + p.id + '">' + (sentAt ? "Reminder sent ✓" : "Send reminder") + '</button>' +
+          (sentAt ? '<div class="remind-note">' + sentAt + ' (simulated)</div>' : '<div class="remind-note">simulated, no message sent</div>') +
+          '</div></div>';
+      });
+      html += '</div>';
+    });
+    document.getElementById("board-root").innerHTML = html;
+    var list = document.getElementById("account-list");
+    list.innerHTML = accounts.map(function (a) { return '<option value="' + escapeHtml(a.name) + '">'; }).join("");
+    Array.prototype.forEach.call(document.querySelectorAll(".remind-btn"), function (b) {
+      b.addEventListener("click", function () {
+        if (b.classList.contains("sent")) return;
+        var reminders2 = loadReminders();
+        reminders2[b.dataset.id] = new Date().toLocaleString();
+        saveReminders(reminders2);
+        render();
+      });
+    });
+  }
+
+  document.getElementById("intake-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var accountName = document.getElementById("f-account").value.trim();
+    var county = document.getElementById("f-county").value;
+    var address = document.getElementById("f-address").value.trim();
+    var lastdate = document.getElementById("f-lastdate").value || new Date().toISOString().slice(0, 10);
+    var email = document.getElementById("f-email").value.trim();
+    if (!accountName || !address || !email) return;
+    var extra = loadExtra();
+    extra.push({ id: "custom-" + Date.now(), accountName: accountName, address: address + " (added via form, fictional)", county: county, lastTested: lastdate, email: email });
+    saveExtra(extra);
+    var due = addMonths(lastdate, INTERVAL_MONTHS);
+    document.getElementById("intake-msg").textContent = "Added to " + accountName + ". Next required test date computed: " + fmt(due) + " (annual interval).";
+    document.getElementById("intake-form").reset();
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

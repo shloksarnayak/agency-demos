@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>Multi-hub order &amp; dispatch routing portal template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .field { margin-top: 1.15rem; }
+  .field-label { font-family: var(--mono); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: .5rem; }
+  .choices { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .load-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .8rem; margin: 1rem 0; }
+  .load-card { border: 1px solid var(--rule); border-radius: 16px; padding: .9rem 1rem; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .load-card .loc-name { font-weight: 660; font-size: .88rem; }
+  .load-card .loc-count { font-family: var(--serif); font-size: 1.9rem; margin-top: .3rem; }
+  .load-card .loc-label { color: var(--muted); font-size: .72rem; }
+  .empty { color: var(--muted); font-style: italic; font-size: .88rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">FP</span><span class="fx-brand-name">FixPoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Multi-hub order &amp; dispatch routing portal</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">One order form, routed to the right hub automatically</h1>
+  <p class="fx-lede">Multi-region service businesses (waste hauling, delivery, field service) often run every region through the same single phone line or lead form, then sort out which crew or hub handles it after the fact. This template shows a self-serve alternative: a customer picks their service area, the request is routed to the correct hub automatically, and repeat/contractor customers can see their own order history without calling back.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> "Example Regional Services Co." is not a real business. When this gets built for a real one, the service areas, hub structure, and sizing/pricing options are drawn from what that business actually publishes, the way the Empire Waste Systems example below does.</p></div>
+
+  <div class="fx-card" id="form-root"></div>
+
+  <section style="margin-top:2.4rem;">
+    <h2 class="fx-h2">Dispatch view, across hubs</h2>
+    <p style="color:var(--muted); font-size:.9rem; max-width:70ch;">Every request lands here the moment it is submitted, split by which hub it was routed to, so staff at either hub can see the queue without calling around.</p>
+    <div class="load-grid" id="load-root"></div>
+    <button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The hub-to-area mapping is the real work.</b> The generic two-hub split here is a placeholder; a real build starts from that business's actual regions and however its calls are actually routed today.</div>
+      <div class="lim"><b>Routing, not full dispatch software.</b> This template deliberately stays narrow: request intake, hub routing, and a shared queue view. Real-time driver assignment, route optimization and payment are separate scope.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/empire-waste-systems/">Empire Waste Systems</a></b>, a two-hub roll-off dumpster rental operation in northern Nevada, scoped from their own published service areas and order process.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional account and order data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var HUBS = [
+    { id: "north", name: "North Hub", areas: ["Example North Area", "Example Northeast Area"] },
+    { id: "south", name: "South Hub", areas: ["Example South Area", "Example Southwest Area"] }
+  ];
+  var SIZES = ["Small", "Medium", "Large"];
+
+  function areaHub(area) {
+    var m = HUBS.filter(function (h) { return h.areas.indexOf(area) !== -1; })[0];
+    return m ? m.id : null;
+  }
+  function hubName(id) { var m = HUBS.filter(function (h) { return h.id === id; })[0]; return m ? m.name : id; }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function todayStr() { return new Date().toISOString().slice(0, 10); }
+
+  function defaultData() {
+    return { requests: [
+      { id: "r1", area: "Example North Area", size: "Medium", name: "Sample Customer A", status: "new" },
+      { id: "r2", area: "Example South Area", size: "Large", name: "Sample Customer B", status: "new" }
+    ] };
+  }
+  var data = defaultData();
+
+  var state = { area: null, size: null, name: "", contact: "", submitted: false };
+
+  var formRoot = document.getElementById("form-root");
+  var loadRoot = document.getElementById("load-root");
+
+  function canSubmit() { return !!(state.area && state.size && state.name.trim() && state.contact.trim()); }
+
+  function renderForm() {
+    if (state.submitted) { renderConfirm(); return; }
+    var html = "";
+    html += '<div class="field"><div class="field-label">Service area</div><div class="choices">';
+    HUBS.forEach(function (h) {
+      h.areas.forEach(function (a) {
+        html += '<button class="fx-opt' + (state.area === a ? ' sel' : '') + '" style="padding:.65rem 1rem;" data-area="' + escapeHtml(a) + '">' + escapeHtml(a) + '</button>';
+      });
+    });
+    html += '</div></div>';
+    html += '<div class="field"><div class="field-label">Size</div><div class="choices">';
+    SIZES.forEach(function (s) { html += '<button class="fx-opt' + (state.size === s ? ' sel' : '') + '" style="padding:.65rem 1rem;" data-size="' + s + '">' + s + '</button>'; });
+    html += '</div></div>';
+    html += '<div class="field"><div class="field-label">Your name</div><input type="text" id="name-input" value="' + state.name.replace(/"/g, '&quot;') + '"></div>';
+    html += '<div class="field"><div class="field-label">Phone or email</div><input type="text" id="contact-input" value="' + state.contact.replace(/"/g, '&quot;') + '"></div>';
+    html += '<button class="fx-btn" id="submit-btn" style="margin-top:1.3rem;"' + (canSubmit() ? '' : ' disabled') + '>Send this request</button>';
+    formRoot.innerHTML = html;
+
+    Array.prototype.forEach.call(formRoot.querySelectorAll('[data-area]'), function (b) { b.addEventListener('click', function () { state.area = b.dataset.area; renderForm(); }); });
+    Array.prototype.forEach.call(formRoot.querySelectorAll('[data-size]'), function (b) { b.addEventListener('click', function () { state.size = b.dataset.size; renderForm(); }); });
+    document.getElementById('name-input').addEventListener('input', function (e) { state.name = e.target.value; sync(); });
+    document.getElementById('contact-input').addEventListener('input', function (e) { state.contact = e.target.value; sync(); });
+    document.getElementById('submit-btn').addEventListener('click', function () { if (canSubmit()) submit(); });
+  }
+  function sync() { var b = document.getElementById('submit-btn'); if (b) b.disabled = !canSubmit(); }
+
+  function submit() {
+    data.requests.push({ id: "r" + Date.now(), area: state.area, size: state.size, name: state.name, status: "new" });
+    state.submitted = true;
+    renderForm();
+    renderLoad();
+  }
+
+  function renderConfirm() {
+    var last = data.requests[data.requests.length - 1];
+    var hub = areaHub(last.area);
+    var html = '<div class="confirm" style="border-radius:var(--radius-md); background:var(--brand-soft); box-shadow:var(--shadow-inset); padding:1.3rem 1.4rem;">';
+    html += '<h3 style="margin:0 0 .6rem; font-family:var(--serif); color:var(--brand);">Routed to ' + escapeHtml(hubName(hub)) + '</h3>';
+    html += '<p style="font-size:.9rem;">Area: ' + escapeHtml(last.area) + ' &middot; Size: ' + escapeHtml(last.size) + '</p>';
+    html += '<button class="fx-btn-ghost" id="again-btn">Start another request</button></div>';
+    formRoot.innerHTML = html;
+    document.getElementById('again-btn').addEventListener('click', function () { state = { area: null, size: null, name: "", contact: "", submitted: false }; renderForm(); });
+  }
+
+  function renderLoad() {
+    var counts = {};
+    HUBS.forEach(function (h) { counts[h.id] = 0; });
+    data.requests.forEach(function (r) { if (r.status === "new") { var h = areaHub(r.area); if (h) counts[h]++; } });
+    var html = "";
+    HUBS.forEach(function (h) {
+      html += '<div class="load-card"><div class="loc-name">' + escapeHtml(h.name) + '</div><div class="loc-count">' + counts[h.id] + '</div><div class="loc-label">open request' + (counts[h.id] === 1 ? '' : 's') + '</div></div>';
+    });
+    loadRoot.innerHTML = html;
+  }
+
+  document.getElementById('reset-btn').addEventListener('click', function () {
+    data = defaultData(); state = { area: null, size: null, name: "", contact: "", submitted: false };
+    renderForm(); renderLoad();
+  });
+
+  renderForm();
+  renderLoad();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Job completion certificate &amp; follow-up tracker template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input[type="text"], .field input[type="number"], .field input[type="date"], .field select {
+    font: inherit; font-size: 0.95rem; padding: 0.65rem 0.8rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .check-row { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.88rem; }
+  .check-row input { margin-top: 0.2rem; }
+  .samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.7rem; }
+  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.78rem; }
+  .discrepancy { padding: 0.9rem 1rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--warn-bg); color: #4f4716; font-size: 0.87rem; box-shadow: 3px 3px 0 var(--ink); }
+  .cert { border: 2px dashed var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: #fff; font-family: var(--mono); font-size: 0.85rem; line-height: 1.7; }
+  .cert h4 { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.6rem; }
+  .cert .line { display: flex; justify-content: space-between; gap: 1rem; border-bottom: 1px dotted var(--rule-soft); padding: 0.25rem 0; }
+  .job-table { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .job-row { background: var(--surface); padding: 0.85rem 1rem; display: grid; grid-template-columns: 1.4fr 1fr auto auto; gap: 0.8rem; align-items: center; font-size: 0.87rem; }
+  .job-meta { color: var(--muted); font-size: 0.76rem; }
+  .badge { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.28rem 0.6rem; border-radius: 999px; white-space: nowrap; }
+  .badge.ok { color: var(--good); background: var(--good-bg); }
+  .badge.flag { color: var(--hot); background: var(--hot-bg); }
+  .followup-list { display: flex; flex-direction: column; gap: 0.6rem; }
+  .followup-item { border: 2px solid var(--ink); border-radius: var(--radius-sm); padding: 0.8rem 1rem; background: #fff7cf; box-shadow: 3px 3px 0 var(--ink); display: flex; justify-content: space-between; gap: 1rem; align-items: center; flex-wrap: wrap; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.9rem; }
+  @media print {
+    body * { visibility: hidden; }
+    #cert-print, #cert-print * { visibility: visible; }
+    #cert-print { position: absolute; left: 0; top: 0; width: 100%; }
+  }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Job completion certificate &amp; follow-up tracker</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Every job leaves a paper trail, automatically</h1>
+  <p class="fx-lede">Many service businesses promise documentation, a certificate, a receipt, a confirmed count, but deliver it manually, per job, if at all. When it slips, customers are left unable to confirm the work was done, disputes over quantity go unresolved, and a promised callback quietly never happens. This page uses a fictional business to show a job-completion flow that generates the certificate itself, catches count mismatches before they become billing disputes, and keeps flagged follow-ups visible until someone closes them.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, it plugs into however jobs are actually logged today, a driver's phone, a dispatch sheet, a simple form, and adds the certificate, the count check, and the follow-up flag on top, without replacing how the job itself gets done.</p></div>
+
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.5rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Log a completed job</div>
+      <div class="samples">
+        <span style="font-size:0.82rem; color:var(--muted);">Try a sample:</span>
+        <button class="fx-btn-ghost sample-chip" data-sample="match">Standard job (count matches)</button>
+        <button class="fx-btn-ghost sample-chip" data-sample="mismatch">Miscount example (flags a discrepancy)</button>
+      </div>
+      <form id="job-form" class="form-grid" style="margin-top:1rem;">
+        <div class="field"><label for="f-client">Client / site name</label><input type="text" id="f-client" required></div>
+        <div class="field"><label for="f-date">Service date</label><input type="date" id="f-date" required></div>
+        <div class="field"><label for="f-expected">Expected item / box count (quoted)</label><input type="number" id="f-expected" min="0" required></div>
+        <div class="field"><label for="f-actual">Actual count on-site (driver entry)</label><input type="number" id="f-actual" min="0" required></div>
+        <div class="field span2"><label for="f-signoff">Customer sign-off name</label><input type="text" id="f-signoff" placeholder="Typed name confirms the count above" required></div>
+        <div class="field span2 check-row"><input type="checkbox" id="f-confirm" required><label for="f-confirm">Customer confirms the count above is correct</label></div>
+        <div id="discrepancy-box"></div>
+        <div class="field span2 check-row"><input type="checkbox" id="f-followup"><label for="f-followup">Flag this job for a manual follow-up / callback</label></div>
+        <div class="field span2" style="flex-direction:row; gap:0.6rem;"><button type="submit" class="fx-btn">Complete job &amp; generate certificate</button></div>
+      </form>
+    </div>
+    <div id="cert-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">Open follow-ups</h2>
+    <p style="color:var(--ink-2); font-size:0.92rem; margin-top:-0.6rem;">Anything flagged, by a discrepancy or by staff, stays listed here until someone marks it resolved. Nothing drops silently.</p>
+    <div id="followup-root" style="margin-top:1rem;"></div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">Job log</h2>
+    <div id="joblog-root"></div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>Reads from wherever jobs are already tracked.</b> This demo's form is a stand-in. A real build pulls from the driver's existing intake step, a phone form, a dispatch sheet, a scheduling tool, rather than adding a second place to log the same job.</div>
+      <div class="lim"><b>The certificate is the deliverable, not a generic PDF.</b> It's generated per job the moment it's marked complete, not assembled by hand later, closing the gap between what a business promises on its own site and what a customer actually receives.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/total-shredding/">Total Shredding LLC</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  var STORE_KEY = "cct-demo-joblog-generic";
+  var form = document.getElementById("job-form");
+  var discBox = document.getElementById("discrepancy-box");
+  var certRoot = document.getElementById("cert-root");
+  var followupRoot = document.getElementById("followup-root");
+  var joblogRoot = document.getElementById("joblog-root");
+  var expected = document.getElementById("f-expected");
+  var actual = document.getElementById("f-actual");
+  var ackDiscrepancy = false;
+
+  function loadJobs() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch (e) { return []; } }
+  function saveJobs(jobs) { localStorage.setItem(STORE_KEY, JSON.stringify(jobs)); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function checkDiscrepancy() {
+    var e = parseInt(expected.value, 10), a = parseInt(actual.value, 10);
+    ackDiscrepancy = false;
+    if (!isNaN(e) && !isNaN(a) && e !== a) {
+      discBox.innerHTML = '<div class="discrepancy field span2"><strong>Count mismatch:</strong> expected ' + e + ', driver entered ' + a + '. <label style="display:flex; gap:0.5rem; margin-top:0.5rem; align-items:flex-start;"><input type="checkbox" id="f-ack">This was reviewed with the customer before completing the job</label></div>';
+      var ackBox = document.getElementById("f-ack");
+      ackBox.addEventListener("change", function () { ackDiscrepancy = ackBox.checked; });
+    } else {
+      discBox.innerHTML = "";
+    }
+  }
+  expected.addEventListener("input", checkDiscrepancy);
+  actual.addEventListener("input", checkDiscrepancy);
+
+  function renderCert(job) {
+    var html = '<div id="cert-print" class="cert">' +
+      '<h4>Certificate of Destruction</h4>' +
+      '<div class="line"><span>Certificate ID</span><span>' + job.id + '</span></div>' +
+      '<div class="line"><span>Client / site</span><span>' + escapeHtml(job.client) + '</span></div>' +
+      '<div class="line"><span>Service date</span><span>' + job.date + '</span></div>' +
+      '<div class="line"><span>Items destroyed</span><span>' + job.actual + '</span></div>' +
+      '<div class="line"><span>Customer sign-off</span><span>' + escapeHtml(job.signoff) + '</span></div>' +
+      '<div class="line"><span>Status</span><span>' + (job.flagged ? "Completed, follow-up flagged" : "Completed") + '</span></div>' +
+      '<p style="margin-top:0.9rem; color:var(--muted); font-size:0.78rem;">This certificate would be generated and emailed automatically the moment the job is marked complete, instead of waiting on a manual step at invoicing.</p>' +
+      '</div><button class="fx-btn-ghost" style="margin-top:0.8rem;" onclick="window.print()">Print / save as PDF</button>';
+    certRoot.innerHTML = html;
+  }
+
+  function renderFollowups(jobs) {
+    var open = jobs.filter(function (j) { return j.flagged; });
+    if (!open.length) { followupRoot.innerHTML = '<p class="empty">No open follow-ups.</p>'; return; }
+    var html = '<div class="followup-list">';
+    open.forEach(function (j) {
+      var days = Math.max(0, Math.round((Date.now() - j.loggedAt) / 86400000));
+      html += '<div class="followup-item"><div><b>' + escapeHtml(j.client) + '</b><div class="job-meta">' + escapeHtml(j.reason) + ' &middot; open ' + days + ' day' + (days === 1 ? '' : 's') + '</div></div><button class="fx-btn-ghost" data-resolve="' + j.id + '">Mark resolved</button></div>';
+    });
+    html += '</div>';
+    followupRoot.innerHTML = html;
+    Array.prototype.forEach.call(followupRoot.querySelectorAll("[data-resolve]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var jobs = loadJobs();
+        jobs.forEach(function (j) { if (j.id === btn.getAttribute("data-resolve")) j.flagged = false; });
+        saveJobs(jobs);
+        renderAll();
+      });
+    });
+  }
+
+  function renderJoblog(jobs) {
+    if (!jobs.length) { joblogRoot.innerHTML = '<p class="empty">No jobs logged yet.</p>'; return; }
+    var html = '<div class="job-table">';
+    jobs.slice().reverse().forEach(function (j) {
+      html += '<div class="job-row"><div><b>' + escapeHtml(j.client) + '</b><div class="job-meta">' + j.date + '</div></div><div class="job-meta">' + j.actual + ' items (expected ' + j.expected + ')</div><span class="badge ' + (j.flagged ? "flag" : "ok") + '">' + (j.flagged ? "Follow-up open" : "Clear") + '</span><span class="job-meta">' + j.id + '</span></div>';
+    });
+    html += '</div>';
+    joblogRoot.innerHTML = html;
+  }
+
+  function renderAll() {
+    var jobs = loadJobs();
+    renderFollowups(jobs);
+    renderJoblog(jobs);
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var e2 = parseInt(expected.value, 10), a2 = parseInt(actual.value, 10);
+    var mismatch = !isNaN(e2) && !isNaN(a2) && e2 !== a2;
+    if (mismatch && !ackDiscrepancy) {
+      discBox.querySelector(".discrepancy").style.outline = "3px solid var(--hot)";
+      return;
+    }
+    var jobs = loadJobs();
+    var id = "COD-" + (1000 + jobs.length + 1);
+    var flagged = document.getElementById("f-followup").checked || mismatch;
+    var job = {
+      id: id,
+      client: document.getElementById("f-client").value,
+      date: document.getElementById("f-date").value,
+      expected: e2, actual: a2,
+      signoff: document.getElementById("f-signoff").value,
+      flagged: flagged,
+      reason: mismatch ? ("Box count mismatch (expected " + e2 + ", actual " + a2 + ")") : "Manually flagged for callback",
+      loggedAt: Date.now()
+    };
+    jobs.push(job);
+    saveJobs(jobs);
+    renderCert(job);
+    renderAll();
+    form.reset();
+    discBox.innerHTML = "";
+  });
+
+  document.querySelectorAll(".sample-chip").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var kind = btn.getAttribute("data-sample");
+      document.getElementById("f-client").value = kind === "mismatch" ? "Sample Corp, West Office" : "Sample Corp, Main Office";
+      document.getElementById("f-date").value = new Date().toISOString().slice(0, 10);
+      document.getElementById("f-expected").value = kind === "mismatch" ? 40 : 15;
+      document.getElementById("f-actual").value = kind === "mismatch" ? 31 : 15;
+      document.getElementById("f-signoff").value = "J. Rivera";
+      document.getElementById("f-confirm").checked = true;
+      checkDiscrepancy();
+    });
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>

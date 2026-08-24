@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Job QC sign-off &amp; warranty tracker: working example for Hurricane Fence Company</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .qwt-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 900px) { .qwt-cols { grid-template-columns: 1fr; } }
+  .qwt-section-title { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.9rem; }
+  .qwt-job { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .qwt-job.is-done { opacity: 0.72; }
+  .qwt-job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .qwt-job-title { font-weight: 660; }
+  .qwt-job-meta { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .qwt-check-list { display: flex; flex-direction: column; gap: 0.45rem; margin: 0.85rem 0; }
+  .qwt-check { display: flex; align-items: center; gap: 0.55rem; font-size: 0.9rem; cursor: pointer; }
+  .qwt-check input { width: 16px; height: 16px; accent-color: var(--brand); cursor: pointer; }
+  .qwt-check.checked span { color: var(--ink-2); }
+  .qwt-signoff-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .qwt-initials { font: inherit; font-size: 0.85rem; padding: 0.5rem 0.7rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 6rem; }
+  .qwt-initials:focus { outline: none; border-color: var(--brand); }
+  .qwt-block-msg { font-size: 0.82rem; color: var(--hot); margin-top: 0.5rem; }
+  .qwt-done-badge { font-family: var(--mono); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--good); background: var(--good-bg); padding: 0.28rem 0.6rem; border-radius: 999px; }
+  .qwt-claim { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .qwt-claim-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .qwt-claim-title { font-weight: 660; }
+  .qwt-claim-meta { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .qwt-claim-issue { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.55rem; }
+  .qwt-status-row { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.75rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .qwt-badge { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.3rem 0.62rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .qwt-badge.ok { color: var(--good); background: var(--good-bg); }
+  .qwt-badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .qwt-badge.overdue { color: var(--hot); background: var(--hot-bg); }
+  .qwt-badge.resolved { color: var(--muted); background: var(--surface-2); }
+  .qwt-advance-btn { font: inherit; font-size: 0.78rem; font-weight: 650; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.4rem 0.8rem; cursor: pointer; }
+  .qwt-advance-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .qwt-new-form { display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 1.1rem; padding: 1rem 1.1rem; border: 1px dashed var(--rule); border-radius: 16px; }
+  .qwt-new-form input, .qwt-new-form select, .qwt-new-form textarea { font: inherit; font-size: 0.88rem; padding: 0.55rem 0.75rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  .qwt-new-form input:focus, .qwt-new-form select:focus, .qwt-new-form textarea:focus { outline: none; border-color: var(--brand); }
+  .qwt-reset-row { margin-top: 1.3rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Job QC &amp; warranty tracker</a> / Hurricane Fence Company</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Hurricane Fence Company</span>
+  <h1 class="fx-h1">Catch a reversed panel before it's invoiced, and never let a warranty call go unanswered</h1>
+  <p class="fx-lede">Across your own review history, the same pattern shows up more than once: an installation issue that reaches the customer uncaught, a gate that doesn't latch, a dog-fence gap, panels installed facing the wrong direction, followed by a slow or missing response once the customer flags it. Your site's own homepage HTML shows no CRM, scheduling, or customer-portal software behind the "Free Estimate" form, so there's currently no shared system catching either half of that. Below is a small, working version of both halves: a QC checklist a crew lead completes before a job is marked ready to invoice, and a warranty-claim log that ages visibly across all four offices instead of sitting in an inbox.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the four office locations (Richmond, Portsmouth, Dunn, Northern VA/DC), the 32-year, family-owned operating history, and the specific defect pattern this checklist targets, panel orientation, gate latching, corner-post/moisture issues, and dog-fence containment gaps, are drawn directly from Hurricane Fence Company's own site and from independently corroborated review and BBB complaint text (a Feb 2026 BBB complaint describes panels installed facing the wrong direction; two Yellow Pages reviews, 2010 and 2016, describe a warranty call going unanswered and a dog-fence installation with a latch and corner-construction defect). The absence of CRM/scheduling software was confirmed by fetching the live homepage HTML directly.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> every job, customer name, and warranty claim below is a fictional example built to show the pattern, not a real Hurricane Fence job or customer record. Nothing here is connected to a live system.</p>
+  </div>
+  <div class="qwt-cols">
+    <div>
+      <h2 class="qwt-section-title">Jobs pending sign-off</h2>
+      <div id="jobs-root"></div>
+    </div>
+    <div>
+      <h2 class="qwt-section-title">Warranty claims, all offices</h2>
+      <button class="fx-btn-ghost" id="new-claim-toggle" style="margin-bottom:0.85rem;">+ Log a new warranty claim</button>
+      <div id="new-claim-form-root"></div>
+      <div id="claims-root"></div>
+    </div>
+  </div>
+  <div class="qwt-reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+  <section>
+    <h2 class="fx-h2">What I'd flag before this goes anywhere near a real job</h2>
+    <div class="limits">
+      <div class="lim"><b>This checklist is a starting point, not your final one.</b> It's built from the defect pattern in your public reviews and BBB record, a real rollout should be checked against what your own crew leads and project managers already know goes wrong.</div>
+      <div class="lim"><b>It doesn't replace your estimate, scheduling, or invoicing process.</b> This sits as a gate in front of "mark complete," it doesn't touch how a job gets quoted, scheduled across your four offices, or billed.</div>
+      <div class="lim"><b>"Overdue" here is a placeholder threshold (3 days).</b> A real build uses whatever response-time commitment you want to hold yourselves to, and can route by office instead of pooling all four into one list.</div>
+      <div class="lim"><b>Nothing here emails or calls a customer.</b> It's an internal tracking tool for your team; it doesn't change what the customer sees or send anything on your behalf.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Hurricane Fence Company.</strong></p><p>Prepared by Shlok Sarnayak. Office locations and defect pattern drawn from Hurricane Fence Company's public site, BBB complaint record, and Yellow Pages reviews. All job and claim records shown are a fictional labeled sample, not real customer data.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "qwt_hurricanefence_v1";
+  var CHECKLIST_LABELS = [
+    "Panel orientation matches the work order (front face, direction confirmed on site)",
+    "Every gate latches and closes squarely without forcing",
+    "Corner posts set and sealed against moisture per spec",
+    "Dog-fence / containment sections checked for gaps at grade and post lines",
+    "Site debris cleared, customer walkthrough completed"
+  ];
+
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); return d; }
+  function fmtDate(d) { return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+  function daysBetween(a, b) { return Math.floor((b - a) / (1000 * 60 * 60 * 24)); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function defaultData() {
+    return {
+      jobs: [
+        {
+          id: "HF-4471", title: "Wood privacy fence, Halloran residence", location: "Richmond office",
+          checklist: CHECKLIST_LABELS.map(function (l, i) { return { label: l, done: i !== 0 }; }),
+          signedOff: null
+        },
+        {
+          id: "HF-4459", title: "Dog-fence containment run, Wren Ct.", location: "Portsmouth office",
+          checklist: CHECKLIST_LABELS.map(function (l) { return { label: l, done: true }; }),
+          signedOff: null
+        },
+        {
+          id: "HF-4438", title: "Commercial ornamental fence, Marsh Business Park", location: "Dunn office",
+          checklist: CHECKLIST_LABELS.map(function (l) { return { label: l, done: true }; }),
+          signedOff: { by: "D.S.", at: daysAgo(3).toISOString() }
+        },
+        {
+          id: "HF-4482", title: "Automatic gate operator, Fairfax office park", location: "Northern VA/DC office",
+          checklist: CHECKLIST_LABELS.map(function (l, i) { return { label: l, done: i < 3 }; }),
+          signedOff: null
+        }
+      ],
+      claims: [
+        { id: "WC-118", customer: "Bayview Storage Co.", office: "Portsmouth office", issue: "Panel run installed facing the wrong direction; customer wants it corrected, not re-quoted.", loggedAt: daysAgo(6).toISOString(), lastTouchedAt: daysAgo(6).toISOString(), status: "New" },
+        { id: "WC-117", customer: "Whitfield residence", office: "Dunn office", issue: "Gap under dog-fence line at the back corner, dog got out twice.", loggedAt: daysAgo(2).toISOString(), lastTouchedAt: daysAgo(1).toISOString(), status: "Contacted" },
+        { id: "WC-116", customer: "Marsh residence", office: "Northern VA/DC office", issue: "Corner post shows moisture damage after 3 months, appears not fully sealed.", loggedAt: daysAgo(9).toISOString(), lastTouchedAt: daysAgo(5).toISOString(), status: "New" },
+        { id: "WC-115", customer: "Coleridge Apartments", office: "Richmond office", issue: "Side gate does not latch, has to be lifted and forced shut.", loggedAt: daysAgo(1).toISOString(), lastTouchedAt: daysAgo(1).toISOString(), status: "Scheduled" }
+      ]
+    };
+  }
+
+  var STATUS_ORDER = ["New", "Contacted", "Scheduled", "Resolved"];
+  var OVERDUE_DAYS = 3;
+
+  var data = load();
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return defaultData();
+  }
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+
+  var jobsRoot = document.getElementById("jobs-root");
+  var claimsRoot = document.getElementById("claims-root");
+  var newClaimFormRoot = document.getElementById("new-claim-form-root");
+
+  function renderJobs() {
+    var pending = data.jobs.filter(function (j) { return !j.signedOff; });
+    var done = data.jobs.filter(function (j) { return j.signedOff; });
+    var html = "";
+    pending.forEach(function (job) {
+      var idx = data.jobs.indexOf(job);
+      var allChecked = job.checklist.every(function (c) { return c.done; });
+      html += '<div class="qwt-job"><div class="qwt-job-head"><div><div class="qwt-job-title">' + escapeHtml(job.title) + '</div><div class="qwt-job-meta">' + escapeHtml(job.id) + ' &middot; ' + escapeHtml(job.location) + '</div></div></div>';
+      html += '<div class="qwt-check-list">';
+      job.checklist.forEach(function (c, ci) {
+        html += '<label class="qwt-check' + (c.done ? ' checked' : '') + '"><input type="checkbox" ' + (c.done ? 'checked' : '') + ' onchange="__qwt.toggleCheck(' + idx + ',' + ci + ')"><span>' + escapeHtml(c.label) + '</span></label>';
+      });
+      html += '</div>';
+      html += '<div class="qwt-signoff-row"><input type="text" class="qwt-initials" id="initials-' + idx + '" placeholder="PM initials" maxlength="6"><button class="fx-btn" onclick="__qwt.signOff(' + idx + ')">Sign off &amp; mark ready to invoice</button></div>';
+      if (!allChecked) html += '<div class="qwt-block-msg">' + job.checklist.filter(function (c) { return !c.done; }).length + ' checklist item(s) still unchecked, sign-off is blocked until all are done.</div>';
+      html += '<div class="qwt-block-msg" id="signoff-err-' + idx + '" style="display:none;"></div>';
+      html += '</div>';
+    });
+    if (done.length) {
+      html += '<h3 style="font-size:0.85rem; color:var(--muted); margin:1.4rem 0 0.6rem;">Signed off, ready to invoice</h3>';
+      done.forEach(function (job) {
+        html += '<div class="qwt-job is-done"><div class="qwt-job-head"><div><div class="qwt-job-title">' + escapeHtml(job.title) + '</div><div class="qwt-job-meta">' + escapeHtml(job.id) + ' &middot; ' + escapeHtml(job.location) + '</div></div><span class="qwt-done-badge">Signed off by ' + escapeHtml(job.signedOff.by) + ', ' + fmtDate(new Date(job.signedOff.at)) + '</span></div></div>';
+      });
+    }
+    jobsRoot.innerHTML = html || '<p style="color:var(--muted); font-style:italic; font-size:0.9rem;">No jobs loaded.</p>';
+  }
+
+  function claimStatusBadge(claim) {
+    if (claim.status === "Resolved") return { cls: "resolved", label: "Resolved" };
+    var days = daysBetween(new Date(claim.lastTouchedAt), new Date());
+    if (days >= OVERDUE_DAYS) return { cls: "overdue", label: days + " day" + (days === 1 ? "" : "s") + " since last update, overdue" };
+    if (days >= OVERDUE_DAYS - 1) return { cls: "watch", label: days + " day" + (days === 1 ? "" : "s") + " since last update" };
+    return { cls: "ok", label: days === 0 ? "Updated today" : days + " day" + (days === 1 ? "" : "s") + " since last update" };
+  }
+
+  function renderClaims() {
+    var html = "";
+    var sorted = data.claims.slice().sort(function (a, b) { return new Date(a.loggedAt) - new Date(b.loggedAt); });
+    sorted.forEach(function (claim) {
+      var idx = data.claims.indexOf(claim);
+      var badge = claimStatusBadge(claim);
+      var nextIdx = STATUS_ORDER.indexOf(claim.status) + 1;
+      var nextStatus = STATUS_ORDER[nextIdx];
+      html += '<div class="qwt-claim"><div class="qwt-claim-head"><div><div class="qwt-claim-title">' + escapeHtml(claim.customer) + '</div><div class="qwt-claim-meta">' + escapeHtml(claim.id) + ' &middot; ' + escapeHtml(claim.office) + ' &middot; logged ' + fmtDate(new Date(claim.loggedAt)) + '</div></div><span class="qwt-badge ' + (claim.status === "Resolved" ? "resolved" : badge.cls) + '">' + escapeHtml(claim.status) + '</span></div>';
+      html += '<div class="qwt-claim-issue">' + escapeHtml(claim.issue) + '</div>';
+      html += '<div class="qwt-status-row"><span class="qwt-badge ' + badge.cls + '">' + badge.label + '</span>';
+      if (nextStatus) html += '<button class="qwt-advance-btn" onclick="__qwt.advance(' + idx + ')">Log update &rarr; mark “' + nextStatus + '”</button>';
+      html += '</div></div>';
+    });
+    claimsRoot.innerHTML = html || '<p style="color:var(--muted); font-style:italic; font-size:0.9rem;">No claims logged.</p>';
+  }
+
+  var OFFICES = ["Richmond office", "Portsmouth office", "Dunn office", "Northern VA/DC office"];
+
+  function renderNewClaimForm(open) {
+    if (!open) { newClaimFormRoot.innerHTML = ""; return; }
+    var opts = OFFICES.map(function (o) { return '<option value="' + escapeHtml(o) + '">' + escapeHtml(o) + '</option>'; }).join("");
+    newClaimFormRoot.innerHTML =
+      '<div class="qwt-new-form">' +
+      '<input type="text" id="nc-customer" placeholder="Customer name">' +
+      '<select id="nc-office">' + opts + '</select>' +
+      '<textarea id="nc-issue" rows="2" placeholder="What did the customer report?"></textarea>' +
+      '<div><button class="fx-btn" onclick="__qwt.addClaim()">Log claim</button> <button class="fx-btn-ghost" onclick="__qwt.toggleNewClaim()">Cancel</button></div>' +
+      "</div>";
+  }
+
+  var newClaimOpen = false;
+
+  window.__qwt = {
+    toggleCheck: function (jobIdx, checkIdx) {
+      data.jobs[jobIdx].checklist[checkIdx].done = !data.jobs[jobIdx].checklist[checkIdx].done;
+      save(); renderJobs();
+    },
+    signOff: function (jobIdx) {
+      var job = data.jobs[jobIdx];
+      var errEl = document.getElementById("signoff-err-" + jobIdx);
+      var allChecked = job.checklist.every(function (c) { return c.done; });
+      var initials = document.getElementById("initials-" + jobIdx).value.trim();
+      if (!allChecked) { errEl.style.display = "block"; errEl.textContent = "Every checklist item must be checked before this job can be signed off."; return; }
+      if (!initials) { errEl.style.display = "block"; errEl.textContent = "Enter PM initials to sign off."; return; }
+      job.signedOff = { by: initials, at: new Date().toISOString() };
+      save(); renderJobs();
+    },
+    toggleNewClaim: function () { newClaimOpen = !newClaimOpen; renderNewClaimForm(newClaimOpen); },
+    addClaim: function () {
+      var customer = document.getElementById("nc-customer").value.trim();
+      var office = document.getElementById("nc-office").value;
+      var issue = document.getElementById("nc-issue").value.trim();
+      if (!customer || !issue) { alert("Enter a customer name and issue before logging the claim."); return; }
+      var n = data.claims.length + 1;
+      var now = new Date().toISOString();
+      data.claims.push({ id: "WC-" + (118 + n), customer: customer, office: office, issue: issue, loggedAt: now, lastTouchedAt: now, status: "New" });
+      save(); newClaimOpen = false; renderNewClaimForm(false); renderClaims();
+    },
+    advance: function (claimIdx) {
+      var claim = data.claims[claimIdx];
+      var idx = STATUS_ORDER.indexOf(claim.status);
+      if (idx < STATUS_ORDER.length - 1) claim.status = STATUS_ORDER[idx + 1];
+      claim.lastTouchedAt = new Date().toISOString();
+      save(); renderClaims();
+    }
+  };
+
+  document.getElementById("new-claim-toggle").addEventListener("click", function () { __qwt.toggleNewClaim(); });
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset all jobs and claims back to the original sample data?")) return;
+    data = defaultData(); save(); renderJobs(); renderClaims();
+  });
+
+  renderJobs(); renderClaims();
+})();
+</script>
+</body>
+</html>

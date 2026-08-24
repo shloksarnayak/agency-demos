@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Carolina Appliance Service</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .window-line { font-size: 0.85rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .narrow-row { display: none; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.3rem; }
+  .narrow-row.open { display: flex; }
+  .narrow-row input[type="text"] { font: inherit; font-size: 0.82rem; padding: 0.45rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-raised); width: 12rem; }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 92%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .field { display: flex; flex-direction: column; gap: 0.45rem; }
+  .field-label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  input[type="text"].wide { width: 100%; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus, select:focus { outline: none; border-color: var(--brand); }
+  textarea { font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; resize: vertical; min-height: 4rem; }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .confirm h3 { margin: 0; font-size: 1.02rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Carolina Appliance Service</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Carolina Appliance Service</span>
+  <h1 class="fx-h1">The callback that's supposed to happen, sent automatically instead</h1>
+  <p class="fx-lede">A BBB review from February 2026 describes waiting over a week for a promised call about a washer part, then a technician arriving unannounced at 8:20am. A separate Yelp review describes a 7am&ndash;5pm window narrowed to 11am&ndash;1pm with no follow-up, then a no-show. Both are the same underlying gap: nothing in your current setup notifies a customer automatically when their job's status changes.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> both reviews above are quoted from your actual BBB and Yelp listings. Your Yelp aggregate sits at 2.5/5 across 69 reviews. A direct fetch of your live site's homepage and contact page today found no online scheduling widget, no appointment-confirmation system, and no CRM/scheduling vendor signature of any kind, phone and a Gmail-hosted mailto link are the only contact paths. A same-metro competitor, Advantage Appliance Repair, already advertises "real-time technician tracking" so customers "know when to expect us."</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the jobs, customers, and technician name below are fictional, not your real customers or open tickets. Nothing here sends a real text or email, this shows exactly what a customer would receive at each step. A real build connects to whatever system your team already uses to mark a part ordered or a job in progress, and swaps in an actual SMS/email service to send it.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Shop view: update a job</h3>
+      <span class="sample-tag" style="display:inline-block; background:var(--brand-soft); color:var(--brand); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:0.25rem 0.6rem; border-radius:5px; margin-bottom:0.9rem;">Sample jobs, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the customer sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top:1.4rem;">
+    <h3 class="panel-title">New service request: replaces phone-only intake</h3>
+    <div id="form-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real text or email.</b> This demo shows exactly what a customer would receive at each step. A real version needs an actual SMS/email service (for example Twilio or SendGrid) connected to whichever system your technicians already use to log a part as ordered or a job as in progress.</div>
+      <div class="lim"><b>The five stages shown (request received, parts ordered, parts in stock, technician en route, complete) are a typical repair-job flow, not copied from your internal process.</b> Worth a short conversation before this gets built for real, your team may track things differently.</div>
+      <div class="lim"><b>The BBB and Yelp complaints are real and quoted directly, the fix is a reasonable response to the documented pattern, not a guarantee it eliminates every delay.</b> A part still arrives late sometimes. What this changes is whether the customer hears about it automatically instead of finding out by calling repeatedly or by a technician showing up unannounced.</div>
+      <div class="lim"><b>The intake form only captures a request, it doesn't book a specific time.</b> Keeping it to "what's broken and how to reach you" is deliberate, matching your current phone-based intake rather than promising a live scheduling calendar this demo doesn't have.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Carolina Appliance Service. BBB and Yelp reviews, and the absence of any scheduling/CRM system on your live site, verified by direct fetch today. Job, customer, and technician data below is a fictional sample, not connected to any of your real jobs.</p>
+</footer>
+
+<script>
+(function () {
+  var STAGE_NAMES = ["Request received", "Parts ordered", "Parts in stock", "Technician en route", "Job complete"];
+  var TECH_NAME = "Dana";
+  var STORAGE_KEY = "cas-status-pipeline-jobs-v1";
+
+  var STAGE_MESSAGES = [
+    null,
+    function (j) { return "This is Carolina Appliance Service. We've ordered the part needed for your " + j.appliance + " repair. We'll text you again the moment it's in, no need to call and check." ; },
+    function (j) { return "Good news, your part is in stock. We'll text you again shortly to confirm your arrival window." ; },
+    function (j) { return TECH_NAME + " is on the way and expected within your window: " + j.window + "." ; },
+    function (j) { return "Your " + j.appliance + " repair is complete. Thank you for choosing Carolina Appliance Service." ; }
+  ];
+
+  function seedJobs() {
+    var now = 1755878400000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "CAS-2291",
+        customer: "M. Alvarez",
+        contact: "(704) 555-0148",
+        appliance: "Maytag washer",
+        stage: 1,
+        window: "This week, exact day to be confirmed",
+        notifications: [
+          { text: "This is Carolina Appliance Service. We've ordered the part needed for your Maytag washer repair. We'll text you again the moment it's in, no need to call and check.", at: now }
+        ]
+      },
+      {
+        id: "CAS-2298",
+        customer: "R. Dunlap",
+        contact: "(704) 555-0172",
+        appliance: "GE refrigerator",
+        stage: 3,
+        window: "11:00 AM to 1:00 PM",
+        notifications: [
+          { text: "Good news, your part is in stock. We'll text you again shortly to confirm your arrival window.", at: now + 3600000 },
+          { text: "Your arrival window has been narrowed to 11:00 AM to 1:00 PM. We'll text again the moment " + TECH_NAME + " is on the way.", at: now + 7200000 },
+          { text: TECH_NAME + " is on the way and expected within your window: 11:00 AM to 1:00 PM.", at: now + 10800000 }
+        ]
+      },
+      {
+        id: "CAS-2305",
+        customer: "T. Okafor",
+        contact: "(704) 555-0119",
+        appliance: "Whirlpool dishwasher",
+        stage: 0,
+        window: "Not yet scheduled",
+        notifications: []
+      }
+    ];
+  }
+
+  function loadJobs() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedJobs();
+    saveJobs(seeded);
+    return seeded;
+  }
+  function saveJobs(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var jobs = loadJobs();
+  var narrowOpenFor = null;
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    jobs.forEach(function (j) {
+      var atLast = j.stage >= STAGE_NAMES.length - 1;
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.customer) + '</h4><span class="stage-pill">' + STAGE_NAMES[j.stage] + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(j.appliance) + ' &middot; ' + escapeHtml(j.contact) + '</div>';
+      html += '<div class="window-line">Arrival window: ' + escapeHtml(j.window) + '</div>';
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+      html += '<button class="btn-sm" data-narrow-toggle="' + j.id + '">Narrow arrival window</button>';
+      html += '</div>';
+      html += '<div class="narrow-row' + (narrowOpenFor === j.id ? " open" : "") + '" id="narrow-' + j.id + '">';
+      html += '<input type="text" id="narrow-input-' + j.id + '" placeholder="e.g. 11:00 AM to 1:00 PM">';
+      html += '<button class="btn-sm" data-narrow-submit="' + j.id + '">Send updated window</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceJob(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-narrow-toggle]"), function (btn) {
+      btn.addEventListener("click", function () {
+        narrowOpenFor = narrowOpenFor === btn.dataset.narrowToggle ? null : btn.dataset.narrowToggle;
+        renderShop();
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-narrow-submit]"), function (btn) {
+      btn.addEventListener("click", function () { submitNarrow(btn.dataset.narrowSubmit); });
+    });
+  }
+
+  function pushNotification(job, text) {
+    job.notifications.push({ text: text, at: Date.now() });
+  }
+
+  function advanceJob(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGE_NAMES.length - 1) return;
+    j.stage += 1;
+    var msg = STAGE_MESSAGES[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function submitNarrow(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    var input = document.getElementById("narrow-input-" + id);
+    var val = (input.value || "").trim();
+    if (!j || !val) return;
+    j.window = val;
+    pushNotification(j, "Your arrival window has been narrowed to " + val + ". We'll text again the moment " + TECH_NAME + " is on the way.");
+    narrowOpenFor = null;
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    sel.innerHTML = "";
+    jobs.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.customer;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = jobs.find(function (x) { return x.id === sel.value; }) || jobs[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this customer. Advance the job or narrow its window in the shop view on the left.</p>';
+      return;
+    }
+    var html = "";
+    j.notifications.forEach(function (n) {
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-time">Text to ' + escapeHtml(j.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  // ---- New service request form ----
+  var formState = { appliance: "", brand: "", issue: "", name: "", contact: "", submitted: false };
+  var formRoot = document.getElementById("form-root");
+
+  function canSubmitForm() {
+    return formState.appliance.trim() && formState.issue.trim() && formState.name.trim() && formState.contact.trim();
+  }
+
+  function renderForm() {
+    if (formState.submitted) { renderFormConfirm(); return; }
+    var html = "";
+    html += '<div class="field"><div class="field-label">Appliance and brand</div><input type="text" class="wide" id="f-appliance" value="' + escapeHtml(formState.appliance) + '" placeholder="e.g. Whirlpool dishwasher"></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">What\'s wrong</div><textarea id="f-issue" placeholder="Briefly describe the problem">' + escapeHtml(formState.issue) + '</textarea></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Your name</div><input type="text" class="wide" id="f-name" value="' + escapeHtml(formState.name) + '" placeholder="First and last name"></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Phone or email</div><input type="text" class="wide" id="f-contact" value="' + escapeHtml(formState.contact) + '" placeholder="How should we reach you?"></div>';
+    html += '<button class="fx-btn" id="f-submit" style="margin-top:1rem;"' + (canSubmitForm() ? "" : " disabled") + '>Submit request</button>';
+    formRoot.innerHTML = html;
+
+    document.getElementById("f-appliance").addEventListener("input", function (e) { formState.appliance = e.target.value; syncFormBtn(); });
+    document.getElementById("f-issue").addEventListener("input", function (e) { formState.issue = e.target.value; syncFormBtn(); });
+    document.getElementById("f-name").addEventListener("input", function (e) { formState.name = e.target.value; syncFormBtn(); });
+    document.getElementById("f-contact").addEventListener("input", function (e) { formState.contact = e.target.value; syncFormBtn(); });
+    document.getElementById("f-submit").addEventListener("click", function () {
+      if (!canSubmitForm()) return;
+      var newId = "CAS-" + (2300 + Math.floor(jobs.length * 7) + jobs.length);
+      jobs.push({
+        id: newId,
+        customer: formState.name,
+        contact: formState.contact,
+        appliance: formState.appliance,
+        stage: 0,
+        window: "Not yet scheduled",
+        notifications: []
+      });
+      saveJobs(jobs);
+      formState.submitted = true;
+      formState.lastId = newId;
+      renderForm();
+      renderShop();
+      populatePicker();
+    });
+  }
+
+  function syncFormBtn() {
+    var btn = document.getElementById("f-submit");
+    if (btn) btn.disabled = !canSubmitForm();
+  }
+
+  function renderFormConfirm() {
+    var html = '<div class="confirm">';
+    html += '<h3>Request captured as ' + formState.lastId + ', this is what your shop view now shows</h3>';
+    html += '<p style="font-size:0.9rem; color:var(--ink-2);">It now appears at "Request received" in the shop view above. A real version emails or texts your team the moment this is submitted, replacing phone-only intake.</p>';
+    html += '<button class="fx-btn-ghost" id="f-reset" style="align-self:flex-start;">Submit another request</button>';
+    html += '</div>';
+    formRoot.innerHTML = html;
+    document.getElementById("f-reset").addEventListener("click", function () {
+      formState = { appliance: "", brand: "", issue: "", name: "", contact: "", submitted: false };
+      renderForm();
+    });
+  }
+
+  renderShop();
+  populatePicker();
+  renderThread();
+  renderForm();
+})();
+</script>
+</body>
+</html>

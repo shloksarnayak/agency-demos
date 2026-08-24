@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Arrow Auto Glass, follow-up commitment tracker example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .fpt-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .fpt-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .fpt-tab.active { background: var(--ink); color: var(--surface); }
+  .fpt-view { display: none; }
+  .fpt-view.active { display: block; }
+  .fpt-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .fpt-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .promise-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .promise-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .promise-title { font-weight: 660; }
+  .promise-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.overdue { color: var(--hot); background: var(--hot-bg); }
+  .badge.soon { color: var(--warn); background: var(--warn-bg); }
+  .badge.ontrack { color: var(--brand); background: var(--brand-soft); }
+  .badge.resolved { color: var(--good); background: var(--good-bg); }
+  .promise-summary { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; }
+  .promise-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .log { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.8rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); margin-right: 0.4rem; }
+  .note-row { display: flex; gap: 0.4rem; margin-top: 0.6rem; }
+  .note-row input { flex: 1; font: inherit; font-size: 0.8rem; padding: 0.4rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 460px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; padding: 1rem 1.1rem; border-radius: var(--radius-sm); background: var(--surface-2); }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.2rem; }
+  .lookup-result .lr-status { margin-top: 0.5rem; }
+  .lookup-result .lr-detail { font-size: 0.86rem; color: var(--ink-2); margin-top: 0.5rem; line-height: 1.5; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Follow-up promise tracker</a> / Arrow Auto Glass</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">Arrow Auto Glass: a visible queue for every callback, warranty claim, and reschedule the office owes a customer</h1>
+  <p class="fx-lede">Arrow's own site (a WordPress build, checked directly) runs entirely on phone-based scheduling, including a confirmation call the morning of service, with no online booking, no customer portal, and no way for staff to see at a glance which promised callbacks or warranty decisions are still outstanding. The company's public BBB complaint file shows what that gap can look like in practice: a complaint from May 2024, after an April 2024 windshield replacement, cites reported window-tint damage where the customer says "manager never returned call," and a separate complaint from July 2024 describes a warranty that was initially honored, then retracted, before a partial reimbursement was worked out. This example shows a small internal tool built for office staff: a queue of every open commitment (a callback owed, a warranty claim pending, a reschedule needed), sorted by how overdue it is, so nothing depends on one person remembering.</p>
+  <div class="fact-strip">
+    <span class="fact">Arrow Auto Glass, LLC</span>
+    <span class="fact">Kingston, PA &middot; Elmsford, NY &middot; Worcester, MA</span>
+    <span class="fact">Mobile windshield repair &amp; replacement since 2008</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Arrow Auto Glass Operating Co., LLC or Arrow Auto Glass, LLC.</strong> All customer names, commitments, and reference codes inside the tool below are fictional and clearly for illustration only. The business description, service area, and complaint pattern referenced here are drawn from the company's own published site and its public BBB complaint file.</p></div>
+
+  <p style="color:var(--ink-2); font-size:0.92rem; max-width:74ch;">Arrow carries an overall A letter grade from BBB (not accredited) with 4 complaints in the last 3 years, and a mixed record on independent review sites (Yelp 2.7/5 across 98 reviews, Birdeye 3.1/5 across 40 reviews). Only one of the four reviewed BBB complaints is an unambiguous "a callback was promised and never came" pattern; a second describes a related but distinct broken promise, a warranty that was honored and then retracted, requiring the customer to pay out of pocket before a partial reimbursement. That is a narrower evidence base than some other candidates, disclosed honestly rather than inflated. The company is 18 years old, operates from at least three confirmed locations across PA, NY, and MA, serves a 6-state footprint, and its own Careers page is actively recruiting customer service representatives, citing "continuous growth," a sign that call volume and follow-up load are already stretching the current phone-only process. National and franchise competitors in the same vertical, Safelite, Glass Doctor, and Auto Glass Now, all offer online scheduling or a customer portal today; Arrow's own site confirms it has neither.</p>
+
+  <div class="fpt-tabs">
+    <button class="fpt-tab active" data-view="office" type="button">Office view</button>
+    <button class="fpt-tab" data-view="customer" type="button">Optional: customer status check</button>
+  </div>
+
+  <section class="fpt-view active" id="view-office">
+    <div class="fpt-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new commitment</h2>
+        <form id="add-form" class="form-grid">
+          <div class="field span2"><label for="f-customer">Customer / job label</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
+          <div class="field span2"><label for="f-type">Commitment type</label><select id="f-type"></select></div>
+          <div class="field span2"><label for="f-summary">What was promised (customer-facing wording)</label><textarea id="f-summary" placeholder="e.g. Office will call back Thursday with a decision on the tint damage."></textarea></div>
+          <div class="field span2"><label for="f-due">Due by</label><input type="datetime-local" id="f-due"></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
+        </form>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Open queue, most overdue first</h2>
+        <div id="queue-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="fpt-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check the status of a commitment</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. AAG-1001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try AAG-1001, AAG-1002, AAG-1003 or AAG-1004 from the office view's sample queue.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The core deliverable is the office queue, not a customer portal.</b> The researched offer here is an internal commitment tracker for staff. The customer lookup tab above is a small optional extra, not a replacement for Arrow's existing phone-based scheduling.</div>
+      <div class="lim"><b>The reference code can be whatever the office already writes down.</b> A real build reads from an existing work-order or claim reference instead of asking a customer to remember a new code.</div>
+      <div class="lim"><b>This does not replace scheduling.</b> It sits alongside Arrow's existing phone-based booking and only tracks the specific commitment: a callback, a warranty claim, or a reschedule.</div>
+      <div class="lim"><b>The customer view shows only customer-safe wording.</b> Internal notes typed in the office view never appear on the lookup page.</div>
+      <div class="lim"><b>Back to the general template: <a href="../../">Follow-up promise tracker</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Arrow Auto Glass Operating Co., LLC or Arrow Auto Glass, LLC.</strong></p><p>Prepared by Shlok Sarnayak. Fictional commitment and customer data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "fpt_arrow_auto_glass_v1";
+
+  var TYPES = [
+    { key: "callback", label: "Callback owed" },
+    { key: "warranty", label: "Warranty claim pending" },
+    { key: "reschedule", label: "Reschedule needed" }
+  ];
+  var TYPE_LABEL = {}; TYPES.forEach(function (t) { TYPE_LABEL[t.key] = t.label; });
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function hoursFromNow(h) { return Date.now() + h * 3600000; }
+
+  function defaultData() {
+    return {
+      seq: 1004,
+      promises: [
+        {
+          id: "AAG-1001", ref: "AAG-1001", customer: "Sample Customer A", type: "warranty",
+          summary: "Office will call back with a decision on window-tint damage reported after a windshield replacement.",
+          openedAt: hoursFromNow(-56), dueAt: hoursFromNow(-5), status: "open",
+          notes: [{ at: hoursFromNow(-54), text: "Photos received from customer, forwarded to shop manager for review." }]
+        },
+        {
+          id: "AAG-1002", ref: "AAG-1002", customer: "Sample Customer B", type: "reschedule",
+          summary: "Confirmation call for tomorrow's mobile windshield replacement, 9am to 12pm arrival window.",
+          openedAt: hoursFromNow(-3), dueAt: hoursFromNow(4), status: "open",
+          notes: []
+        },
+        {
+          id: "AAG-1003", ref: "AAG-1003", customer: "Sample Customer C", type: "warranty",
+          summary: "Warranty claim under review for a reported seal leak, awaiting a parts-cost decision before calling the customer back.",
+          openedAt: hoursFromNow(-18), dueAt: hoursFromNow(30), status: "open",
+          notes: [{ at: hoursFromNow(-16), text: "Sent to warranty desk for a coverage decision, awaiting reply." }]
+        },
+        {
+          id: "AAG-1004", ref: "AAG-1004", customer: "Sample Customer D", type: "callback",
+          summary: "Callback completed, replacement rescheduled and confirmed with the customer.",
+          openedAt: hoursFromNow(-92), dueAt: hoursFromNow(-68), status: "resolved", resolvedAt: hoursFromNow(-66),
+          notes: [{ at: hoursFromNow(-66), text: "Reached customer by phone, new appointment booked and confirmed." }]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function statusInfo(p) {
+    if (p.status === "resolved") return { cls: "resolved", label: "Resolved" };
+    var now = Date.now();
+    if (p.dueAt < now) return { cls: "overdue", label: "Overdue" };
+    if (p.dueAt - now < 12 * 3600000) return { cls: "soon", label: "Due soon" };
+    return { cls: "ontrack", label: "On track" };
+  }
+
+  function populateTypeSelect() {
+    var sel = document.getElementById("f-type");
+    sel.innerHTML = TYPES.map(function (t) { return '<option value="' + t.key + '">' + escapeHtml(t.label) + "</option>"; }).join("");
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var open = data.promises.filter(function (p) { return p.status === "open"; }).slice().sort(function (a, b) { return a.dueAt - b.dueAt; });
+    var resolved = data.promises.filter(function (p) { return p.status === "resolved"; }).slice().sort(function (a, b) { return b.resolvedAt - a.resolvedAt; });
+    var html = "";
+    if (!open.length) html += '<p class="empty">Nothing open. Every commitment is caught up.</p>';
+    open.forEach(function (p) { html += renderCard(p); });
+    if (resolved.length) {
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently resolved</h3>';
+      resolved.slice(0, 5).forEach(function (p) { html += renderCard(p); });
+    }
+    root.innerHTML = html;
+  }
+
+  function renderCard(p) {
+    var st = statusInfo(p);
+    var idx = data.promises.indexOf(p);
+    var html = '<div class="promise-card"><div class="promise-head"><div><div class="promise-title">' + escapeHtml(p.customer) + " &middot; " + p.ref + '</div><div class="promise-meta">' + TYPE_LABEL[p.type] + " &middot; opened " + fmtDate(p.openedAt) + " &middot; due " + fmtDate(p.dueAt) + '</div></div><span class="badge ' + st.cls + '">' + st.label + "</span></div>";
+    html += '<div class="promise-summary">' + escapeHtml(p.summary) + "</div>";
+    if (p.notes.length) {
+      html += '<div class="log">';
+      p.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+      html += "</div>";
+    }
+    if (p.status === "open") {
+      html += '<div class="note-row"><input type="text" id="note-' + idx + '" placeholder="Add an internal note"><button class="fx-btn-ghost" onclick="__fpt.addNote(' + idx + ')">Add</button></div>';
+      html += '<div class="promise-actions"><button class="fx-btn-ghost" onclick="__fpt.resolve(' + idx + ')">Mark resolved</button></div>';
+    }
+    html += "</div>";
+    return html;
+  }
+
+  window.__fpt = {
+    addNote: function (idx) {
+      var input = document.getElementById("note-" + idx);
+      var text = input.value.trim();
+      if (!text) return;
+      data.promises[idx].notes.push({ at: Date.now(), text: text });
+      save(); renderQueue();
+    },
+    resolve: function (idx) {
+      data.promises[idx].status = "resolved";
+      data.promises[idx].resolvedAt = Date.now();
+      save(); renderQueue();
+    }
+  };
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("f-customer").value.trim();
+    var type = document.getElementById("f-type").value;
+    var summary = document.getElementById("f-summary").value.trim();
+    var dueRaw = document.getElementById("f-due").value;
+    if (!customer || !summary || !dueRaw) { alert("Fill in the customer, commitment wording, and due date."); return; }
+    data.seq += 1;
+    var ref = "AAG-" + data.seq;
+    data.promises.push({ id: ref, ref: ref, customer: customer, type: type, summary: summary, openedAt: Date.now(), dueAt: new Date(dueRaw).getTime(), status: "open", notes: [] });
+    save(); renderQueue();
+    document.getElementById("add-form").reset();
+    populateTypeSelect();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue();
+  });
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var p = data.promises.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
+    if (!p) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No open or recent record found for that reference code. Please call the office directly.</p></div>'; return; }
+    var st = statusInfo(p);
+    root.innerHTML = '<div class="lookup-result"><h3>' + TYPE_LABEL[p.type] + '</h3><div class="lr-status"><span class="badge ' + st.cls + '">' + st.label + '</span></div><div class="lr-detail">' + escapeHtml(p.summary) + '<br><br>Opened ' + fmtDate(p.openedAt) + (p.status === "resolved" ? ", resolved " + fmtDate(p.resolvedAt) : ", expected by " + fmtDate(p.dueAt)) + "</div></div>";
+  });
+
+  document.querySelectorAll(".fpt-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".fpt-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".fpt-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  populateTypeSelect();
+  renderQueue();
+})();
+</script>
+</body>
+</html>

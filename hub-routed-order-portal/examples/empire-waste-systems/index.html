@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>Empire Waste Systems: online container order &amp; hub routing (prototype)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .field { margin-top: 1.15rem; }
+  .field-label { font-family: var(--mono); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: .5rem; }
+  .choices { display: flex; flex-wrap: wrap; gap: .5rem; }
+  input[type="text"], input[type="date"] { font: inherit; font-size: .95rem; padding: .7rem .9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; max-width: 26rem; }
+  input[type="text"]:focus, input[type="date"]:focus { outline: none; border-color: var(--brand); }
+  .hub-note { font-size: .82rem; color: var(--muted); margin-top: .5rem; }
+  .hub-note b { color: var(--ink-2); }
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: .7rem; }
+  .confirm h3 { margin: 0; font-size: 1.05rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+  .confirm dl { display: flex; flex-direction: column; gap: .25rem; margin: 0; }
+  .confirm dt { font-family: var(--mono); font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .confirm dd { margin: 0 0 .45rem; font-size: .93rem; color: var(--ink); }
+  .tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+  .tab { padding: .55rem 1rem; font: 700 .82rem/1 var(--sans); background: var(--surface-2); border: 2px solid var(--ink); border-radius: var(--radius-sm); cursor: pointer; box-shadow: 2px 2px 0 var(--ink); }
+  .tab.active { background: var(--brand); color: #fff; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .load-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .8rem; margin: 1rem 0 1.3rem; }
+  .load-card { border: 1px solid var(--rule); border-radius: 16px; padding: .9rem 1rem; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .load-card .loc-name { font-weight: 660; font-size: .9rem; }
+  .load-card .loc-phone { color: var(--muted); font-size: .74rem; font-family: var(--mono); }
+  .load-card .loc-count { font-family: var(--serif); font-size: 1.9rem; margin-top: .3rem; }
+  .load-card .loc-label { color: var(--muted); font-size: .72rem; }
+  table.orders { width: 100%; border-collapse: collapse; font-size: .87rem; }
+  table.orders th, table.orders td { text-align: left; padding: .55rem .6rem; border-bottom: 1px solid var(--rule-soft); }
+  table.orders th { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .badge { display: inline-block; padding: .2rem .55rem; border-radius: 999px; font: 700 .72rem/1.4 var(--sans); }
+  .badge.new { background: var(--warn-bg); color: var(--warn); }
+  .badge.delivered { background: var(--good-bg); color: var(--good); }
+  .empty { color: var(--muted); font-style: italic; font-size: .88rem; }
+  .acct-row { display: flex; gap: .6rem; flex-wrap: wrap; align-items: end; margin-bottom: 1rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: .92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">FP</span><span class="fx-brand-name">FixPoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Multi-hub order &amp; dispatch routing portal</a> / Empire Waste Systems</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Empire Waste Systems</span>
+  <h1 class="fx-h1">Order a container online, routed to the right hub automatically</h1>
+  <p class="fx-lede">Empire Waste Systems' own site says it plainly: "Old-School Service. We Pick Up The Phone." Every order today, across three service regions and two separate hub phone lines, still runs through a call or a wait-for-callback lead form. Local competitors in the same Reno/Sparks/Carson City market (Trash Daddy Dumpsters, Sierra Dumpsters, Junk King Reno, Trash Panda) already advertise online booking. This prototype shows what an online order form looks like without giving up the phone relationship: pick a service area, the request routes itself to whichever hub actually covers it, and a repeat contractor account can see its own order history instead of calling to ask.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything on this page is fictional sample data.</strong> Service areas, the two hub phone numbers, and the four container sizes below are copied from Empire Waste Systems' own live site (homepage and order page, independently checked). Customer names, contractor accounts, and order history are invented for illustration only. This prototype is not connected to Empire Waste's real phone lines, email, or any live system.</p></div>
+
+  <section>
+    <h2 class="fx-h2">1. Order a container</h2>
+    <p style="color:var(--muted); font-size:.9rem; max-width:70ch;">Replaces waiting for a callback with one form that routes itself to the correct hub the moment it's submitted.</p>
+    <div class="fx-card" id="form-root"></div>
+  </section>
+
+  <section style="margin-top:2.2rem;">
+    <h2 class="fx-h2">2. Hub dispatch view</h2>
+    <p style="color:var(--muted); font-size:.9rem; max-width:70ch;">Every request lands here split by hub, so either office can see the queue without calling the other.</p>
+    <div class="load-grid" id="load-root"></div>
+    <button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button>
+  </section>
+
+  <section style="margin-top:2.2rem;">
+    <h2 class="fx-h2">3. Contractor account: order history</h2>
+    <p style="color:var(--muted); font-size:.9rem; max-width:70ch;">Repeat contractor customers can look up their own past orders by name instead of calling to ask what they ordered last time.</p>
+    <div class="fx-card">
+      <div class="acct-row">
+        <div class="field" style="margin-top:0;"><div class="field-label">Look up account</div>
+          <select id="acct-select" style="padding:.6rem .8rem; border:1px solid var(--rule); border-radius:var(--radius-sm); background:var(--surface-2); font:inherit;"></select>
+        </div>
+      </div>
+      <table class="orders" id="history-table"><thead><tr><th>Date requested</th><th>Area</th><th>Size</th><th>Status</th></tr></thead><tbody></tbody></table>
+      <p class="empty" id="history-empty" style="display:none;">No past orders on file for this account yet.</p>
+    </div>
+  </section>
+
+  <section style="margin-top:2.4rem;">
+    <h2 class="fx-h2">Grounded in what's actually published</h2>
+    <div class="limits">
+      <div class="lim"><b>The gap, in Empire Waste's own words.</b> The order page is a callback lead form (name, email, address, zip, phone, size dropdown, notes, terms), ending with "One of our staff members will contact you to complete your order." The site frames this as deliberate: "Old-School Service. We Pick Up The Phone." Independently checked, both the homepage and the order page, no booking, login, or tracking technology exists anywhere on the site today.</div>
+      <div class="lim"><b>Two real hubs, coordinated by phone.</b> 775-297-3483 covers the Reno/Sparks/Carson City side, 775-831-2246 covers the Lake Tahoe/Incline Village side, both listed on Empire's own site. The area-to-hub grouping used on this page groups each of Empire's own published service areas by which side of that split it geographically falls on. That grouping is this prototype's own inference, not a routing table we've seen (none is published), and should be confirmed with Empire before anything like it goes live.</div>
+      <div class="lim"><b>Same four sizes Empire already offers.</b> 10, 20, 30 and 40 yard are the exact options on Empire's own order-page size dropdown, independently checked. Nothing new is being introduced, this only moves the same choice online.</div>
+      <div class="lim"><b>Local competitors already offer this.</b> Trash Daddy Dumpsters, Sierra Dumpsters, Junk King Reno and Trash Panda, all independently found serving the same Reno/Sparks/Carson City market, already advertise online booking. This isn't a hypothetical industry trend, it's the specific competitive reality of Empire's own backyard.</div>
+      <div class="lim"><b>Not a replacement for "we pick up the phone."</b> Empire's 4.9/5 Google rating and repeatedly-named staff (Michelle, Travis, Pete) in reviews suggest the phone-first relationship works and customers like it. This is meant as an additive option for repeat contractor customers who want to reorder without waiting for a callback, not a replacement for the phone line.</div>
+      <div class="lim"><b>What a real build adds.</b> A production version would connect to whichever system Empire's staff actually use to log and dispatch orders today (or replace the callback form directly), add real account authentication per contractor customer, and confirm the hub-routing grouping above with Empire rather than relying on this prototype's own geographic inference.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Empire Waste Systems, Inc., Empire Contractors, Inc., or the Rager family.</strong></p>
+  <p>Prepared by Shlok Sarnayak. Service areas, hub phone numbers and container sizes verified against empirewastesystems.com today. Contractor accounts and order history are fictional sample data, not connected to any live system.</p>
+</footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "ews_hub_portal_v1";
+
+  var HUBS = [
+    { id: "reno", name: "Reno / Carson hub", phone: "775-297-3483" },
+    { id: "tahoe", name: "Lake Tahoe hub", phone: "775-831-2246" }
+  ];
+  var AREAS = [
+    { name: "Reno", hub: "reno" },
+    { name: "Sparks", hub: "reno" },
+    { name: "Carson City", hub: "reno" },
+    { name: "Dayton", hub: "reno" },
+    { name: "Silver Springs", hub: "reno" },
+    { name: "Stagecoach", hub: "reno" },
+    { name: "Spanish Springs", hub: "reno" },
+    { name: "Verdi", hub: "reno" },
+    { name: "Mogul", hub: "reno" },
+    { name: "Patrick", hub: "reno" },
+    { name: "Clark", hub: "reno" },
+    { name: "Moundhouse", hub: "reno" },
+    { name: "Washoe Valley", hub: "reno" },
+    { name: "Lyon County", hub: "reno" },
+    { name: "Incline Village", hub: "tahoe" },
+    { name: "Tahoe Industrial Park", hub: "tahoe" }
+  ];
+  var SIZES = ["10 Yard Container", "20 Yard Container", "30 Yard Container", "40 Yard Container"];
+  var SAMPLE_ACCOUNTS = ["Walk-in customer (no account)", "Sierra Grade Contractors (sample)", "Tahoe Basin Builders (sample)", "Reno Cleanout Crew (sample)"];
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function uid(p) { return p + Math.random().toString(36).slice(2, 8); }
+  function todayStr() { return new Date().toISOString().slice(0, 10); }
+  function daysAgoStr(n) { var d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); }
+  function areaHub(area) { var m = AREAS.filter(function (a) { return a.name === area; })[0]; return m ? m.hub : null; }
+  function hub(id) { return HUBS.filter(function (h) { return h.id === id; })[0]; }
+
+  function defaultData() {
+    return {
+      requests: [
+        { id: "r1", area: "Reno", size: "20 Yard Container", account: "Reno Cleanout Crew (sample)", status: "new", requestedAt: daysAgoStr(2) },
+        { id: "r2", area: "Incline Village", size: "10 Yard Container", account: "Tahoe Basin Builders (sample)", status: "new", requestedAt: daysAgoStr(1) },
+        { id: "r3", area: "Carson City", size: "30 Yard Container", account: "Sierra Grade Contractors (sample)", status: "delivered", requestedAt: daysAgoStr(4) },
+        { id: "r4", area: "Sparks", size: "20 Yard Container", account: "Reno Cleanout Crew (sample)", status: "delivered", requestedAt: daysAgoStr(6) }
+      ]
+    };
+  }
+
+  function load() {
+    try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} }
+  var data = load();
+
+  var formRoot = document.getElementById("form-root");
+  var loadRoot = document.getElementById("load-root");
+
+  var state = { area: null, size: null, account: SAMPLE_ACCOUNTS[0], name: "", contact: "", date: "", submitted: false };
+
+  function canSubmit() { return !!(state.area && state.size && state.date && state.name.trim() && state.contact.trim()); }
+
+  function renderForm() {
+    if (state.submitted) { renderConfirm(); return; }
+    var html = "";
+    html += '<div class="field"><div class="field-label">Contractor account (optional)</div><select id="acct-input" style="padding:.6rem .8rem; border:1px solid var(--rule); border-radius:var(--radius-sm); background:var(--surface-2); font:inherit; max-width:26rem;">';
+    SAMPLE_ACCOUNTS.forEach(function (a) { html += '<option value="' + escapeHtml(a) + '"' + (state.account === a ? ' selected' : '') + '>' + escapeHtml(a) + '</option>'; });
+    html += '</select></div>';
+
+    html += '<div class="field"><div class="field-label">Service area</div><div class="choices">';
+    AREAS.forEach(function (a) { html += '<button class="fx-opt' + (state.area === a.name ? ' sel' : '') + '" style="padding:.55rem .85rem;" data-area="' + escapeHtml(a.name) + '">' + escapeHtml(a.name) + '</button>'; });
+    html += '</div>';
+    if (state.area) { html += '<p class="hub-note">Routes to <b>' + escapeHtml(hub(areaHub(state.area)).name) + '</b> (' + hub(areaHub(state.area)).phone + ')</p>'; }
+    html += '</div>';
+
+    html += '<div class="field"><div class="field-label">Container size</div><div class="choices">';
+    SIZES.forEach(function (s) { html += '<button class="fx-opt' + (state.size === s ? ' sel' : '') + '" style="padding:.55rem .85rem;" data-size="' + escapeHtml(s) + '">' + escapeHtml(s) + '</button>'; });
+    html += '</div></div>';
+
+    html += '<div class="field"><div class="field-label">Requested delivery date</div><input type="date" id="date-input" value="' + state.date + '"></div>';
+    html += '<div class="field"><div class="field-label">Your name</div><input type="text" id="name-input" value="' + state.name.replace(/"/g, '&quot;') + '" placeholder="First and last name"></div>';
+    html += '<div class="field"><div class="field-label">Phone or email</div><input type="text" id="contact-input" value="' + state.contact.replace(/"/g, '&quot;') + '" placeholder="How should we reach you?"></div>';
+    html += '<button class="fx-btn" id="submit-btn" style="margin-top:1.3rem;"' + (canSubmit() ? '' : ' disabled') + '>Send this request</button>';
+
+    formRoot.innerHTML = html;
+
+    document.getElementById('acct-input').addEventListener('change', function (e) { state.account = e.target.value; });
+    Array.prototype.forEach.call(formRoot.querySelectorAll('[data-area]'), function (b) { b.addEventListener('click', function () { state.area = b.dataset.area; renderForm(); }); });
+    Array.prototype.forEach.call(formRoot.querySelectorAll('[data-size]'), function (b) { b.addEventListener('click', function () { state.size = b.dataset.size; renderForm(); }); });
+    document.getElementById('date-input').addEventListener('input', function (e) { state.date = e.target.value; syncSubmit(); });
+    document.getElementById('name-input').addEventListener('input', function (e) { state.name = e.target.value; syncSubmit(); });
+    document.getElementById('contact-input').addEventListener('input', function (e) { state.contact = e.target.value; syncSubmit(); });
+    document.getElementById('submit-btn').addEventListener('click', function () { if (canSubmit()) submitRequest(); });
+
+    var dateInput = document.getElementById('date-input');
+    if (dateInput) dateInput.min = todayStr();
+  }
+  function syncSubmit() { var b = document.getElementById('submit-btn'); if (b) b.disabled = !canSubmit(); }
+
+  function submitRequest() {
+    var req = { id: uid("r"), area: state.area, size: state.size, account: state.account, name: state.name, contact: state.contact, date: state.date, status: "new", requestedAt: todayStr() };
+    data.requests.push(req);
+    save();
+    state.submitted = true;
+    renderForm();
+    renderLoad();
+    renderHistory();
+  }
+
+  function renderConfirm() {
+    var last = data.requests[data.requests.length - 1];
+    var h = hub(areaHub(last.area));
+    var html = '<div class="confirm"><h3>Routed to ' + escapeHtml(h.name) + '</h3><dl>';
+    html += '<dt>Area</dt><dd>' + escapeHtml(last.area) + '</dd>';
+    html += '<dt>Size</dt><dd>' + escapeHtml(last.size) + '</dd>';
+    html += '<dt>Requested delivery</dt><dd>' + escapeHtml(last.date) + '</dd>';
+    html += '<dt>Hub contact</dt><dd>' + h.phone + '</dd>';
+    html += '<dt>Name</dt><dd>' + escapeHtml(last.name) + '</dd>';
+    html += '<dt>Contact</dt><dd>' + escapeHtml(last.contact) + '</dd>';
+    html += '</dl><p style="font-size:.88rem; color:var(--ink-2);">A real version notifies that hub\'s staff the moment this is submitted, the same way a phone call reaches them today, and confirms the exact delivery window back to the customer once checked against the real schedule.</p><button class="fx-btn-ghost" id="again-btn">Start another request</button></div>';
+    formRoot.innerHTML = html;
+    document.getElementById('again-btn').addEventListener('click', function () {
+      state = { area: null, size: null, account: SAMPLE_ACCOUNTS[0], name: "", contact: "", date: "", submitted: false };
+      renderForm();
+    });
+  }
+
+  function renderLoad() {
+    var counts = {};
+    HUBS.forEach(function (h) { counts[h.id] = 0; });
+    data.requests.forEach(function (r) { if (r.status === "new") { var h = areaHub(r.area); if (h) counts[h]++; } });
+    var html = "";
+    HUBS.forEach(function (h) {
+      html += '<div class="load-card"><div class="loc-name">' + escapeHtml(h.name) + '</div><div class="loc-phone">' + h.phone + '</div><div class="loc-count">' + counts[h.id] + '</div><div class="loc-label">open request' + (counts[h.id] === 1 ? '' : 's') + '</div></div>';
+    });
+    loadRoot.innerHTML = html;
+  }
+
+  function statusBadge(status) {
+    return status === "delivered" ? '<span class="badge delivered">Delivered</span>' : '<span class="badge new">New</span>';
+  }
+
+  function renderHistory() {
+    var acct = document.getElementById("acct-select").value;
+    var tbody = document.querySelector("#history-table tbody");
+    tbody.innerHTML = "";
+    var mine = data.requests.filter(function (r) { return r.account === acct; }).slice().reverse();
+    document.getElementById("history-empty").style.display = mine.length ? "none" : "block";
+    mine.forEach(function (r) {
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td>" + escapeHtml(r.requestedAt) + "</td><td>" + escapeHtml(r.area) + "</td><td>" + escapeHtml(r.size) + "</td><td>" + statusBadge(r.status) + "</td>";
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderAcctSelect() {
+    var sel = document.getElementById("acct-select");
+    sel.innerHTML = "";
+    SAMPLE_ACCOUNTS.filter(function (a) { return a !== SAMPLE_ACCOUNTS[0]; }).forEach(function (a) {
+      var opt = document.createElement("option");
+      opt.value = a; opt.textContent = a;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderHistory);
+  }
+
+  document.getElementById('reset-btn').addEventListener('click', function () {
+    data = defaultData(); save();
+    state = { area: null, size: null, account: SAMPLE_ACCOUNTS[0], name: "", contact: "", date: "", submitted: false };
+    renderForm(); renderLoad(); renderHistory();
+  });
+
+  renderAcctSelect();
+  renderForm();
+  renderLoad();
+  renderHistory();
+})();
+</script>
+</body>
+</html>
