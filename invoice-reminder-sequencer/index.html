@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Invoice reminder sequencer template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .ar-stats { display: flex; gap: 1.4rem; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); margin-bottom: 1.4rem; }
+  .ar-stats b { color: var(--ink); font-weight: 660; }
+  .ar-table { display: flex; flex-direction: column; gap: 10px; }
+  .ar-row { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.2rem; box-shadow: var(--shadow-sm); }
+  .ar-row.paid { opacity: 0.6; }
+  .ar-row-top { display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: start; }
+  .ar-client { font-weight: 630; }
+  .ar-meta { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+  .ar-amount { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; font-size: 1rem; }
+  .ar-overdue { text-align: right; font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
+  .badge { font-family: var(--mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.32rem 0.62rem; border-radius: 999px; white-space: nowrap; font-weight: 750; display: inline-block; }
+  .badge.grace { color: var(--muted); background: var(--surface-2); }
+  .badge.nudge { color: var(--brand); background: var(--brand-soft); }
+  .badge.firm { color: var(--warn); background: var(--warn-bg); }
+  .badge.escalate { color: var(--hot); background: var(--hot-bg); }
+  .badge.paid { color: var(--good); background: var(--good-bg); }
+  .ar-next { margin-top: 0.7rem; font-size: 0.88rem; color: var(--ink-2); }
+  .ar-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.8rem; }
+  .ar-actions button { font: inherit; font-size: 0.8rem; padding: 0.45rem 0.85rem; border-radius: 999px; cursor: pointer; }
+  .ar-preview-btn { color: var(--brand); background: var(--brand-soft); border: none; }
+  .ar-preview-btn:hover { opacity: 0.85; }
+  .ar-paid-btn { color: var(--ink-2); background: none; border: 1px solid var(--rule); }
+  .ar-paid-btn:hover { border-color: var(--ink); color: var(--ink); }
+  .ar-email { margin-top: 0.9rem; border: 1px dashed var(--rule); border-radius: 12px; padding: 0.9rem 1.05rem; background: var(--surface-2); font-size: 0.86rem; }
+  .ar-email-subject { font-weight: 660; margin-bottom: 0.5rem; }
+  .ar-email-body { white-space: pre-line; line-height: 1.55; color: var(--ink-2); }
+  .ar-paid-note { margin-top: 0.6rem; font-size: 0.86rem; color: var(--good); }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Invoice reminder sequencer</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Follow up on every unpaid invoice, on schedule, without anyone having to remember</h1>
+  <p class="fx-lede">Most small businesses invoice on time, then the follow up stops: no one owns the second email, the third, or the decision that a call is overdue. This page uses fictional accounts to show a reminder sequence running in the background: a friendly nudge, a firmer follow up, then a flag for a person, nothing skipped, nothing sent once an invoice is paid.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> A real build reads invoices from wherever the business already tracks them (QuickBooks, Xero, a spreadsheet) and sends reminders from the business's own email address and letterhead, not a third-party collections brand.</p></div>
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.2rem;">
+    <div id="stats-root"></div>
+    <div id="result-root" class="ar-table"></div>
+  </div>
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>Reads invoices from wherever they already live.</b> The fictional list here is a placeholder. A real build pulls due dates and amounts from the accounting tool or spreadsheet the business already uses, it doesn't replace that system.</div>
+      <div class="lim"><b>Stops the moment an invoice is marked paid.</b> No lag, no extra reminder going out after the fact, the "Mark as paid" button above shows that behavior directly.</div>
+      <div class="lim"><b>Never moves to collections or legal action on its own.</b> The last stage is a flag for a person to make a call, not an automatic escalation. That decision, and anything that follows it, stays with the business owner.</div>
+      <div class="lim"><b>Email only in this template.</b> Text reminders raise separate consent requirements (TCPA), so a real build only adds SMS for customers already opted into that channel, never switched on by default.</div>
+      <div class="lim"><b>Not yet built for a real business.</b> If yours has the same problem, quiet follow up costing you real cash sitting in unpaid invoices, this is the shape it would take, adapted to your accounts and your voice.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional account data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+
+  var STAGES = {
+    0: { key: "grace", label: "Grace period", cls: "grace" },
+    1: { key: "nudge", label: "Nudge sent", cls: "nudge" },
+    2: { key: "firm", label: "Firm reminder sent", cls: "firm" },
+    3: { key: "escalate", label: "Flagged for a call", cls: "escalate" }
+  };
+
+  var NEXT_LABELS = {
+    1: "a friendly nudge goes out",
+    2: "a firmer reminder goes out"
+  };
+
+  var EMAILS = {
+    1: {
+      subject: "Quick nudge, invoice {inv} is now a few days past due",
+      body: "Hi {client},\n\nJust a friendly heads up that invoice {inv} for {amount} came due a few days ago. If it's already on its way, please ignore this. Otherwise, here's the payment link again:\n\n[payment link]\n\nThanks,\n{sender}"
+    },
+    2: {
+      subject: "Invoice {inv} is now {days} days overdue",
+      body: "Hi {client},\n\nInvoice {inv} for {amount} is now {days} days past due and I haven't seen a payment come through yet. Could you let me know the status, or send payment when you get a chance?\n\n[payment link]\n\nThanks,\n{sender}"
+    },
+    3: {
+      subject: "Invoice {inv}, {days} days overdue, checking in before I call",
+      body: "Hi {client},\n\nInvoice {inv} for {amount} is now {days} days past due and I haven't heard back on the two earlier reminders. I'll give you a call in the next day or two to check in directly.\n\n[payment link]\n\nThanks,\n{sender}"
+    }
+  };
+
+  var ACCOUNTS = [
+    { client: "Meridian Bookkeeping Co.", inv: "#1042", amount: 2140.00, daysOverdue: 6, stage: 1, sender: "[Your Business] Billing", nextStage: 2, nextIn: "9 days" },
+    { client: "Coastal Signage LLC", inv: "#1036", amount: 4380.00, daysOverdue: 18, stage: 2, sender: "[Your Business] Billing", nextStage: 3, nextIn: "12 days" },
+    { client: "Harbor Fleet Maintenance", inv: "#1029", amount: 6120.00, daysOverdue: 34, stage: 3, sender: "[Your Business] Billing", nextStage: null, nextIn: null },
+    { client: "Whitmore & Cole Design", inv: "#1051", amount: 980.00, daysOverdue: 2, stage: 0, sender: "[Your Business] Billing", nextStage: 1, nextIn: "1 day" },
+    { client: "Bellwood Property Services", inv: "#1015", amount: 1560.00, daysOverdue: 0, stage: 1, sender: "[Your Business] Billing", nextStage: 2, nextIn: "11 days", paid: true }
+  ];
+
+  var state = ACCOUNTS.map(function (a) {
+    return { data: a, paid: !!a.paid, previewOpen: false };
+  });
+
+  function money(n) { return "$" + n.toFixed(2); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+  function fillTemplate(tpl, row) {
+    var a = row.data;
+    return tpl
+      .replace(/\{inv\}/g, a.inv)
+      .replace(/\{client\}/g, a.client)
+      .replace(/\{amount\}/g, money(a.amount))
+      .replace(/\{days\}/g, a.daysOverdue)
+      .replace(/\{sender\}/g, a.sender);
+  }
+
+  function renderStats() {
+    var active = state.filter(function (r) { return !r.paid; });
+    var total = active.reduce(function (sum, r) { return sum + r.data.amount; }, 0);
+    var needsCall = active.filter(function (r) { return r.data.stage === 3; }).length;
+    var html = '<div class="ar-stats">'
+      + '<span><b>' + active.length + '</b> invoice' + (active.length === 1 ? '' : 's') + ' in queue</span>'
+      + '<span><b>' + money(total) + '</b> total overdue</span>'
+      + '<span><b>' + needsCall + '</b> flagged for a phone call</span>'
+      + '</div>';
+    document.getElementById("stats-root").innerHTML = html;
+  }
+
+  function rowHtml(row, i) {
+    var a = row.data;
+    var html = '<div class="ar-row' + (row.paid ? ' paid' : '') + '">';
+    html += '<div class="ar-row-top"><div><div class="ar-client">' + escapeHtml(a.client) + '</div><div class="ar-meta">Invoice ' + a.inv + '</div></div>';
+    html += '<div><div class="ar-amount">' + money(a.amount) + '</div>';
+    html += '<div class="ar-overdue">' + (row.paid ? 'paid' : (a.daysOverdue === 0 ? 'due today' : a.daysOverdue + ' day' + (a.daysOverdue === 1 ? '' : 's') + ' overdue')) + '</div></div></div>';
+
+    if (row.paid) {
+      html += '<div style="margin-top:0.7rem;"><span class="badge paid">Paid</span></div>';
+      html += '<div class="ar-paid-note">Reminders stopped automatically when this was marked paid. No further email goes out for this invoice.</div>';
+    } else {
+      var stageInfo = STAGES[a.stage];
+      html += '<div style="margin-top:0.7rem;"><span class="badge ' + stageInfo.cls + '">' + stageInfo.label + '</span></div>';
+      if (a.stage === 3) {
+        html += '<div class="ar-next">Sequence paused after three reminders. This does not move to collections or legal action on its own, it waits for a person to call and decide next steps.</div>';
+      } else if (a.nextStage === 3) {
+        html += '<div class="ar-next">Next: the third reminder goes out in ' + a.nextIn + ' if this is still unpaid, then it gets flagged for a phone call.</div>';
+      } else if (a.nextStage) {
+        html += '<div class="ar-next">Next: ' + NEXT_LABELS[a.nextStage] + ' in ' + a.nextIn + ', unless this is paid first.</div>';
+      }
+      html += '<div class="ar-actions">';
+      if (a.stage > 0) {
+        html += '<button class="ar-preview-btn" onclick="__ar.toggle(' + i + ')">' + (row.previewOpen ? 'Hide sent email' : 'Preview email sent') + '</button>';
+      }
+      html += '<button class="ar-paid-btn" onclick="__ar.markPaid(' + i + ')">Mark as paid</button>';
+      html += '</div>';
+      if (row.previewOpen && a.stage > 0) {
+        var email = EMAILS[a.stage];
+        html += '<div class="ar-email"><div class="ar-email-subject">' + escapeHtml(fillTemplate(email.subject, row)) + '</div><div class="ar-email-body">' + escapeHtml(fillTemplate(email.body, row)) + '</div></div>';
+      }
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function render() {
+    renderStats();
+    var html = "";
+    state.forEach(function (row, i) { html += rowHtml(row, i); });
+    document.getElementById("result-root").innerHTML = html;
+  }
+
+  window.__ar = {
+    toggle: function (i) { state[i].previewOpen = !state[i].previewOpen; render(); },
+    markPaid: function (i) { state[i].paid = true; state[i].previewOpen = false; render(); }
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>
