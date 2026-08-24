@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>SEBCO Laundry Systems, machine-fault refund ledger example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .mfrl-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .mfrl-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .mfrl-tab.active { background: var(--ink); color: var(--surface); }
+  .mfrl-view { display: none; }
+  .mfrl-view.active { display: block; }
+  .mfrl-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .mfrl-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .field-check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--ink-2); }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .ticket-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .ticket-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .ticket-title { font-weight: 660; }
+  .ticket-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.pending { color: var(--warn); background: var(--warn-bg); }
+  .badge.approved { color: var(--good); background: var(--good-bg); }
+  .badge.denied { color: var(--hot); background: var(--hot-bg); }
+  .badge.chronic { color: var(--hot); background: var(--hot-bg); }
+  .badge.fault { color: var(--hot); background: var(--hot-bg); }
+  .badge.repair { color: var(--brand); background: var(--brand-soft); }
+  .badge.maintenance { color: var(--good); background: var(--good-bg); }
+  .ticket-notes { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; }
+  .ticket-actions { margin-top: 0.7rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .machine-block { border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; margin-bottom: 0.9rem; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .machine-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+  .machine-title { font-weight: 700; }
+  .machine-sub { font-size: 0.76rem; color: var(--muted); }
+  .log-row { display: flex; justify-content: space-between; gap: 0.6rem; padding: 0.45rem 0; border-top: 1px solid var(--rule-soft); font-size: 0.85rem; flex-wrap: wrap; }
+  .log-row:first-of-type { border-top: none; }
+  .log-notes { color: var(--ink-2); font-size: 0.82rem; margin-top: 0.1rem; flex-basis: 100%; }
+  .building-select { margin-bottom: 1.1rem; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Machine-fault refund ledger</a> / SEBCO Laundry Systems</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">SEBCO's own refund form promises a check, but never gives a reference number or a deadline</h1>
+  <p class="fx-lede">SEBCO's live Refund Request page collects a resident's building, laundry-room and machine number, then says only "After we receive your request we'll make sure that the machine that you used is back in full working order," with no reference number, no stated turnaround, and no visible link to that machine's actual repair history. SEBCO's own BBB complaint file shows what that produces: an $80 refund denied "citing insufficient justification," a $10 refund denied "after an audit," and a case where responsibility was shifted to the apartment complex as a "third-party" matter. This example shows a small tool that ties every refund request to that specific machine's real, timestamped repair log the moment it's submitted, so a decision is backed by a record instead of a phone rep's say-so, and flags a chronically-failing machine before it generates a fifth complaint.</p>
+  <div class="fact-strip">
+    <span class="fact">SEBCO Laundry Systems Inc, Raritan NJ</span>
+    <span class="fact">53 years in business, family-led</span>
+    <span class="fact">NYC, Long Island, NJ &amp; PA multi-family buildings</span>
+    <span class="fact">Existing tech: Maytag Connect 360 + laundry card</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by SEBCO Laundry Systems Inc.</strong> All building names, machine numbers, resident names, and log entries inside the tool below are fictional and clearly for illustration only. The business description, refund-page language, and complaint pattern referenced here are drawn from SEBCO's own published site and its public BBB complaint file.</p></div>
+
+  <p style="color:var(--ink-2); font-size:0.92rem; max-width:74ch;">SEBCO's BBB file lists 21 complaints in the last 3 years, several describing the same shape: a resident loses money in a machine, reports it, and is denied or left waiting weeks with no record to point to, including a $150 refund resolved only after a technician visit was specifically scheduled, and a $50 refund promised but delayed. Yelp reviews across at least four separately-listed SEBCO addresses in New York City describe "constantly broken down machines, and failure to EVER give a refund." SEBCO already runs real technology, Maytag Connect 360 for machine availability and a laundry-card payment system, so this tool is a bridge into the one documented gap: connecting a refund decision to an actual per-machine service record.</p>
+
+  <div class="mfrl-tabs">
+    <button class="mfrl-tab active" data-view="resident" type="button">Resident: report &amp; refund</button>
+    <button class="mfrl-tab" data-view="desk" type="button">Service desk</button>
+  </div>
+
+  <section class="mfrl-view active" id="view-resident">
+    <div class="mfrl-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Report a machine problem</h2>
+        <form id="add-form" class="form-grid">
+          <div class="field"><label for="f-building">Building</label><select id="f-building"></select></div>
+          <div class="field"><label for="f-machine">Machine number</label><select id="f-machine"></select></div>
+          <div class="field"><label for="f-issue">Issue type</label><select id="f-issue"></select></div>
+          <div class="field"><label for="f-amount">Amount lost (optional)</label><input type="text" id="f-amount" placeholder="e.g. 4.25"></div>
+          <div class="field span2"><label for="f-desc">What happened</label><textarea id="f-desc" placeholder="e.g. Paid, cycle started, machine stopped after 5 minutes with no heat."></textarea></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Submit request</button></div>
+        </form>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Check an existing request</h2>
+        <div class="lookup-box">
+          <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference number</label>
+          <input type="text" id="lookup-ref" placeholder="e.g. SBC-1001">
+          <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+          <div id="lookup-root" class="lookup-result"></div>
+        </div>
+        <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try SBC-1001, SBC-1002 or SBC-1003 from the sample requests below, or submit a new one on the left. This reference number and status are exactly what SEBCO's current refund-request page does not provide.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="mfrl-view" id="view-desk">
+    <h2 class="fx-h2" style="margin-top:0;">All requests</h2>
+    <p style="color:var(--ink-2); font-size:0.9rem; max-width:70ch;">Every request is checked against that machine's own log the instant it's submitted: a matching repair record in the last 14 days auto-approves the refund, no match means it waits on a technician to confirm, either way the resident gets a reference number and a stated turnaround instead of the current page's open-ended promise.</p>
+    <div id="tickets-root"></div>
+
+    <h2 class="fx-h2" style="margin-top:2rem;">Machine log by building</h2>
+    <div class="building-select">
+      <select id="d-building"></select>
+    </div>
+    <div id="machines-root"></div>
+
+    <h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Log a technician visit</h3>
+    <form id="log-form" class="form-grid">
+      <div class="field"><label for="l-building">Building</label><select id="l-building"></select></div>
+      <div class="field"><label for="l-machine">Machine number</label><select id="l-machine"></select></div>
+      <div class="field"><label for="l-type">Visit type</label><select id="l-type"></select></div>
+      <div class="field span2"><label for="l-notes">Notes</label><textarea id="l-notes" placeholder="e.g. Replaced heating element, tested three cycles, machine back in service."></textarea></div>
+      <div class="field span2 field-check"><input type="checkbox" id="l-resolve" checked><label for="l-resolve" style="font-weight:400;">Approve any pending refund requests for this machine</label></div>
+      <div class="field span2"><button type="submit" class="fx-btn-ghost">Log visit</button></div>
+    </form>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>This sits alongside Maytag Connect 360, it does not replace it.</b> SEBCO already has machine-availability and laundry-card infrastructure; a real build would pull machine identity from that existing system rather than duplicating it.</div>
+      <div class="lim"><b>The matching rule reflects SEBCO's own policy, not a guess.</b> "A repair logged in the last 14 days auto-approves" is a reasonable starting rule; a real build encodes whatever SEBCO's service and refund policy actually is, including cases that should route to a person.</div>
+      <div class="lim"><b>This narrows the dispute, it does not fix everything the complaint record shows.</b> Even CSC ServiceWorks, the best-resourced national competitor with a formalized two-day refund process, still draws heavy complaints. A record-backed ticket reduces small-dollar refund disputes; it is not a claim about SEBCO's broader operations.</div>
+      <div class="lim"><b>Back to the general template: <a href="../../">Machine-fault refund ledger</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by SEBCO Laundry Systems Inc.</strong></p><p>Prepared by Shlok Sarnayak. Fictional building, machine, and request data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "mfrl_sebco_laundry_v1";
+  var REF_PREFIX = "SBC";
+
+  var BUILDINGS = [
+    { key: "b1", label: "Sample Building 1 (NYC)" },
+    { key: "b2", label: "Sample Building 2 (Long Island)" },
+    { key: "b3", label: "Sample Building 3 (New Jersey)" }
+  ];
+  var BUILDING_LABEL = {}; BUILDINGS.forEach(function (b) { BUILDING_LABEL[b.key] = b.label; });
+
+  var MACHINES = [
+    { key: "w14", building: "b1", label: "Washer W-14", kind: "Washer" },
+    { key: "d22", building: "b1", label: "Dryer D-22", kind: "Dryer" },
+    { key: "w03", building: "b1", label: "Washer W-03", kind: "Washer" },
+    { key: "w09", building: "b2", label: "Washer W-09", kind: "Washer" },
+    { key: "d11", building: "b2", label: "Dryer D-11", kind: "Dryer" },
+    { key: "w27", building: "b3", label: "Washer W-27", kind: "Washer" }
+  ];
+  var MACHINE_LABEL = {}; MACHINES.forEach(function (m) { MACHINE_LABEL[m.key] = m.label; });
+  function machinesFor(buildingKey) { return MACHINES.filter(function (m) { return m.building === buildingKey; }); }
+
+  var ISSUES = [
+    { key: "no_heat", label: "No heat / cold wash" },
+    { key: "stopped", label: "Cycle stopped early" },
+    { key: "no_dispense", label: "Soap or rinse not dispensed" },
+    { key: "lost_money", label: "Money taken, cycle never started" },
+    { key: "other", label: "Other" }
+  ];
+  var ISSUE_LABEL = {}; ISSUES.forEach(function (i) { ISSUE_LABEL[i.key] = i.label; });
+
+  var VISIT_TYPES = [
+    { key: "repair", label: "Repair (fault fixed)" },
+    { key: "maintenance", label: "Scheduled maintenance" },
+    { key: "inspection", label: "Inspected, no fault found" }
+  ];
+  var VISIT_LABEL = {}; VISIT_TYPES.forEach(function (v) { VISIT_LABEL[v.key] = v.label; });
+
+  var DAY = 86400000;
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function daysFromNow(d) { return Date.now() + d * DAY; }
+
+  function defaultData() {
+    var log = [
+      { id: "L-1", building: "b1", machine: "w14", type: "fault", at: daysFromNow(-25), notes: "Resident reported cold wash, no refund reference given by the old process.", ticketRef: null },
+      { id: "L-2", building: "b1", machine: "w14", type: "repair", at: daysFromNow(-24), notes: "Heating element inspected, no fault found at the time.", ticketRef: null },
+      { id: "L-3", building: "b1", machine: "w14", type: "fault", at: daysFromNow(-10), notes: "Resident reported cold wash again.", ticketRef: null },
+      { id: "L-4", building: "b1", machine: "w14", type: "fault", at: daysFromNow(-3), notes: "Third cold-wash report this month on the same machine.", ticketRef: null },
+      { id: "L-5", building: "b2", machine: "w09", type: "repair", at: daysFromNow(-2), notes: "Coin/card reader replaced, tested working.", ticketRef: null }
+    ];
+    var tickets = [
+      { ref: REF_PREFIX + "-1001", building: "b1", machine: "w14", issue: "no_heat", amount: "4.25", desc: "Paid, cycle ran, water never got warm.", submittedAt: daysFromNow(-3), status: "pending", resolutionNote: "No matching repair record found yet. A technician will inspect this machine and we'll update this reference within 3 business days.", matchedLogId: null },
+      { ref: REF_PREFIX + "-1002", building: "b2", machine: "w09", issue: "lost_money", amount: "3.75", desc: "Card charged, machine never started.", submittedAt: daysFromNow(-1), status: "approved", resolutionNote: "Matched to a repair visit logged " + fmtDate(daysFromNow(-2)) + ": Coin/card reader replaced, tested working. Refund approved, no further action needed.", matchedLogId: "L-5" },
+      { ref: REF_PREFIX + "-1003", building: "b1", machine: "d22", issue: "stopped", amount: "", desc: "Dryer stopped after 8 minutes, clothes still wet.", submittedAt: daysFromNow(-0.2), status: "pending", resolutionNote: "No matching repair record found yet. A technician will inspect this machine and we'll update this reference within 3 business days.", matchedLogId: null }
+    ];
+    return { seq: 1003, logSeq: 5, log: log, tickets: tickets };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function populateBuildingSelects() {
+    var opts = BUILDINGS.map(function (b) { return '<option value="' + b.key + '">' + escapeHtml(b.label) + "</option>"; }).join("");
+    document.getElementById("f-building").innerHTML = opts;
+    document.getElementById("d-building").innerHTML = opts;
+    document.getElementById("l-building").innerHTML = opts;
+  }
+  function populateMachineSelect(sel, buildingKey) {
+    sel.innerHTML = machinesFor(buildingKey).map(function (m) { return '<option value="' + m.key + '">' + escapeHtml(m.label) + "</option>"; }).join("");
+  }
+  function populateStaticSelects() {
+    document.getElementById("f-issue").innerHTML = ISSUES.map(function (i) { return '<option value="' + i.key + '">' + escapeHtml(i.label) + "</option>"; }).join("");
+    document.getElementById("l-type").innerHTML = VISIT_TYPES.map(function (v) { return '<option value="' + v.key + '">' + escapeHtml(v.label) + "</option>"; }).join("");
+  }
+
+  function findRecentRepair(building, machine, beforeTs) {
+    var candidates = data.log.filter(function (l) {
+      return l.building === building && l.machine === machine && l.type === "repair" && l.at <= beforeTs && l.at >= beforeTs - 14 * DAY;
+    }).sort(function (a, b) { return b.at - a.at; });
+    return candidates.length ? candidates[0] : null;
+  }
+
+  function faultCount30d(building, machine) {
+    var cutoff = Date.now() - 30 * DAY;
+    return data.log.filter(function (l) { return l.building === building && l.machine === machine && l.type === "fault" && l.at >= cutoff; }).length;
+  }
+
+  function renderTickets() {
+    var root = document.getElementById("tickets-root");
+    var sorted = data.tickets.slice().sort(function (a, b) { return b.submittedAt - a.submittedAt; });
+    var html = "";
+    if (!sorted.length) html += '<p class="empty">No requests yet.</p>';
+    sorted.forEach(function (t) {
+      html += '<div class="ticket-card"><div class="ticket-head"><div><div class="ticket-title">' + t.ref + " &middot; " + BUILDING_LABEL[t.building] + " / " + MACHINE_LABEL[t.machine] + '</div><div class="ticket-meta">' + ISSUE_LABEL[t.issue] + (t.amount ? " &middot; $" + escapeHtml(t.amount) : "") + " &middot; " + fmtDate(t.submittedAt) + '</div></div><span class="badge ' + t.status + '">' + t.status + "</span></div>";
+      if (t.desc) html += '<div class="ticket-notes">' + escapeHtml(t.desc) + "</div>";
+      html += '<div class="ticket-notes"><em>' + escapeHtml(t.resolutionNote) + "</em></div>";
+      if (t.status === "pending") {
+        html += '<div class="ticket-actions"><button class="fx-btn-ghost" onclick="__mfrl.approve(\'' + t.ref + '\')">Approve</button><button class="fx-btn-ghost" onclick="__mfrl.deny(\'' + t.ref + '\')">Deny</button></div>';
+      }
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  function renderMachines() {
+    var buildingKey = document.getElementById("d-building").value;
+    var root = document.getElementById("machines-root");
+    var html = "";
+    machinesFor(buildingKey).forEach(function (m) {
+      var rows = data.log.filter(function (l) { return l.building === buildingKey && l.machine === m.key; }).sort(function (a, b) { return b.at - a.at; });
+      var chronic = faultCount30d(buildingKey, m.key);
+      html += '<div class="machine-block"><div class="machine-head"><div><span class="machine-title">' + escapeHtml(m.label) + '</span> <span class="machine-sub">' + m.kind + '</span></div>';
+      if (chronic >= 3) html += '<span class="badge chronic">Chronic &middot; ' + chronic + " reports in 30 days</span>";
+      html += "</div>";
+      if (!rows.length) html += '<p class="empty">No log entries yet.</p>';
+      rows.forEach(function (l) {
+        html += '<div class="log-row"><span><span class="badge ' + l.type + '">' + l.type + '</span> ' + fmtDate(l.at) + "</span><span>" + (l.ticketRef ? "Ref " + l.ticketRef : "") + '</span><span class="log-notes">' + escapeHtml(l.notes) + "</span></div>";
+      });
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  window.__mfrl = {
+    approve: function (ref) {
+      var t = data.tickets.filter(function (x) { return x.ref === ref; })[0];
+      if (!t) return;
+      t.status = "approved";
+      t.resolutionNote = "Approved manually by the service desk.";
+      save(); renderTickets(); renderMachines();
+    },
+    deny: function (ref) {
+      var reason = prompt("Reason for denying this refund request?", "No fault confirmed on inspection.");
+      if (reason === null) return;
+      var t = data.tickets.filter(function (x) { return x.ref === ref; })[0];
+      if (!t) return;
+      t.status = "denied";
+      t.resolutionNote = reason || "Denied by the service desk.";
+      save(); renderTickets(); renderMachines();
+    }
+  };
+
+  document.getElementById("f-building").addEventListener("change", function () {
+    populateMachineSelect(document.getElementById("f-machine"), this.value);
+  });
+  document.getElementById("d-building").addEventListener("change", renderMachines);
+  document.getElementById("l-building").addEventListener("change", function () {
+    populateMachineSelect(document.getElementById("l-machine"), this.value);
+  });
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var building = document.getElementById("f-building").value;
+    var machine = document.getElementById("f-machine").value;
+    var issue = document.getElementById("f-issue").value;
+    var amount = document.getElementById("f-amount").value.trim();
+    var desc = document.getElementById("f-desc").value.trim();
+    if (!desc) { alert("Describe what happened."); return; }
+    var now = Date.now();
+    data.seq += 1;
+    var ref = REF_PREFIX + "-" + data.seq;
+    data.logSeq += 1;
+    var logId = "L-" + data.logSeq;
+    data.log.push({ id: logId, building: building, machine: machine, type: "fault", at: now, notes: desc, ticketRef: ref });
+    var match = findRecentRepair(building, machine, now);
+    var ticket = { ref: ref, building: building, machine: machine, issue: issue, amount: amount, desc: desc, submittedAt: now, status: "pending", resolutionNote: "", matchedLogId: null };
+    if (match) {
+      ticket.status = "approved";
+      ticket.matchedLogId = match.id;
+      ticket.resolutionNote = "Matched to a repair visit logged " + fmtDate(match.at) + ": " + match.notes + " Refund approved, no further action needed.";
+    } else {
+      ticket.resolutionNote = "No matching repair record found yet. A technician will inspect this machine and we'll update this reference within 3 business days.";
+    }
+    data.tickets.push(ticket);
+    save(); renderTickets(); renderMachines();
+    document.getElementById("add-form").reset();
+    populateMachineSelect(document.getElementById("f-machine"), document.getElementById("f-building").value);
+    alert("Request submitted. Your reference number is " + ref + ". " + ticket.resolutionNote);
+  });
+
+  document.getElementById("log-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var building = document.getElementById("l-building").value;
+    var machine = document.getElementById("l-machine").value;
+    var type = document.getElementById("l-type").value;
+    var notes = document.getElementById("l-notes").value.trim();
+    var resolve = document.getElementById("l-resolve").checked;
+    if (!notes) { alert("Add a note about this visit."); return; }
+    var now = Date.now();
+    data.logSeq += 1;
+    var logId = "L-" + data.logSeq;
+    data.log.push({ id: logId, building: building, machine: machine, type: type, at: now, notes: notes, ticketRef: null });
+    if (type === "repair" && resolve) {
+      data.tickets.forEach(function (t) {
+        if (t.building === building && t.machine === machine && t.status === "pending") {
+          t.status = "approved";
+          t.matchedLogId = logId;
+          t.resolutionNote = "Matched to a repair visit logged " + fmtDate(now) + ": " + notes + " Refund approved, no further action needed.";
+        }
+      });
+    }
+    save(); renderTickets(); renderMachines();
+    document.getElementById("log-form").reset();
+    document.getElementById("l-resolve").checked = true;
+    populateMachineSelect(document.getElementById("l-machine"), document.getElementById("l-building").value);
+  });
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var t = data.tickets.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
+    if (!t) { root.innerHTML = '<p class="not-found">No request found for that reference number.</p>'; return; }
+    var html = '<div class="ticket-card"><div class="ticket-head"><div><div class="ticket-title">' + t.ref + " &middot; " + BUILDING_LABEL[t.building] + " / " + MACHINE_LABEL[t.machine] + '</div><div class="ticket-meta">' + ISSUE_LABEL[t.issue] + (t.amount ? " &middot; $" + escapeHtml(t.amount) : "") + " &middot; submitted " + fmtDate(t.submittedAt) + '</div></div><span class="badge ' + t.status + '">' + t.status + "</span></div>";
+    html += '<div class="ticket-notes"><em>' + escapeHtml(t.resolutionNote) + "</em></div></div>";
+    root.innerHTML = html;
+  });
+
+  document.querySelectorAll(".mfrl-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".mfrl-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".mfrl-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+      if (btn.dataset.view === "desk") renderMachines();
+    });
+  });
+
+  populateBuildingSelects();
+  populateStaticSelects();
+  populateMachineSelect(document.getElementById("f-machine"), document.getElementById("f-building").value);
+  populateMachineSelect(document.getElementById("l-machine"), document.getElementById("l-building").value);
+  renderTickets();
+  renderMachines();
+})();
+</script>
+</body>
+</html>
