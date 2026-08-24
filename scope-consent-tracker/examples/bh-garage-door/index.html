@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>BH Garage Door &mdash; scope confirmation &amp; order status (sample)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .sct-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .sct-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input[type="text"], .field input[type="number"], .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .rate-note { font-size: 0.74rem; color: var(--muted); margin-top: -0.35rem; }
+  .line-list { display: flex; flex-direction: column; gap: 1px; background: var(--rule-soft); border-radius: var(--radius-sm); overflow: hidden; margin: 0.8rem 0; }
+  .line-row { background: #fff; padding: 0.5rem 0.7rem; display: flex; justify-content: space-between; gap: 0.6rem; font-size: 0.85rem; align-items: center; }
+  .line-row .li-desc { flex: 1; }
+  .line-row .li-meta { color: var(--muted); font-size: 0.74rem; }
+  .line-row button { background: none; border: 0; color: var(--hot); font-weight: 700; cursor: pointer; font-size: 0.78rem; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .estimate-doc { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.2rem; background: #fff; box-shadow: var(--shadow-sm); margin-top: 0.9rem; }
+  .estimate-doc h4 { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.15rem; }
+  .estimate-doc .sub { font-size: 0.76rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .estimate-total { display: flex; justify-content: space-between; font-weight: 750; font-size: 0.98rem; padding-top: 0.6rem; border-top: 2px solid var(--ink); }
+  .limits-note { font-size: 0.78rem; color: var(--ink-2); margin-top: 0.5rem; padding: 0.5rem 0.65rem; background: var(--surface-2); border-radius: var(--radius-sm); }
+  .job-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .job-title { font-weight: 660; }
+  .job-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.draft { color: var(--muted); background: var(--surface-2); }
+  .badge.ready { color: var(--brand); background: var(--brand-soft); }
+  .badge.signed { color: var(--good); background: var(--good-bg); }
+  .sig-block { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px dashed var(--rule); }
+  .sig-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.5rem; }
+  .sig-row input[type="text"] { flex: 1; min-width: 160px; font: inherit; font-size: 0.82rem; padding: 0.4rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .consent-line { font-size: 0.8rem; color: var(--ink-2); display: flex; gap: 0.4rem; align-items: flex-start; }
+  .sig-fact { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin-top: 0.4rem; }
+  .reset-row { margin-top: 1.3rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .lim a { color: var(--brand); }
+
+  .lookup-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  input[type="text"].order-input { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+  input[type="text"].order-input:focus { outline: none; border-color: var(--brand); }
+  .samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.8rem; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.35rem 0.85rem; cursor: pointer; }
+  .sample-chip:hover { opacity: 0.85; }
+  .result { border-top: 1px solid var(--rule); padding-top: 1.3rem; display: flex; flex-direction: column; gap: 1.1rem; margin-top: 1.2rem; }
+  .result-head { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+  .result-head h3 { margin: 0; font-size: 1.1rem; font-family: var(--serif); }
+  .result-meta { font-size: 0.85rem; color: var(--muted); }
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.6rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+  .update-log { margin-top: 0.6rem; padding-top: 0.9rem; border-top: 1px dashed var(--rule); }
+  .update-log h4 { font-size: 0.85rem; margin: 0 0 0.5rem; font-family: var(--sans); }
+  .update-entry { font-size: 0.84rem; color: var(--ink-2); padding: 0.3rem 0; display: flex; gap: 0.5rem; }
+  .update-entry .u-time { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); white-space: nowrap; }
+  .error-box { font-size: 0.92rem; color: var(--muted); font-style: italic; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Scope, consent &amp; documentation packet</a> / BH Garage Door</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample &middot; built for BH Garage Door (bhgaragedoor.net)</span>
+  <h1 class="fx-h1">A price you sign off on before the truck rolls, and a status you can check on a custom door without calling</h1>
+  <p class="fx-lede">BH Garage Door's online booking widget already lets a customer pick a two-hour arrival window, that part works well and isn't touched here. What's still missing, visible in three BBB complaints since January 2024, is a written price the customer agrees to before work starts or gets billed, and a way to check on a full-door order or backordered part without it going quiet for weeks. This page shows both pieces working end to end, with sample jobs, not BH Garage Door's real customers or real prices.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> Sample technicians, sample customers, sample jobs. The service categories, pricing structure, and complaint pattern are shaped by BH Garage Door's own published service list and its BBB complaint history, described in plain terms in the "How this gets built for real" section below; nothing here reads or writes any of BH Garage Door's actual data.</p></div>
+
+  <div class="sct-cols">
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Build the written estimate</h2>
+      <form id="line-form" class="form-grid">
+        <div class="field span2"><label for="f-customer">Customer / job name</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer"></div>
+        <div class="field span2"><label for="f-cat">Service</label>
+          <select id="f-cat"></select>
+        </div>
+        <div class="field span2"><label for="f-desc">Job note</label><input type="text" id="f-desc" placeholder="e.g. Right-side torsion spring, 2-car door"></div>
+        <div class="field"><label for="f-qty">Quantity</label><input type="number" id="f-qty" min="0" step="1" value="1"></div>
+        <div class="field"><label for="f-rate">Price ($)</label><input type="number" id="f-rate" min="0" step="1"></div>
+        <div class="rate-note span2">Sample prices, editable. These illustrate the workflow, not BH Garage Door's actual price list.</div>
+        <div class="field span2"><button type="submit" class="fx-btn-ghost">Add line item</button></div>
+      </form>
+      <div id="lines-root"></div>
+      <div class="field span2"><label for="f-limits">Known limitations (shown to the customer up front, not on the invoice afterward)</label><input type="text" id="f-limits" placeholder="e.g. Track alignment can't be confirmed until the old spring is off"></div>
+      <div class="field span2" style="margin-top:0.6rem;"><button id="gen-btn" class="fx-btn" type="button">Generate written estimate</button></div>
+      <div id="doc-root"></div>
+    </div>
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Job record</h2>
+      <div id="jobs-root"></div>
+      <div class="reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">Order status: full-door installs &amp; backordered parts</h2>
+    <p style="color: var(--ink-2); font-size: 0.92rem; max-width: 70ch;">This is the piece a customer currently has to call for. A custom door order runs weeks, not minutes, so it gets its own status flow separate from the booking widget's same-day scheduling: enter an order number below.</p>
+    <div class="fx-card" style="display:flex; flex-direction:column; gap:1rem; margin-top:1rem;">
+      <div>
+        <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Enter an order number</div>
+        <div class="lookup-row" style="margin-top:0.6rem;">
+          <input type="text" class="order-input" id="order-input" placeholder="e.g. BHGD-4471">
+          <button class="fx-btn" id="order-lookup-btn">Check status</button>
+        </div>
+        <div class="samples" style="margin-top:0.8rem;">
+          <span style="font-size:0.82rem; color:var(--muted);">Try a sample:</span>
+          <button class="sample-chip" data-sample="BHGD-4471">BHGD-4471</button>
+          <button class="sample-chip" data-sample="BHGD-4488">BHGD-4488</button>
+        </div>
+      </div>
+      <div id="order-result-root"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>Built around what BH Garage Door already has, not a replacement.</b> The existing "Book Online" arrival-window flow on bhgaragedoor.net stays exactly as is. A real build adds the estimate sign-off as a step inside the technician's existing job workflow, and the order tracker as one new page linked from the site, on whatever platform the site already runs on.</div>
+      <div class="lim"><b>The service list mirrors what BH Garage Door itself advertises.</b> Springs, cables, panels, tracks, openers, remotes/keypads, and full door installs, taken from the company's own site; the categories and sample prices above are illustrative, not their real price list.</div>
+      <div class="lim"><b>The order tracker targets the specific gap in their BBB record.</b> One complaint on file describes a full-door order promised in 3-4 weeks that ran over two months with, in the customer's own words, no email, call, or text update the whole time. The stage tracker and update log above are what makes that visible to the customer without them having to call and ask.</div>
+      <div class="lim"><b>"Signed" here is a typed name and a timestamp.</b> A real build can use an actual e-signature provider if BH Garage Door wants a stronger legal record; this demo shows the workflow, not a specific vendor.</div>
+      <div class="lim"><b>See the generic version of this template: <a href="../../">scope, consent &amp; documentation packet</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample, not affiliated with or endorsed by BH Garage Door.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job, customer, and order data on this page, not connected to any live system or to BH Garage Door's actual records.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "bhgd_demo_v1";
+
+  var CATEGORIES = [
+    { name: "Torsion Spring Replacement", unit: "pair", rate: 285 },
+    { name: "Cable Replacement / Adjustment", unit: "job", rate: 145 },
+    { name: "Panel Replacement", unit: "panel", rate: 320 },
+    { name: "Track Repair / Realignment", unit: "job", rate: 175 },
+    { name: "Opener Installation", unit: "unit", rate: 425 },
+    { name: "Opener Repair / Service Call", unit: "job", rate: 165 },
+    { name: "Remote / Keypad Programming", unit: "job", rate: 65 },
+    { name: "Weatherstrip / Seal Replacement", unit: "job", rate: 195 },
+    { name: "Full Door Replacement (Custom Order)", unit: "door", rate: 1850 }
+  ];
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtMoney(n) { return "$" + n.toFixed(2).replace(/\.00$/, ""); }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function daysAgo(n, h) { var d = new Date(); d.setDate(d.getDate() - n); d.setHours(h || 9, 0, 0, 0); return d.getTime(); }
+
+  function defaultData() {
+    var lines1 = [
+      { desc: "Right-side spring, 2-car door", cat: "Torsion Spring Replacement", qty: 1, rate: 285 }
+    ];
+    var job1 = makeJob("Sample Customer A", lines1, "Track alignment will be re-checked once the old spring is off; an out-of-alignment track is a separate line item if found.");
+    job1.status = "signed";
+    job1.signerName = "Sample Customer A";
+    job1.signedAt = daysAgo(1, 14);
+    job1.createdAt = daysAgo(1, 13);
+
+    var lines2 = [
+      { desc: "Full weatherstrip run, single door", cat: "Weatherstrip / Seal Replacement", qty: 1, rate: 195 }
+    ];
+    var job2 = makeJob("Sample Customer B", lines2, "This seal is rated for standard door gaps; a door frame that's out of square by more than 1/2 inch may not seal fully and would need a separate frame assessment, flagged here, not discovered on the invoice.");
+    job2.status = "ready";
+    job2.createdAt = daysAgo(0);
+
+    var lines3 = [
+      { desc: "Opener won't respond to remote, garage-side wall button works", cat: "Opener Repair / Service Call", qty: 1, rate: 165 }
+    ];
+    var job3 = makeJob("Sample Customer C", lines3, "");
+    job3.status = "draft";
+    job3.createdAt = daysAgo(0);
+
+    return { seq: 3, jobs: [job1, job2, job3] };
+  }
+
+  function makeJob(customer, lineDefs, limits) {
+    var lines = lineDefs.map(function (l) { return { desc: l.desc, cat: l.cat, qty: l.qty, rate: l.rate }; });
+    return {
+      id: "JOB-" + Math.floor(1000 + Math.random() * 1),
+      customer: customer,
+      lines: lines,
+      limits: limits || "",
+      status: "draft",
+      createdAt: Date.now(),
+      signerName: null,
+      signedAt: null
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  var draftLines = [];
+
+  function populateCategorySelect() {
+    var sel = document.getElementById("f-cat");
+    sel.innerHTML = CATEGORIES.map(function (c) { return '<option value="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + " (" + c.unit + ")</option>"; }).join("");
+    sel.addEventListener("change", fillRate);
+    fillRate();
+  }
+  function fillRate() {
+    var sel = document.getElementById("f-cat");
+    var cat = CATEGORIES.filter(function (c) { return c.name === sel.value; })[0];
+    if (cat) document.getElementById("f-rate").value = cat.rate;
+  }
+
+  function renderDraftLines() {
+    var root = document.getElementById("lines-root");
+    if (!draftLines.length) { root.innerHTML = '<p class="empty">No line items added yet.</p>'; return; }
+    var html = '<div class="line-list">';
+    draftLines.forEach(function (l, i) {
+      html += '<div class="line-row"><span class="li-desc">' + escapeHtml(l.cat) + (l.desc ? " &middot; " + escapeHtml(l.desc) : "") + '<br><span class="li-meta">' + l.qty + " &times; " + fmtMoney(l.rate) + " = " + fmtMoney(l.qty * l.rate) + '</span></span><button type="button" onclick="__bhgd.removeLine(' + i + ')">Remove</button></div>';
+    });
+    html += "</div>";
+    root.innerHTML = html;
+  }
+
+  function lineTotal(l) { return l.qty * l.rate; }
+  function sumLines(lines) { return lines.reduce(function (s, l) { return s + lineTotal(l); }, 0); }
+
+  function renderEstimateDoc(job) {
+    var root = document.getElementById("doc-root");
+    var total = sumLines(job.lines);
+    var html = '<div class="estimate-doc" id="doc-print">' +
+      "<h4>Written Estimate</h4>" +
+      '<div class="sub">' + job.id + " &middot; " + escapeHtml(job.customer) + " &middot; generated " + fmtDate(job.createdAt) + "</div>" +
+      '<div class="line-list">' +
+      job.lines.map(function (l) { return '<div class="line-row"><span class="li-desc">' + escapeHtml(l.cat) + (l.desc ? " &middot; " + escapeHtml(l.desc) : "") + '</span><span>' + fmtMoney(lineTotal(l)) + "</span></div>"; }).join("") +
+      "</div>" +
+      '<div class="estimate-total"><span>Total, agreed before work begins</span><span>' + fmtMoney(total) + "</span></div>" +
+      (job.limits ? '<div class="limits-note"><b>Known limitations, shown now:</b> ' + escapeHtml(job.limits) + "</div>" : "") +
+      '<div style="margin-top:0.9rem;"><button class="fx-btn-ghost" onclick="window.print()">Print / save as PDF</button></div>' +
+      "</div>";
+    root.innerHTML = html;
+  }
+
+  var STATUS_LABEL = { draft: "Draft", ready: "Estimate ready", signed: "Signed, work authorized" };
+  var STATUS_CLASS = { draft: "draft", ready: "ready", signed: "signed" };
+
+  function renderJobs() {
+    var root = document.getElementById("jobs-root");
+    if (!data.jobs.length) { root.innerHTML = '<p class="empty">No jobs yet. Generate a written estimate to start one.</p>'; return; }
+    var html = "";
+    data.jobs.slice().sort(function (a, b) { return b.createdAt - a.createdAt; }).forEach(function (job) {
+      var idx = data.jobs.indexOf(job);
+      var total = sumLines(job.lines);
+      html += '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(job.customer) + '</div><div class="job-meta">' + job.id + " &middot; " + fmtMoney(total) + '</div></div><span class="badge ' + STATUS_CLASS[job.status] + '">' + STATUS_LABEL[job.status] + "</span></div>";
+
+      if (job.limits) {
+        html += '<div class="limits-note"><b>Known limitations:</b> ' + escapeHtml(job.limits) + '</div>';
+      }
+      if (job.status === "ready") {
+        html += '<div class="sig-block"><div class="consent-line"><input type="checkbox" id="consent-' + idx + '"> <label for="consent-' + idx + '">Customer has reviewed the price and any known limitations above and authorizes work to begin at this price.</label></div>' +
+          '<div class="sig-row"><input type="text" id="signer-' + idx + '" placeholder="Customer typed full name"><button class="fx-btn-ghost" onclick="__bhgd.sign(' + idx + ')">Capture signature</button></div></div>';
+      }
+      if (job.signerName) {
+        html += '<div class="sig-fact">Signed by ' + escapeHtml(job.signerName) + " at " + fmtDate(job.signedAt) + "</div>";
+      }
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  window.__bhgd = {
+    removeLine: function (i) { draftLines.splice(i, 1); renderDraftLines(); },
+    sign: function (idx) {
+      var job = data.jobs[idx];
+      var box = document.getElementById("consent-" + idx);
+      var name = document.getElementById("signer-" + idx).value.trim();
+      if (!box.checked) { alert("Check the consent box before capturing a signature."); return; }
+      if (!name) { alert("Enter the customer's typed name."); return; }
+      job.signerName = name;
+      job.signedAt = Date.now();
+      job.status = "signed";
+      save(); renderJobs();
+    }
+  };
+
+  document.getElementById("line-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var cat = document.getElementById("f-cat").value;
+    var desc = document.getElementById("f-desc").value.trim();
+    var qty = parseFloat(document.getElementById("f-qty").value) || 0;
+    var rate = parseFloat(document.getElementById("f-rate").value) || 0;
+    if (qty <= 0) { alert("Enter a quantity greater than zero."); return; }
+    draftLines.push({ cat: cat, desc: desc, qty: qty, rate: rate });
+    document.getElementById("f-desc").value = "";
+    renderDraftLines();
+  });
+
+  document.getElementById("gen-btn").addEventListener("click", function () {
+    var customer = document.getElementById("f-customer").value.trim();
+    if (!customer) { alert("Enter a customer or job name."); return; }
+    if (!draftLines.length) { alert("Add at least one line item first."); return; }
+    var limits = document.getElementById("f-limits").value.trim();
+    var job = makeJob(customer, draftLines, limits);
+    job.status = "ready";
+    data.jobs.unshift(job);
+    save();
+    renderEstimateDoc(job);
+    renderJobs();
+    draftLines = [];
+    renderDraftLines();
+    document.getElementById("f-customer").value = "";
+    document.getElementById("f-limits").value = "";
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset all jobs back to the original sample data?")) return;
+    data = defaultData(); save(); renderJobs();
+    document.getElementById("doc-root").innerHTML = "";
+  });
+
+  populateCategorySelect();
+  renderDraftLines();
+  renderJobs();
+
+  // Order status tracker (full-door installs / backordered parts)
+  var STAGE_NAMES = ["Order confirmed", "Door measured &amp; specs locked", "Manufacturing", "Shipped to BH Garage Door", "Installed"];
+  var ORDERS = {
+    "BHGD-4471": {
+      item: "Full door replacement, insulated steel, custom width",
+      stage: 2,
+      times: ["Aug 4, 9:40 AM", "Aug 6, 1:15 PM", null, null, null],
+      updates: [
+        { at: "Aug 4, 9:40 AM", text: "Order confirmed with manufacturer. Estimated manufacturing lead time 3-4 weeks from spec lock." },
+        { at: "Aug 6, 1:15 PM", text: "Technician measured opening and locked final specs with manufacturer. Waiting on manufacturing start confirmation." }
+      ]
+    },
+    "BHGD-4488": {
+      item: "Full door replacement, carriage-house style, insulated",
+      stage: 5,
+      times: ["Jul 18, 10:05 AM", "Jul 20, 2:30 PM", "Aug 2, 11:00 AM", "Aug 14, 9:00 AM", "Aug 18, 3:45 PM"],
+      updates: [
+        { at: "Jul 18, 10:05 AM", text: "Order confirmed with manufacturer." },
+        { at: "Jul 20, 2:30 PM", text: "Technician measured opening and locked final specs." },
+        { at: "Aug 2, 11:00 AM", text: "Manufacturer confirmed production start, delayed one week past original estimate due to a hardware backorder on carriage-house hinges." },
+        { at: "Aug 14, 9:00 AM", text: "Door shipped from manufacturer, arriving at BH Garage Door's warehouse within 3-4 business days." },
+        { at: "Aug 18, 3:45 PM", text: "Installation completed." }
+      ]
+    }
+  };
+  var orderResultRoot = document.getElementById("order-result-root");
+  var orderInput = document.getElementById("order-input");
+  function normalizeOrder(v) { return (v || "").trim().toUpperCase(); }
+  function lookupOrder() {
+    var key = normalizeOrder(orderInput.value);
+    if (!key) { orderResultRoot.innerHTML = '<p class="error-box">Enter an order number above, or try one of the samples.</p>'; return; }
+    var order = ORDERS[key];
+    if (!order) { orderResultRoot.innerHTML = '<p class="error-box">No sample order matches "' + escapeHtml(orderInput.value) + '". Try one of the two samples above, this demo only has data for those.</p>'; return; }
+    renderOrder(key, order);
+  }
+  function renderOrder(key, order) {
+    var html = '<div class="result"><div class="result-head"><h3>' + key + '</h3><span class="result-meta">' + order.item + '</span></div><div>';
+    STAGE_NAMES.forEach(function (name, i) {
+      var cls = i < order.stage ? 'done' : (i === order.stage ? 'active' : 'pending');
+      var time = order.times[i];
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === 'pending' ? ' pending-text' : '') + '">' + name + '</div><div class="stage-time">' + (time ? time : (cls === 'active' ? 'In progress' : 'Not started')) + '</div></div></div>';
+    });
+    html += '</div>';
+    html += '<div class="update-log"><h4>Update log, visible to the customer</h4>';
+    order.updates.forEach(function (u) {
+      html += '<div class="update-entry"><span class="u-time">' + u.at + '</span><span>' + escapeHtml(u.text) + '</span></div>';
+    });
+    html += '</div></div>';
+    orderResultRoot.innerHTML = html;
+  }
+  document.getElementById("order-lookup-btn").addEventListener("click", lookupOrder);
+  orderInput.addEventListener("keydown", function (e) { if (e.key === "Enter") lookupOrder(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".sample-chip"), function (b) { b.addEventListener("click", function () { orderInput.value = b.dataset.sample; lookupOrder(); }); });
+  orderResultRoot.innerHTML = '<p class="error-box">Enter an order number above, or try one of the samples.</p>';
+})();
+</script>
+</body>
+</html>
