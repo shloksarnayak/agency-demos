@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Pre-send balance-reconciliation guard template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .brg-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .brg-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .brg-tab.active { background: var(--ink); color: var(--surface); }
+  .brg-view { display: none; }
+  .brg-view.active { display: block; }
+  .brg-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .brg-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .stmt-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .stmt-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .stmt-title { font-weight: 660; }
+  .stmt-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .stmt-nums { display: flex; gap: 1.2rem; margin-top: 0.55rem; flex-wrap: wrap; font-size: 0.82rem; color: var(--ink-2); }
+  .stmt-nums b { color: var(--ink); font-family: var(--mono); }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.ok { color: var(--good); background: var(--good-bg); }
+  .badge.hold { color: var(--hot); background: var(--hot-bg); }
+  .badge.sent { color: var(--brand); background: var(--brand-soft); }
+  .flag-list { margin-top: 0.65rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  .flag-item { font-size: 0.84rem; color: var(--ink-2); border-left: 2px solid var(--hot); padding-left: 0.6rem; }
+  .flag-item b { color: var(--hot); }
+  .stmt-actions { margin-top: 0.75rem; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Pre-send balance-reconciliation guard</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">A balance shouldn't go out to a customer until it agrees with what was actually paid.</h1>
+  <p class="fx-lede">A billing system shows one balance. The payment/adjustment ledger and an insurer's remittance status can each tell a slightly different story by the time a statement or collection letter is about to be mailed, a payment posted late, an adjustment not yet reflected, a remittance still pending, two systems both generating a statement for the same account during a transition. Each of those is exactly the kind of gap that turns into a "you billed me for something I already paid" complaint. This page shows a small, working tool that sits right before the mail step: every statement queued to go out is automatically checked against the ledger and remittance status, and anything that doesn't reconcile is held instead of mailed.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, it reads from whatever billing, payment-ledger, and remittance/EOB data already exists, it does not replace any of those systems, it just checks them against each other before anything goes in the mail.</p></div>
+
+  <div class="brg-tabs">
+    <button class="brg-tab active" data-view="queue" type="button">Statement queue</button>
+    <button class="brg-tab" data-view="add" type="button">Add a queued statement</button>
+  </div>
+
+  <section class="brg-view active" id="view-queue">
+    <h2 class="fx-h2" style="margin-top:0;">Statements about to go out</h2>
+    <p style="color:var(--ink-2); font-size:0.9rem; max-width:70ch;">Reconciliation runs automatically the moment a statement enters the queue. Anything held stays held until someone resolves it, nothing gets mailed by default just because time passed.</p>
+    <div id="queue-root"></div>
+    <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+
+    <h2 class="fx-h2" style="margin-top:2rem;">Sent log</h2>
+    <div id="sent-root"></div>
+  </section>
+
+  <section class="brg-view" id="view-add">
+    <h2 class="fx-h2" style="margin-top:0;">Add a statement to the queue</h2>
+    <p style="color:var(--ink-2); font-size:0.9rem; max-width:70ch;">In production this row comes from a billing-system export, a payment-ledger export, and a remittance/EOB feed, matched automatically. Here you fill it in by hand to see the reconciliation check run.</p>
+    <form id="add-form" class="form-grid">
+      <div class="field span2"><label for="f-patient">Account / customer label</label><input type="text" id="f-patient" placeholder="e.g. Sample Account A"></div>
+      <div class="field"><label for="f-statement">Amount on the statement about to mail ($)</label><input type="number" step="0.01" min="0" id="f-statement" placeholder="e.g. 240.00"></div>
+      <div class="field"><label for="f-balance">Current balance in the billing system ($)</label><input type="number" step="0.01" min="0" id="f-balance" placeholder="e.g. 240.00"></div>
+      <div class="field"><label for="f-payment">Payment ledger status</label><select id="f-payment"></select></div>
+      <div class="field"><label for="f-eob">Insurance remittance (EOB) status</label><select id="f-eob"></select></div>
+      <div class="field span2"><label for="f-source">Billing system source</label><select id="f-source"></select></div>
+      <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue and check</button></div>
+    </form>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>This is a checkpoint, not a new billing system.</b> It sits between whatever already generates a statement and the mail step, and only needs read access to three things that already exist: the balance, the payment ledger, and the remittance/EOB feed.</div>
+      <div class="lim"><b>Holding is conservative on purpose.</b> A false hold costs someone a few minutes reviewing it. A false send is the complaint this tool exists to prevent, so it errs toward holding when the sources disagree.</div>
+      <div class="lim"><b>Releasing a held statement is a deliberate action, not automatic.</b> The tool flags the mismatch, a person still decides it's actually resolved before it goes out.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional account and billing data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "brg_template_generic_v1";
+
+  var PAYMENT_STATUS = [
+    { key: "none", label: "No payment recorded" },
+    { key: "partial", label: "Partial payment posted" },
+    { key: "paid_in_full", label: "Paid in full" }
+  ];
+  var PAYMENT_LABEL = {}; PAYMENT_STATUS.forEach(function (p) { PAYMENT_LABEL[p.key] = p.label; });
+
+  var EOB_STATUS = [
+    { key: "not_received", label: "Not yet received from insurer" },
+    { key: "pending", label: "Received, still processing" },
+    { key: "closed_patient_owes", label: "Closed, patient portion confirmed" },
+    { key: "closed_no_balance", label: "Closed, no patient balance" }
+  ];
+  var EOB_LABEL = {}; EOB_STATUS.forEach(function (e) { EOB_LABEL[e.key] = e.label; });
+
+  var SOURCE_SYSTEM = [
+    { key: "system_a", label: "System A (legacy)" },
+    { key: "system_b", label: "System B (current)" }
+  ];
+  var SOURCE_LABEL = {}; SOURCE_SYSTEM.forEach(function (s) { SOURCE_LABEL[s.key] = s.label; });
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtMoney(n) { return "$" + (Math.round(n * 100) / 100).toFixed(2); }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function hoursFromNow(h) { return Date.now() + h * 3600000; }
+  function ageLabel(ts) {
+    var h = Math.max(0, Math.round((Date.now() - ts) / 3600000));
+    if (h < 24) return h + "h";
+    return Math.round(h / 24) + "d";
+  }
+
+  function defaultData() {
+    var q = [
+      {
+        id: "S-1001", patient: "Sample Account A", statementAmount: 240.00, balance: 240.00,
+        payment: "paid_in_full", paymentDate: hoursFromNow(-144), eob: "closed_no_balance", source: "system_b",
+        queuedAt: hoursFromNow(-40)
+      },
+      {
+        id: "S-1002", patient: "Sample Account B", statementAmount: 165.00, balance: 0.00,
+        payment: "none", paymentDate: null, eob: "closed_no_balance", source: "system_b",
+        queuedAt: hoursFromNow(-20)
+      },
+      {
+        id: "S-1003", patient: "Sample Account C", statementAmount: 380.00, balance: 380.00,
+        payment: "none", paymentDate: null, eob: "pending", source: "system_a",
+        queuedAt: hoursFromNow(-12)
+      },
+      {
+        id: "S-1004", patient: "Sample Account D", statementAmount: 95.00, balance: 95.00,
+        payment: "none", paymentDate: null, eob: "closed_patient_owes", source: "system_a",
+        queuedAt: hoursFromNow(-9)
+      },
+      {
+        id: "S-1005", patient: "Sample Account D", statementAmount: 95.00, balance: 95.00,
+        payment: "none", paymentDate: null, eob: "closed_patient_owes", source: "system_b",
+        queuedAt: hoursFromNow(-6)
+      },
+      {
+        id: "S-1006", patient: "Sample Account E", statementAmount: 90.00, balance: 90.00,
+        payment: "none", paymentDate: null, eob: "closed_patient_owes", source: "system_b",
+        queuedAt: hoursFromNow(-3)
+      }
+    ];
+    return { seq: 1006, queue: q, sent: [] };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function populateSelects() {
+    document.getElementById("f-payment").innerHTML = PAYMENT_STATUS.map(function (p) { return '<option value="' + p.key + '">' + escapeHtml(p.label) + "</option>"; }).join("");
+    document.getElementById("f-eob").innerHTML = EOB_STATUS.map(function (e) { return '<option value="' + e.key + '">' + escapeHtml(e.label) + "</option>"; }).join("");
+    document.getElementById("f-source").innerHTML = SOURCE_SYSTEM.map(function (s) { return '<option value="' + s.key + '">' + escapeHtml(s.label) + "</option>"; }).join("");
+  }
+
+  function computeFlags(rec, allQueued) {
+    var flags = [];
+    if (rec.balance > 0 && rec.payment === "paid_in_full") {
+      flags.push({ key: "phantom", text: "Billing balance shows " + fmtMoney(rec.balance) + " but the payment ledger already shows paid in full" + (rec.paymentDate ? " (" + ageLabel(rec.paymentDate) + " ago)" : "") + ". The statement would re-bill something already paid." });
+    }
+    if (rec.balance === 0 && rec.statementAmount > 0) {
+      flags.push({ key: "stale", text: "The statement is queued to print " + fmtMoney(rec.statementAmount) + " but the live billing balance is now " + fmtMoney(rec.balance) + ". The statement was generated before the balance was updated." });
+    }
+    if (rec.balance > 0 && (rec.eob === "not_received" || rec.eob === "pending")) {
+      flags.push({ key: "eob", text: "Insurance remittance (EOB) is " + EOB_LABEL[rec.eob].toLowerCase() + ". Billing the patient before it finalizes risks a balance that changes right after the statement mails." });
+    }
+    var dupes = allQueued.filter(function (o) {
+      return o.id !== rec.id && o.patient.trim().toLowerCase() === rec.patient.trim().toLowerCase() && o.source !== rec.source;
+    });
+    if (dupes.length) {
+      flags.push({ key: "duplicate", text: "Another queued statement for this same account exists from " + SOURCE_LABEL[dupes[0].source] + ". Two systems appear to be generating statements for the same account in parallel." });
+    }
+    return flags;
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var sorted = data.queue.slice().sort(function (a, b) { return a.queuedAt - b.queuedAt; });
+    var html = "";
+    if (!sorted.length) html += '<p class="empty">Nothing queued.</p>';
+    sorted.forEach(function (rec) {
+      var flags = computeFlags(rec, data.queue);
+      var ok = flags.length === 0;
+      html += '<div class="stmt-card"><div class="stmt-head"><div><div class="stmt-title">' + escapeHtml(rec.patient) + " &middot; " + rec.id + '</div><div class="stmt-meta">' + SOURCE_LABEL[rec.source] + " &middot; queued " + ageLabel(rec.queuedAt) + " ago</div></div><span class=\"badge " + (ok ? "ok" : "hold") + '">' + (ok ? "Ready to send" : flags.length + " issue" + (flags.length > 1 ? "s" : "") + " held") + "</span></div>";
+      html += '<div class="stmt-nums"><span>Statement amount <b>' + fmtMoney(rec.statementAmount) + '</b></span><span>Billing balance <b>' + fmtMoney(rec.balance) + '</b></span><span>Payment ledger <b>' + PAYMENT_LABEL[rec.payment] + '</b></span><span>EOB <b>' + EOB_LABEL[rec.eob] + "</b></span></div>";
+      if (flags.length) {
+        html += '<div class="flag-list">';
+        flags.forEach(function (f) { html += '<div class="flag-item"><b>Held:</b> ' + escapeHtml(f.text) + "</div>"; });
+        html += "</div>";
+      }
+      html += '<div class="stmt-actions">';
+      if (ok) {
+        html += '<button class="fx-btn-ghost" onclick="__brg.send(\'' + rec.id + '\')">Send now</button>';
+      } else {
+        html += '<button class="fx-btn-ghost" onclick="__brg.resolve(\'' + rec.id + '\')">Mark resolved by billing &amp; send</button>';
+      }
+      html += "</div></div>";
+    });
+    root.innerHTML = html;
+  }
+
+  function renderSent() {
+    var root = document.getElementById("sent-root");
+    var sorted = data.sent.slice().sort(function (a, b) { return b.sentAt - a.sentAt; });
+    var html = "";
+    if (!sorted.length) html += '<p class="empty">Nothing sent yet.</p>';
+    sorted.slice(0, 8).forEach(function (rec) {
+      html += '<div class="stmt-card"><div class="stmt-head"><div><div class="stmt-title">' + escapeHtml(rec.patient) + " &middot; " + rec.id + '</div><div class="stmt-meta">' + fmtMoney(rec.statementAmount) + " &middot; sent " + fmtDate(rec.sentAt) + '</div></div><span class="badge sent">' + (rec.wasResolved ? "Sent after resolution" : "Sent") + "</span></div></div>";
+    });
+    root.innerHTML = html;
+  }
+
+  window.__brg = {
+    send: function (id) {
+      var i = data.queue.findIndex(function (r) { return r.id === id; });
+      if (i === -1) return;
+      var rec = data.queue[i];
+      var flags = computeFlags(rec, data.queue);
+      if (flags.length) { alert("This statement still has unresolved issues, resolve them first."); return; }
+      data.queue.splice(i, 1);
+      rec.sentAt = Date.now(); rec.wasResolved = false;
+      data.sent.push(rec);
+      save(); renderQueue(); renderSent();
+    },
+    resolve: function (id) {
+      if (!confirm("Confirm billing has reviewed this and the balance is actually correct before sending?")) return;
+      var i = data.queue.findIndex(function (r) { return r.id === id; });
+      if (i === -1) return;
+      var rec = data.queue[i];
+      data.queue.splice(i, 1);
+      rec.sentAt = Date.now(); rec.wasResolved = true;
+      data.sent.push(rec);
+      save(); renderQueue(); renderSent();
+    }
+  };
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var patient = document.getElementById("f-patient").value.trim();
+    var statementAmount = parseFloat(document.getElementById("f-statement").value);
+    var balance = parseFloat(document.getElementById("f-balance").value);
+    var payment = document.getElementById("f-payment").value;
+    var eob = document.getElementById("f-eob").value;
+    var source = document.getElementById("f-source").value;
+    if (!patient) { alert("Enter an account or customer label."); return; }
+    if (isNaN(statementAmount) || isNaN(balance)) { alert("Enter both dollar amounts."); return; }
+    data.seq += 1;
+    var id = "S-" + data.seq;
+    data.queue.push({
+      id: id, patient: patient, statementAmount: statementAmount, balance: balance,
+      payment: payment, paymentDate: payment === "none" ? null : hoursFromNow(0),
+      eob: eob, source: source, queuedAt: Date.now()
+    });
+    save(); renderQueue();
+    document.getElementById("add-form").reset();
+    populateSelects();
+    document.querySelector('.brg-tab[data-view="queue"]').click();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue(); renderSent();
+  });
+
+  document.querySelectorAll(".brg-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".brg-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".brg-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  populateSelects();
+  renderQueue();
+  renderSent();
+})();
+</script>
+</body>
+</html>
