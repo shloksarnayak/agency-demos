@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Install monitoring handoff &amp; storm-queue tracker template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .imsq-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .imsq-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .imsq-tab.active { background: var(--ink); color: var(--surface); }
+  .imsq-view { display: none; }
+  .imsq-view.active { display: block; }
+  .imsq-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .imsq-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .field-check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--ink-2); }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .job-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .job-title { font-weight: 660; }
+  .job-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.open { color: var(--warn); background: var(--warn-bg); }
+  .badge.done { color: var(--good); background: var(--good-bg); }
+  .badge.blocked { color: var(--hot); background: var(--hot-bg); }
+  .checklist { margin-top: 0.7rem; display: flex; flex-direction: column; gap: 0.45rem; }
+  .check-row { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.86rem; color: var(--ink-2); }
+  .check-row input[type="checkbox"] { margin-top: 0.2rem; }
+  .check-row.done-item { color: var(--ink); }
+  .confirm-ref-row { margin-top: 0.5rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+  .confirm-ref-row input { font: inherit; font-size: 0.85rem; padding: 0.4rem 0.6rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); flex: 1; min-width: 12rem; }
+  .job-actions { margin-top: 0.8rem; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .queue-pos { font-family: var(--mono); font-size: 0.72rem; font-weight: 750; color: var(--brand); }
+  .notif-log { margin-top: 0.6rem; border-top: 1px dashed var(--rule); padding-top: 0.5rem; }
+  .notif-line { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Install monitoring handoff &amp; storm-queue tracker</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Close out the job only once the customer's monitoring account actually works.</h1>
+  <p class="fx-lede">A crew installs a monitored device, whether that's a generator, an alarm panel, or an HVAC system, and pairs it to a remote-monitoring app. The pairing itself is easy to get "stuck" under the installer's own account instead of the customer's, so the job gets marked done while monitoring quietly never transfers. Weeks later the customer is charged for a service that was never actually receiving alerts. Separately, when a named storm or outage hits, every queued customer wants a callback at once, and the office can't keep up by phone alone. This page shows a small, working tool for both: a completion checklist that will not let a job close until the monitoring handoff is proven, and a storm-queue notifier that gives every customer already waiting an automatic position and window update.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the checklist step mirrors whatever monitoring platform the device actually uses, and the storm-queue notifier connects to whatever SMS/email sending the business already has, it does not replace the office's own judgment about who gets called first.</p></div>
+
+  <div class="imsq-tabs">
+    <button class="imsq-tab active" data-view="install" type="button">Install completions</button>
+    <button class="imsq-tab" data-view="queue" type="button">Storm queue</button>
+    <button class="imsq-tab" data-view="customer" type="button">Customer status check</button>
+  </div>
+
+  <section class="imsq-view active" id="view-install">
+    <div class="imsq-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new install job</h2>
+        <form id="install-form" class="form-grid">
+          <div class="field span2"><label for="i-customer">Customer / account label</label><input type="text" id="i-customer" placeholder="e.g. Sample Customer A"></div>
+          <div class="field span2"><label for="i-address">Service address (optional)</label><input type="text" id="i-address" placeholder="e.g. 100 Sample Rd"></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Log install job</button></div>
+        </form>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Open and completed jobs</h2>
+        <div id="install-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="install-reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="imsq-view" id="view-queue">
+    <div class="imsq-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Add to the service queue</h2>
+        <form id="queue-form" class="form-grid">
+          <div class="field span2"><label for="q-customer">Customer / account label</label><input type="text" id="q-customer" placeholder="e.g. Sample Customer D"></div>
+          <div class="field span2"><label for="q-issue">Reported issue</label><input type="text" id="q-issue" placeholder="e.g. Unit not restarting after power loss"></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
+        </form>
+        <h2 class="fx-h2" style="margin-top:1.6rem;">Declare a storm or outage event</h2>
+        <p style="color:var(--ink-2); font-size:0.86rem; max-width:60ch;">Notifies everyone currently in the queue with their position and an estimated response window (simulated, nothing is actually sent).</p>
+        <form id="storm-form" class="form-grid">
+          <div class="field span2"><label for="s-label">Event label</label><input type="text" id="s-label" placeholder="e.g. Storm event, Tuesday outage"></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Notify the queue</button></div>
+        </form>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Queue, earliest first</h2>
+        <div id="queue-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="queue-reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="imsq-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check a job's status</h2>
+    <p style="color:var(--ink-2); font-size:0.9rem; max-width:70ch;">A customer enters their reference code, no login, and sees only what they need: whether their install is fully handed off, or their queue position and any notifications sent.</p>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. IN-1001 or QU-2001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root" class="lookup-result"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The checklist mirrors the real monitoring platform.</b> Whatever the device's own app calls "enrollment" or "registration," the checklist's proof-of-transfer step is that exact screen, not a generic form.</div>
+      <div class="lim"><b>The storm notifier is a trigger, not a dispatcher.</b> It tells everyone already waiting where they stand the moment an event is declared, it does not decide who gets served first, that stays a human call.</div>
+      <div class="lim"><b>Closing a job stays a deliberate action.</b> The tool blocks the button until the proof exists, it does not fill in the proof itself.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional customer and job data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "imsq_template_generic_v1";
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function hoursFromNow(h) { return Date.now() + h * 3600000; }
+
+  function newChecklist() {
+    return { poweredOn: false, monitoringPaired: false, enrollmentTransferred: false, enrollmentRef: "", walkthroughDone: false };
+  }
+  function checklistComplete(c) {
+    return c.poweredOn && c.monitoringPaired && c.enrollmentTransferred && c.enrollmentRef.trim().length > 0 && c.walkthroughDone;
+  }
+
+  function defaultData() {
+    var installJobs = [
+      {
+        ref: "IN-1001", customer: "Sample Customer A", address: "100 Sample Rd", loggedAt: hoursFromNow(-96),
+        checklist: { poweredOn: true, monitoringPaired: true, enrollmentTransferred: true, enrollmentRef: "screenshot-a1.png", walkthroughDone: true },
+        completedAt: hoursFromNow(-90)
+      },
+      {
+        ref: "IN-1002", customer: "Sample Customer B", address: "200 Sample Rd", loggedAt: hoursFromNow(-30),
+        checklist: { poweredOn: true, monitoringPaired: true, enrollmentTransferred: false, enrollmentRef: "", walkthroughDone: false },
+        completedAt: null
+      },
+      {
+        ref: "IN-1003", customer: "Sample Customer C", address: "300 Sample Rd", loggedAt: hoursFromNow(-5),
+        checklist: newChecklist(),
+        completedAt: null
+      }
+    ];
+    var queue = [
+      { ref: "QU-2001", customer: "Sample Customer D", issue: "Unit not restarting after power loss", queuedSince: hoursFromNow(-20), notifications: [] },
+      { ref: "QU-2002", customer: "Sample Customer E", issue: "Monitoring app shows offline", queuedSince: hoursFromNow(-10), notifications: [] },
+      { ref: "QU-2003", customer: "Sample Customer F", issue: "Routine post-outage check requested", queuedSince: hoursFromNow(-2), notifications: [] }
+    ];
+    return { installSeq: 1003, queueSeq: 2003, installJobs: installJobs, queue: queue };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function estWindowHours(position) { return position * 3; }
+
+  function renderInstallJobs() {
+    var root = document.getElementById("install-root");
+    var sorted = data.installJobs.slice().sort(function (a, b) { return b.loggedAt - a.loggedAt; });
+    var html = "";
+    if (!sorted.length) html += '<p class="empty">No install jobs logged yet.</p>';
+    sorted.forEach(function (job) {
+      var complete = checklistComplete(job.checklist) && job.completedAt;
+      var canComplete = checklistComplete(job.checklist) && !job.completedAt;
+      html += '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(job.customer) + " &middot; " + job.ref + '</div><div class="job-meta">' + (job.address ? escapeHtml(job.address) + " &middot; " : "") + "logged " + fmtDate(job.loggedAt) + '</div></div><span class="badge ' + (complete ? "done" : "blocked") + '">' + (complete ? "Job complete" : "Not closed out") + "</span></div>";
+      html += '<div class="checklist">';
+      html += checkRow(job.ref, "poweredOn", job.checklist.poweredOn, "Device installed and powered on");
+      html += checkRow(job.ref, "monitoringPaired", job.checklist.monitoringPaired, "Remote-monitoring module paired to the network");
+      html += checkRow(job.ref, "enrollmentTransferred", job.checklist.enrollmentTransferred, "Monitoring enrollment transferred into the customer's own account (not left under the installer's account)");
+      html += checkRow(job.ref, "walkthroughDone", job.checklist.walkthroughDone, "Customer walkthrough of the monitoring app completed");
+      html += "</div>";
+      html += '<div class="confirm-ref-row"><label style="font-size:0.78rem;font-weight:700;color:var(--ink-2);" for="ref-' + job.ref + '">Enrollment transfer proof (screenshot / confirmation ref)</label></div>';
+      html += '<div class="confirm-ref-row"><input type="text" id="ref-' + job.ref + '" value="' + escapeHtml(job.checklist.enrollmentRef) + '" placeholder="e.g. screenshot-file-name or confirmation code" ' + (job.completedAt ? "disabled" : "") + ' onchange="__imsq.setRef(\'' + job.ref + '\', this.value)"></div>';
+      html += '<div class="job-actions"><button class="fx-btn-ghost" ' + (canComplete ? "" : "disabled") + ' onclick="__imsq.completeJob(\'' + job.ref + '\')">Mark job complete</button>' + (!checklistComplete(job.checklist) && !job.completedAt ? ' <span style="font-size:0.78rem;color:var(--muted);">Blocked until every item above is checked and a proof reference is entered.</span>' : "") + "</div>";
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  function checkRow(ref, key, checked, label) {
+    return '<label class="check-row' + (checked ? " done-item" : "") + '"><input type="checkbox" ' + (checked ? "checked" : "") + " onchange=\"__imsq.toggleCheck('" + ref + "','" + key + "', this.checked)\"> " + escapeHtml(label) + "</label>";
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var sorted = data.queue.slice().sort(function (a, b) { return a.queuedSince - b.queuedSince; });
+    var html = "";
+    if (!sorted.length) html += '<p class="empty">Queue is empty.</p>';
+    sorted.forEach(function (job, idx) {
+      var pos = idx + 1;
+      html += '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(job.customer) + " &middot; " + job.ref + '</div><div class="job-meta">' + escapeHtml(job.issue) + " &middot; queued " + fmtDate(job.queuedSince) + '</div></div><span class="queue-pos">Position ' + pos + "</span></div>";
+      html += '<div class="job-actions"><button class="fx-btn-ghost" onclick="__imsq.resolveQueue(\'' + job.ref + '\')">Mark resolved, remove from queue</button></div>';
+      if (job.notifications.length) {
+        html += '<div class="notif-log">';
+        job.notifications.slice().reverse().slice(0, 3).forEach(function (n) {
+          html += '<div class="notif-line">' + fmtDate(n.ts) + ": " + escapeHtml(n.message) + "</div>";
+        });
+        html += "</div>";
+      }
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  window.__imsq = {
+    toggleCheck: function (ref, key, val) {
+      var job = data.installJobs.filter(function (j) { return j.ref === ref; })[0];
+      if (!job) return;
+      job.checklist[key] = val;
+      save(); renderInstallJobs();
+    },
+    setRef: function (ref, val) {
+      var job = data.installJobs.filter(function (j) { return j.ref === ref; })[0];
+      if (!job) return;
+      job.checklist.enrollmentRef = val;
+      save(); renderInstallJobs();
+    },
+    completeJob: function (ref) {
+      var job = data.installJobs.filter(function (j) { return j.ref === ref; })[0];
+      if (!job || !checklistComplete(job.checklist)) return;
+      job.completedAt = Date.now();
+      save(); renderInstallJobs();
+    },
+    resolveQueue: function (ref) {
+      data.queue = data.queue.filter(function (j) { return j.ref !== ref; });
+      save(); renderQueue();
+    }
+  };
+
+  document.getElementById("install-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("i-customer").value.trim();
+    var address = document.getElementById("i-address").value.trim();
+    if (!customer) { alert("Enter a customer or account label."); return; }
+    data.installSeq += 1;
+    data.installJobs.push({ ref: "IN-" + data.installSeq, customer: customer, address: address, loggedAt: Date.now(), checklist: newChecklist(), completedAt: null });
+    save(); renderInstallJobs();
+    document.getElementById("install-form").reset();
+  });
+
+  document.getElementById("install-reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset install jobs back to the original sample data?")) return;
+    var fresh = defaultData();
+    data.installJobs = fresh.installJobs; data.installSeq = fresh.installSeq;
+    save(); renderInstallJobs();
+  });
+
+  document.getElementById("queue-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("q-customer").value.trim();
+    var issue = document.getElementById("q-issue").value.trim();
+    if (!customer) { alert("Enter a customer or account label."); return; }
+    data.queueSeq += 1;
+    data.queue.push({ ref: "QU-" + data.queueSeq, customer: customer, issue: issue || "No issue noted", queuedSince: Date.now(), notifications: [] });
+    save(); renderQueue();
+    document.getElementById("queue-form").reset();
+  });
+
+  document.getElementById("storm-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var label = document.getElementById("s-label").value.trim();
+    if (!label) { alert("Enter an event label."); return; }
+    var sorted = data.queue.slice().sort(function (a, b) { return a.queuedSince - b.queuedSince; });
+    sorted.forEach(function (job, idx) {
+      var pos = idx + 1;
+      var hrs = estWindowHours(pos);
+      job.notifications.push({ ts: Date.now(), message: "\"" + label + "\": you're position " + pos + " in the queue, estimated response within about " + hrs + " hours (simulated notification)." });
+    });
+    save(); renderQueue();
+    document.getElementById("storm-form").reset();
+  });
+
+  document.getElementById("queue-reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    var fresh = defaultData();
+    data.queue = fresh.queue; data.queueSeq = fresh.queueSeq;
+    save(); renderQueue();
+  });
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var job = data.installJobs.filter(function (j) { return j.ref === ref; })[0];
+    if (job) {
+      var complete = checklistComplete(job.checklist) && job.completedAt;
+      var html = '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(job.customer) + " &middot; " + job.ref + '</div><div class="job-meta">Install job</div></div><span class="badge ' + (complete ? "done" : "open") + '">' + (complete ? "Install complete, monitoring active" : "Install in progress") + "</span></div>";
+      if (!complete) html += '<div class="job-meta" style="margin-top:0.6rem;">Your monitoring enrollment is still being finalized. We will follow up once it is fully active on your account.</div>';
+      html += "</div>";
+      root.innerHTML = html;
+      return;
+    }
+    var q = data.queue.filter(function (j) { return j.ref === ref; })[0];
+    if (q) {
+      var sorted = data.queue.slice().sort(function (a, b) { return a.queuedSince - b.queuedSince; });
+      var pos = sorted.findIndex(function (j) { return j.ref === ref; }) + 1;
+      var html2 = '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(q.customer) + " &middot; " + q.ref + '</div><div class="job-meta">Service queue</div></div><span class="queue-pos">Position ' + pos + "</span></div>";
+      html2 += '<div class="job-meta" style="margin-top:0.5rem;">Estimated response within about ' + estWindowHours(pos) + " hours (an estimate, not a guarantee).</div>";
+      if (q.notifications.length) {
+        html2 += '<div class="notif-log">';
+        q.notifications.slice().reverse().forEach(function (n) { html2 += '<div class="notif-line">' + fmtDate(n.ts) + ": " + escapeHtml(n.message) + "</div>"; });
+        html2 += "</div>";
+      }
+      html2 += "</div>";
+      root.innerHTML = html2;
+      return;
+    }
+    root.innerHTML = '<p class="not-found">No job found for that reference code.</p>';
+  });
+
+  document.querySelectorAll(".imsq-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".imsq-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".imsq-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderInstallJobs();
+  renderQueue();
+})();
+</script>
+</body>
+</html>
