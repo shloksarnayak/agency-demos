@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>Regional order &amp; service portal template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .rop-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+  .rop-tab { font: inherit; font-size: .82rem; font-weight: 700; padding: .6rem 1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .rop-tab.active { background: var(--brand); color: var(--brand-ink); }
+  .rop-field { margin-top: 1rem; }
+  .rop-label { font-family: var(--mono); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: .5rem; }
+  .rop-choices { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .rop-choices .fx-opt { padding: .55rem .9rem; }
+  .rop-hours { margin-top: .3rem; font-size: .78rem; color: var(--muted); display: flex; align-items: center; gap: .45rem; }
+  .rop-hours .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .rop-hours .dot.open { background: var(--good); box-shadow: 0 0 0 3px var(--good-bg); }
+  .rop-hours .dot.closed { background: var(--hot); box-shadow: 0 0 0 3px var(--hot-bg); }
+  .rop-afterhours { margin-top: .8rem; padding: .7rem .9rem; border-radius: var(--radius-sm); background: var(--warn-bg); color: #5a3c00; font-size: .82rem; font-weight: 650; }
+  .rop-qty-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: .6rem; }
+  .rop-qty-row { display: flex; justify-content: space-between; align-items: center; gap: .6rem; padding: .6rem .8rem; background: var(--surface-2); border: 2px solid var(--ink); border-radius: var(--radius-sm); }
+  .rop-qty-row label { font-size: .84rem; font-weight: 650; }
+  .rop-qty-row input[type="number"] { width: 4rem; padding: .3rem .35rem !important; }
+  .rop-hub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .8rem; margin: 1rem 0; }
+  .rop-hub-card { border: 1px solid var(--rule); border-radius: 16px; padding: .9rem 1rem; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .rop-hub-card .hub-name { font-weight: 660; font-size: .9rem; }
+  .rop-hub-card .hub-counts { display: flex; gap: .5rem; margin-top: .5rem; flex-wrap: wrap; }
+  .rop-badge { font-family: var(--mono); font-size: .65rem; text-transform: uppercase; letter-spacing: .04em; padding: .25rem .5rem; border-radius: 999px; font-weight: 700; background: var(--surface-2); color: var(--ink-2); }
+  .rop-badge.n { background: var(--brand-soft); color: var(--brand); }
+  .rop-log-table { width: 100%; border-collapse: collapse; font-size: .84rem; margin-top: .8rem; }
+  .rop-log-table th, .rop-log-table td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--rule-soft); }
+  .rop-log-table th { font-family: var(--mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .rop-type-badge { font-family: var(--mono); font-size: .62rem; text-transform: uppercase; letter-spacing: .04em; padding: .22rem .5rem; border-radius: 999px; font-weight: 700; white-space: nowrap; }
+  .rop-type-badge.order { background: var(--brand-soft); color: var(--brand); }
+  .rop-type-badge.urgent { background: var(--hot-bg); color: var(--hot); }
+  .rop-type-badge.ticket { background: var(--warn-bg); color: #5a3c00; }
+  .rop-empty { color: var(--muted); font-style: italic; font-size: .88rem; }
+  .rop-confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.3rem 1.4rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: .92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Regional order &amp; service portal</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">One portal, every hub, three kinds of request</h1>
+  <p class="fx-lede">Multi-location delivery and service businesses often run every kind of customer request through the same single "request a quote" callback form, whether it's a standing weekly order, a same-day urgent request, or a piece of equipment that needs a repair. This page shows a self-serve alternative: a customer picks the location that serves them, then submits the right kind of request through its own short form, and it lands automatically in that location's queue.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> "Example Regional Supply Co." is not a real business. When this gets built for a real one, the hub list, product/service catalog, and hours are drawn from what that business actually publishes, the way the Tennessee Valley Ice example below does.</p></div>
+
+  <div class="fx-card">
+    <div style="font-family:var(--mono); font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:.9rem;">Example Regional Supply Co.</div>
+    <div id="hours-root"></div>
+    <div class="rop-tabs" id="tab-root"></div>
+    <div id="form-root"></div>
+  </div>
+
+  <section style="margin-top:2.4rem;">
+    <h2 class="fx-h2">Location queue, all request types together</h2>
+    <p style="color:var(--muted); font-size:.9rem; max-width:70ch;">Every request lands here the moment it's submitted, grouped by which location it was routed to, so staff at any one location see their own open work without calling around or checking a shared inbox.</p>
+    <div class="rop-hub-grid" id="hub-root"></div>
+    <table class="rop-log-table" id="log-table"><thead><tr><th>Type</th><th>Location</th><th>Details</th><th>Contact</th><th>Logged</th></tr></thead><tbody id="log-body"></tbody></table>
+    <p class="rop-empty" id="log-empty" style="display:none;">No requests logged yet.</p>
+    <button class="fx-btn-ghost" id="reset-btn" style="margin-top:1rem;">Reset to sample data</button>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The hub list and catalog are the real work.</b> The generic locations and products here are placeholders; a real build starts from that business's actual locations, products or service types, and hours.</div>
+      <div class="lim"><b>Intake and routing, not full dispatch or billing.</b> This template deliberately stays narrow: request intake, hub routing, and a shared queue view. Route optimization, invoicing and payment are separate scope.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/tennessee-valley-ice/">Tennessee Valley Ice</a></b>, a six-location commercial ice manufacturer and delivery company across Tennessee, Georgia and North Carolina, scoped from their own published locations, products and posted hours.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional account and request data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "rop_template_v1";
+
+  var HUBS = ["Example North Location", "Example South Location", "Example East Location"];
+  var PRODUCTS = ["Standard delivery item", "Bulk delivery item"];
+  var ISSUE_TYPES = ["Equipment not working", "Equipment needs maintenance", "Other issue"];
+  var OPEN_HOUR = 8, OPEN_MIN = 0, CLOSE_HOUR = 16, CLOSE_MIN = 30;
+  var CLOSED_WEEKDAYS = [0, 6];
+  var HOURS_LABEL = "Mon-Fri 8:00am-4:30pm";
+
+  var TABS = [
+    { id: "order", label: "Standing recurring order" },
+    { id: "urgent", label: "Same-day / event request" },
+    { id: "ticket", label: "Equipment service ticket" }
+  ];
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function todayStr() { var d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function nowStamp() { return new Date().toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function uid(p) { return p + Math.random().toString(36).slice(2, 8); }
+
+  function isOpenNow() {
+    var d = new Date();
+    if (CLOSED_WEEKDAYS.indexOf(d.getDay()) !== -1) return false;
+    var mins = d.getHours() * 60 + d.getMinutes();
+    return mins >= (OPEN_HOUR * 60 + OPEN_MIN) && mins < (CLOSE_HOUR * 60 + CLOSE_MIN);
+  }
+
+  function defaultData() {
+    return {
+      orders: [
+        { id: "o1", hub: HUBS[0], products: [{ name: PRODUCTS[0], qty: 10 }], frequency: "Weekly", name: "Sample Customer A", contact: "sample-a@example.com", loggedAt: "2 days ago" }
+      ],
+      urgent: [
+        { id: "u1", hub: HUBS[1], product: PRODUCTS[1], qty: 4, kind: "Emergency", window: "Today, afternoon", name: "Sample Customer B", contact: "555-0101", loggedAt: "6 hours ago", afterHours: false }
+      ],
+      tickets: [
+        { id: "t1", hub: HUBS[2], issue: ISSUE_TYPES[0], notes: "unit stopped producing overnight", name: "Sample Customer C", contact: "555-0102", status: "open", loggedAt: "1 day ago" }
+      ]
+    };
+  }
+  var data = load();
+  function load() { try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {} return defaultData(); }
+  function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  var activeTab = "order";
+  var form = { hub: null, products: {}, frequency: "Weekly", startDate: todayStr(), kind: "Emergency", product: null, qty: 1, window: null, issue: ISSUE_TYPES[0], notes: "", name: "", contact: "", submitted: false, lastKind: null };
+
+  function renderHours() {
+    var open = isOpenNow();
+    var html = '<div class="rop-hours"><span class="dot ' + (open ? "open" : "closed") + '"></span>' +
+      (open ? "Open now" : "Closed now") + ' &middot; posted hours ' + HOURS_LABEL + ' &middot; based on your device\'s local time</div>';
+    document.getElementById("hours-root").innerHTML = html;
+  }
+
+  function renderTabs() {
+    document.getElementById("tab-root").innerHTML = TABS.map(function (t) {
+      return '<button class="rop-tab' + (t.id === activeTab ? " active" : "") + '" data-tab="' + t.id + '">' + t.label + "</button>";
+    }).join("");
+    Array.prototype.forEach.call(document.querySelectorAll("[data-tab]"), function (b) {
+      b.addEventListener("click", function () { activeTab = b.getAttribute("data-tab"); form.submitted = false; renderTabs(); renderForm(); });
+    });
+  }
+
+  function hubChoiceHtml() {
+    var html = '<div class="rop-field"><div class="rop-label">Your location</div><div class="rop-choices">';
+    HUBS.forEach(function (h) { html += '<button class="fx-opt' + (form.hub === h ? " sel" : "") + '" data-hub="' + escapeHtml(h) + '">' + escapeHtml(h) + "</button>"; });
+    html += "</div></div>";
+    return html;
+  }
+
+  function canSubmitOrder() { return !!(form.hub && Object.keys(form.products).some(function (k) { return form.products[k] > 0; }) && form.name.trim() && form.contact.trim()); }
+  function canSubmitUrgent() { return !!(form.hub && form.product && form.qty > 0 && form.window && form.name.trim() && form.contact.trim()); }
+  function canSubmitTicket() { return !!(form.hub && form.issue && form.name.trim() && form.contact.trim()); }
+
+  function renderForm() {
+    if (form.submitted) { renderConfirm(); return; }
+    var html = hubChoiceHtml();
+    var root = document.getElementById("form-root");
+
+    if (activeTab === "order") {
+      html += '<div class="rop-field"><div class="rop-label">Products &amp; quantities</div><div class="rop-qty-grid">';
+      PRODUCTS.forEach(function (p) {
+        html += '<div class="rop-qty-row"><label>' + escapeHtml(p) + '</label><input type="number" min="0" data-prod="' + escapeHtml(p) + '" value="' + (form.products[p] || 0) + '"></div>';
+      });
+      html += '</div></div>';
+      html += '<div class="rop-field"><div class="rop-label">Delivery frequency</div><div class="rop-choices">';
+      ["Weekly", "Biweekly", "Monthly"].forEach(function (f) { html += '<button class="fx-opt' + (form.frequency === f ? " sel" : "") + '" data-freq="' + f + '">' + f + "</button>"; });
+      html += '</div></div>';
+    } else if (activeTab === "urgent") {
+      html += '<div class="rop-field"><div class="rop-label">Request type</div><div class="rop-choices">';
+      ["Emergency", "Event"].forEach(function (k) { html += '<button class="fx-opt' + (form.kind === k ? " sel" : "") + '" data-kind="' + k + '">' + k + "</button>"; });
+      html += '</div></div>';
+      html += '<div class="rop-field"><div class="rop-label">Product</div><div class="rop-choices">';
+      PRODUCTS.forEach(function (p) { html += '<button class="fx-opt' + (form.product === p ? " sel" : "") + '" data-product="' + escapeHtml(p) + '">' + escapeHtml(p) + "</button>"; });
+      html += '</div></div>';
+      html += '<div class="rop-field"><div class="rop-label">Quantity</div><input type="number" min="1" id="qty-input" value="' + form.qty + '" style="width:6rem;"></div>';
+      html += '<div class="rop-field"><div class="rop-label">Delivery window</div><div class="rop-choices">';
+      ["Today, morning", "Today, afternoon", "Today, evening", "Tomorrow"].forEach(function (w) { html += '<button class="fx-opt' + (form.window === w ? " sel" : "") + '" data-window="' + w + '">' + w + "</button>"; });
+      html += '</div></div>';
+      if (!isOpenNow()) html += '<div class="rop-afterhours">Outside posted hours (' + HOURS_LABEL + '). This request will still be logged now and confirmed as soon as staff are back.</div>';
+    } else {
+      html += '<div class="rop-field"><div class="rop-label">Issue</div><div class="rop-choices">';
+      ISSUE_TYPES.forEach(function (i) { html += '<button class="fx-opt' + (form.issue === i ? " sel" : "") + '" data-issue="' + escapeHtml(i) + '">' + escapeHtml(i) + "</button>"; });
+      html += '</div></div>';
+      html += '<div class="rop-field"><div class="rop-label">Notes</div><input type="text" id="notes-input" value="' + form.notes.replace(/"/g, "&quot;") + '"></div>';
+    }
+
+    html += '<div class="rop-field"><div class="rop-label">Your name</div><input type="text" id="name-input" value="' + form.name.replace(/"/g, "&quot;") + '"></div>';
+    html += '<div class="rop-field"><div class="rop-label">Phone or email</div><input type="text" id="contact-input" value="' + form.contact.replace(/"/g, "&quot;") + '"></div>';
+    html += '<button class="fx-btn" id="submit-btn" style="margin-top:1.3rem;"' + (canSubmit() ? "" : " disabled") + ">Send this request</button>";
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-hub]"), function (b) { b.addEventListener("click", function () { form.hub = b.getAttribute("data-hub"); renderForm(); }); });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-freq]"), function (b) { b.addEventListener("click", function () { form.frequency = b.getAttribute("data-freq"); renderForm(); }); });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-kind]"), function (b) { b.addEventListener("click", function () { form.kind = b.getAttribute("data-kind"); renderForm(); }); });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-product]"), function (b) { b.addEventListener("click", function () { form.product = b.getAttribute("data-product"); renderForm(); }); });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-window]"), function (b) { b.addEventListener("click", function () { form.window = b.getAttribute("data-window"); renderForm(); }); });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-issue]"), function (b) { b.addEventListener("click", function () { form.issue = b.getAttribute("data-issue"); renderForm(); }); });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-prod]"), function (inp) {
+      inp.addEventListener("input", function () { form.products[inp.getAttribute("data-prod")] = parseInt(inp.value, 10) || 0; sync(); });
+    });
+    var qtyInput = document.getElementById("qty-input"); if (qtyInput) qtyInput.addEventListener("input", function (e) { form.qty = parseInt(e.target.value, 10) || 0; sync(); });
+    var notesInput = document.getElementById("notes-input"); if (notesInput) notesInput.addEventListener("input", function (e) { form.notes = e.target.value; });
+    document.getElementById("name-input").addEventListener("input", function (e) { form.name = e.target.value; sync(); });
+    document.getElementById("contact-input").addEventListener("input", function (e) { form.contact = e.target.value; sync(); });
+    document.getElementById("submit-btn").addEventListener("click", function () { if (canSubmit()) submit(); });
+  }
+
+  function canSubmit() { return activeTab === "order" ? canSubmitOrder() : activeTab === "urgent" ? canSubmitUrgent() : canSubmitTicket(); }
+  function sync() { var b = document.getElementById("submit-btn"); if (b) b.disabled = !canSubmit(); }
+
+  function submit() {
+    if (activeTab === "order") {
+      var products = Object.keys(form.products).filter(function (k) { return form.products[k] > 0; }).map(function (k) { return { name: k, qty: form.products[k] }; });
+      data.orders.push({ id: uid("o"), hub: form.hub, products: products, frequency: form.frequency, name: form.name, contact: form.contact, loggedAt: nowStamp() });
+    } else if (activeTab === "urgent") {
+      data.urgent.push({ id: uid("u"), hub: form.hub, product: form.product, qty: form.qty, kind: form.kind, window: form.window, name: form.name, contact: form.contact, loggedAt: nowStamp(), afterHours: !isOpenNow() });
+    } else {
+      data.tickets.push({ id: uid("t"), hub: form.hub, issue: form.issue, notes: form.notes, name: form.name, contact: form.contact, status: "open", loggedAt: nowStamp() });
+    }
+    save();
+    form.submitted = true; form.lastKind = activeTab;
+    renderForm(); renderHubs(); renderLog();
+  }
+
+  function renderConfirm() {
+    var hub = form.hub;
+    var html = '<div class="rop-confirm"><h3 style="margin:0 0 .6rem; font-family:var(--serif); color:var(--brand);">Routed to ' + escapeHtml(hub) + '</h3>';
+    if (form.lastKind === "urgent" && !isOpenNow()) html += '<p style="font-size:.85rem;">Logged outside posted hours. It will be confirmed when staff are next in.</p>';
+    html += '<button class="fx-btn-ghost" id="again-btn">Start another request</button></div>';
+    document.getElementById("form-root").innerHTML = html;
+    document.getElementById("again-btn").addEventListener("click", function () {
+      form = { hub: null, products: {}, frequency: "Weekly", startDate: todayStr(), kind: "Emergency", product: null, qty: 1, window: null, issue: ISSUE_TYPES[0], notes: "", name: "", contact: "", submitted: false, lastKind: null };
+      renderForm();
+    });
+  }
+
+  function countsFor(hub) {
+    return {
+      orders: data.orders.filter(function (o) { return o.hub === hub; }).length,
+      urgent: data.urgent.filter(function (u) { return u.hub === hub; }).length,
+      tickets: data.tickets.filter(function (t) { return t.status !== "closed" && t.hub === hub; }).length
+    };
+  }
+
+  function renderHubs() {
+    var html = "";
+    HUBS.forEach(function (h) {
+      var c = countsFor(h);
+      html += '<div class="rop-hub-card"><div class="hub-name">' + escapeHtml(h) + '</div><div class="hub-counts">' +
+        '<span class="rop-badge' + (c.orders ? " n" : "") + '">' + c.orders + ' standing order' + (c.orders === 1 ? "" : "s") + '</span>' +
+        '<span class="rop-badge' + (c.urgent ? " n" : "") + '">' + c.urgent + ' urgent</span>' +
+        '<span class="rop-badge' + (c.tickets ? " n" : "") + '">' + c.tickets + ' open ticket' + (c.tickets === 1 ? "" : "s") + '</span>' +
+        '</div></div>';
+    });
+    document.getElementById("hub-root").innerHTML = html;
+  }
+
+  function renderLog() {
+    var rows = [];
+    data.orders.forEach(function (o) { rows.push({ type: "order", hub: o.hub, details: o.products.map(function (p) { return p.qty + "x " + p.name; }).join(", ") + " &middot; " + o.frequency, contact: o.name + " (" + o.contact + ")", at: o.loggedAt }); });
+    data.urgent.forEach(function (u) { rows.push({ type: "urgent", hub: u.hub, details: u.kind + ": " + u.qty + "x " + u.product + " &middot; " + u.window + (u.afterHours ? " (after hours)" : ""), contact: u.name + " (" + u.contact + ")", at: u.loggedAt }); });
+    data.tickets.forEach(function (t) { rows.push({ type: "ticket", hub: t.hub, details: t.issue + (t.notes ? " - " + t.notes : "") + " [" + t.status + "]", contact: t.name + " (" + t.contact + ")", at: t.loggedAt }); });
+    var body = document.getElementById("log-body");
+    var empty = document.getElementById("log-empty");
+    if (!rows.length) { body.innerHTML = ""; empty.style.display = "block"; return; }
+    empty.style.display = "none";
+    var badgeClass = { order: "order", urgent: "urgent", ticket: "ticket" };
+    var badgeLabel = { order: "Standing order", urgent: "Same-day/event", ticket: "Service ticket" };
+    body.innerHTML = rows.map(function (r) {
+      return "<tr><td><span class=\"rop-type-badge " + badgeClass[r.type] + "\">" + badgeLabel[r.type] + "</span></td><td>" + escapeHtml(r.hub) + "</td><td>" + r.details + "</td><td>" + escapeHtml(r.contact) + "</td><td>" + escapeHtml(r.at) + "</td></tr>";
+    }).join("");
+  }
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    data = defaultData(); save();
+    form = { hub: null, products: {}, frequency: "Weekly", startDate: todayStr(), kind: "Emergency", product: null, qty: 1, window: null, issue: ISSUE_TYPES[0], notes: "", name: "", contact: "", submitted: false, lastKind: null };
+    renderForm(); renderHubs(); renderLog();
+  });
+
+  renderHours();
+  renderTabs();
+  renderForm();
+  renderHubs();
+  renderLog();
+  setInterval(renderHours, 60000);
+})();
+</script>
+</body>
+</html>
