@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Mitchell Roofing Company, LLC, scheduling &amp; scope-confirmation example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .bst-section { margin-top: 2.4rem; }
+  .bst-section-title { font-family: var(--serif); font-size: 1.25rem; margin: 0 0 0.3rem; }
+  .bst-section-sub { color: var(--muted); font-size: 0.86rem; margin: 0 0 1rem; max-width: 72ch; }
+  .bst-days { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .bst-day { font: inherit; font-size: 0.8rem; font-weight: 650; padding: 0.5rem 0.85rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .bst-day.active { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+  .bst-day:disabled { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
+  .bst-type-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .bst-type { font: inherit; font-size: 0.78rem; font-weight: 650; padding: 0.45rem 0.8rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .bst-type.active { background: var(--brand-soft); border-color: var(--brand); color: var(--ink); }
+  .bst-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.5rem; margin-bottom: 1.2rem; }
+  .bst-slot { font: inherit; font-size: 0.8rem; font-weight: 650; padding: 0.6rem 0.5rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); cursor: pointer; text-align: center; }
+  .bst-slot:hover { background: var(--brand-soft); }
+  .bst-slot.taken { text-decoration: line-through; color: var(--faint); background: var(--surface-2); cursor: not-allowed; }
+  .bst-hours-note { font-size: 0.74rem; color: var(--faint); font-style: italic; margin: -0.5rem 0 1rem; }
+  .bst-owner-toggle { margin-top: 0.6rem; }
+  .bst-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 0.8rem; }
+  .bst-table th, .bst-table td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--rule-soft); }
+  .bst-table th { color: var(--ink-2); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .bst-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.6rem; align-items: end; margin-bottom: 1.1rem; padding: 1rem 1.1rem; border: 1px dashed var(--rule); border-radius: 16px; }
+  .bst-field { display: flex; flex-direction: column; gap: 0.3rem; }
+  .bst-field label { font-size: 0.72rem; font-weight: 700; color: var(--ink-2); }
+  .bst-field input, .bst-field select, .bst-field textarea { font: inherit; font-size: 0.85rem; padding: 0.5rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  .bst-field input:focus, .bst-field select:focus { outline: none; border-color: var(--brand); }
+  .bst-submit-cell { display: flex; }
+  .bst-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 0.95rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.8rem; }
+  .bst-card-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .bst-card-title { font-weight: 660; font-size: 0.95rem; }
+  .bst-card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .bst-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem; }
+  .bst-badge { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.3rem 0.6rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .bst-badge.ok { color: var(--good); background: var(--good-bg); }
+  .bst-badge.hot { color: var(--hot); background: var(--hot-bg); }
+  .bst-badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .bst-badge.done { color: var(--muted); background: var(--surface-2); }
+  .bst-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.75rem; padding-top: 0.65rem; border-top: 1px solid var(--rule-soft); }
+  .bst-btn-sm { font: inherit; font-size: 0.76rem; font-weight: 650; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.4rem 0.8rem; cursor: pointer; }
+  .bst-btn-sm:hover { filter: brightness(0.97); }
+  .bst-btn-sm:disabled { opacity: 0.45; cursor: not-allowed; }
+  .bst-empty { color: var(--muted); font-style: italic; font-size: 0.86rem; }
+  .bst-log { margin-top: 0.65rem; padding-top: 0.6rem; border-top: 1px solid var(--rule-soft); }
+  .bst-log-item { font-size: 0.76rem; color: var(--ink-2); display: flex; justify-content: space-between; gap: 0.6rem; padding: 0.15rem 0; }
+  .bst-log-item span:last-child { color: var(--muted); font-family: var(--mono); font-size: 0.7rem; white-space: nowrap; }
+  .bst-price-box { margin-top: 0.7rem; padding: 0.6rem 0.8rem; border: 1px dashed var(--rule); border-radius: var(--radius-sm); display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  .bst-price-box input { font: inherit; font-size: 0.85rem; padding: 0.4rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .bst-price-box input[type="number"] { width: 110px; }
+  .bst-price-box input[type="text"] { width: 260px; }
+  .bst-reset-row { margin-top: 1.6rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
+  .case-box { margin: 1.4rem 0; padding: 1rem 1.2rem; border-left: 3px solid var(--hot); background: var(--hot-bg); font-size: 0.9rem; color: var(--ink-2); }
+  .case-box cite { display: block; margin-top: 0.5rem; font-size: 0.76rem; color: var(--muted); font-style: normal; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Booking &amp; service-ticket portal</a> / Mitchell Roofing Company</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">Mitchell Roofing: a real slot to book, and the scope, materials and price confirmed in writing before work starts</h1>
+  <p class="fx-lede">Mitchell Roofing Company, LLC is a 12-year, family-owned, licensed Florida contractor (CCC1330496) serving six counties around Saint Petersburg, GAF and Owens Corning certified, A- BBB accredited, and rated 4.8 out of 5 across 706 Google reviews, a genuinely strong overall reputation. Its own site (homepage, contact page, about page and privacy policy all checked directly) routes every inspection request through a phone number and one generic contact form, no online scheduling anywhere. Its public BBB complaint record shows a recurring pattern underneath that strong overall rating: several disputes trace back to something agreed verbally that was never put in writing, not workmanship in isolation. This example shows a real inspection/estimate booking calendar, plus a job ticket that cannot move forward until the scope, materials and price are confirmed in writing and visible to the customer, and a status trail so a customer mid-project is not reduced to unanswered calls.</p>
+  <div class="fact-strip">
+    <span class="fact">Mitchell Roofing Company, LLC</span>
+    <span class="fact">Saint Petersburg, FL (Pinellas, Pasco, Hillsborough, Citrus, Polk, Manatee)</span>
+    <span class="fact">FL license CCC1330496 &middot; GAF &amp; Owens Corning certified</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with, endorsed by, or produced in partnership with Mitchell Roofing Company, LLC.</strong> All customer names, tickets, technicians and dollar amounts inside the tool below are fictional and clearly for illustration only. The business description, license, certifications and complaint pattern are drawn from the company's own published site and its BBB profile.</p></div>
+
+  <div class="case-box">
+    Mitchell Roofing's public BBB complaints subpage lists several disputes since October 2023 that share the same underlying shape: a Jun 17, 2025 complaint over a $17,475 replacement where the vent color was never discussed in writing; an Apr 29, 2025 complaint describing four separate follow-up attempts between November 2024 and March 2025 with no scheduling update, plus a coastal warranty limitation the customer says was not disclosed before signing; and a Dec 3, 2024 leak dispute where the company's own inspector initially found a problem, then reclassified it as normal wear and tear. Separately, two named local competitors in the same Saint Petersburg market, PITCH Roofing and Roofing.Co, both already advertise online scheduling for their estimate visits, something Mitchell Roofing's own site does not offer.
+    <cite>Sources: Mitchell Roofing Company, LLC's public BBB profile and complaints subpage; PITCH Roofing's and Roofing.Co's own sites.</cite>
+  </div>
+  <p style="color:var(--ink-2); font-size:0.92rem; max-width:74ch;">Mitchell Roofing is genuinely well reviewed overall (4.8 out of 5 across 706 Google reviews, A- BBB rating, accredited since 2016, 12 years in continuous licensed operation), so this is framed as protecting an already-good reputation at real scale, not a business in crisis. None of this is presented as proof of intent on any specific, still-contested complaint; it is the documented pattern the tools below are built to prevent going forward, by giving a customer a real slot to book and a written scope and price they can point back to.</p>
+
+  <section class="bst-section">
+    <h2 class="bst-section-title">1. Self-service inspection &amp; estimate booking calendar</h2>
+    <p class="bst-section-sub">Matches what PITCH Roofing and Roofing.Co, two named local competitors, already offer: a real date-and-time-slot picker for a free inspection or storm-damage assessment, instead of Mitchell Roofing's current phone-or-contact-form-only intake.</p>
+    <div class="bst-type-row" id="type-row"></div>
+    <div class="bst-days" id="day-row"></div>
+    <p class="bst-hours-note">Hours and days shown are illustrative for this example. A real build uses Mitchell Roofing's own published hours, which were not found written out on their current site.</p>
+    <div class="bst-slots" id="slot-grid"></div>
+    <div class="bst-owner-toggle"><button class="fx-btn-ghost" id="owner-toggle-1">Show owner view (all bookings)</button></div>
+    <div id="bookings-owner" style="display:none;"></div>
+  </section>
+
+  <section class="bst-section">
+    <h2 class="bst-section-title">2. Job ticket, scope &amp; price confirmation, and status tracker</h2>
+    <p class="bst-section-sub">Directly targets the BBB pattern: every job becomes a visible ticket with an assigned crew lead and ETA, moves through a real status trail instead of going silent, and cannot be marked scheduled until the materials, color and price have all been confirmed in writing here, the exact step that was missing on the vent-color dispute and the undisclosed coastal warranty limitation.</p>
+    <form id="ticket-form" class="bst-form">
+      <div class="bst-field"><label for="t-customer">Customer / property</label><input type="text" id="t-customer" placeholder="e.g. Sample Customer, Pinellas Park" required></div>
+      <div class="bst-field"><label for="t-issue">Job type</label><select id="t-issue"></select></div>
+      <div class="bst-field"><label for="t-notes">Notes</label><input type="text" id="t-notes" placeholder="brief description"></div>
+      <div class="bst-submit-cell"><button type="submit" class="fx-btn-ghost">Open ticket</button></div>
+    </form>
+    <div id="tickets-root"></div>
+  </section>
+
+  <div class="bst-reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+
+  <section class="bst-section">
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The calendar is a standalone log here.</b> A real build reads and writes whatever schedule Mitchell Roofing's own crews already use, sitting alongside the existing WordPress site (its Roof Triage Tool and Savings Estimator stay exactly as they are), so staff see one schedule, not a second one to keep in sync.</div>
+      <div class="lim"><b>Booking confirmation is on-screen and in local storage only.</b> A real build sends an actual confirmation email or text and can be embedded directly into the existing WordPress site.</div>
+      <div class="lim"><b>The scope-and-price gate is a field, not a payment or e-signature system.</b> It only needs to record one thing per job: what materials, color and price were the customer told in writing, so that record is checkable if a dispute like the vent-color one ever comes up again. A real deployment would add an actual typed-name/checkbox acknowledgment step on top of this.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with, endorsed by, or produced in partnership with Mitchell Roofing Company, LLC.</strong></p><p>Prepared by Shlok Sarnayak. Fictional booking and ticket data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "bst_mitchell_roofing_v1";
+
+  var VISIT_TYPES = ["Free roof inspection / estimate", "Storm/wind damage assessment"];
+  var SLOT_MINUTES = 60;
+  var OPEN_HOUR = 8;
+  var CLOSE_HOUR = 17;
+  var DAYS_AHEAD = 7;
+  var CLOSED_WEEKDAYS = [0];
+  var ISSUE_TYPES = ["Full roof replacement", "Repair / storm damage", "Warranty / follow-up question"];
+
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function dateStrFromOffset(n) { var d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function weekdayOf(dateStr) { return new Date(dateStr + "T00:00:00").getDay(); }
+  function fmtDate(s) { if (!s) return ""; var d = new Date(s + "T00:00:00"); return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }); }
+  function fmtTimeFromMinutes(mins) { var h = Math.floor(mins / 60); var m = mins % 60; var ap = h >= 12 ? "PM" : "AM"; var h12 = h % 12; if (h12 === 0) h12 = 12; return h12 + ":" + pad(m) + " " + ap; }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function money(n) { return "$" + Number(n || 0).toFixed(2); }
+  function uid(prefix) { return prefix + Math.random().toString(36).slice(2, 8); }
+  function nowStamp() { return new Date().toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+
+  function defaultData() {
+    return {
+      selectedType: VISIT_TYPES[0],
+      selectedDay: dateStrFromOffset(1),
+      bookings: [
+        { id: "bk1", type: VISIT_TYPES[0], date: dateStrFromOffset(1), startMin: OPEN_HOUR * 60, customer: "Sample Customer A, Largo", bookedAt: "2 days ago" }
+      ],
+      tickets: [
+        {
+          id: "tk1", customer: "Sample Customer B, Pinellas Park", issue: ISSUE_TYPES[0], notes: "replacement job, color and vent finish need to be confirmed before work starts",
+          stage: "received", technician: null, eta: null, confirmedScope: null, confirmedPrice: null,
+          log: [{ status: "Ticket received", at: "6 hours ago" }]
+        },
+        {
+          id: "tk2", customer: "Sample Customer C, Clearwater", issue: ISSUE_TYPES[2], notes: "asking whether their coastal warranty covers a recent leak",
+          stage: "assigned", technician: "Sample Crew Lead 1", eta: "Tomorrow, 9:00 AM-11:00 AM", confirmedScope: null, confirmedPrice: null,
+          log: [{ status: "Ticket received", at: "2 days ago" }, { status: "Crew lead assigned: Sample Crew Lead 1, ETA Tomorrow, 9:00 AM-11:00 AM", at: "1 day ago" }]
+        },
+        {
+          id: "tk3", customer: "Sample Customer D, Largo", issue: ISSUE_TYPES[1], notes: "storm damage repair, small section of the north slope",
+          stage: "priced", technician: "Sample Crew Lead 2", eta: "Fri, 1:00 PM-3:00 PM", confirmedScope: "GAF Timberline HDZ shingles, Weathered Wood color, black ridge vents, north slope only",
+          confirmedPrice: 4200,
+          log: [
+            { status: "Ticket received", at: "5 days ago" },
+            { status: "Crew lead assigned: Sample Crew Lead 2, ETA Fri, 1:00 PM-3:00 PM", at: "4 days ago" },
+            { status: "Scope & price confirmed in writing: GAF Timberline HDZ shingles, Weathered Wood color, black ridge vents, north slope only - $4200.00", at: "3 days ago" }
+          ]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function upcomingDays() {
+    var out = [];
+    for (var i = 0; i < DAYS_AHEAD; i++) {
+      var ds = dateStrFromOffset(i);
+      out.push({ date: ds, closed: CLOSED_WEEKDAYS.indexOf(weekdayOf(ds)) !== -1 });
+    }
+    return out;
+  }
+
+  function slotsForDay() {
+    var out = [];
+    for (var m = OPEN_HOUR * 60; m < CLOSE_HOUR * 60; m += SLOT_MINUTES) out.push(m);
+    return out;
+  }
+
+  function isTaken(date, startMin, type) {
+    return data.bookings.some(function (b) { return b.date === date && b.startMin === startMin && b.type === type; });
+  }
+
+  function renderTypeRow() {
+    var root = document.getElementById("type-row");
+    root.innerHTML = VISIT_TYPES.map(function (t) {
+      return '<button type="button" class="bst-type' + (t === data.selectedType ? " active" : "") + '" data-type="' + escapeHtml(t) + '">' + escapeHtml(t) + "</button>";
+    }).join("");
+    Array.prototype.forEach.call(root.querySelectorAll(".bst-type"), function (btn) {
+      btn.addEventListener("click", function () { data.selectedType = btn.getAttribute("data-type"); renderTypeRow(); renderSlots(); });
+    });
+  }
+
+  function renderDayRow() {
+    var root = document.getElementById("day-row");
+    var days = upcomingDays();
+    root.innerHTML = days.map(function (d) {
+      return '<button type="button" class="bst-day' + (d.date === data.selectedDay ? " active" : "") + '" data-date="' + d.date + '"' + (d.closed ? " disabled" : "") + ">" + fmtDate(d.date) + (d.closed ? " (closed)" : "") + "</button>";
+    }).join("");
+    Array.prototype.forEach.call(root.querySelectorAll(".bst-day:not(:disabled)"), function (btn) {
+      btn.addEventListener("click", function () { data.selectedDay = btn.getAttribute("data-date"); renderDayRow(); renderSlots(); });
+    });
+  }
+
+  function renderSlots() {
+    var root = document.getElementById("slot-grid");
+    var slots = slotsForDay();
+    root.innerHTML = slots.map(function (m) {
+      var taken = isTaken(data.selectedDay, m, data.selectedType);
+      return '<button type="button" class="bst-slot' + (taken ? " taken" : "") + '"' + (taken ? " disabled" : "") + ' data-min="' + m + '">' + fmtTimeFromMinutes(m) + "</button>";
+    }).join("");
+    Array.prototype.forEach.call(root.querySelectorAll(".bst-slot:not(.taken)"), function (btn) {
+      btn.addEventListener("click", function () {
+        var name = prompt("Name for this booking:");
+        if (!name) return;
+        data.bookings.push({ id: uid("bk"), type: data.selectedType, date: data.selectedDay, startMin: parseInt(btn.getAttribute("data-min"), 10), customer: name, bookedAt: nowStamp() });
+        save(); renderSlots(); renderOwnerBookings();
+        alert("Booked: " + data.selectedType + " on " + fmtDate(data.selectedDay) + " at " + fmtTimeFromMinutes(parseInt(btn.getAttribute("data-min"), 10)) + ".");
+      });
+    });
+  }
+
+  function renderOwnerBookings() {
+    var root = document.getElementById("bookings-owner");
+    var sorted = data.bookings.slice().sort(function (a, b) { return (a.date + a.startMin).toString().localeCompare((b.date + b.startMin).toString()); });
+    if (!sorted.length) { root.innerHTML = '<p class="bst-empty">No bookings yet.</p>'; return; }
+    var rows = sorted.map(function (b) {
+      return "<tr><td>" + escapeHtml(b.customer) + "</td><td>" + escapeHtml(b.type) + "</td><td>" + fmtDate(b.date) + "</td><td>" + fmtTimeFromMinutes(b.startMin) + "</td><td>" + escapeHtml(b.bookedAt) + "</td></tr>";
+    }).join("");
+    root.innerHTML = '<table class="bst-table"><thead><tr><th>Customer</th><th>Visit type</th><th>Date</th><th>Time</th><th>Booked</th></tr></thead><tbody>' + rows + "</tbody></table>";
+  }
+
+  var STAGE_LABEL = { received: "Received", assigned: "Crew lead assigned", priced: "Scope & price confirmed", scheduled: "Scheduled", resolved: "Resolved" };
+  var STAGE_BADGE_CLASS = { received: "watch", assigned: "watch", priced: "ok", scheduled: "ok", resolved: "done" };
+
+  function renderTickets() {
+    var root = document.getElementById("tickets-root");
+    if (!data.tickets.length) { root.innerHTML = '<p class="bst-empty">No tickets yet.</p>'; return; }
+    var html = "";
+    data.tickets.slice().reverse().forEach(function (t) {
+      html += '<div class="bst-card"><div class="bst-card-head"><div><div class="bst-card-title">' + escapeHtml(t.customer) + " &middot; " + escapeHtml(t.issue) + '</div><div class="bst-card-meta">' + escapeHtml(t.notes || "") + '</div></div></div>';
+      html += '<div class="bst-badges"><span class="bst-badge ' + STAGE_BADGE_CLASS[t.stage] + '">' + STAGE_LABEL[t.stage] + '</span>';
+      html += t.technician ? '<span class="bst-badge watch">Crew lead: ' + escapeHtml(t.technician) + '</span>' : '<span class="bst-badge hot">No crew lead assigned yet</span>';
+      html += t.eta ? '<span class="bst-badge watch">ETA: ' + escapeHtml(t.eta) + '</span>' : '';
+      html += t.confirmedScope != null ? '<span class="bst-badge ok">Scope confirmed in writing: ' + escapeHtml(t.confirmedScope) + '</span>' : '<span class="bst-badge hot">Scope not yet confirmed</span>';
+      html += t.confirmedPrice != null ? '<span class="bst-badge ok">Price confirmed in writing: ' + money(t.confirmedPrice) + '</span>' : '';
+      html += '</div>';
+      html += '<div class="bst-log">' + t.log.slice().reverse().map(function (l) { return '<div class="bst-log-item"><span>' + escapeHtml(l.status) + '</span><span>' + escapeHtml(l.at) + '</span></div>'; }).join("") + '</div>';
+      html += '<div class="bst-row">';
+      if (t.stage === "received") html += '<button class="bst-btn-sm" onclick="__bst.assign(\'' + t.id + '\')">Assign crew lead &amp; ETA</button>';
+      if (t.stage === "assigned") html += '<div class="bst-price-box"><input type="text" id="scope-' + t.id + '" placeholder="materials, color, notes"><input type="number" min="0" step="0.01" id="price-' + t.id + '" placeholder="price"><button class="bst-btn-sm" onclick="__bst.confirmScope(\'' + t.id + '\')">Confirm scope &amp; price in writing</button></div>';
+      if (t.stage === "priced") html += '<button class="bst-btn-sm" onclick="__bst.advance(\'' + t.id + '\',\'scheduled\',\'Job scheduled\')">Mark scheduled</button>';
+      if (t.stage === "scheduled") html += '<button class="bst-btn-sm" onclick="__bst.advance(\'' + t.id + '\',\'resolved\',\'Resolved\')">Mark resolved</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+  }
+
+  window.__bst = {
+    assign: function (id) {
+      var t = data.tickets.filter(function (x) { return x.id === id; })[0];
+      if (!t) return;
+      var tech = prompt("Crew lead name:", "Sample Crew Lead");
+      if (!tech) return;
+      var eta = prompt("ETA (e.g. 'Tomorrow, 9:00 AM-11:00 AM'):", "Tomorrow, 9:00 AM-11:00 AM");
+      if (!eta) return;
+      t.technician = tech; t.eta = eta; t.stage = "assigned";
+      t.log.push({ status: "Crew lead assigned: " + tech + ", ETA " + eta, at: nowStamp() });
+      save(); renderTickets();
+    },
+    confirmScope: function (id) {
+      var t = data.tickets.filter(function (x) { return x.id === id; })[0];
+      if (!t) return;
+      var scopeInput = document.getElementById("scope-" + id);
+      var priceInput = document.getElementById("price-" + id);
+      var scope = scopeInput.value.trim();
+      var val = parseFloat(priceInput.value);
+      if (!scope) { alert("Enter the materials/color/scope before confirming."); return; }
+      if (isNaN(val) || val < 0) { alert("Enter a price before confirming."); return; }
+      t.confirmedScope = scope; t.confirmedPrice = val; t.stage = "priced";
+      t.log.push({ status: "Scope & price confirmed in writing: " + scope + " - " + money(val), at: nowStamp() });
+      save(); renderTickets();
+    },
+    advance: function (id, stage, label) {
+      var t = data.tickets.filter(function (x) { return x.id === id; })[0];
+      if (!t) return;
+      t.stage = stage;
+      t.log.push({ status: label, at: nowStamp() });
+      save(); renderTickets();
+    }
+  };
+
+  document.getElementById("owner-toggle-1").addEventListener("click", function () {
+    var el = document.getElementById("bookings-owner");
+    var showing = el.style.display !== "none";
+    el.style.display = showing ? "none" : "block";
+    this.textContent = showing ? "Show owner view (all bookings)" : "Hide owner view";
+    if (!showing) renderOwnerBookings();
+  });
+
+  function populateIssueSelect() {
+    document.getElementById("t-issue").innerHTML = ISSUE_TYPES.map(function (s) { return "<option>" + escapeHtml(s) + "</option>"; }).join("");
+  }
+
+  document.getElementById("ticket-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("t-customer").value.trim();
+    if (!customer) return;
+    data.tickets.push({
+      id: uid("tk"), customer: customer, issue: document.getElementById("t-issue").value, notes: document.getElementById("t-notes").value.trim(),
+      stage: "received", technician: null, eta: null, confirmedScope: null, confirmedPrice: null, log: [{ status: "Ticket received", at: nowStamp() }]
+    });
+    save(); renderTickets(); e.target.reset(); populateIssueSelect();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the calendar and ticket tracker back to the original sample data?")) return;
+    data = defaultData(); save(); renderTypeRow(); renderDayRow(); renderSlots(); renderOwnerBookings(); renderTickets();
+  });
+
+  populateIssueSelect();
+  renderTypeRow();
+  renderDayRow();
+  renderSlots();
+  renderTickets();
+})();
+</script>
+</body>
+</html>
