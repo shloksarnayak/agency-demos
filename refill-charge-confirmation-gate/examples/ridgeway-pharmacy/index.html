@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Ridgeway Pharmacy, refill pre-charge confirmation gate example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .pcg-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .pcg-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .pcg-tab.active { background: var(--ink); color: var(--surface); }
+  .pcg-view { display: none; }
+  .pcg-view.active { display: block; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
+  .fill-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .fill-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .fill-title { font-weight: 660; }
+  .fill-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.pending { color: var(--muted); background: var(--surface-2); }
+  .badge.notice_sent { color: var(--warn); background: var(--warn-bg); }
+  .badge.confirmed { color: var(--good); background: var(--good-bg); }
+  .badge.canceled { color: var(--hot); background: var(--hot-bg); }
+  .badge.skipped { color: var(--hot); background: var(--hot-bg); }
+  .cycle-list { margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px dashed var(--rule-soft); }
+  .cycle-col-label { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-top: 0.5rem; }
+  .cycle-row { display: flex; justify-content: space-between; gap: 0.6rem; font-size: 0.85rem; padding: 0.2rem 0; }
+  .hold-flag { margin-top: 0.6rem; padding: 0.6rem 0.75rem; border-radius: var(--radius-sm); background: var(--warn-bg); color: var(--ink); font-size: 0.82rem; }
+  .clear-flag { margin-top: 0.6rem; padding: 0.6rem 0.75rem; border-radius: var(--radius-sm); background: var(--good-bg); color: var(--ink); font-size: 0.82rem; }
+  .fill-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .ref-note { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin-top: 0.4rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 520px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: #fff; color: var(--ink); }
+  .lookup-result { margin-top: 1.1rem; padding: 1rem 1.1rem; border-radius: var(--radius-sm); background: var(--surface-2); }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.15rem; }
+  .lookup-result .lr-detail { font-size: 0.86rem; color: var(--ink-2); margin-top: 0.5rem; line-height: 1.5; }
+  .lookup-result .lr-actions { display: flex; gap: 0.5rem; margin-top: 0.9rem; flex-wrap: wrap; align-items: center; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .batch-row { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.75rem 0.95rem; margin-bottom: 0.6rem; font-size: 0.86rem; }
+  .batch-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .batch-verdict { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .batch-verdict.clear { color: var(--good); background: var(--good-bg); }
+  .batch-verdict.hold { color: var(--warn); background: var(--warn-bg); }
+  .batch-verdict.flag { color: var(--warn); background: var(--warn-bg); }
+  .batch-verdict.block { color: var(--hot); background: var(--hot-bg); }
+  .batch-reason { color: var(--ink-2); font-size: 0.82rem; margin-top: 0.35rem; }
+  .log-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .log-table th { text-align: left; font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--rule); }
+  .log-table td { padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  .log-empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .case-box { margin: 1.4rem 0; padding: 1rem 1.2rem; border-left: 3px solid var(--warn); background: var(--warn-bg); font-size: 0.9rem; color: var(--ink); }
+  .case-box cite { display: block; margin-top: 0.5rem; font-size: 0.76rem; color: var(--ink-2); font-style: normal; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Refill pre-charge confirmation gate</a> / Ridgeway Pharmacy</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">Ridgeway Pharmacy: confirm the price before the vial fills, not after the card is charged</h1>
+  <p class="fx-lede">Public complaint records for Ridgeway's mail-order line describe the same pattern from several different customers, on different platforms, across several years: a card on file gets charged, a shipment arrives, and the patient says they never saw the amount or the day supply coming, sometimes because it changed cycle to cycle, sometimes because it was their first fill. Because a dispensed prescription legally cannot be returned to stock, the refund is refused every time, not out of bad faith, but because federal and state pharmacy rules leave no other option once the vial has shipped. This example shows a small tool that closes the gap before it opens: a hold-and-confirm step between the fill queue and the card charge, so a cycle that changes never posts without an explicit yes.</p>
+  <div class="fact-strip">
+    <span class="fact">Ridgeway Pharmacy, Ltd.</span>
+    <span class="fact">Victor, MT, mail-order and compounding, since 1998</span>
+    <span class="fact">Licensed to dispense in all 50 states</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Ridgeway Pharmacy, Ltd.</strong> All patient names, prescriptions, and dollar amounts inside the tool below are fictional and clearly for illustration only. The business description and complaint pattern referenced here are drawn from the company's own published site and its public BBB complaint and review file, plus Birdeye's aggregation of the company's Google reviews.</p></div>
+
+  <div class="case-box">
+    A BBB complaint filed 3/14/2026 describes a card charged $267 for a 90-day supply when the prior order was a 30-day supply at $99, with no advance notice of the roughly $168 difference. A separate complaint from 1/13/2025 describes a first-time user billed for a 3-month supply, severe side effects by week three, and a refund refused. On BBB's separate customer-review page, Jennifer P. (9/15/2024) writes she was charged monthly for a prescription she no longer wanted for two months while her cancellation emails went unanswered: "I should not have to cancel my credit card to stop them from sending it and charging me." On Birdeye's aggregation of the company's Google reviews, Laura Gorczynski (approximately 8 months ago) writes: "No warning. I didn't sign up for auto delivery... they can't take back medicine once it's left their facility."
+    <cite>Ridgeway Pharmacy BBB complaints (3/14/2026, 1/13/2025), BBB customer review (Jennifer P., 9/15/2024), Birdeye Google-review aggregation (Laura Gorczynski, approx. 8 months ago).</cite>
+  </div>
+  <p style="color:var(--ink-2); font-size:0.92rem; max-width:74ch;">This is not a business in crisis. All 6 of Ridgeway's BBB complaints in the 3-year window are marked Answered, its BBB rating is A-, and on the one dispute a card issuer actually adjudicated, the chargeback was decided in Ridgeway's favor, evidence that a signed authorization does exist on file. The gap is narrower and more specific: there is no per-cycle, pre-charge confirmation step between the stored card and the fill, and once a prescription ships, federal guidance and state law (for example Virginia Code &sect; 54.1-3411.1) generally bar returning it to stock, so every one of these disputes is unfixable at the refund stage by design. Optum's and Amazon Pharmacy's own published home-delivery practices both confirm the expected shipment and amount before it goes out, which is the baseline Ridgeway's own mail-order patients are already comparing it against.</p>
+
+  <div class="pcg-tabs">
+    <button class="pcg-tab active" data-view="pharmacy" type="button">Pharmacy view</button>
+    <button class="pcg-tab" data-view="patient" type="button">Patient confirmation</button>
+  </div>
+
+  <section class="pcg-view active" id="view-pharmacy">
+    <h2 class="fx-h2" style="margin-top:0;">Refill pre-charge queue</h2>
+    <p style="color:var(--ink-2); font-size:0.88rem; max-width:70ch; margin-top:-0.4rem;">Every upcoming refill, with what was charged last cycle next to what this cycle would charge. A cycle that differs, or has no prior cycle to compare against, is held and flagged instead of moving to the charge queue on its own.</p>
+    <div id="queue-root"></div>
+    <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+
+    <h2 class="fx-h2" style="margin-top:2.2rem;">Pre-charge gate check</h2>
+    <p style="color:var(--ink-2); font-size:0.88rem; max-width:70ch; margin-top:-0.4rem;">Today's batch of charges about to reach Authorize.net, checked against what each patient actually confirmed. This is the exact check that would have caught the $267-vs-$99 complaint and the first-time 3-month-supply complaint before either card was charged.</p>
+    <div style="margin-top:0.8rem;"><button class="fx-btn" id="run-batch-btn" type="button">Run pre-charge gate check on today's batch</button></div>
+    <div id="batch-root" style="margin-top:1rem;"></div>
+
+    <h2 class="fx-h2" style="margin-top:2.2rem;">Audit log</h2>
+    <p style="color:var(--ink-2); font-size:0.88rem; max-width:70ch; margin-top:-0.4rem;">Every notice, confirmation, cancellation, and skip, timestamped as it happens, the record Jennifer P.'s two unanswered cancellation emails never had.</p>
+    <div id="log-root" style="margin-top:0.8rem;"></div>
+  </section>
+
+  <section class="pcg-view" id="view-patient">
+    <h2 class="fx-h2" style="margin-top:0;">Confirm, cancel, or skip a refill</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code (from your refill notice)</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. RW-2203">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Look up my refill</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try RW-2203, RW-2204 or RW-2205 from the pharmacy view's sample queue. RW-2201 and RW-2202 have not had a notice sent yet, so they will not be found here until the pharmacy view sends one.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The notice is sent from the pharmacy view here.</b> A real build sends a text or email automatically the moment CyberScript's fill queue produces a cycle that differs from the patient's last charge, or has no prior cycle to compare against.</div>
+      <div class="lim"><b>The pre-charge gate check sits between the fill queue and Authorize.net.</b> It does not replace CyberScript or Authorize.net, and it is a different thing from AIS's own RxCall notification product: RxCall can tell a patient a shipment is coming, it does not hold the charge until the patient affirmatively responds.</div>
+      <div class="lim"><b>Confirming, canceling, or skipping is logged the moment it happens.</b> A real build keeps this in the same audit trail a signed intake form would produce, closing the exact gap in Jennifer P.'s complaint: a cancellation request with no record anyone acted on it.</div>
+      <div class="lim"><b>Back to the general template: <a href="../../">Refill pre-charge confirmation gate</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Ridgeway Pharmacy, Ltd.</strong></p><p>Prepared by Shlok Sarnayak. Fictional patient, prescription, and dollar-amount data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "pcg_ridgeway_pharmacy_v1";
+  var HOLD_TOLERANCE = 10;
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtMoney(n) { return "$" + n.toFixed(2).replace(/\.00$/, ""); }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function daysAgo(n, h) { var d = new Date(); d.setDate(d.getDate() - n); d.setHours(h || 9, 0, 0, 0); return d.getTime(); }
+
+  var STATUS_LABEL = { pending: "Not yet noticed", notice_sent: "Awaiting response", confirmed: "Confirmed", canceled: "Canceled", skipped: "Skipped this cycle" };
+
+  function defaultData() {
+    return {
+      fills: [
+        {
+          ref: "RW-2201", patient: "Sample Patient A", drug: "Sample Maintenance Prescription A", status: "pending",
+          lastCycle: { daySupply: 30, amount: 99 }, thisCycle: { daySupply: 90, amount: 267 },
+          noticeSentAt: null, confirmedAt: null, confirmedBy: null, canceledAt: null, skippedAt: null
+        },
+        {
+          ref: "RW-2202", patient: "Sample Patient B", drug: "Sample New-Start Prescription B", status: "pending",
+          lastCycle: null, thisCycle: { daySupply: 90, amount: 340 },
+          noticeSentAt: null, confirmedAt: null, confirmedBy: null, canceledAt: null, skippedAt: null
+        },
+        {
+          ref: "RW-2203", patient: "Sample Patient C", drug: "Sample Maintenance Prescription C", status: "notice_sent",
+          lastCycle: { daySupply: 30, amount: 64 }, thisCycle: { daySupply: 30, amount: 81 },
+          noticeSentAt: daysAgo(2), confirmedAt: null, confirmedBy: null, canceledAt: null, skippedAt: null
+        },
+        {
+          ref: "RW-2204", patient: "Sample Patient D", drug: "Sample Maintenance Prescription D", status: "confirmed",
+          lastCycle: { daySupply: 30, amount: 58 }, thisCycle: { daySupply: 90, amount: 174 },
+          noticeSentAt: daysAgo(4), confirmedAt: daysAgo(1), confirmedBy: "Sample Patient D", canceledAt: null, skippedAt: null
+        },
+        {
+          ref: "RW-2205", patient: "Sample Patient E", drug: "Sample Maintenance Prescription E", status: "canceled",
+          lastCycle: { daySupply: 30, amount: 45 }, thisCycle: { daySupply: 30, amount: 110 },
+          noticeSentAt: daysAgo(6), confirmedAt: null, confirmedBy: null, canceledAt: daysAgo(1), skippedAt: null
+        }
+      ],
+      batch: [
+        { ref: "RW-2201", amount: 267 },
+        { ref: "RW-2203", amount: 81 },
+        { ref: "RW-2204", amount: 174 },
+        { ref: "RW-2205", amount: 110 },
+        { ref: "RW-9999", amount: 88 }
+      ],
+      log: [
+        { at: daysAgo(6), ref: "RW-2205", action: "Notice sent", detail: "Amount changed with a prior refund dispute on file, held for manual review." },
+        { at: daysAgo(4), ref: "RW-2204", action: "Notice sent", detail: "Day supply changed 30 to 90 days, amount changed $58 to $174." },
+        { at: daysAgo(2), ref: "RW-2203", action: "Notice sent", detail: "Amount changed $64 to $81 with the same 30-day supply." },
+        { at: daysAgo(1), ref: "RW-2204", action: "Confirmed", detail: "Confirmed by Sample Patient D." },
+        { at: daysAgo(1), ref: "RW-2205", action: "Canceled", detail: "Patient canceled future refills. Next cycle stopped immediately." }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function findFill(ref) { return data.fills.filter(function (f) { return f.ref.toUpperCase() === ref.toUpperCase(); })[0]; }
+
+  function evaluateHold(fill) {
+    if (!fill.lastCycle) {
+      return { hold: true, reason: "First fill on this medication, no prior cycle on file to compare against." };
+    }
+    if (fill.thisCycle.daySupply !== fill.lastCycle.daySupply) {
+      return { hold: true, reason: "Day supply changed from " + fill.lastCycle.daySupply + " to " + fill.thisCycle.daySupply + " days (" + fmtMoney(fill.lastCycle.amount) + " to " + fmtMoney(fill.thisCycle.amount) + ")." };
+    }
+    var diff = fill.thisCycle.amount - fill.lastCycle.amount;
+    if (Math.abs(diff) > HOLD_TOLERANCE) {
+      return { hold: true, reason: "Amount changed by " + (diff > 0 ? "+" : "-") + fmtMoney(Math.abs(diff)) + " with the same " + fill.thisCycle.daySupply + "-day supply." };
+    }
+    return { hold: false, reason: "Matches last cycle within " + fmtMoney(HOLD_TOLERANCE) + ". Clears automatically, no confirmation needed." };
+  }
+
+  function renderCycleDiff(fill) {
+    var html = '<div class="cycle-list">';
+    if (fill.lastCycle) {
+      html += '<div class="cycle-col-label">Last cycle (charged)</div>';
+      html += '<div class="cycle-row"><span>' + fill.lastCycle.daySupply + '-day supply</span><span>' + fmtMoney(fill.lastCycle.amount) + '</span></div>';
+    } else {
+      html += '<div class="cycle-col-label">Last cycle</div><div class="cycle-row"><span>No prior cycle on file</span><span></span></div>';
+    }
+    html += '<div class="cycle-col-label" style="margin-top:0.8rem;">This cycle (would charge)</div>';
+    html += '<div class="cycle-row"><span>' + fill.thisCycle.daySupply + '-day supply</span><span>' + fmtMoney(fill.thisCycle.amount) + '</span></div>';
+    html += '</div>';
+    return html;
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var html = "";
+    data.fills.forEach(function (f) {
+      var h = evaluateHold(f);
+      html += '<div class="fill-card"><div class="fill-head"><div><div class="fill-title">' + escapeHtml(f.patient) + " &middot; " + escapeHtml(f.drug) + '</div><div class="fill-meta">Reference code: ' + f.ref + '</div></div><span class="badge ' + f.status + '">' + STATUS_LABEL[f.status] + "</span></div>";
+      html += renderCycleDiff(f);
+      html += h.hold ? '<div class="hold-flag"><strong>Held.</strong> ' + escapeHtml(h.reason) + '</div>' : '<div class="clear-flag"><strong>Clears automatically.</strong> ' + escapeHtml(h.reason) + '</div>';
+      if (h.hold && f.status === "pending") {
+        html += '<div class="fill-actions"><button class="fx-btn-ghost" onclick="__pcg.sendNotice(\'' + f.ref + '\')">Send confirmation notice</button></div>';
+      }
+      if (f.status === "notice_sent") {
+        html += '<div class="ref-note">Notice sent ' + fmtDate(f.noticeSentAt) + '. Awaiting patient response, check the patient tab with this reference code.</div>';
+      }
+      if (f.status === "confirmed") {
+        html += '<div class="ref-note">Confirmed by ' + escapeHtml(f.confirmedBy) + ' at ' + fmtDate(f.confirmedAt) + '.</div>';
+      }
+      if (f.status === "canceled") {
+        html += '<div class="ref-note">Canceled at ' + fmtDate(f.canceledAt) + '. Do not schedule or charge future cycles for this patient.</div>';
+      }
+      if (f.status === "skipped") {
+        html += '<div class="ref-note">Skipped at ' + fmtDate(f.skippedAt) + '. This cycle only, future cycles remain active.</div>';
+      }
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  function runBatchCheck() {
+    var root = document.getElementById("batch-root");
+    var html = "";
+    data.batch.forEach(function (charge) {
+      var f = findFill(charge.ref);
+      var verdict = "clear", reason = "Matches what the patient confirmed. Safe to send to Authorize.net.";
+      if (!f) {
+        verdict = "block"; reason = "No refill record found for this reference code. Do not post.";
+      } else if (f.status === "canceled") {
+        verdict = "block"; reason = "Patient canceled future refills on " + fmtDate(f.canceledAt) + ". This charge must not post.";
+      } else if (f.status === "skipped") {
+        verdict = "block"; reason = "Patient skipped this cycle on " + fmtDate(f.skippedAt) + ". Do not charge or dispense this cycle.";
+      } else if (f.status === "confirmed") {
+        if (charge.amount !== f.thisCycle.amount) {
+          var diff = charge.amount - f.thisCycle.amount;
+          verdict = "flag"; reason = "Patient confirmed " + fmtMoney(f.thisCycle.amount) + ", batch charge is " + fmtMoney(charge.amount) + " (" + (diff > 0 ? "+" : "-") + fmtMoney(Math.abs(diff)) + "). Hold and reconfirm before posting.";
+        }
+      } else {
+        var h = evaluateHold(f);
+        if (h.hold) { verdict = "hold"; reason = "Held pending patient confirmation. Do not release to Authorize.net. " + h.reason; }
+      }
+      html += '<div class="batch-row"><div class="batch-head"><span>' + (f ? escapeHtml(f.patient) : "Unknown patient") + " &middot; " + charge.ref + " &middot; " + fmtMoney(charge.amount) + '</span><span class="batch-verdict ' + verdict + '">' + verdict.toUpperCase() + '</span></div><div class="batch-reason">' + escapeHtml(reason) + '</div></div>';
+    });
+    root.innerHTML = html;
+  }
+
+  function renderLog() {
+    var root = document.getElementById("log-root");
+    if (!data.log.length) { root.innerHTML = '<p class="log-empty">No actions logged yet.</p>'; return; }
+    var rows = data.log.slice().sort(function (a, b) { return b.at - a.at; });
+    var html = '<table class="log-table"><thead><tr><th>When</th><th>Reference</th><th>Action</th><th>Detail</th></tr></thead><tbody>';
+    rows.forEach(function (r) {
+      html += '<tr><td>' + fmtDate(r.at) + '</td><td>' + r.ref + '</td><td>' + escapeHtml(r.action) + '</td><td>' + escapeHtml(r.detail) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    root.innerHTML = html;
+  }
+
+  function addLog(ref, action, detail) {
+    data.log.push({ at: Date.now(), ref: ref, action: action, detail: detail });
+  }
+
+  window.__pcg = {
+    sendNotice: function (ref) {
+      var f = findFill(ref);
+      if (!f) return;
+      f.status = "notice_sent";
+      f.noticeSentAt = Date.now();
+      addLog(ref, "Notice sent", "Confirmation notice sent to " + f.patient + " for " + f.thisCycle.daySupply + "-day supply, " + fmtMoney(f.thisCycle.amount) + ".");
+      save(); renderQueue(); renderLog();
+    },
+    confirmLookup: function (ref) {
+      var f = findFill(ref);
+      var name = document.getElementById("lu-name").value.trim();
+      if (!name) { alert("Enter your typed name to confirm."); return; }
+      f.status = "confirmed";
+      f.confirmedBy = name;
+      f.confirmedAt = Date.now();
+      addLog(ref, "Confirmed", "Confirmed by " + name + ".");
+      save(); runLookup(ref); renderQueue(); renderLog();
+    },
+    cancelLookup: function (ref) {
+      var f = findFill(ref);
+      if (!f) return;
+      f.status = "canceled";
+      f.canceledAt = Date.now();
+      addLog(ref, "Canceled", "Patient canceled future refills. Next cycle stopped immediately.");
+      save(); runLookup(ref); renderQueue(); renderLog();
+    },
+    skipLookup: function (ref) {
+      var f = findFill(ref);
+      if (!f) return;
+      f.status = "skipped";
+      f.skippedAt = Date.now();
+      addLog(ref, "Skipped", "Patient skipped this cycle only, future cycles remain active.");
+      save(); runLookup(ref); renderQueue(); renderLog();
+    }
+  };
+
+  function runLookup(refRaw) {
+    var ref = refRaw.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var f = data.fills.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
+    if (!f || f.status === "pending") {
+      root.innerHTML = '<div class="lookup-result"><p class="not-found">No refill notice found for that reference code yet. Please call the pharmacy directly.</p></div>';
+      return;
+    }
+    var html = '<div class="lookup-result"><h3>' + escapeHtml(f.drug) + '</h3><span class="badge ' + f.status + '">' + STATUS_LABEL[f.status] + '</span>';
+    html += '<div class="lr-detail">This cycle: ' + f.thisCycle.daySupply + '-day supply, <b>' + fmtMoney(f.thisCycle.amount) + '</b>.</div>';
+    if (f.status === "notice_sent") {
+      html += '<div class="lr-actions"><input type="text" id="lu-name" placeholder="Your typed full name" style="flex:1;min-width:180px;font:inherit;font-size:0.85rem;padding:0.45rem 0.65rem;border:1px solid var(--rule);border-radius:var(--radius-sm);"><button class="fx-btn" onclick="__pcg.confirmLookup(\'' + f.ref + '\')">Confirm this cycle</button><button class="fx-btn-ghost" onclick="__pcg.skipLookup(\'' + f.ref + '\')">Skip this cycle only</button><button class="fx-btn-ghost" onclick="__pcg.cancelLookup(\'' + f.ref + '\')">Cancel future refills</button></div>';
+    } else if (f.status === "confirmed") {
+      html += '<div class="lr-detail">Confirmed by ' + escapeHtml(f.confirmedBy) + ' at ' + fmtDate(f.confirmedAt) + '.</div>';
+      html += '<div class="lr-actions"><button class="fx-btn-ghost" onclick="__pcg.cancelLookup(\'' + f.ref + '\')">Cancel future refills</button></div>';
+    } else if (f.status === "canceled") {
+      html += '<div class="lr-detail">Canceled at ' + fmtDate(f.canceledAt) + '. No future refill will be scheduled or charged.</div>';
+    } else if (f.status === "skipped") {
+      html += '<div class="lr-detail">Skipped at ' + fmtDate(f.skippedAt) + '. This cycle only, future cycles remain active.</div>';
+    }
+    html += '</div>';
+    root.innerHTML = html;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    runLookup(document.getElementById("lookup-ref").value);
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the refill queue, batch, and audit log back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue(); renderLog();
+    document.getElementById("batch-root").innerHTML = "";
+  });
+
+  document.getElementById("run-batch-btn").addEventListener("click", runBatchCheck);
+
+  document.querySelectorAll(".pcg-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".pcg-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".pcg-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderQueue();
+  renderLog();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Refill pre-charge confirmation gate template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .pcg-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .pcg-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .pcg-tab.active { background: var(--ink); color: var(--surface); }
+  .pcg-view { display: none; }
+  .pcg-view.active { display: block; }
+  .fill-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .fill-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .fill-title { font-weight: 660; }
+  .fill-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.pending { color: var(--muted); background: var(--surface-2); }
+  .badge.notice_sent { color: var(--warn); background: var(--warn-bg); }
+  .badge.confirmed { color: var(--good); background: var(--good-bg); }
+  .badge.canceled { color: var(--hot); background: var(--hot-bg); }
+  .badge.skipped { color: var(--hot); background: var(--hot-bg); }
+  .cycle-list { margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px dashed var(--rule-soft); }
+  .cycle-col-label { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-top: 0.5rem; }
+  .cycle-row { display: flex; justify-content: space-between; gap: 0.6rem; font-size: 0.85rem; padding: 0.2rem 0; }
+  .hold-flag { margin-top: 0.6rem; padding: 0.6rem 0.75rem; border-radius: var(--radius-sm); background: var(--warn-bg); color: var(--ink); font-size: 0.82rem; }
+  .clear-flag { margin-top: 0.6rem; padding: 0.6rem 0.75rem; border-radius: var(--radius-sm); background: var(--good-bg); color: var(--ink); font-size: 0.82rem; }
+  .fill-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .ref-note { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin-top: 0.4rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 520px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: #fff; color: var(--ink); }
+  .lookup-result { margin-top: 1.1rem; padding: 1rem 1.1rem; border-radius: var(--radius-sm); background: var(--surface-2); }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.15rem; }
+  .lookup-result .lr-detail { font-size: 0.86rem; color: var(--ink-2); margin-top: 0.5rem; line-height: 1.5; }
+  .lookup-result .lr-actions { display: flex; gap: 0.5rem; margin-top: 0.9rem; flex-wrap: wrap; align-items: center; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .batch-row { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.75rem 0.95rem; margin-bottom: 0.6rem; font-size: 0.86rem; }
+  .batch-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .batch-verdict { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .batch-verdict.clear { color: var(--good); background: var(--good-bg); }
+  .batch-verdict.hold { color: var(--warn); background: var(--warn-bg); }
+  .batch-verdict.flag { color: var(--warn); background: var(--warn-bg); }
+  .batch-verdict.block { color: var(--hot); background: var(--hot-bg); }
+  .batch-reason { color: var(--ink-2); font-size: 0.82rem; margin-top: 0.35rem; }
+  .log-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .log-table th { text-align: left; font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--rule); }
+  .log-table td { padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  .log-empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Refill pre-charge confirmation gate</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Confirm the price before the vial fills, not after the card is charged</h1>
+  <p class="fx-lede">Any pharmacy or recurring-dispensing business that keeps a card on file for automatic refills eventually gets the same complaint: a shipment arrives, a charge posts, and the patient says they never saw the amount coming, sometimes because the day supply changed, sometimes because it was their first fill on that medication. Once a prescription has left the pharmacy it legally cannot be returned to stock, so the dispute can only be prevented before the fill, not resolved after it. This page shows one small, working tool that does that: every refill whose amount or day supply differs from the patient's last charge, or has no prior cycle to compare against, is held out of the charge queue until the patient actively confirms, cancels, or skips it, and a cycle that matches what was charged last time clears automatically. Every action is timestamped and logged, instead of depending on someone reading a support inbox.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, it reads the fill queue and the last-charged amount from whatever dispensing and payment system is already in place, for example a pharmacy order queue and a card-on-file payment gateway, and adds the hold-and-confirm step and the audit log on top of that, without replacing the dispensing system itself.</p></div>
+
+  <div class="pcg-tabs">
+    <button class="pcg-tab active" data-view="pharmacy" type="button">Pharmacy view</button>
+    <button class="pcg-tab" data-view="patient" type="button">Patient confirmation</button>
+  </div>
+
+  <section class="pcg-view active" id="view-pharmacy">
+    <h2 class="fx-h2" style="margin-top:0;">Refill pre-charge queue</h2>
+    <p style="color:var(--ink-2); font-size:0.88rem; max-width:70ch; margin-top:-0.4rem;">Every upcoming refill, with what was charged last cycle next to what this cycle would charge. A cycle that differs, or has no prior cycle to compare against, is held and flagged instead of moving to the charge queue on its own.</p>
+    <div id="queue-root"></div>
+    <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+
+    <h2 class="fx-h2" style="margin-top:2.2rem;">Pre-charge gate check</h2>
+    <p style="color:var(--ink-2); font-size:0.88rem; max-width:70ch; margin-top:-0.4rem;">Today's batch of charges about to reach the payment gateway, checked against what each patient actually confirmed. Nothing posts on its own say-so.</p>
+    <div style="margin-top:0.8rem;"><button class="fx-btn" id="run-batch-btn" type="button">Run pre-charge gate check on today's batch</button></div>
+    <div id="batch-root" style="margin-top:1rem;"></div>
+
+    <h2 class="fx-h2" style="margin-top:2.2rem;">Audit log</h2>
+    <p style="color:var(--ink-2); font-size:0.88rem; max-width:70ch; margin-top:-0.4rem;">Every notice, confirmation, cancellation, and skip, timestamped as it happens.</p>
+    <div id="log-root" style="margin-top:0.8rem;"></div>
+  </section>
+
+  <section class="pcg-view" id="view-patient">
+    <h2 class="fx-h2" style="margin-top:0;">Confirm, cancel, or skip a refill</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code (from your refill notice)</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. RX-1003">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Look up my refill</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try RX-1003, RX-1004 or RX-1005 from the pharmacy view's sample queue. RX-1001 and RX-1002 have not had a notice sent yet, so they will not be found here until the pharmacy view sends one.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The notice is sent from the pharmacy view here.</b> A real build sends a text or email automatically the moment the fill queue produces a cycle that differs from the patient's last charge, or has no prior cycle to compare against.</div>
+      <div class="lim"><b>The pre-charge gate check compares two things the business already has.</b> What the patient actually confirmed, and what the fill queue is about to charge. It sits between the dispensing queue and the payment gateway, it does not replace either.</div>
+      <div class="lim"><b>Confirming, canceling, or skipping is logged the moment it happens.</b> A real build keeps this in the same audit trail a signed intake form would produce, this demo shows the workflow, not a specific messaging or e-signature vendor.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/ridgeway-pharmacy/">Ridgeway Pharmacy</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional patient, prescription, and dollar-amount data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "pcg_template_generic_v1";
+  var HOLD_TOLERANCE = 10;
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtMoney(n) { return "$" + n.toFixed(2).replace(/\.00$/, ""); }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function daysAgo(n, h) { var d = new Date(); d.setDate(d.getDate() - n); d.setHours(h || 9, 0, 0, 0); return d.getTime(); }
+
+  var STATUS_LABEL = { pending: "Not yet noticed", notice_sent: "Awaiting response", confirmed: "Confirmed", canceled: "Canceled", skipped: "Skipped this cycle" };
+
+  function defaultData() {
+    return {
+      fills: [
+        {
+          ref: "RX-1001", patient: "Sample Patient A", drug: "Sample Maintenance Medication A", status: "pending",
+          lastCycle: { daySupply: 30, amount: 99 }, thisCycle: { daySupply: 90, amount: 267 },
+          noticeSentAt: null, confirmedAt: null, confirmedBy: null, canceledAt: null, skippedAt: null
+        },
+        {
+          ref: "RX-1002", patient: "Sample Patient B", drug: "Sample New-Start Medication B", status: "pending",
+          lastCycle: null, thisCycle: { daySupply: 90, amount: 310 },
+          noticeSentAt: null, confirmedAt: null, confirmedBy: null, canceledAt: null, skippedAt: null
+        },
+        {
+          ref: "RX-1003", patient: "Sample Patient C", drug: "Sample Maintenance Medication C", status: "notice_sent",
+          lastCycle: { daySupply: 30, amount: 64 }, thisCycle: { daySupply: 30, amount: 81 },
+          noticeSentAt: daysAgo(2), confirmedAt: null, confirmedBy: null, canceledAt: null, skippedAt: null
+        },
+        {
+          ref: "RX-1004", patient: "Sample Patient D", drug: "Sample Maintenance Medication D", status: "confirmed",
+          lastCycle: { daySupply: 30, amount: 58 }, thisCycle: { daySupply: 90, amount: 174 },
+          noticeSentAt: daysAgo(4), confirmedAt: daysAgo(1), confirmedBy: "Sample Patient D", canceledAt: null, skippedAt: null
+        },
+        {
+          ref: "RX-1005", patient: "Sample Patient E", drug: "Sample Maintenance Medication E", status: "canceled",
+          lastCycle: { daySupply: 30, amount: 45 }, thisCycle: { daySupply: 30, amount: 110 },
+          noticeSentAt: daysAgo(6), confirmedAt: null, confirmedBy: null, canceledAt: daysAgo(1), skippedAt: null
+        }
+      ],
+      batch: [
+        { ref: "RX-1001", amount: 267 },
+        { ref: "RX-1003", amount: 81 },
+        { ref: "RX-1004", amount: 174 },
+        { ref: "RX-1005", amount: 110 },
+        { ref: "RX-9999", amount: 88 }
+      ],
+      log: [
+        { at: daysAgo(6), ref: "RX-1005", action: "Notice sent", detail: "Day supply and amount unchanged, held for a different reason: prior refund dispute on file." },
+        { at: daysAgo(4), ref: "RX-1004", action: "Notice sent", detail: "Day supply changed 30 to 90 days, amount changed $58 to $174." },
+        { at: daysAgo(2), ref: "RX-1003", action: "Notice sent", detail: "Amount changed $64 to $81 with the same 30-day supply." },
+        { at: daysAgo(1), ref: "RX-1004", action: "Confirmed", detail: "Confirmed by Sample Patient D." },
+        { at: daysAgo(1), ref: "RX-1005", action: "Canceled", detail: "Patient canceled future refills. Next cycle stopped immediately." }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function findFill(ref) { return data.fills.filter(function (f) { return f.ref.toUpperCase() === ref.toUpperCase(); })[0]; }
+
+  function evaluateHold(fill) {
+    if (!fill.lastCycle) {
+      return { hold: true, reason: "First fill on this medication, no prior cycle on file to compare against." };
+    }
+    if (fill.thisCycle.daySupply !== fill.lastCycle.daySupply) {
+      return { hold: true, reason: "Day supply changed from " + fill.lastCycle.daySupply + " to " + fill.thisCycle.daySupply + " days (" + fmtMoney(fill.lastCycle.amount) + " to " + fmtMoney(fill.thisCycle.amount) + ")." };
+    }
+    var diff = fill.thisCycle.amount - fill.lastCycle.amount;
+    if (Math.abs(diff) > HOLD_TOLERANCE) {
+      return { hold: true, reason: "Amount changed by " + (diff > 0 ? "+" : "-") + fmtMoney(Math.abs(diff)) + " with the same " + fill.thisCycle.daySupply + "-day supply." };
+    }
+    return { hold: false, reason: "Matches last cycle within " + fmtMoney(HOLD_TOLERANCE) + ". Clears automatically, no confirmation needed." };
+  }
+
+  function renderCycleDiff(fill) {
+    var html = '<div class="cycle-list">';
+    if (fill.lastCycle) {
+      html += '<div class="cycle-col-label">Last cycle (charged)</div>';
+      html += '<div class="cycle-row"><span>' + fill.lastCycle.daySupply + '-day supply</span><span>' + fmtMoney(fill.lastCycle.amount) + '</span></div>';
+    } else {
+      html += '<div class="cycle-col-label">Last cycle</div><div class="cycle-row"><span>No prior cycle on file</span><span></span></div>';
+    }
+    html += '<div class="cycle-col-label" style="margin-top:0.8rem;">This cycle (would charge)</div>';
+    html += '<div class="cycle-row"><span>' + fill.thisCycle.daySupply + '-day supply</span><span>' + fmtMoney(fill.thisCycle.amount) + '</span></div>';
+    html += '</div>';
+    return html;
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var html = "";
+    data.fills.forEach(function (f) {
+      var h = evaluateHold(f);
+      html += '<div class="fill-card"><div class="fill-head"><div><div class="fill-title">' + escapeHtml(f.patient) + " &middot; " + escapeHtml(f.drug) + '</div><div class="fill-meta">Reference code: ' + f.ref + '</div></div><span class="badge ' + f.status + '">' + STATUS_LABEL[f.status] + "</span></div>";
+      html += renderCycleDiff(f);
+      html += h.hold ? '<div class="hold-flag"><strong>Held.</strong> ' + escapeHtml(h.reason) + '</div>' : '<div class="clear-flag"><strong>Clears automatically.</strong> ' + escapeHtml(h.reason) + '</div>';
+      if (h.hold && f.status === "pending") {
+        html += '<div class="fill-actions"><button class="fx-btn-ghost" onclick="__pcg.sendNotice(\'' + f.ref + '\')">Send confirmation notice</button></div>';
+      }
+      if (f.status === "notice_sent") {
+        html += '<div class="ref-note">Notice sent ' + fmtDate(f.noticeSentAt) + '. Awaiting patient response, check the patient tab with this reference code.</div>';
+      }
+      if (f.status === "confirmed") {
+        html += '<div class="ref-note">Confirmed by ' + escapeHtml(f.confirmedBy) + ' at ' + fmtDate(f.confirmedAt) + '.</div>';
+      }
+      if (f.status === "canceled") {
+        html += '<div class="ref-note">Canceled at ' + fmtDate(f.canceledAt) + '. Do not schedule or charge future cycles for this patient.</div>';
+      }
+      if (f.status === "skipped") {
+        html += '<div class="ref-note">Skipped at ' + fmtDate(f.skippedAt) + '. This cycle only, future cycles remain active.</div>';
+      }
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  function runBatchCheck() {
+    var root = document.getElementById("batch-root");
+    var html = "";
+    data.batch.forEach(function (charge) {
+      var f = findFill(charge.ref);
+      var verdict = "clear", reason = "Matches what the patient confirmed. Safe to send to the payment gateway.";
+      if (!f) {
+        verdict = "block"; reason = "No refill record found for this reference code. Do not post.";
+      } else if (f.status === "canceled") {
+        verdict = "block"; reason = "Patient canceled future refills on " + fmtDate(f.canceledAt) + ". This charge must not post.";
+      } else if (f.status === "skipped") {
+        verdict = "block"; reason = "Patient skipped this cycle on " + fmtDate(f.skippedAt) + ". Do not charge or dispense this cycle.";
+      } else if (f.status === "confirmed") {
+        if (charge.amount !== f.thisCycle.amount) {
+          var diff = charge.amount - f.thisCycle.amount;
+          verdict = "flag"; reason = "Patient confirmed " + fmtMoney(f.thisCycle.amount) + ", batch charge is " + fmtMoney(charge.amount) + " (" + (diff > 0 ? "+" : "-") + fmtMoney(Math.abs(diff)) + "). Hold and reconfirm before posting.";
+        }
+      } else {
+        var h = evaluateHold(f);
+        if (h.hold) { verdict = "hold"; reason = "Held pending patient confirmation. Do not release to the payment gateway. " + h.reason; }
+      }
+      html += '<div class="batch-row"><div class="batch-head"><span>' + (f ? escapeHtml(f.patient) : "Unknown patient") + " &middot; " + charge.ref + " &middot; " + fmtMoney(charge.amount) + '</span><span class="batch-verdict ' + verdict + '">' + verdict.toUpperCase() + '</span></div><div class="batch-reason">' + escapeHtml(reason) + '</div></div>';
+    });
+    root.innerHTML = html;
+  }
+
+  function renderLog() {
+    var root = document.getElementById("log-root");
+    if (!data.log.length) { root.innerHTML = '<p class="log-empty">No actions logged yet.</p>'; return; }
+    var rows = data.log.slice().sort(function (a, b) { return b.at - a.at; });
+    var html = '<table class="log-table"><thead><tr><th>When</th><th>Reference</th><th>Action</th><th>Detail</th></tr></thead><tbody>';
+    rows.forEach(function (r) {
+      html += '<tr><td>' + fmtDate(r.at) + '</td><td>' + r.ref + '</td><td>' + escapeHtml(r.action) + '</td><td>' + escapeHtml(r.detail) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    root.innerHTML = html;
+  }
+
+  function addLog(ref, action, detail) {
+    data.log.push({ at: Date.now(), ref: ref, action: action, detail: detail });
+  }
+
+  window.__pcg = {
+    sendNotice: function (ref) {
+      var f = findFill(ref);
+      if (!f) return;
+      f.status = "notice_sent";
+      f.noticeSentAt = Date.now();
+      addLog(ref, "Notice sent", "Confirmation notice sent to " + f.patient + " for " + f.thisCycle.daySupply + "-day supply, " + fmtMoney(f.thisCycle.amount) + ".");
+      save(); renderQueue(); renderLog();
+    },
+    confirmLookup: function (ref) {
+      var f = findFill(ref);
+      var name = document.getElementById("lu-name").value.trim();
+      if (!name) { alert("Enter your typed name to confirm."); return; }
+      f.status = "confirmed";
+      f.confirmedBy = name;
+      f.confirmedAt = Date.now();
+      addLog(ref, "Confirmed", "Confirmed by " + name + ".");
+      save(); runLookup(ref); renderQueue(); renderLog();
+    },
+    cancelLookup: function (ref) {
+      var f = findFill(ref);
+      if (!f) return;
+      f.status = "canceled";
+      f.canceledAt = Date.now();
+      addLog(ref, "Canceled", "Patient canceled future refills. Next cycle stopped immediately.");
+      save(); runLookup(ref); renderQueue(); renderLog();
+    },
+    skipLookup: function (ref) {
+      var f = findFill(ref);
+      if (!f) return;
+      f.status = "skipped";
+      f.skippedAt = Date.now();
+      addLog(ref, "Skipped", "Patient skipped this cycle only, future cycles remain active.");
+      save(); runLookup(ref); renderQueue(); renderLog();
+    }
+  };
+
+  function runLookup(refRaw) {
+    var ref = refRaw.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var f = data.fills.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
+    if (!f || f.status === "pending") {
+      root.innerHTML = '<div class="lookup-result"><p class="not-found">No refill notice found for that reference code yet. Please call the pharmacy directly.</p></div>';
+      return;
+    }
+    var html = '<div class="lookup-result"><h3>' + escapeHtml(f.drug) + '</h3><span class="badge ' + f.status + '">' + STATUS_LABEL[f.status] + '</span>';
+    html += '<div class="lr-detail">This cycle: ' + f.thisCycle.daySupply + '-day supply, <b>' + fmtMoney(f.thisCycle.amount) + '</b>.</div>';
+    if (f.status === "notice_sent") {
+      html += '<div class="lr-actions"><input type="text" id="lu-name" placeholder="Your typed full name" style="flex:1;min-width:180px;font:inherit;font-size:0.85rem;padding:0.45rem 0.65rem;border:1px solid var(--rule);border-radius:var(--radius-sm);"><button class="fx-btn" onclick="__pcg.confirmLookup(\'' + f.ref + '\')">Confirm this cycle</button><button class="fx-btn-ghost" onclick="__pcg.skipLookup(\'' + f.ref + '\')">Skip this cycle only</button><button class="fx-btn-ghost" onclick="__pcg.cancelLookup(\'' + f.ref + '\')">Cancel future refills</button></div>';
+    } else if (f.status === "confirmed") {
+      html += '<div class="lr-detail">Confirmed by ' + escapeHtml(f.confirmedBy) + ' at ' + fmtDate(f.confirmedAt) + '.</div>';
+      html += '<div class="lr-actions"><button class="fx-btn-ghost" onclick="__pcg.cancelLookup(\'' + f.ref + '\')">Cancel future refills</button></div>';
+    } else if (f.status === "canceled") {
+      html += '<div class="lr-detail">Canceled at ' + fmtDate(f.canceledAt) + '. No future refill will be scheduled or charged.</div>';
+    } else if (f.status === "skipped") {
+      html += '<div class="lr-detail">Skipped at ' + fmtDate(f.skippedAt) + '. This cycle only, future cycles remain active.</div>';
+    }
+    html += '</div>';
+    root.innerHTML = html;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    runLookup(document.getElementById("lookup-ref").value);
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the refill queue, batch, and audit log back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue(); renderLog();
+    document.getElementById("batch-root").innerHTML = "";
+  });
+
+  document.getElementById("run-batch-btn").addEventListener("click", runBatchCheck);
+
+  document.querySelectorAll(".pcg-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".pcg-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".pcg-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderQueue();
+  renderLog();
+})();
+</script>
+</body>
+</html>
