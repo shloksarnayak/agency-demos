@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>Cylinder rental and reorder portal template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .cy-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+  .cy-tab { font: inherit; font-size: .82rem; font-weight: 700; padding: .6rem 1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .cy-tab.active { background: var(--brand); color: var(--brand-ink); }
+  .cy-view { display: none; }
+  .cy-view.active { display: block; }
+  .cy-label { font-family: var(--mono); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: .5rem; }
+  .cy-field { margin-top: 1.1rem; }
+  .cy-choices { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .cy-choices .fx-opt { padding: .55rem .9rem; font-size: .84rem; }
+  .cy-facts { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: 1rem; }
+  .cy-fact { font-family: var(--mono); font-size: .68rem; padding: .38rem .65rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface-2); color: var(--ink-2); }
+  .cy-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .7rem; margin: 1.1rem 0 .3rem; }
+  .cy-stat { padding: .8rem .9rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--surface); box-shadow: 3px 3px 0 var(--ink); }
+  .cy-stat .n { font-family: var(--serif); font-size: 1.5rem; line-height: 1.05; font-weight: 700; }
+  .cy-stat .k { font-family: var(--mono); font-size: .63rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-top: .3rem; }
+  .cy-stat.warn { background: var(--warn-bg); }
+  .cy-stat.hot { background: var(--hot-bg); }
+  .cyl { border: 2px solid var(--ink); border-radius: 14px; padding: .85rem 1rem; background: var(--surface); box-shadow: 3px 3px 0 var(--ink); margin-bottom: .7rem; }
+  .cyl-head { display: flex; justify-content: space-between; gap: .6rem; flex-wrap: wrap; align-items: baseline; }
+  .cyl-name { font-weight: 700; font-size: .95rem; }
+  .cyl-serial { font-family: var(--mono); font-size: .68rem; color: var(--muted); }
+  .cyl-meta { font-size: .78rem; color: var(--ink-2); margin-top: .35rem; line-height: 1.5; }
+  .cyl-row { display: flex; gap: .45rem; flex-wrap: wrap; margin-top: .55rem; align-items: center; }
+  .tag { font-family: var(--mono); font-size: .62rem; text-transform: uppercase; letter-spacing: .04em; font-weight: 700; padding: .25rem .55rem; border-radius: 999px; border: 1.5px solid var(--ink); white-space: nowrap; }
+  .tag.ok { background: var(--good-bg); color: #14512f; }
+  .tag.accruing { background: var(--warn-bg); color: #5a3c00; }
+  .tag.idle { background: var(--hot-bg); color: var(--hot); }
+  .tag.owned { background: var(--surface-2); color: var(--ink-2); }
+  .tag.due { background: var(--hot-bg); color: var(--hot); }
+  .tag.pending { background: var(--brand-soft); color: var(--brand); }
+  .cyl.sel { box-shadow: 3px 3px 0 var(--brand); background: #f4f7ff; }
+  .cy-check { display: inline-flex; align-items: center; gap: .45rem; font-size: .82rem; font-weight: 650; cursor: pointer; }
+  .cy-qty-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: .55rem; }
+  .cy-qty { display: flex; justify-content: space-between; align-items: center; gap: .6rem; padding: .55rem .75rem; background: var(--surface-2); border: 2px solid var(--ink); border-radius: var(--radius-sm); }
+  .cy-qty label { font-size: .82rem; font-weight: 650; line-height: 1.3; }
+  .cy-qty input { width: 4.2rem; padding: .3rem .35rem !important; }
+  .cy-branch { margin-top: .8rem; padding: .85rem 1rem; border-radius: var(--radius-sm); background: var(--brand-soft); font-size: .84rem; line-height: 1.55; }
+  .cy-branch b { display: block; margin-bottom: .2rem; }
+  .cy-table { width: 100%; border-collapse: collapse; font-size: .82rem; margin-top: .7rem; }
+  .cy-table th, .cy-table td { text-align: left; padding: .5rem .55rem; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  .cy-table th { font-family: var(--mono); font-size: .64rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .cy-scroll { overflow-x: auto; }
+  .cy-scroll .cy-table { min-width: 480px; }
+  .cy-empty { color: var(--muted); font-style: italic; font-size: .86rem; margin-top: .6rem; }
+  .cy-note { font-size: .78rem; color: var(--muted); margin-top: .5rem; line-height: 1.55; max-width: 74ch; }
+  .cy-confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.2rem 1.3rem; margin-top: 1.2rem; }
+  .cy-confirm h3 { margin: 0 0 .5rem; font-family: var(--serif); color: var(--brand); }
+  .cy-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .6rem; }
+  .cy-mini { font: 700 .72rem/1.2 var(--sans); padding: .42rem .7rem; border: 2px solid var(--ink); border-radius: 8px; background: var(--surface-2); cursor: pointer; }
+  .cy-mini:hover { background: var(--lime); }
+  .cy-mini:disabled { opacity: .45; cursor: not-allowed; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Cylinder rental and reorder portal</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">The rental clock a phone call never shows you</h1>
+  <p class="fx-lede">Distributors who deliver returnable cylinders on rental usually take every order by phone, text or email. That works, but the customer cannot see which cylinders they still hold, how long each one has been sitting, or what rental it has quietly accrued, and neither side finds out until an invoice arrives. This portal shows the balance, does the arithmetic, and turns it into an order routed to the right branch.</p>
+  
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> The branches, accounts, serial numbers, rates and invoices are placeholders, not a real business. When this is built for a real distributor, the branch list, catalog, rental terms and route days come from what that business actually publishes and confirms, the way the Conroe Welding Supply example does.</p></div>
+
+  <div class="fx-card">
+    <div class="cy-label">Signed in as (sample account)</div>
+    <div class="cy-choices" id="acct-root"></div>
+    <div class="cy-tabs" id="tab-root" style="margin-top:1.3rem;"></div>
+    <div id="view-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">Activity log</h2>
+    <p class="cy-note">Every action taken in this prototype is timestamped here, so a request is a record both sides can point at instead of a remembered phone call.</p>
+    <div class="cy-scroll"><table class="cy-table" id="log-table"><thead><tr><th>When</th><th>Account</th><th>Action</th></tr></thead><tbody id="log-body"></tbody></table></div>
+    <p class="cy-empty" id="log-empty" style="display:none;">No activity logged yet.</p>
+    <button class="fx-btn-ghost" id="reset-btn" style="margin-top:1rem;">Reset to sample data</button>
+  </section>
+
+  
+
+  <section>
+    <h2 class="fx-h2">What this does not do yet</h2>
+    <div class="limits">
+      
+      <div class="lim"><b>The branch list, catalog and rate table are the real work.</b> Everything on this page is a placeholder. A real build starts from that distributor's own branches, published product list, cylinder rental terms and route calendar.</div>
+      <div class="lim"><b>It reads a ledger, it does not replace one.</b> The cylinder balances here live in the browser. In production this reads from whatever system already holds the delivery and cylinder records, so the portal and the office agree rather than drift apart.</div>
+      <div class="lim"><b>Online payment needs a backend.</b> The invoice tab records a payment-link request. Actually taking a card needs a payment processor and a server, which a static page cannot do and which is scoped separately.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/conroe-welding-supply/">Conroe Welding Supply</a></b>, a three-branch industrial and specialty gas distributor in the Houston and East Texas area, scoped from their own published branches, gas list and services.</div>
+
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional account, cylinder, rate and invoice data on this page, not connected to any live system.</p></footer>
+<script>
+var CFG = {
+  "storageKey": "cyl_portal_template_v1",
+  "idleDays": 75,
+  "rentalNote": "the included-days allowance on its size, then a daily rate after that.",
+  "routeNote": "Route days here are placeholders. A real build uses the branch's actual route calendar.",
+  "branches": [
+    {
+      "id": "north",
+      "name": "Example North Branch",
+      "address": "100 Sample Road, Example City",
+      "phone": "(555) 010-0100",
+      "hours": "Hours as posted by the branch",
+      "routeDay": 2
+    },
+    {
+      "id": "south",
+      "name": "Example South Branch",
+      "address": "200 Sample Highway, Example Town",
+      "phone": "(555) 010-0200",
+      "hours": "Hours as posted by the branch",
+      "routeDay": 4
+    }
+  ],
+  "accounts": [
+    {
+      "id": "a1",
+      "name": "Sample Account: Example Fabrication Shop",
+      "site": "Example City",
+      "branchId": "north"
+    },
+    {
+      "id": "a2",
+      "name": "Sample Account: Example Taproom",
+      "site": "Example Town",
+      "branchId": "south"
+    }
+  ],
+  "catalog": [
+    {
+      "sku": "g1",
+      "name": "Standard gas cylinder, large",
+      "unitNote": "sample catalog item"
+    },
+    {
+      "sku": "g2",
+      "name": "Standard gas cylinder, medium",
+      "unitNote": "sample catalog item"
+    },
+    {
+      "sku": "h1",
+      "name": "Consumables carton",
+      "unitNote": "sample catalog item"
+    },
+    {
+      "sku": "h2",
+      "name": "Safety equipment pack",
+      "unitNote": "sample catalog item"
+    }
+  ],
+  "cylinders": [
+    {
+      "id": "c1",
+      "serial": "SAMPLE-40118",
+      "accountId": "a1",
+      "itemName": "Standard gas cylinder",
+      "size": "large",
+      "ownership": "rented",
+      "deliveredDaysAgo": 12,
+      "dailyRental": 0.35,
+      "freeDays": 30
+    },
+    {
+      "id": "c2",
+      "serial": "SAMPLE-40119",
+      "accountId": "a1",
+      "itemName": "Standard gas cylinder",
+      "size": "large",
+      "ownership": "rented",
+      "deliveredDaysAgo": 48,
+      "dailyRental": 0.35,
+      "freeDays": 30
+    },
+    {
+      "id": "c3",
+      "serial": "SAMPLE-40204",
+      "accountId": "a1",
+      "itemName": "Standard gas cylinder",
+      "size": "medium",
+      "ownership": "rented",
+      "deliveredDaysAgo": 96,
+      "dailyRental": 0.28,
+      "freeDays": 30
+    },
+    {
+      "id": "c4",
+      "serial": "SAMPLE-C-771",
+      "accountId": "a1",
+      "itemName": "Customer cylinder",
+      "size": "medium",
+      "ownership": "customer-owned",
+      "deliveredDaysAgo": 200,
+      "dailyRental": 0,
+      "freeDays": 0,
+      "hydroDueInDays": 45
+    },
+    {
+      "id": "c5",
+      "serial": "SAMPLE-40310",
+      "accountId": "a2",
+      "itemName": "Standard gas cylinder",
+      "size": "small",
+      "ownership": "rented",
+      "deliveredDaysAgo": 130,
+      "dailyRental": 0.22,
+      "freeDays": 30
+    },
+    {
+      "id": "c6",
+      "serial": "SAMPLE-40311",
+      "accountId": "a2",
+      "itemName": "Standard gas cylinder",
+      "size": "small",
+      "ownership": "rented",
+      "deliveredDaysAgo": 9,
+      "dailyRental": 0.22,
+      "freeDays": 30
+    }
+  ],
+  "invoices": [
+    {
+      "id": "i1",
+      "number": "SAMPLE-88412",
+      "accountId": "a1",
+      "issuedDaysAgo": 52,
+      "termsDays": 30,
+      "amount": 486.2,
+      "note": "sample invoice"
+    },
+    {
+      "id": "i2",
+      "number": "SAMPLE-88910",
+      "accountId": "a1",
+      "issuedDaysAgo": 14,
+      "termsDays": 30,
+      "amount": 212.75,
+      "note": "sample invoice"
+    },
+    {
+      "id": "i3",
+      "number": "SAMPLE-89004",
+      "accountId": "a2",
+      "issuedDaysAgo": 41,
+      "termsDays": 30,
+      "amount": 128.4,
+      "note": "sample invoice"
+    }
+  ]
+};
+</script>
+<script>
+(function () {
+  "use strict";
+
+  var DAY = 86400000;
+  var IDLE_DAYS = CFG.idleDays;
+  var HYDRO_WARN_DAYS = 120;
+
+  function el(id) { return document.getElementById(id); }
+  function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function iso(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function parseISO(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function startOfToday() { var d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function daysSince(isoStr) { return Math.floor((startOfToday() - parseISO(isoStr)) / DAY); }
+  function money(n) { return "$" + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function fmtDate(isoStr) {
+    var d = parseISO(isoStr);
+    var m = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return m[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
+  }
+  function stamp() {
+    var d = new Date();
+    return fmtDate(iso(d)) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes());
+  }
+  function ref(prefix) {
+    var n = (data.counter = (data.counter || 0) + 1);
+    return prefix + "-" + (1000 + n);
+  }
+
+  function seed() {
+    var today = startOfToday();
+    function back(days) { return iso(new Date(today.getTime() - days * DAY)); }
+    function fwd(days) { return iso(new Date(today.getTime() + days * DAY)); }
+    var cylinders = CFG.cylinders.map(function (c) {
+      var o = {};
+      for (var k in c) if (Object.prototype.hasOwnProperty.call(c, k)) o[k] = c[k];
+      o.deliveredOn = back(c.deliveredDaysAgo);
+      delete o.deliveredDaysAgo;
+      if (typeof c.hydroDueInDays === "number") { o.hydroDueOn = fwd(c.hydroDueInDays); delete o.hydroDueInDays; }
+      o.state = "on-site";
+      return o;
+    });
+    var invoices = CFG.invoices.map(function (v) {
+      var o = {};
+      for (var k in v) if (Object.prototype.hasOwnProperty.call(v, k)) o[k] = v[k];
+      o.issuedOn = back(v.issuedDaysAgo);
+      o.dueOn = back(v.issuedDaysAgo - v.termsDays);
+      delete o.issuedDaysAgo;
+      o.status = "open";
+      return o;
+    });
+    return { cylinders: cylinders, invoices: invoices, orders: [], log: [], counter: 0, seededOn: iso(today) };
+  }
+
+  var data = load();
+  function load() {
+    try {
+      var raw = localStorage.getItem(CFG.storageKey);
+      if (raw) {
+        var p = JSON.parse(raw);
+        if (p && p.cylinders && p.invoices) return p;
+      }
+    } catch (e) {}
+    return seed();
+  }
+  function save() { try { localStorage.setItem(CFG.storageKey, JSON.stringify(data)); } catch (e) {} }
+
+  function logIt(text) {
+    data.log.unshift({ at: stamp(), account: accountName(activeAccount), text: text });
+    if (data.log.length > 40) data.log.length = 40;
+  }
+
+  var activeAccount = CFG.accounts[0].id;
+  var activeTab = "cylinders";
+  var order = null;
+  var lastOrder = null;
+
+  function account(id) {
+    for (var i = 0; i < CFG.accounts.length; i++) if (CFG.accounts[i].id === id) return CFG.accounts[i];
+    return CFG.accounts[0];
+  }
+  function accountName(id) { return account(id).name; }
+  function branch(id) {
+    for (var i = 0; i < CFG.branches.length; i++) if (CFG.branches[i].id === id) return CFG.branches[i];
+    return CFG.branches[0];
+  }
+  function catalogItem(sku) {
+    for (var i = 0; i < CFG.catalog.length; i++) if (CFG.catalog[i].sku === sku) return CFG.catalog[i];
+    return null;
+  }
+  function myCylinders() {
+    return data.cylinders.filter(function (c) { return c.accountId === activeAccount; });
+  }
+  function myInvoices() {
+    return data.invoices.filter(function (v) { return v.accountId === activeAccount; });
+  }
+  function myOrders() {
+    return data.orders.filter(function (o) { return o.accountId === activeAccount; });
+  }
+
+  function rentalOf(c) {
+    if (c.ownership !== "rented") return { held: daysSince(c.deliveredOn), billable: 0, accrued: 0, perDay: 0, state: "owned" };
+    var held = daysSince(c.deliveredOn);
+    var billable = Math.max(0, held - c.freeDays);
+    var accrued = billable * c.dailyRental;
+    var state = billable > 0 ? (held >= IDLE_DAYS ? "idle" : "accruing") : "included";
+    return { held: held, billable: billable, accrued: accrued, perDay: billable > 0 ? c.dailyRental : 0, state: state };
+  }
+  function hydroOf(c) {
+    if (c.ownership !== "customer-owned" || !c.hydroDueOn) return null;
+    var days = Math.round((parseISO(c.hydroDueOn) - startOfToday()) / DAY);
+    return { dueOn: c.hydroDueOn, days: days, flag: days <= HYDRO_WARN_DAYS };
+  }
+  function invoiceAge(v) {
+    var over = daysSince(v.dueOn);
+    return { overdue: over > 0 ? over : 0 };
+  }
+
+  function newOrder() {
+    return { swaps: {}, tests: {}, qty: {}, branchId: account(activeAccount).branchId, delivery: "route", po: "", submitted: false };
+  }
+
+  function renderAccounts() {
+    el("acct-root").innerHTML = CFG.accounts.map(function (a) {
+      return '<button class="fx-opt' + (a.id === activeAccount ? " sel" : "") + '" data-acct="' + esc(a.id) + '"><b>' +
+        esc(a.name) + '</b><span class="sub">' + esc(a.site) + "</span></button>";
+    }).join("");
+    Array.prototype.forEach.call(document.querySelectorAll("[data-acct]"), function (b) {
+      b.addEventListener("click", function () {
+        activeAccount = b.getAttribute("data-acct");
+        order = newOrder();
+        renderAccounts(); renderView();
+      });
+    });
+  }
+
+  var TABS = [
+    { id: "cylinders", label: "Cylinders on site" },
+    { id: "order", label: "Order or swap" },
+    { id: "invoices", label: "Invoices" },
+    { id: "history", label: "Order history" }
+  ];
+
+  function renderTabs() {
+    el("tab-root").innerHTML = TABS.map(function (t) {
+      var n = "";
+      if (t.id === "cylinders") n = " (" + myCylinders().length + ")";
+      if (t.id === "invoices") { var o = myInvoices().filter(function (v) { return v.status !== "paid"; }).length; n = " (" + o + ")"; }
+      return '<button class="cy-tab' + (t.id === activeTab ? " active" : "") + '" data-tab="' + t.id + '">' + t.label + n + "</button>";
+    }).join("");
+    Array.prototype.forEach.call(document.querySelectorAll("[data-tab]"), function (b) {
+      b.addEventListener("click", function () { activeTab = b.getAttribute("data-tab"); renderView(); });
+    });
+  }
+
+  function renderView() {
+    renderTabs();
+    if (activeTab === "cylinders") renderCylinders();
+    else if (activeTab === "order") renderOrder();
+    else if (activeTab === "invoices") renderInvoices();
+    else renderHistory();
+    renderLog();
+    save();
+  }
+
+  function renderCylinders() {
+    var list = myCylinders();
+    var rented = list.filter(function (c) { return c.ownership === "rented"; });
+    var perDay = 0, accrued = 0, idle = 0, dueSoon = 0;
+    rented.forEach(function (c) { var r = rentalOf(c); perDay += r.perDay; accrued += r.accrued; if (r.state === "idle") idle++; });
+    list.forEach(function (c) { var h = hydroOf(c); if (h && h.flag) dueSoon++; });
+
+    var html = '<div class="cy-stats">' +
+      '<div class="cy-stat"><div class="n">' + list.length + '</div><div class="k">cylinders on site</div></div>' +
+      '<div class="cy-stat' + (perDay > 0 ? " warn" : "") + '"><div class="n">' + money(perDay) + '</div><div class="k">rental accruing per day</div></div>' +
+      '<div class="cy-stat' + (accrued > 0 ? " warn" : "") + '"><div class="n">' + money(accrued) + '</div><div class="k">rental accrued to date</div></div>' +
+      '<div class="cy-stat' + (idle > 0 ? " hot" : "") + '"><div class="n">' + idle + '</div><div class="k">idle ' + IDLE_DAYS + '+ days</div></div>' +
+      '<div class="cy-stat' + (dueSoon > 0 ? " hot" : "") + '"><div class="n">' + dueSoon + '</div><div class="k">retest due or near due</div></div>' +
+      "</div>";
+
+    html += '<p class="cy-note">Rental is calculated from each cylinder\'s delivery date against ' + CFG.rentalNote + ' Sample rates and dates, shown to demonstrate the calculation.</p>';
+
+    if (!list.length) html += '<p class="cy-empty">No cylinders recorded for this account.</p>';
+
+    list.forEach(function (c) {
+      var r = rentalOf(c);
+      var h = hydroOf(c);
+      var tags = "";
+      if (c.ownership === "rented") {
+        if (r.state === "included") tags += '<span class="tag ok">Within included days</span>';
+        else if (r.state === "accruing") tags += '<span class="tag accruing">Rental accruing ' + money(c.dailyRental) + "/day</span>";
+        else tags += '<span class="tag idle">Idle ' + r.held + " days, return to stop rental</span>";
+      } else {
+        tags += '<span class="tag owned">Customer owned</span>';
+      }
+      if (h) tags += '<span class="tag ' + (h.flag ? "due" : "owned") + '">' + (h.days < 0 ? "Retest overdue by " + Math.abs(h.days) + " days" : "Retest due in " + h.days + " days") + "</span>";
+      if (c.state === "swap-requested") tags += '<span class="tag pending">Swap requested</span>';
+      if (c.state === "test-requested") tags += '<span class="tag pending">Retest pickup requested</span>';
+
+      var meta = "Delivered " + fmtDate(c.deliveredOn) + ", " + r.held + " days on site";
+      if (c.ownership === "rented") {
+        meta += ". " + c.freeDays + " days included, " + r.billable + " billable, " + money(r.accrued) + " accrued";
+      }
+      if (h) meta += ". Hydrostatic retest due " + fmtDate(h.dueOn);
+
+      html += '<div class="cyl"><div class="cyl-head"><span class="cyl-name">' + esc(c.itemName) + " " + esc(c.size) +
+        '</span><span class="cyl-serial">' + esc(c.serial) + "</span></div>" +
+        '<div class="cyl-meta">' + esc(meta) + "</div>" +
+        '<div class="cyl-row">' + tags + "</div></div>";
+    });
+
+    if (idle > 0 || dueSoon > 0) {
+      html += '<div class="cy-branch"><b>What the account manager would act on</b>' +
+        (idle > 0 ? idle + " cylinder(s) have sat past " + IDLE_DAYS + " days and are still billing rental. " : "") +
+        (dueSoon > 0 ? dueSoon + " customer-owned cylinder(s) are at or near their hydrostatic retest date. " : "") +
+        'Both are actionable from the "Order or swap" tab.</div>';
+    }
+    el("view-root").innerHTML = html;
+  }
+
+  function nextRouteDate(b) {
+    var target = b.routeDay;
+    var d = startOfToday();
+    for (var i = 1; i <= 14; i++) {
+      var t = new Date(d.getTime() + i * DAY);
+      if (t.getDay() === target) return iso(t);
+    }
+    return iso(new Date(d.getTime() + DAY));
+  }
+
+  function renderOrder() {
+    if (!order) order = newOrder();
+    if (order.submitted) { renderOrderConfirm(); return; }
+    var list = myCylinders();
+    var swappable = list.filter(function (c) { return c.ownership === "rented" && c.state === "on-site"; });
+    var testable = list.filter(function (c) { return c.ownership === "customer-owned" && c.state === "on-site" && hydroOf(c); });
+    var b = branch(order.branchId);
+    var acct = account(activeAccount);
+
+    var html = '<div class="cy-field"><div class="cy-label">Swap a cylinder you already have (full for empty)</div>';
+    if (!swappable.length) html += '<p class="cy-empty">No rented cylinders available to swap on this account.</p>';
+    swappable.forEach(function (c) {
+      var r = rentalOf(c);
+      var sel = !!order.swaps[c.id];
+      html += '<div class="cyl' + (sel ? " sel" : "") + '"><label class="cy-check"><input type="checkbox" data-swap="' + esc(c.id) + '"' + (sel ? " checked" : "") + "> " +
+        esc(c.itemName) + " " + esc(c.size) + ' <span class="cyl-serial">' + esc(c.serial) + "</span></label>" +
+        '<div class="cyl-meta">' + r.held + " days on site" + (r.accrued > 0 ? ", " + money(r.accrued) + " rental accrued" : ", still within included days") + "</div></div>";
+    });
+    html += "</div>";
+
+    if (testable.length) {
+      html += '<div class="cy-field"><div class="cy-label">Send a customer-owned cylinder in for hydrostatic retest</div>';
+      testable.forEach(function (c) {
+        var h = hydroOf(c);
+        var sel = !!order.tests[c.id];
+        html += '<div class="cyl' + (sel ? " sel" : "") + '"><label class="cy-check"><input type="checkbox" data-test="' + esc(c.id) + '"' + (sel ? " checked" : "") + "> " +
+          esc(c.itemName) + " " + esc(c.size) + ' <span class="cyl-serial">' + esc(c.serial) + "</span></label>" +
+          '<div class="cyl-meta">Retest due ' + fmtDate(h.dueOn) + (h.days < 0 ? ", overdue by " + Math.abs(h.days) + " days" : ", in " + h.days + " days") + "</div></div>";
+      });
+      html += "</div>";
+    }
+
+    html += '<div class="cy-field"><div class="cy-label">Add to this delivery</div><div class="cy-qty-grid">';
+    CFG.catalog.forEach(function (it) {
+      html += '<div class="cy-qty"><label>' + esc(it.name) + (it.unitNote ? '<br><span style="font-weight:500;color:var(--muted);font-size:.74rem;">' + esc(it.unitNote) + "</span>" : "") +
+        '</label><input type="number" min="0" step="1" data-sku="' + esc(it.sku) + '" value="' + (order.qty[it.sku] || 0) + '"></div>';
+    });
+    html += "</div></div>";
+
+    html += '<div class="cy-field"><div class="cy-label">Branch handling this order</div><div class="cy-choices">';
+    CFG.branches.forEach(function (br) {
+      html += '<button class="fx-opt' + (br.id === order.branchId ? " sel" : "") + '" data-branch="' + esc(br.id) + '">' + esc(br.name) + "</button>";
+    });
+    html += "</div>";
+    html += '<div class="cy-branch"><b>' + esc(b.name) + (b.id === acct.branchId ? " (selected automatically for " + esc(acct.site) + ")" : " (changed from the automatic choice)") + "</b>" +
+      esc(b.address) + "<br>" + esc(b.phone) + "<br>" + esc(b.hours) + "</div></div>";
+
+    html += '<div class="cy-field"><div class="cy-label">Delivery</div><div class="cy-choices">';
+    html += '<button class="fx-opt' + (order.delivery === "route" ? " sel" : "") + '" data-del="route">Next scheduled route, ' + fmtDate(nextRouteDate(b)) + "</button>";
+    html += '<button class="fx-opt' + (order.delivery === "sameday" ? " sel" : "") + '" data-del="sameday">Request same day or next available</button>';
+    html += "</div>";
+    html += '<p class="cy-note">' + esc(CFG.routeNote) + "</p></div>";
+
+    html += '<div class="cy-field"><div class="cy-label">Your PO or job reference (optional)</div><input type="text" id="po-input" value="' + esc(order.po) + '"></div>';
+
+    var lines = orderLines();
+    html += '<div class="cy-field"><div class="cy-label">This order</div>';
+    if (!lines.length) html += '<p class="cy-empty">Nothing selected yet. Pick a swap, a retest, or a quantity above.</p>';
+    else html += "<ul style=\"margin:.3rem 0 0; padding-left:1.1rem; font-size:.86rem; line-height:1.7;\">" + lines.map(function (l) { return "<li>" + esc(l) + "</li>"; }).join("") + "</ul>";
+    html += "</div>";
+
+    html += '<button class="fx-btn" id="submit-order" style="margin-top:1.2rem;"' + (lines.length ? "" : " disabled") + ">Send this order to " + esc(b.name) + "</button>";
+    html += '<p class="cy-note">This prototype records the order and updates the cylinder ledger. It does not transmit anything to a live dispatch system.</p>';
+
+    el("view-root").innerHTML = html;
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-swap]"), function (i) {
+      i.addEventListener("change", function () { if (i.checked) order.swaps[i.getAttribute("data-swap")] = true; else delete order.swaps[i.getAttribute("data-swap")]; renderOrder(); });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-test]"), function (i) {
+      i.addEventListener("change", function () { if (i.checked) order.tests[i.getAttribute("data-test")] = true; else delete order.tests[i.getAttribute("data-test")]; renderOrder(); });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-sku]"), function (i) {
+      i.addEventListener("input", function () {
+        var v = parseInt(i.value, 10); if (!(v > 0)) v = 0;
+        order.qty[i.getAttribute("data-sku")] = v;
+        var l = orderLines();
+        var btn = el("submit-order"); if (btn) btn.disabled = !l.length;
+      });
+      i.addEventListener("change", function () { renderOrder(); });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-branch]"), function (bt) {
+      bt.addEventListener("click", function () { order.branchId = bt.getAttribute("data-branch"); renderOrder(); });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-del]"), function (bt) {
+      bt.addEventListener("click", function () { order.delivery = bt.getAttribute("data-del"); renderOrder(); });
+    });
+    var po = el("po-input"); if (po) po.addEventListener("input", function () { order.po = po.value; });
+    var sb = el("submit-order"); if (sb) sb.addEventListener("click", submitOrder);
+  }
+
+  function orderLines() {
+    var lines = [];
+    Object.keys(order.swaps).forEach(function (id) {
+      var c = findCyl(id); if (c) lines.push("Swap " + c.itemName + " " + c.size + " (" + c.serial + ") full for empty");
+    });
+    Object.keys(order.tests).forEach(function (id) {
+      var c = findCyl(id); if (c) lines.push("Collect " + c.itemName + " " + c.size + " (" + c.serial + ") for hydrostatic retest");
+    });
+    Object.keys(order.qty).forEach(function (sku) {
+      var q = order.qty[sku]; var it = catalogItem(sku);
+      if (q > 0 && it) lines.push(q + " x " + it.name);
+    });
+    return lines;
+  }
+  function findCyl(id) {
+    for (var i = 0; i < data.cylinders.length; i++) if (data.cylinders[i].id === id) return data.cylinders[i];
+    return null;
+  }
+
+  function submitOrder() {
+    var lines = orderLines();
+    if (!lines.length) return;
+    var b = branch(order.branchId);
+    var o = {
+      ref: ref("ORD"), accountId: activeAccount, branchId: order.branchId, lines: lines,
+      delivery: order.delivery === "route" ? "Scheduled route, " + fmtDate(nextRouteDate(b)) : "Same day or next available (requested)",
+      po: order.po.trim(), placedOn: stamp(), status: "received"
+    };
+    Object.keys(order.swaps).forEach(function (id) { var c = findCyl(id); if (c) c.state = "swap-requested"; });
+    Object.keys(order.tests).forEach(function (id) { var c = findCyl(id); if (c) c.state = "test-requested"; });
+    data.orders.unshift(o);
+    logIt("Order " + o.ref + " sent to " + b.name + ", " + lines.length + " line(s), " + o.delivery.toLowerCase());
+    lastOrder = o;
+    order.submitted = true;
+    save();
+    renderView();
+  }
+
+  function renderOrderConfirm() {
+    var o = lastOrder;
+    var b = branch(o.branchId);
+    var html = '<div class="cy-confirm"><h3>Order ' + esc(o.ref) + " received by " + esc(b.name) + "</h3>" +
+      "<div style=\"font-size:.86rem; line-height:1.65;\">" + esc(o.delivery) + (o.po ? ". Reference " + esc(o.po) : "") + "<ul style=\"margin:.5rem 0 0; padding-left:1.1rem;\">" +
+      o.lines.map(function (l) { return "<li>" + esc(l) + "</li>"; }).join("") + "</ul></div>" +
+      '<div class="cy-actions"><button class="fx-btn-ghost" id="another">Start another order</button>' +
+      '<button class="cy-mini" id="to-cyl">See the updated cylinder ledger</button></div></div>';
+    el("view-root").innerHTML = html;
+    el("another").addEventListener("click", function () { order = newOrder(); renderOrder(); });
+    el("to-cyl").addEventListener("click", function () { activeTab = "cylinders"; renderView(); });
+  }
+
+  function renderInvoices() {
+    var list = myInvoices();
+    var open = list.filter(function (v) { return v.status !== "paid"; });
+    var total = 0, overdueTotal = 0;
+    open.forEach(function (v) { total += v.amount; if (invoiceAge(v).overdue > 0) overdueTotal += v.amount; });
+
+    var html = '<div class="cy-stats">' +
+      '<div class="cy-stat"><div class="n">' + money(total) + '</div><div class="k">open balance</div></div>' +
+      '<div class="cy-stat' + (overdueTotal > 0 ? " hot" : "") + '"><div class="n">' + money(overdueTotal) + '</div><div class="k">past due</div></div>' +
+      "</div>";
+
+    if (!list.length) html += '<p class="cy-empty">No invoices on this account.</p>';
+    else {
+      html += '<div class="cy-scroll"><table class="cy-table"><thead><tr><th>Invoice</th><th>Issued</th><th>Due</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>';
+      list.forEach(function (v) {
+        var a = invoiceAge(v);
+        var st = v.status === "flagged" ? '<span class="tag due">Flagged for review</span>'
+          : v.status === "requested" ? '<span class="tag pending">Payment link requested</span>'
+          : a.overdue > 0 ? '<span class="tag idle">' + a.overdue + " days past due</span>"
+          : '<span class="tag ok">Open</span>';
+        html += "<tr><td>" + esc(v.number) + "<div class=\"cyl-serial\">" + esc(v.note || "") + "</div></td><td>" + fmtDate(v.issuedOn) + "</td><td>" + fmtDate(v.dueOn) +
+          "</td><td>" + money(v.amount) + "</td><td>" + st + "</td><td>" +
+          '<button class="cy-mini" data-pay="' + esc(v.id) + '"' + (v.status === "open" ? "" : " disabled") + ">Request payment link</button> " +
+          '<button class="cy-mini" data-flag="' + esc(v.id) + '"' + (v.status === "flagged" ? " disabled" : "") + ">Query this invoice</button></td></tr>";
+      });
+      html += "</tbody></table></div>";
+    }
+    html += '<p class="cy-note">This prototype records a payment-link request and an invoice query as account activity. It does not take card details and does not move money. Taking payment needs a payment processor and a server, which is outside what a static page can do.</p>';
+    el("view-root").innerHTML = html;
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-pay]"), function (b) {
+      b.addEventListener("click", function () {
+        var v = findInvoice(b.getAttribute("data-pay")); if (!v) return;
+        v.status = "requested";
+        logIt("Payment link requested for invoice " + v.number + " (" + money(v.amount) + ")");
+        save(); renderView();
+      });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-flag]"), function (b) {
+      b.addEventListener("click", function () {
+        var v = findInvoice(b.getAttribute("data-flag")); if (!v) return;
+        v.status = "flagged";
+        logIt("Invoice " + v.number + " queried by the customer, held for account manager review");
+        save(); renderView();
+      });
+    });
+  }
+  function findInvoice(id) {
+    for (var i = 0; i < data.invoices.length; i++) if (data.invoices[i].id === id) return data.invoices[i];
+    return null;
+  }
+
+  function renderHistory() {
+    var list = myOrders();
+    var html = "";
+    if (!list.length) html += '<p class="cy-empty">No orders placed from this account yet. Place one from the "Order or swap" tab.</p>';
+    else {
+      html += '<div class="cy-scroll"><table class="cy-table"><thead><tr><th>Reference</th><th>Placed</th><th>Branch</th><th>Lines</th><th>Delivery</th></tr></thead><tbody>';
+      list.forEach(function (o) {
+        html += "<tr><td>" + esc(o.ref) + (o.po ? "<div class=\"cyl-serial\">PO " + esc(o.po) + "</div>" : "") + "</td><td>" + esc(o.placedOn) + "</td><td>" + esc(branch(o.branchId).name) +
+          "</td><td>" + o.lines.map(function (l) { return esc(l); }).join("<br>") + "</td><td>" + esc(o.delivery) + "</td></tr>";
+      });
+      html += "</tbody></table></div>";
+    }
+    html += '<p class="cy-note">A customer can see what they asked for and when, without calling the branch to ask whether the order was received.</p>';
+    el("view-root").innerHTML = html;
+  }
+
+  function renderLog() {
+    var body = el("log-body"), empty = el("log-empty");
+    if (!data.log.length) { body.innerHTML = ""; empty.style.display = "block"; return; }
+    empty.style.display = "none";
+    body.innerHTML = data.log.map(function (e) {
+      return "<tr><td>" + esc(e.at) + "</td><td>" + esc(e.account) + "</td><td>" + esc(e.text) + "</td></tr>";
+    }).join("");
+  }
+
+  el("reset-btn").addEventListener("click", function () {
+    data = seed();
+    order = newOrder();
+    save();
+    renderAccounts(); renderView();
+  });
+
+  order = newOrder();
+  renderAccounts();
+  renderView();
+})();
+</script>
+</body>
+</html>
