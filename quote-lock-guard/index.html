@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>Locked quote &amp; invoice-consistency guard template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .qlg-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .qlg-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input[type="text"], .field input[type="number"], .field select {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .rate-note { font-size: 0.74rem; color: var(--muted); margin-top: -0.35rem; }
+  .quote-doc { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.2rem; background: #fff; box-shadow: var(--shadow-sm); margin-top: 0.9rem; }
+  .quote-doc h4 { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.15rem; }
+  .quote-doc .sub { font-size: 0.76rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .quote-line { display: flex; justify-content: space-between; font-size: 0.88rem; color: var(--ink-2); padding: 0.3rem 0; border-bottom: 1px solid var(--rule-soft); }
+  .quote-total { display: flex; justify-content: space-between; font-weight: 750; font-size: 1.05rem; padding-top: 0.7rem; border-top: 2px solid var(--ink); margin-top: 0.4rem; }
+  .lock-note { font-size: 0.78rem; color: var(--brand); margin-top: 0.6rem; font-weight: 650; }
+  .job-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .job-title { font-weight: 660; }
+  .job-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.locked { color: var(--muted); background: var(--surface-2); }
+  .badge.matched { color: var(--good); background: var(--good-bg); }
+  .badge.flagged { color: var(--hot); background: var(--hot-bg); }
+  .badge.resolved { color: var(--brand); background: var(--brand-soft); }
+  .variance { font-size: 0.82rem; color: var(--hot); font-weight: 700; margin-top: 0.4rem; }
+  .job-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .job-actions input[type="text"], .job-actions input[type="number"] { font: inherit; font-size: 0.85rem; padding: 0.4rem 0.55rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .reset-row { margin-top: 1.3rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .lim a { color: var(--brand); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Locked quote &amp; invoice-consistency guard</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">The number a customer agrees to is the number they get billed</h1>
+  <p class="fx-lede">Field-service businesses that quote a price over the phone or from a bare "tell us your address" form tend to accumulate the same dispute: a customer remembers one number, the invoice says another, and an undisclosed fee shows up for the first time on the bill. This page shows one small, working tool that closes that gap: a scope-capturing intake that turns a job's real details into a locked, itemized quote with every fee disclosed up front, and a staff-side desk that automatically flags any final invoice that does not match the locked number, before it ever reaches the customer.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the rate table on the left reads from whatever price list or per-unit rates the business actually charges by, and the flag on the right runs against whatever invoicing or job-management system already exists, it does not require replacing it.</p></div>
+
+  <div class="qlg-cols">
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Customer: get a locked quote</h2>
+      <form id="quote-form" class="form-grid">
+        <div class="field span2"><label for="f-customer">Name / address</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer, 123 Main St"></div>
+        <div class="field"><label for="f-windows"># of windows</label><input type="number" id="f-windows" min="0" step="1" value="12"></div>
+        <div class="field"><label for="f-service">Cleaning type</label><select id="f-service"><option value="inout">Inside &amp; outside</option><option value="outonly">Outside only</option></select></div>
+        <div class="field"><label for="f-stories">Stories</label><select id="f-stories"><option value="1">1 story</option><option value="2">2 stories</option><option value="3">3+ stories</option></select></div>
+        <div class="field"><label for="f-gutter">Gutter length (ft, optional)</label><input type="number" id="f-gutter" min="0" step="1" value="0"></div>
+        <div class="rate-note span2">Sample rates. A real build uses the business's own per-window / per-story / per-foot pricing, and any known ancillary fee, disclosed the same way here.</div>
+      </form>
+      <div><button id="gen-btn" class="fx-btn" type="button">Get locked quote</button></div>
+      <div id="doc-root"></div>
+
+      <h3 class="fx-h2" style="font-size:1.1rem; margin-top:1.6rem;">Sample rate table</h3>
+      <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+        <tbody id="rate-table-body"></tbody>
+      </table>
+    </div>
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Staff: job desk &amp; invoice-consistency guard</h2>
+      <div id="jobs-root"></div>
+      <div class="reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The rate table is illustrative.</b> A real build uses the business's own published or internal per-unit rates, not these sample amounts, so the quote a customer sees is the business's real pricing, computed instead of guessed at over the phone.</div>
+      <div class="lim"><b>The flag is a comparison, not a payment system.</b> This demo compares a locked quote against a final invoice amount a staff member types in; a real build reads the final invoice number directly from whatever billing or job system the business already uses.</div>
+      <div class="lim"><b>A flagged job still gets resolved, just visibly.</b> The point isn't to forbid charging more than quoted (a change order is sometimes legitimate), it's to make sure that ever happens on purpose, with a reason on record, instead of silently.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/prime-time-window-cleaning/">Prime Time Window &amp; Gutter Cleaning</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional customer and job data on this page, not connected to any live billing system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "qlg_template_generic_v1";
+
+  var RATES = {
+    windowInOut: 8,
+    windowOutOnly: 4,
+    storySurcharge: { "1": 0, "2": 0.15, "3": 0.30 },
+    gutterPerFt: 1.5,
+    equipmentFee: 7.25
+  };
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtMoney(n) { return "$" + n.toFixed(2); }
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); d.setHours(9, 0, 0, 0); return d.getTime(); }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); }
+
+  function computeQuote(windows, service, stories, gutterFt) {
+    var perWindow = service === "outonly" ? RATES.windowOutOnly : RATES.windowInOut;
+    var windowSubtotal = windows * perWindow;
+    var surchargePct = RATES.storySurcharge[String(stories)] || 0;
+    var surcharge = windowSubtotal * surchargePct;
+    var gutterCost = gutterFt * RATES.gutterPerFt;
+    var lines = [
+      { desc: windows + " window" + (windows === 1 ? "" : "s") + ", " + (service === "outonly" ? "outside only" : "inside &amp; outside") + " (" + fmtMoney(perWindow) + "/window)", amount: windowSubtotal }
+    ];
+    if (surcharge > 0) lines.push({ desc: stories + "-story surcharge (" + Math.round(surchargePct * 100) + "%)", amount: surcharge });
+    if (gutterFt > 0) lines.push({ desc: gutterFt + " ft gutter cleaning (" + fmtMoney(RATES.gutterPerFt) + "/ft)", amount: gutterCost });
+    lines.push({ desc: "Equipment / safety fee (disclosed up front)", amount: RATES.equipmentFee });
+    var total = lines.reduce(function (s, l) { return s + l.amount; }, 0);
+    return { lines: lines, total: total };
+  }
+
+  function makeJob(customer, windows, service, stories, gutterFt, lockedAt) {
+    var q = computeQuote(windows, service, stories, gutterFt);
+    return {
+      id: "QT-" + Math.floor(1000 + Math.random() * 9000),
+      customer: customer,
+      windows: windows, service: service, stories: stories, gutterFt: gutterFt,
+      lines: q.lines, total: q.total,
+      lockedAt: lockedAt,
+      invoice: null
+    };
+  }
+
+  function defaultData() {
+    var j1 = makeJob("Sample Customer A, 118 Birch Ln", 14, "inout", 1, 0, daysAgo(9));
+    j1.invoice = { amount: j1.total + 113, note: "Field crew added a surface-stain treatment on site.", reason: "" };
+    var j2 = makeJob("Sample Customer B, 44 Elm Ct", 10, "outonly", 2, 60, daysAgo(4));
+    j2.invoice = { amount: j2.total, note: "", reason: "" };
+    var j3 = makeJob("Sample Customer C, 902 Oak Ave", 22, "inout", 3, 0, daysAgo(1));
+    return { jobs: [j1, j2, j3] };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function renderRateTable() {
+    var rows = [
+      ["Window cleaning, inside &amp; outside", fmtMoney(RATES.windowInOut) + " / window"],
+      ["Window cleaning, outside only", fmtMoney(RATES.windowOutOnly) + " / window"],
+      ["2-story surcharge", "15%"],
+      ["3+ story surcharge", "30%"],
+      ["Gutter cleaning", fmtMoney(RATES.gutterPerFt) + " / ft"],
+      ["Equipment / safety fee", fmtMoney(RATES.equipmentFee) + " flat, always shown"]
+    ];
+    document.getElementById("rate-table-body").innerHTML = rows.map(function (r) {
+      return "<tr><td style='padding:0.4rem 0.5rem; border-bottom:1px solid var(--rule-soft);'>" + r[0] + "</td><td style='padding:0.4rem 0.5rem; border-bottom:1px solid var(--rule-soft); text-align:right;'>" + r[1] + "</td></tr>";
+    }).join("");
+  }
+
+  function renderQuoteDoc(job) {
+    var root = document.getElementById("doc-root");
+    var html = '<div class="quote-doc">' +
+      "<h4>Locked Quote " + job.id + "</h4>" +
+      '<div class="sub">' + escapeHtml(job.customer) + " &middot; locked " + fmtDate(job.lockedAt) + "</div>" +
+      job.lines.map(function (l) { return '<div class="quote-line"><span>' + l.desc + "</span><span>" + fmtMoney(l.amount) + "</span></div>"; }).join("") +
+      '<div class="quote-total"><span>Locked total</span><span>' + fmtMoney(job.total) + "</span></div>" +
+      '<div class="lock-note">This number is locked at booking. Any final invoice that differs will be flagged automatically on the job desk.</div>' +
+      "</div>";
+    root.innerHTML = html;
+  }
+
+  function jobStatus(job) {
+    if (!job.invoice) return { cls: "locked", label: "Locked, not yet invoiced" };
+    if (job.invoice.amount === job.total) return { cls: "matched", label: "Invoice matches locked quote" };
+    if (job.invoice.reason) return { cls: "resolved", label: "Variance resolved, reason on record" };
+    return { cls: "flagged", label: "FLAGGED: invoice does not match" };
+  }
+
+  function renderJobs() {
+    var root = document.getElementById("jobs-root");
+    if (!data.jobs.length) { root.innerHTML = '<p class="empty">No locked quotes yet. Generate one on the left to start.</p>'; return; }
+    var html = "";
+    data.jobs.slice().sort(function (a, b) { return b.lockedAt - a.lockedAt; }).forEach(function (job) {
+      var idx = data.jobs.indexOf(job);
+      var st = jobStatus(job);
+      html += '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(job.customer) + '</div><div class="job-meta">' + job.id + " &middot; locked quote " + fmtMoney(job.total) + '</div></div><span class="badge ' + st.cls + '">' + st.label + "</span></div>";
+      if (job.invoice && job.invoice.amount !== job.total) {
+        var diff = job.invoice.amount - job.total;
+        html += '<div class="variance">Invoice ' + fmtMoney(job.invoice.amount) + ", " + (diff > 0 ? "+" : "") + fmtMoney(diff) + " vs. locked quote" + (job.invoice.note ? " &middot; " + escapeHtml(job.invoice.note) : "") + "</div>";
+      }
+      if (!job.invoice) {
+        html += '<div class="job-actions"><input type="number" placeholder="Final invoice $" id="inv-amt-' + idx + '" style="max-width:130px;"><input type="text" placeholder="Note (optional)" id="inv-note-' + idx + '" style="max-width:220px;"><button class="fx-btn-ghost" onclick="__qlg.setInvoice(' + idx + ')">Enter final invoice</button></div>';
+      } else if (job.invoice.amount !== job.total && !job.invoice.reason) {
+        html += '<div class="job-actions"><input type="text" placeholder="Reason for the difference" id="inv-reason-' + idx + '" style="max-width:280px;"><button class="fx-btn-ghost" onclick="__qlg.setReason(' + idx + ')">Record reason &amp; resolve</button></div>';
+      } else if (job.invoice.reason) {
+        html += '<div class="job-meta" style="margin-top:0.4rem;">Reason on record: ' + escapeHtml(job.invoice.reason) + "</div>";
+      }
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  window.__qlg = {
+    setInvoice: function (idx) {
+      var amt = parseFloat(document.getElementById("inv-amt-" + idx).value);
+      if (isNaN(amt)) { alert("Enter a final invoice amount."); return; }
+      var note = document.getElementById("inv-note-" + idx).value.trim();
+      data.jobs[idx].invoice = { amount: amt, note: note, reason: "" };
+      save(); renderJobs();
+    },
+    setReason: function (idx) {
+      var reason = document.getElementById("inv-reason-" + idx).value.trim();
+      if (!reason) { alert("Enter a reason before resolving."); return; }
+      data.jobs[idx].invoice.reason = reason;
+      save(); renderJobs();
+    }
+  };
+
+  document.getElementById("gen-btn").addEventListener("click", function () {
+    var customer = document.getElementById("f-customer").value.trim() || "New customer";
+    var windows = parseInt(document.getElementById("f-windows").value, 10) || 0;
+    var service = document.getElementById("f-service").value;
+    var stories = document.getElementById("f-stories").value;
+    var gutterFt = parseInt(document.getElementById("f-gutter").value, 10) || 0;
+    var job = makeJob(customer, windows, service, stories, gutterFt, Date.now());
+    data.jobs.unshift(job);
+    save();
+    renderQuoteDoc(job);
+    renderJobs();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset all jobs back to the original sample data?")) return;
+    data = defaultData(); save(); renderJobs();
+    document.getElementById("doc-root").innerHTML = "";
+  });
+
+  renderRateTable();
+  renderJobs();
+})();
+</script>
+</body>
+</html>
