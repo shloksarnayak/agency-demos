@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Credit application &amp; secure account-setup portal: working example for Equipment Rental Service, Inc.</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .field { display: flex; flex-direction: column; gap: 0.5rem; }
+  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .field-row { display: flex; flex-wrap: wrap; gap: 1rem; }
+  .field-row .field { flex: 1 1 14rem; }
+  .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  input[type="text"], input[type="email"], input[type="tel"], input[type="number"] { font: inherit; font-size: 0.95rem; padding: 0.65rem 0.85rem; width: 100%; }
+  label.check { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.88rem; color: var(--ink-2); cursor: pointer; }
+  label.check input { margin-top: 0.2rem; }
+  .stack { display: flex; flex-direction: column; gap: 1rem; }
+  hr.sep { border: none; border-top: 1px dashed var(--rule); margin: 0.4rem 0; }
+  .quote-out { border-top: 1px solid var(--rule); padding-top: 1.1rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .quote-line { display: flex; justify-content: space-between; font-size: 0.94rem; color: var(--ink-2); }
+  .quote-total { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.35rem; font-weight: 660; border-top: 1px dashed var(--rule); padding-top: 0.8rem; font-family: var(--serif); }
+  .quote-total .amt { color: var(--brand); }
+  .ledger { display: flex; flex-direction: column; gap: 0.7rem; }
+  .ledger-item { border: 2px solid var(--ink); border-radius: 10px; padding: 0.85rem 1rem; box-shadow: 3px 3px 0 var(--ink); background: var(--surface); font-size: 0.88rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .ledger-item .lt { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+  .ledger-empty { font-size: 0.9rem; color: var(--muted); font-style: italic; }
+  .tag-sample { display: inline-block; font-family: var(--mono); font-size: 0.62rem; padding: 0.1rem 0.4rem; border-radius: 5px; background: var(--yellow); border: 1px solid var(--ink); margin-left: 0.4rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .cvv-note { font-size: 0.82rem; color: var(--muted); }
+  .fine { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Credit application &amp; account-setup portal</a> / Equipment Rental Service</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Equipment Rental Service, Inc.</span>
+  <h1 class="fx-h1">Opening an account without a card number on a faxed form</h1>
+  <p class="fx-lede">Right now, opening a credit account with ERS means downloading a two-page Credit Application PDF, filling it out by hand, and a separate Debit/Credit Card Charge Authorization PDF that asks a customer to write their full card number, expiration date, and CVV code in ink, then fax or email both back. Here is what an online version of that same process looks like, using the equipment categories your own site lists.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>The equipment categories below are copied from your own site</strong> (compaction equipment, generators, aerial lifts, earth movers, pumps, welders, forklifts, and hand tools all appear on erswpb.com). ERS does not publish day or week rates anywhere online, so the prices shown are illustrative placeholders for this demo, not your real pricing, clearly labeled as such.</p>
+  </div>
+
+  <section>
+    <h2 class="fx-h2" style="margin-top:0;">1. Request equipment &amp; see an estimate</h2>
+    <div class="fx-card" id="quote-root"></div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">2. Open a credit account online</h2>
+    <div class="fx-card" id="account-root"></div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">3. Authorize a payment method securely</h2>
+    <div class="fx-card" id="card-root"></div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">On file so far</h2>
+    <div class="fx-card" id="ledger-root"></div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out</h2>
+    <div class="limits">
+      <div class="lim"><b>Your current authorization form has no dollar cap and gives no further notice.</b> The "Debit/Credit Card Charge Authorization" PDF linked from your own homepage authorizes ERS "to bill to the above identified debit/credit card(s) all charges, known or unknown, accrued or unaccrued... up to an amount equal to 150% of the new retail price of each such Item," with no additional signature or notice required per transaction. This demo replaces that with a specific dollar cap the customer sees and sets themselves before authorizing anything, closer to how your major competitors' online account tools work.</div>
+      <div class="lim"><b>The card number and CVV never touch this page's storage.</b> This demo only keeps the last four digits and expiry, exactly the way a real tokenized processor works: the full number would go straight to something like Stripe or Authorize.net's own hosted field, never to ERS's own systems or a fax machine.</div>
+      <div class="lim"><b>Every major branded competitor in your own market already does this online.</b> Sunbelt Rentals (which has a West Palm Beach location) offers online commercial credit applications with a one-business-day response; Herc Rentals and Sunstate Equipment's "Navigator" both let a customer reserve equipment and apply for credit online; United Rentals, also present in the West Palm Beach/Riviera Beach area, has online equipment search across its fleet. This is a competitive-modernization gap, not evidence your current process has failed, no complaints were found against ERS specifically.</div>
+      <div class="lim"><b>Rates shown here are illustrative, not yours.</b> Nothing on erswpb.com publishes per-day or per-week equipment rates, so a real build would need your actual rate sheet before this could quote a real customer.</div>
+      <div class="lim"><b>"Signed" here is a typed name and a timestamp</b>, matching your own credit application's "authorized signature" line. A real build can add a certified e-signature provider if you want a stronger legal record than that.</div>
+      <div class="lim"><b>This calculates and records, it doesn't book, invoice, or charge anything.</b> No calendar, no live payment processor, no fax replacement is connected here, this is a working preview of the intake and authorization steps themselves.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Equipment Rental Service, Inc. or ERSI.</strong></p>
+  <p>Prepared by Shlok Sarnayak. Equipment categories copied from erswpb.com today. Illustrative rates, not connected to any live payment processor or ERS's actual account system.</p>
+</footer>
+
+<script>
+(function () {
+  var KEY = "cap-demo-erswpb-v1";
+
+  var CATEGORIES = [
+    { key: "compaction", label: "Compaction equipment", day: 95, week: 380 },
+    { key: "generators", label: "Generators", day: 120, week: 480 },
+    { key: "pumps", label: "Pumps", day: 75, week: 300 },
+    { key: "welders", label: "Welders", day: 90, week: 360 },
+    { key: "forklifts", label: "Forklifts", day: 210, week: 840 },
+    { key: "lifts", label: "Lifts", day: 190, week: 760 },
+    { key: "earthmovers", label: "Earth movers", day: 275, week: 1100 },
+    { key: "handtools", label: "Hand tools", day: 35, week: 140 }
+  ];
+  var DELIVERY_FEE = 65;
+
+  function money(n) { return "$" + n.toFixed(2); }
+  function refId(prefix) { return prefix + "-" + Math.random().toString(36).slice(2, 8).toUpperCase(); }
+
+  function load() {
+    try { var raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function seed() {
+    return {
+      quotes: [{ id: refId("Q"), category: "Forklifts", days: 10, delivery: true, total: 1275, jobsite: "Sample Jobsite, Okeechobee Blvd", sample: true }],
+      accounts: [{ id: refId("CA"), company: "Sample Contracting of Palm Beach LLC", contact: "T. Alvarez", email: "office@samplecontracting.example", signer: "Teresa Alvarez", sample: true }],
+      cards: [{ id: refId("TOK"), last4: "1881", expiry: "11/28", cardholder: "Teresa Alvarez", cap: 4000, sample: true }]
+    };
+  }
+  var state = load() || seed();
+  save();
+
+  // ---- Section 1: quote request ----
+  var qState = { category: null, days: "", delivery: false, jobsite: "" };
+  var qRoot = document.getElementById("quote-root");
+
+  function calcQuote() {
+    if (!qState.category || !qState.days) return null;
+    var cat = CATEGORIES.filter(function (c) { return c.key === qState.category; })[0];
+    var days = parseInt(qState.days, 10);
+    if (!cat || !days || days < 1) return null;
+    var equip = days >= 7 ? Math.ceil(days / 7) * cat.week : days * cat.day;
+    var delivery = qState.delivery ? DELIVERY_FEE : 0;
+    return { cat: cat, days: days, equip: Math.round(equip * 100) / 100, delivery: delivery, total: Math.round((equip + delivery) * 100) / 100 };
+  }
+
+  function renderQuoteForm() {
+    var html = '<div class="stack">';
+    html += '<div class="field"><div class="field-label">Equipment category</div><div class="choices">';
+    CATEGORIES.forEach(function (c) {
+      html += '<button type="button" class="fx-opt' + (qState.category === c.key ? ' sel' : '') + '" data-cat="' + c.key + '">' + c.label + '<br><span class="sub">' + money(c.day) + '/day &middot; ' + money(c.week) + '/week</span></button>';
+    });
+    html += '</div></div>';
+    html += '<div class="field-row">';
+    html += '<div class="field"><div class="field-label">Number of days</div><input type="number" id="q-days" min="1" max="90" value="' + qState.days + '"></div>';
+    html += '<div class="field"><div class="field-label">Jobsite (optional, for the record)</div><input type="text" id="q-jobsite" value="' + qState.jobsite + '" placeholder="Address or lot #"></div>';
+    html += '</div>';
+    html += '<div class="field"><div class="field-label">Pickup or delivery</div><div class="choices">';
+    html += '<button type="button" class="fx-opt' + (!qState.delivery ? ' sel' : '') + '" data-delivery="0">Will-call pickup, no charge</button>';
+    html += '<button type="button" class="fx-opt' + (qState.delivery ? ' sel' : '') + '" data-delivery="1">Deliver to jobsite, +' + money(DELIVERY_FEE) + '</button>';
+    html += '</div></div>';
+    html += '<div class="quote-out" id="q-out"></div>';
+    var q0 = calcQuote();
+    html += '<button class="fx-btn" id="q-submit" ' + (q0 ? '' : 'disabled') + '>Save quote request</button>';
+    html += '</div>';
+    qRoot.innerHTML = html;
+
+    Array.prototype.forEach.call(qRoot.querySelectorAll('[data-cat]'), function (b) {
+      b.addEventListener('click', function () { qState.category = b.dataset.cat; renderQuoteForm(); });
+    });
+    Array.prototype.forEach.call(qRoot.querySelectorAll('[data-delivery]'), function (b) {
+      b.addEventListener('click', function () { qState.delivery = b.dataset.delivery === "1"; renderQuoteForm(); });
+    });
+    document.getElementById('q-days').addEventListener('input', function (e) { qState.days = e.target.value; renderQuoteOut(); });
+    document.getElementById('q-jobsite').addEventListener('input', function (e) { qState.jobsite = e.target.value; });
+    document.getElementById('q-submit').addEventListener('click', function () {
+      var q = calcQuote();
+      if (!q) return;
+      state.quotes.unshift({ id: refId("Q"), category: q.cat.label, days: q.days, delivery: qState.delivery, total: q.total, jobsite: qState.jobsite || "(not given)" });
+      save();
+      qState = { category: null, days: "", delivery: false, jobsite: "" };
+      renderQuoteForm();
+      renderLedger();
+    });
+    renderQuoteOut();
+  }
+  function renderQuoteOut() {
+    var out = document.getElementById('q-out');
+    if (!out) return;
+    var q = calcQuote();
+    var btn = document.getElementById('q-submit');
+    if (!q) { out.innerHTML = '<p style="font-size:0.9rem;color:var(--muted);font-style:italic;">Pick a category and enter a number of days to see an estimate.</p>'; if (btn) btn.disabled = true; return; }
+    var html = '<div class="quote-line"><span>' + q.cat.label + ' &middot; ' + q.days + ' day(s)</span><b>' + money(q.equip) + '</b></div>';
+    if (qState.delivery) html += '<div class="quote-line"><span>Jobsite delivery</span><b>+' + money(q.delivery) + '</b></div>';
+    html += '<div class="quote-total"><span>Estimated total</span><span class="amt">' + money(q.total) + '</span></div>';
+    out.innerHTML = html;
+    if (btn) btn.disabled = false;
+  }
+
+  // ---- Section 2: credit application ----
+  var aRoot = document.getElementById("account-root");
+  function renderAccountForm() {
+    var html = '<div class="stack">';
+    html += '<div class="field-row">';
+    html += '<div class="field"><div class="field-label">Company legal name</div><input type="text" id="a-company"></div>';
+    html += '<div class="field"><div class="field-label">Contact name</div><input type="text" id="a-contact"></div>';
+    html += '</div><div class="field-row">';
+    html += '<div class="field"><div class="field-label">Email</div><input type="email" id="a-email"></div>';
+    html += '<div class="field"><div class="field-label">Phone</div><input type="tel" id="a-phone"></div>';
+    html += '</div><div class="field-row">';
+    html += '<div class="field"><div class="field-label">Years in business</div><input type="number" id="a-years" min="0" max="150"></div>';
+    html += '<div class="field"><div class="field-label">Bank reference (name &amp; phone)</div><input type="text" id="a-bank" placeholder="Bank name, phone"></div>';
+    html += '</div><div class="field-row">';
+    html += '<div class="field"><div class="field-label">Trade reference 1</div><input type="text" id="a-tr1" placeholder="Name, phone"></div>';
+    html += '<div class="field"><div class="field-label">Trade reference 2</div><input type="text" id="a-tr2" placeholder="Name, phone"></div>';
+    html += '</div><hr class="sep">';
+    html += '<div class="field"><div class="field-label">Authorized signer, typed name</div><input type="text" id="a-signer"></div>';
+    html += '<label class="check"><input type="checkbox" id="a-certify"> I certify the information above is accurate and I am authorized to sign for this company.</label>';
+    html += '<button class="fx-btn" id="a-submit">Submit credit application</button>';
+    html += '<div id="a-confirm"></div>';
+    html += '</div>';
+    aRoot.innerHTML = html;
+    document.getElementById('a-submit').addEventListener('click', function () {
+      var company = document.getElementById('a-company').value.trim();
+      var contact = document.getElementById('a-contact').value.trim();
+      var email = document.getElementById('a-email').value.trim();
+      var signer = document.getElementById('a-signer').value.trim();
+      var certify = document.getElementById('a-certify').checked;
+      if (!company || !contact || !email || !signer || !certify) {
+        alert("Company, contact, email, authorized signer, and the certification checkbox are all required.");
+        return;
+      }
+      var rec = { id: refId("CA"), company: company, contact: contact, email: email, signer: signer };
+      state.accounts.unshift(rec);
+      save();
+      document.getElementById('a-confirm').innerHTML = '<p style="margin-top:0.8rem;font-size:0.9rem;"><strong>Application ' + rec.id + ' submitted.</strong> Next: authorize a payment method below.</p>';
+      renderLedger();
+    });
+  }
+
+  // ---- Section 3: payment authorization ----
+  var cRoot = document.getElementById("card-root");
+  function formatCardInput(v) {
+    var digits = v.replace(/\D/g, '').slice(0, 19);
+    var groups = digits.match(/.{1,4}/g) || [];
+    return groups.join(' ');
+  }
+  function renderCardForm() {
+    var html = '<div class="stack">';
+    html += '<div class="field-row">';
+    html += '<div class="field"><div class="field-label">Cardholder name</div><input type="text" id="c-holder"></div>';
+    html += '<div class="field"><div class="field-label">Expiry (MM/YY)</div><input type="text" id="c-expiry" maxlength="5" placeholder="MM/YY"></div>';
+    html += '</div>';
+    html += '<div class="field"><div class="field-label">Card number</div><input type="text" id="c-number" inputmode="numeric" maxlength="23" placeholder="•••• •••• •••• ••••"></div>';
+    html += '<p class="cvv-note">No CVV field on purpose. A live build sends the card number and CVV straight to a PCI-compliant processor\'s own hosted field; this page and ERS\'s own systems never receive or store either, unlike a form written out by hand.</p>';
+    html += '<hr class="sep">';
+    html += '<div class="field"><div class="field-label">Loss/damage replacement cap you are authorizing (a specific dollar amount, not 150% of retail with no notice)</div><input type="number" id="c-cap" min="0" placeholder="e.g. 2500"></div>';
+    html += '<label class="check"><input type="checkbox" id="c-agree"> I authorize charges for approved rental invoices, plus loss/damage charges up to the cap above, on the card entered.</label>';
+    html += '<button class="fx-btn" id="c-submit">Authorize payment method</button>';
+    html += '<div id="c-confirm"></div>';
+    html += '</div>';
+    cRoot.innerHTML = html;
+    document.getElementById('c-number').addEventListener('input', function (e) {
+      e.target.value = formatCardInput(e.target.value);
+    });
+    document.getElementById('c-expiry').addEventListener('input', function (e) {
+      var digits = e.target.value.replace(/\D/g, '').slice(0, 4);
+      e.target.value = digits.length > 2 ? digits.slice(0, 2) + '/' + digits.slice(2) : digits;
+    });
+    document.getElementById('c-submit').addEventListener('click', function () {
+      var holder = document.getElementById('c-holder').value.trim();
+      var numberField = document.getElementById('c-number');
+      var digits = numberField.value.replace(/\D/g, '');
+      var expiry = document.getElementById('c-expiry').value.trim();
+      var cap = parseFloat(document.getElementById('c-cap').value);
+      var agree = document.getElementById('c-agree').checked;
+      if (!holder || digits.length < 12 || !/^\d{2}\/\d{2}$/.test(expiry) || !cap || !agree) {
+        alert("Cardholder name, a card number, a valid MM/YY expiry, a damage cap, and the authorization checkbox are all required.");
+        return;
+      }
+      var last4 = digits.slice(-4);
+      // The full digits string is only ever read here to pull last4; it is
+      // never assigned into state or storage.
+      var rec = { id: refId("TOK"), last4: last4, expiry: expiry, cardholder: holder, cap: cap };
+      state.cards.unshift(rec);
+      save();
+      numberField.value = "";
+      document.getElementById('c-cap').value = "";
+      document.getElementById('c-confirm').innerHTML = '<p style="margin-top:0.8rem;font-size:0.9rem;"><strong>Payment method ' + rec.id + ' authorized</strong>, card ending ' + last4 + '.</p>';
+      renderLedger();
+    });
+  }
+
+  // ---- Ledger ----
+  var lRoot = document.getElementById("ledger-root");
+  function renderLedger() {
+    var html = '<div class="ledger">';
+    html += '<div class="fine">Quote requests</div>';
+    if (!state.quotes.length) html += '<p class="ledger-empty">None yet.</p>';
+    state.quotes.forEach(function (q) {
+      html += '<div class="ledger-item"><span class="lt">' + q.id + (q.sample ? '<span class="tag-sample">sample</span>' : '') + '</span><span>' + q.category + ', ' + q.days + ' day(s), ' + (q.delivery ? 'delivery' : 'will-call') + ' &middot; ' + q.jobsite + '</span><span><b>' + money(q.total) + '</b></span></div>';
+    });
+    html += '<div class="fine" style="margin-top:0.6rem;">Credit applications</div>';
+    if (!state.accounts.length) html += '<p class="ledger-empty">None yet.</p>';
+    state.accounts.forEach(function (a) {
+      html += '<div class="ledger-item"><span class="lt">' + a.id + (a.sample ? '<span class="tag-sample">sample</span>' : '') + '</span><span>' + a.company + ', contact ' + a.contact + '</span><span>Signed by ' + a.signer + '</span></div>';
+    });
+    html += '<div class="fine" style="margin-top:0.6rem;">Authorized payment methods</div>';
+    if (!state.cards.length) html += '<p class="ledger-empty">None yet.</p>';
+    state.cards.forEach(function (c) {
+      html += '<div class="ledger-item"><span class="lt">' + c.id + (c.sample ? '<span class="tag-sample">sample</span>' : '') + '</span><span>Card ending ' + c.last4 + ', exp ' + c.expiry + ', ' + c.cardholder + '</span><span>Damage cap ' + money(c.cap) + '</span></div>';
+    });
+    html += '</div><button class="fx-btn-ghost" id="l-reset" style="margin-top:1rem;">Reset to sample data</button>';
+    lRoot.innerHTML = html;
+    document.getElementById('l-reset').addEventListener('click', function () {
+      state = seed();
+      save();
+      renderLedger();
+    });
+  }
+
+  renderQuoteForm();
+  renderAccountForm();
+  renderCardForm();
+  renderLedger();
+})();
+</script>
+</body>
+</html>
