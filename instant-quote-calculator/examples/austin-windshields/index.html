@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>Instant quote calculator: working example for Austin Windshields</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .field { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.1rem; }
+  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .choice { font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.6rem 0.95rem; cursor: pointer; font-size: 0.92rem; transition: border-color .15s, background .15s; }
+  .choice:hover { border-color: var(--brand); }
+  .choice.sel { border-color: var(--brand); background: var(--brand-soft); color: var(--ink); font-weight: 620; box-shadow: 0 0 0 1px var(--brand) inset; }
+  .choice:disabled { opacity: 0.45; cursor: not-allowed; }
+  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; max-width: 22rem; }
+  input[type="text"]:focus { outline: none; border-color: var(--brand); }
+  .vin-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  .btn { font: inherit; font-size: 0.9rem; font-weight: 610; color: var(--surface); background: var(--brand); border: none; border-radius: var(--radius-sm); padding: 0.65rem 1.1rem; cursor: pointer; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn.ghost { background: transparent; color: var(--brand); border: 1px solid var(--brand); }
+  .sample-vins { font-size: 0.8rem; color: var(--muted); }
+  .sample-vins button { background: none; border: none; color: var(--brand); text-decoration: underline; cursor: pointer; font: inherit; padding: 0; }
+
+  .vehicle-card { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem 1.1rem; font-size: 0.92rem; color: var(--ink-2); }
+  .vehicle-card b { color: var(--ink); }
+  .adas-flag { display: inline-block; margin-top: 0.4rem; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--brand); }
+  .lookup-msg { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+  .lookup-msg.err { color: #b3413b; font-style: normal; }
+
+  .quote-out { border-top: 1px solid var(--rule); padding-top: 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .quote-line { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.94rem; color: var(--ink-2); }
+  .quote-line b { color: var(--ink); font-weight: 600; }
+  .quote-total { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.4rem; font-weight: 660; border-top: 1px dashed var(--rule); padding-top: 0.9rem; font-family: var(--serif); }
+  .quote-total .amt { color: var(--brand); }
+  .quote-sub { font-size: 0.82rem; color: var(--muted); }
+  .placeholder { font-size: 0.92rem; color: var(--muted); font-style: italic; }
+  .illus { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--brand); border: 1px solid var(--brand); border-radius: 999px; padding: 0.12rem 0.55rem; margin-left: 0.5rem; }
+
+  .sms-shell { max-width: 26rem; border: 1px solid var(--rule); border-radius: var(--radius-md); overflow: hidden; background: var(--surface-2); }
+  .sms-head { background: var(--surface-3, var(--surface-2)); border-bottom: 1px solid var(--rule); padding: 0.7rem 1rem; font-size: 0.85rem; color: var(--ink-2); display: flex; justify-content: space-between; }
+  .sms-thread { padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem; min-height: 8rem; }
+  .bubble { max-width: 82%; padding: 0.55rem 0.8rem; border-radius: 1rem; font-size: 0.9rem; line-height: 1.45; }
+  .bubble.in { align-self: flex-start; background: var(--surface); border: 1px solid var(--rule); color: var(--ink); border-bottom-left-radius: 0.25rem; }
+  .bubble.out { align-self: flex-end; background: var(--brand); color: var(--surface); border-bottom-right-radius: 0.25rem; }
+  .bubble .ts { display: block; font-size: 0.68rem; opacity: 0.7; margin-top: 0.25rem; }
+  .sms-controls { padding: 0.9rem 1rem; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 0.6rem; }
+  .sms-scenario-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Instant quote calculator</a> / Austin Windshields</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Austin Windshields</span>
+  <h1 class="fx-h1">The instant VIN quote and after-hours text intake your site doesn't have yet</h1>
+  <p class="fx-lede">Your site already promises online quote requests get a response "within 10 to 15 minutes," and Jas has personally expanded coverage three times in the last 13 months (fleet, same-day capacity, Georgetown). A same-city competitor already offers instant VIN-based quotes and 24/7 text intake, which mostly matters for the after-hours and weekend leads that quietly slip past a manual response window. Below is what that looks like: a real VIN decode feeding a price, plus a simulated text thread showing a Saturday-night lead getting an instant answer instead of a Monday callback.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>Vehicle lookup below hits a real, live government API</strong> (NHTSA's public VIN decoder) — type or paste an actual VIN and it returns the real year/make/model/body style for that vehicle, the same way a VIN-based quote tool would. Service area is your own published coverage list (Austin, Cedar Park, Round Rock, Georgetown, Lakeway, Bee Cave, Spicewood, Dripping Springs, Buda, Kyle, Manor, Elgin). <strong>Prices are marked "Illustrative"</strong> because your site doesn't publish a rate table the way, say, a pricing-page business would — swap in your real numbers and this becomes live.</p>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">1. VIN-based instant quote</h2>
+    <div class="fx-card">
+      <div class="field">
+        <div class="field-label">Customer's VIN (17 characters) or plate</div>
+        <div class="vin-row">
+          <input type="text" id="vin-input" placeholder="e.g. 1FTFW1ET1EFC00001" maxlength="17">
+          <button class="btn" id="vin-lookup-btn">Look up vehicle</button>
+        </div>
+        <div class="sample-vins">Try a sample: <button data-sample-vin="1FTFW1ET1EFC00001">Ford F-150 (2014)</button> · <button data-sample-vin="5YJ3E1EA1JF000337">Tesla Model 3 (2018)</button> · <button data-sample-vin="1HGCV1F34LA000000">Honda Accord (2020)</button></div>
+        <div id="vin-status" class="lookup-msg"></div>
+      </div>
+      <div id="vehicle-out"></div>
+
+      <div id="service-section" style="display:none;">
+        <div class="field">
+          <div class="field-label">What's the job?</div>
+          <div class="choices">
+            <button class="choice" data-service="repair">Chip / crack repair</button>
+            <button class="choice" data-service="replace">Full windshield replacement</button>
+          </div>
+        </div>
+        <div class="field" id="adas-field" style="display:none;">
+          <div class="field-label">ADAS camera recalibration</div>
+          <div class="choices">
+            <button class="choice" data-adas="toggle" id="adas-btn">Include recalibration</button>
+          </div>
+          <div class="quote-sub" id="adas-hint"></div>
+        </div>
+        <div class="field">
+          <div class="field-label">Service city</div>
+          <input type="text" id="city-input" placeholder="e.g. Georgetown, Cedar Park, Buda">
+          <div class="quote-sub">Checked against your published coverage list, not a mapping API.</div>
+        </div>
+      </div>
+
+      <div class="quote-out" id="quote-out"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">2. What a Saturday-night lead looks like with 24/7 text intake</h2>
+    <p class="fx-lede" style="font-size:0.95rem;">This is a simulation, not a live SMS integration — there's no phone number behind it. It's here to show the mechanism your competitor already has running: a text that arrives outside business hours gets an instant, specific reply instead of sitting until Monday.</p>
+    <div class="fx-card">
+      <div class="sms-shell">
+        <div class="sms-head"><span>(512) 692-7672</span><span id="sms-clock">Sat 9:47 PM</span></div>
+        <div class="sms-thread" id="sms-thread">
+          <p class="placeholder" style="padding: 0 0.2rem;">Pick a scenario below to run it.</p>
+        </div>
+        <div class="sms-controls">
+          <div class="field-label">Run a scenario</div>
+          <div class="sms-scenario-row">
+            <button class="choice" data-sms-scenario="after-hours">Saturday 9:47 PM, cracked windshield</button>
+            <button class="choice" data-sms-scenario="business-hours">Tuesday 11:15 AM, same message</button>
+          </div>
+          <button class="btn ghost" id="sms-reset-btn">Reset thread</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before this goes live</h2>
+    <div class="limits">
+      <div class="lim"><b>The VIN decode is real, the pricing isn't.</b> The year/make/model/body style returned above comes from NHTSA's live public VIN database — that part works against any real VIN today. The dollar figures are marked "Illustrative" throughout because your site doesn't publish a rate table; a real build needs your actual repair, replacement, and recalibration numbers by vehicle class.</div>
+      <div class="lim"><b>ADAS recalibration is suggested by model year, not confirmed by the VIN.</b> NHTSA's data on which specific trims carry a forward-facing camera is inconsistent across manufacturers, so this flags "likely needs recalibration" for 2018+ vehicles as a starting point and leaves the final call to whoever's writing the ticket, the same way a tech would visually confirm it today.</div>
+      <div class="lim"><b>Service-city check is a name match against your published list, not a real address lookup.</b> It confirms the city the customer typed is one you already serve; it doesn't validate a street address or calculate drive time.</div>
+      <div class="lim"><b>The text thread is a scripted simulation, not a working phone number.</b> Standing this up for real means a provider like Twilio wired to a triage script and, ideally, this same VIN/quote logic so the auto-reply carries a real number, not just "we'll call you back."</div>
+      <div class="lim"><b>This calculates and demonstrates, it doesn't book anything.</b> No calendar, no payment, no confirmation email. The honest next step after "here's your estimate" is still your existing quote process — this just gets someone there already knowing what to expect, at 9 PM on a Saturday instead of Monday morning.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample, not affiliated with or endorsed by Austin Windshields.</strong></p>
+  <p>Prepared by Shlok Sarnayak. Vehicle service area, coverage cities, and the "10-15 minute" quote promise are from austinwindshields.net; VIN decoding uses NHTSA's public vPIC API. Prices marked Illustrative are not from Austin Windshields and are placeholders only. Not connected to any live booking, payment, or phone system.</p>
+</footer>
+
+<script>
+(function () {
+  // ---- Real service area, copied from austinwindshields.net ----
+  var SERVICE_CITIES = ["austin","cedar park","round rock","georgetown","lakeway","bee cave","spicewood","dripping springs","buda","kyle","manor","elgin"];
+
+  // ---- Illustrative pricing only — not published by Austin Windshields ----
+  var PRICING = {
+    repair: 130,
+    replace: 400,
+    adas: 200
+  };
+
+  var vehicle = null; // { year, make, model, body }
+  var state = { service: null, adas: false, city: "" };
+
+  var vinInput = document.getElementById('vin-input');
+  var vinBtn = document.getElementById('vin-lookup-btn');
+  var vinStatus = document.getElementById('vin-status');
+  var vehicleOut = document.getElementById('vehicle-out');
+  var serviceSection = document.getElementById('service-section');
+  var adasField = document.getElementById('adas-field');
+  var adasHint = document.getElementById('adas-hint');
+  var cityInput = document.getElementById('city-input');
+  var quoteOut = document.getElementById('quote-out');
+
+  function money(n) { return "$" + n.toFixed(2); }
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-sample-vin]'), function (b) {
+    b.addEventListener('click', function () {
+      vinInput.value = b.getAttribute('data-sample-vin');
+      lookupVin();
+    });
+  });
+
+  vinBtn.addEventListener('click', lookupVin);
+  vinInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') lookupVin(); });
+
+  function lookupVin() {
+    var vin = vinInput.value.trim().toUpperCase();
+    if (vin.length < 8) {
+      vinStatus.textContent = 'Enter a fuller VIN (at least 8 characters) or use a sample above.';
+      vinStatus.className = 'lookup-msg err';
+      return;
+    }
+    vinStatus.textContent = 'Looking up VIN against NHTSA’s live vehicle database…';
+    vinStatus.className = 'lookup-msg';
+    vinBtn.disabled = true;
+
+    fetch('https://vpic.nhtsa.dot.gov/api/vehicles/decodevinvalues/' + encodeURIComponent(vin) + '?format=json')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        vinBtn.disabled = false;
+        var r = data && data.Results && data.Results[0];
+        if (!r || (!r.Make && !r.Model)) {
+          vinStatus.textContent = 'NHTSA didn’t return a vehicle for that VIN. Double-check it or try a sample.';
+          vinStatus.className = 'lookup-msg err';
+          vehicle = null;
+          vehicleOut.innerHTML = '';
+          serviceSection.style.display = 'none';
+          renderQuote();
+          return;
+        }
+        vehicle = {
+          year: r.ModelYear || '',
+          make: r.Make || '',
+          model: r.Model || '',
+          body: r.BodyClass || ''
+        };
+        vinStatus.textContent = 'Matched against NHTSA’s public VIN database.';
+        vinStatus.className = 'lookup-msg';
+        renderVehicle();
+        serviceSection.style.display = '';
+        renderQuote();
+      })
+      .catch(function () {
+        vinBtn.disabled = false;
+        vinStatus.textContent = 'Couldn’t reach NHTSA’s VIN service right now. Try again in a moment.';
+        vinStatus.className = 'lookup-msg err';
+      });
+  }
+
+  function likelyAdas() {
+    if (!vehicle || !vehicle.year) return false;
+    var y = parseInt(vehicle.year, 10);
+    return !isNaN(y) && y >= 2018;
+  }
+
+  function renderVehicle() {
+    if (!vehicle) { vehicleOut.innerHTML = ''; return; }
+    var html = '<div class="vehicle-card">';
+    html += '<b>' + (vehicle.year || '?') + ' ' + (vehicle.make || '') + ' ' + (vehicle.model || '') + '</b>';
+    html += '<div>' + (vehicle.body || 'Body style not returned') + '</div>';
+    if (likelyAdas()) {
+      html += '<span class="adas-flag">2018+ model — likely has a windshield-mounted ADAS camera</span>';
+    }
+    html += '</div>';
+    vehicleOut.innerHTML = html;
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-service]'), function (b) {
+    b.addEventListener('click', function () {
+      state.service = b.getAttribute('data-service');
+      Array.prototype.forEach.call(document.querySelectorAll('[data-service]'), function (x) { x.classList.toggle('sel', x === b); });
+      if (state.service === 'replace') {
+        adasField.style.display = '';
+        state.adas = likelyAdas();
+        document.getElementById('adas-btn').classList.toggle('sel', state.adas);
+        adasHint.textContent = likelyAdas()
+          ? 'Pre-checked: this model year usually carries a forward-facing camera behind the glass.'
+          : 'Not pre-checked: older model years usually don’t need it, but confirm on the vehicle.';
+      } else {
+        adasField.style.display = 'none';
+        state.adas = false;
+      }
+      renderQuote();
+    });
+  });
+
+  document.getElementById('adas-btn').addEventListener('click', function (e) {
+    state.adas = !state.adas;
+    e.target.classList.toggle('sel', state.adas);
+    renderQuote();
+  });
+
+  cityInput.addEventListener('input', function () {
+    state.city = cityInput.value;
+    renderQuote();
+  });
+
+  function cityStatus() {
+    var c = state.city.trim().toLowerCase();
+    if (!c) return null;
+    var covered = SERVICE_CITIES.indexOf(c) !== -1;
+    return covered ? 'covered' : 'unlisted';
+  }
+
+  function renderQuote() {
+    if (!vehicle || !state.service) {
+      quoteOut.innerHTML = '<p class="placeholder">Look up a VIN and pick a job to see an estimate.</p>';
+      return;
+    }
+    var base = PRICING[state.service];
+    var html = '';
+    html += '<div class="quote-line"><span>' + (state.service === 'repair' ? 'Chip / crack repair' : 'Windshield replacement') + '<span class="illus">Illustrative</span></span><b>' + money(base) + '</b></div>';
+    var total = base;
+    if (state.service === 'replace' && state.adas) {
+      html += '<div class="quote-line"><span>ADAS camera recalibration<span class="illus">Illustrative</span></span><b>+' + money(PRICING.adas) + '</b></div>';
+      total += PRICING.adas;
+    }
+    var cs = cityStatus();
+    if (cs === 'covered') {
+      html += '<div class="quote-line"><span>Service area</span><b>Covered, mobile service available</b></div>';
+    } else if (cs === 'unlisted') {
+      html += '<div class="quote-line"><span>Service area</span><b>Not on your published coverage list</b></div>';
+      html += '<p class="quote-sub">Worth a direct check rather than assuming, the same way an out-of-area call would be handled today.</p>';
+    }
+    html += '<div class="quote-total"><span>Estimated total</span><span class="amt">' + money(total) + '</span></div>';
+    html += '<p class="quote-sub">Vehicle details are real (NHTSA VIN lookup). Prices are illustrative placeholders, not your published rates. Still needs confirming through your existing quote process.</p>';
+    quoteOut.innerHTML = html;
+  }
+
+  // ---- SMS triage simulation ----
+  var thread = document.getElementById('sms-thread');
+  var clock = document.getElementById('sms-clock');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-sms-scenario]'), function (b) {
+    b.addEventListener('click', function () { runScenario(b.getAttribute('data-sms-scenario')); });
+  });
+  document.getElementById('sms-reset-btn').addEventListener('click', function () {
+    thread.innerHTML = '<p class="placeholder" style="padding: 0 0.2rem;">Pick a scenario below to run it.</p>';
+  });
+
+  function bubble(who, text, ts) {
+    return '<div class="bubble ' + who + '">' + text + '<span class="ts">' + ts + '</span></div>';
+  }
+
+  function runScenario(kind) {
+    thread.innerHTML = '';
+    var afterHours = kind === 'after-hours';
+    clock.textContent = afterHours ? 'Sat 9:47 PM' : 'Tue 11:15 AM';
+    var msgs = [];
+    msgs.push({ who: 'in', text: 'Hey, my windshield just cracked bad, can someone quote me? 2021 Toyota RAV4, I’m in Cedar Park.', ts: afterHours ? '9:47 PM' : '11:15 AM' });
+    if (afterHours) {
+      msgs.push({ who: 'out', text: 'Thanks for texting Austin Windshields! We’re closed right now but here’s an instant estimate for a 2021 RAV4 replacement in Cedar Park: <b>~' + money(PRICING.replace + PRICING.adas) + '</b> (incl. ADAS recalibration, illustrative). Reply YES to lock this in and Jas will call to schedule when we open at 8 AM.', ts: '9:48 PM' });
+      msgs.push({ who: 'in', text: 'Yes please, that works', ts: '9:52 PM' });
+      msgs.push({ who: 'out', text: 'Got it — you’re first on the schedule Monday. This lead would have otherwise waited until we reopened.', ts: '9:52 PM' });
+    } else {
+      msgs.push({ who: 'out', text: 'Thanks for texting Austin Windshields! Instant estimate for a 2021 RAV4 replacement in Cedar Park: <b>~' + money(PRICING.replace + PRICING.adas) + '</b> (incl. ADAS recalibration, illustrative). Reply YES and Jas will confirm a same-day slot.', ts: '11:16 AM' });
+      msgs.push({ who: 'in', text: 'Yes please', ts: '11:18 AM' });
+      msgs.push({ who: 'out', text: 'You’re on today’s schedule. Same response either way — the difference is only the after-hours case, where this replaces a message that would otherwise sit until Monday.', ts: '11:18 AM' });
+    }
+    var i = 0;
+    function step() {
+      if (i >= msgs.length) return;
+      var m = msgs[i];
+      thread.insertAdjacentHTML('beforeend', bubble(m.who, m.text, m.ts));
+      thread.scrollTop = thread.scrollHeight;
+      i++;
+      setTimeout(step, 550);
+    }
+    step();
+  }
+})();
+</script>
+</body>
+</html>
