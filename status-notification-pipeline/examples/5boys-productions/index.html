@@ -173,7 +173,7 @@
   }
 
   function seedTickets() {
-    var now = 1755878400000;
+    var now = Date.now();
     return [
       {
         id: "RF-8821",
@@ -321,7 +321,7 @@
       var pillClass = "sla-pill" + (breached ? " breached" : "") + (t.status === "refunded" ? " done" : "");
       var pillText;
       if (t.status === "refunded") pillText = "Refund processed";
-      else if (breached) pillText = "SLA breached, " + fmtDuration(remaining);
+      else if (breached) pillText = "SLA breached by " + fmtDuration(remaining).replace("-", "");
       else pillText = fmtDuration(remaining) + " left on SLA";
 
       html += '<div class="ticket-row' + (breached ? " breached" : "") + '">';
