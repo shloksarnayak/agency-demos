@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>The Tank Man, client reschedule portal (prototype)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .layout { display: grid; grid-template-columns: 260px 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+  .client-list { display: flex; flex-direction: column; gap: .55rem; }
+  .client-btn { padding: .75rem .85rem; text-align: left; }
+  .client-btn .sub { display: block; margin-top: .1rem; }
+  .tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+  .tab { padding: .55rem 1rem; font: 700 .82rem/1 var(--sans); background: var(--surface-2); border: 2px solid var(--ink); border-radius: var(--radius-sm); cursor: pointer; box-shadow: 2px 2px 0 var(--ink); }
+  .tab.active { background: var(--brand); color: #fff; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .visit-box { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; padding: 1rem 1.15rem; background: var(--surface-2); border: 2px solid var(--ink); border-radius: var(--radius-sm); margin-bottom: 1.1rem; }
+  .visit-box .big { font-family: var(--serif); font-size: 1.4rem; }
+  .badge { display: inline-block; padding: .2rem .55rem; border-radius: 999px; font: 700 .72rem/1.4 var(--sans); }
+  .badge.scheduled { background: var(--warn-bg); color: var(--warn); }
+  .badge.confirmed { background: var(--good-bg); color: var(--good); }
+  .badge.changed { background: var(--hot-bg); color: var(--hot); }
+  .slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: .55rem; margin: 1rem 0; }
+  .slot { font: 700 .8rem/1 var(--sans); padding: .65rem .5rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--surface); cursor: pointer; text-align: center; }
+  .slot:hover { background: var(--lime); }
+  .slot.taken { text-decoration: line-through; color: var(--muted); background: var(--surface-2); cursor: not-allowed; }
+  table.orders { width: 100%; border-collapse: collapse; font-size: .87rem; }
+  table.orders th, table.orders td { text-align: left; padding: .55rem .6rem; border-bottom: 1px solid var(--rule-soft); }
+  table.orders th { font-family: var(--mono); font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .empty { color: var(--muted); font-style: italic; font-size: .88rem; }
+  .field-row { display: flex; gap: .8rem; flex-wrap: wrap; align-items: end; }
+  .field { display: flex; flex-direction: column; gap: .3rem; font-size: .82rem; font-weight: 650; }
+  .field select, .field input { padding: .55rem .7rem !important; }
+  .note-inline { font-size: .78rem; color: var(--muted); margin-top: .3rem; }
+  .msg-preview { font-family: var(--mono); font-size: .82rem; line-height: 1.55; background: var(--surface); border: 2px dashed var(--rule); border-radius: var(--radius-sm); padding: 1rem 1.1rem; white-space: pre-wrap; }
+  .inquiry-note { padding: .8rem 1rem; background: var(--surface-2); border-left: 3px solid var(--brand); border-radius: var(--radius-sm); font-size: .85rem; margin-bottom: 1rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">FP</span><span class="fx-brand-name">FixPoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Client order &amp; scheduling portal</a> / The Tank Man</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for The Tank Man</span>
+  <h1 class="fx-h1">Reschedule a visit without calling the same line a new lead calls</h1>
+  <p class="fx-lede">The Tank Man runs recurring Weekly, Bi-Weekly, and Monthly aquarium maintenance routes, but today every one of those regular clients has to book, confirm, or reschedule a visit through the same inbox or phone number a first-time caller would use. This is a prototype of a client-facing alternative: an existing route client sees their next visit and reschedules it in a couple of clicks, gets an automated route-day reminder with a one-tap reschedule link, and a first-time visitor asking about service lands in a separate, clearly labeled inquiry form instead of the same queue.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything on this page is a fictional sample account and fictional visit data.</strong> No real client names, addresses, prices, or schedule data from The Tank Man are used here. A public website or Google Business listing for this business could not be located during research, so the plan structure (Weekly / Bi-Weekly / Monthly) and the single-inbox booking gap shown below are taken directly from the description in the outreach email sent to thetankman05@yahoo.com, not from a public listing. This prototype is not connected to that inbox, phone number, or any live system.</p></div>
+
+  <div class="layout">
+    <aside class="fx-card">
+      <div style="font-family:var(--mono); font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted);">Sample route clients</div>
+      <div class="client-list" id="client-list" style="margin-top:.8rem;"></div>
+      <div class="note-inline">Client names and addresses below are invented samples standing in for a real recurring-route roster.</div>
+    </aside>
+
+    <section class="fx-card" id="workspace">
+      <div class="tabs">
+        <button class="tab active" data-tab="visit">Upcoming visit</button>
+        <button class="tab" data-tab="reminder">Automated reminder preview</button>
+        <button class="tab" data-tab="history">Reschedule history</button>
+        <button class="tab" data-tab="inquiry">New customer inquiry (separate channel)</button>
+      </div>
+
+      <div class="panel active" data-panel="visit">
+        <div class="visit-box">
+          <div>
+            <div class="note-inline" style="margin:0 0 .2rem;">Next scheduled visit</div>
+            <div class="big" id="visit-date-label">&mdash;</div>
+          </div>
+          <span class="badge" id="visit-status-badge">Scheduled</span>
+        </div>
+        <p class="note-inline" id="plan-note"></p>
+        <div class="field-row" style="margin-bottom:.6rem;">
+          <div class="field"><span>New date</span><input type="date" id="resched-date"></div>
+        </div>
+        <div class="slot-grid" id="slot-grid"></div>
+        <button class="fx-btn" id="confirm-resched" disabled>Confirm reschedule</button>
+        <p class="note-inline">One tap here is the same action a client would take from the reschedule link in the automated reminder &mdash; no call to the shop line required.</p>
+      </div>
+
+      <div class="panel" data-panel="reminder">
+        <p class="note-inline" style="margin-bottom:.6rem;">Illustrative text/email sent automatically ahead of each route-day visit, tied to that client's own schedule.</p>
+        <div class="msg-preview" id="reminder-preview"></div>
+        <p class="note-inline">Tapping the link in a real build opens this same client's "Upcoming visit" view, pre-authenticated, so rescheduling never requires finding the shop's phone number or waiting for a callback.</p>
+      </div>
+
+      <div class="panel" data-panel="history">
+        <table class="orders" id="history-table"><thead><tr><th>Logged</th><th>Changed to</th><th>Status</th></tr></thead><tbody></tbody></table>
+        <p class="empty" id="history-empty" style="display:none;">No reschedules logged yet for this account.</p>
+      </div>
+
+      <div class="panel" data-panel="inquiry">
+        <div class="inquiry-note"><strong>This form is intentionally separate from the route-client view above.</strong> A first-time visitor filling this out never touches an existing client's schedule, and an existing client rescheduling never gets funneled into a new-lead queue &mdash; today both go through the same inbox and phone number.</div>
+        <form id="inquiry-form" class="field-row">
+          <div class="field"><span>Name</span><input type="text" id="inq-name" placeholder="e.g. Sample Visitor" required></div>
+          <div class="field"><span>Tank size / type</span><input type="text" id="inq-tank" placeholder="e.g. 75g reef"></div>
+          <div class="field"><span>Interested plan</span>
+            <select id="inq-plan"><option>Weekly</option><option>Bi-Weekly</option><option>Monthly</option><option>Not sure yet</option></select>
+          </div>
+          <button type="submit" class="fx-btn">Send inquiry</button>
+        </form>
+        <div id="inquiry-log" style="margin-top:1rem;"></div>
+      </div>
+    </section>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">Grounded in what the outreach itself established</h2>
+    <div class="limits">
+      <div class="lim"><b>The gap comes from the offer, not a guess.</b> The email sent to this inbox on 2026-08-20 states directly: "the only way any of those clients can book, confirm, or reschedule a visit is emailing thetankman05@yahoo.com or one phone number, the same channel a brand-new lead would use." That single sentence is the entire scope of this prototype: separate the two flows and give the recurring client self-service.</div>
+      <div class="lim"><b>No public site or review profile was found.</b> Searches for "The Tank Man" / "thetankman05" aquarium maintenance did not surface a working website, Google Business page, or Yelp listing distinct from unrelated businesses of similar names, and no owner name could be confirmed. Nothing on this page claims a review count, service area, or pricing beyond what the outreach email itself described (Weekly / Bi-Weekly / Monthly plans, recurring routes).</div>
+      <div class="lim"><b>What a real build adds.</b> A production version would connect to whichever calendar or route system the business already uses, send real SMS/email reminders through a provider like Twilio or Postmark, and authenticate each client to their own account rather than the sample picker shown here.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by The Tank Man, Aquarium Maintenance, or any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak. All client accounts, visit dates, and reschedule data on this page are fictional sample data, not connected to any live system.</p>
+</footer>
+<script>
+(function () {
+  var STORAGE_KEY = "tank-man-portal-demo-v1";
+
+  var CLIENTS = [
+    { id: "c1", name: "Rossi Residence (sample)", sub: "Weekly &middot; 120g reef", plan: "Weekly", day: "Monday" },
+    { id: "c2", name: "Harborline Dental Office (sample)", sub: "Bi-Weekly &middot; 55g community", plan: "Bi-Weekly", day: "Wednesday" },
+    { id: "c3", name: "Maple Street Cafe (sample)", sub: "Monthly &middot; 40g planted", plan: "Monthly", day: "Friday" }
+  ];
+
+  function addDays(base, n) { var d = new Date(base); d.setDate(d.getDate() + n); return d; }
+  function fmt(d) { return d.toISOString().slice(0, 10); }
+  function niceDate(iso) {
+    var d = new Date(iso + "T00:00:00");
+    return d.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+  }
+
+  function defaultState() {
+    var today = new Date();
+    var accounts = {};
+    CLIENTS.forEach(function (c, i) {
+      accounts[c.id] = { nextVisit: fmt(addDays(today, 3 + i * 4)), history: [] };
+    });
+    return { activeClient: CLIENTS[0].id, accounts: accounts };
+  }
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return defaultState();
+      var parsed = JSON.parse(raw);
+      if (!parsed.accounts) return defaultState();
+      return parsed;
+    } catch (e) { return defaultState(); }
+  }
+  function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+  var state = load();
+  var pendingSlot = null;
+  var inquiries = [];
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+  function currentClient() { return CLIENTS.filter(function (c) { return c.id === state.activeClient; })[0]; }
+  function currentAccount() { return state.accounts[state.activeClient]; }
+
+  function renderClientList() {
+    var root = document.getElementById("client-list");
+    root.innerHTML = "";
+    CLIENTS.forEach(function (c) {
+      var btn = document.createElement("button");
+      btn.className = "fx-opt client-btn" + (c.id === state.activeClient ? " sel" : "");
+      btn.innerHTML = "<b>" + escapeHtml(c.name) + "</b><span class=\"sub\">" + c.sub + "</span>";
+      btn.addEventListener("click", function () {
+        state.activeClient = c.id;
+        pendingSlot = null;
+        save();
+        renderAll();
+      });
+      root.appendChild(btn);
+    });
+  }
+
+  function renderVisit() {
+    var client = currentClient();
+    var account = currentAccount();
+    document.getElementById("visit-date-label").textContent = niceDate(account.nextVisit);
+    document.getElementById("plan-note").textContent = client.name.replace(" (sample)", "") + " is on the " + client.plan + " plan, usual route day " + client.day + ".";
+    var badge = document.getElementById("visit-status-badge");
+    badge.textContent = account.history.length ? "Rescheduled" : "Scheduled";
+    badge.className = "badge " + (account.history.length ? "changed" : "scheduled");
+
+    var dateInput = document.getElementById("resched-date");
+    var min = fmt(addDays(new Date(), 1));
+    dateInput.min = min;
+    dateInput.value = "";
+    renderSlots(null);
+    dateInput.onchange = function () {
+      renderSlots(dateInput.value);
+    };
+  }
+
+  function renderSlots(dateVal) {
+    var grid = document.getElementById("slot-grid");
+    grid.innerHTML = "";
+    pendingSlot = null;
+    document.getElementById("confirm-resched").disabled = true;
+    if (!dateVal) return;
+    var SLOTS = ["9:00 AM", "11:00 AM", "1:00 PM", "3:00 PM"];
+    var takenIndex = (new Date(dateVal + "T00:00:00").getDate()) % SLOTS.length;
+    SLOTS.forEach(function (slot, i) {
+      var btn = document.createElement("button");
+      btn.className = "slot" + (i === takenIndex ? " taken" : "");
+      btn.textContent = slot;
+      if (i === takenIndex) {
+        btn.disabled = true;
+      } else {
+        btn.addEventListener("click", function () {
+          pendingSlot = { date: dateVal, slot: slot };
+          Array.prototype.forEach.call(grid.querySelectorAll(".slot"), function (s) { s.classList.remove("sel"); });
+          btn.classList.add("sel");
+          document.getElementById("confirm-resched").disabled = false;
+        });
+      }
+      grid.appendChild(btn);
+    });
+  }
+
+  function renderReminder() {
+    var client = currentClient();
+    var account = currentAccount();
+    var text = "The Tank Man: Hi " + client.name.replace(" (sample)", "") + ", your " + client.plan.toLowerCase() +
+      " tank visit is scheduled for " + niceDate(account.nextVisit) + ".\n\n" +
+      "Need a different day? Reschedule in one tap:\nhttps://portal.thetankman.example/reschedule/" + client.id + "\n\n" +
+      "No reply needed if this time works.";
+    document.getElementById("reminder-preview").textContent = text;
+  }
+
+  function renderHistory() {
+    var account = currentAccount();
+    var tbody = document.querySelector("#history-table tbody");
+    tbody.innerHTML = "";
+    document.getElementById("history-empty").style.display = account.history.length ? "none" : "block";
+    account.history.slice().reverse().forEach(function (h) {
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td>" + h.loggedAt + "</td><td>" + niceDate(h.newDate) + " &middot; " + h.slot + "</td><td><span class=\"badge confirmed\">Confirmed</span></td>";
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderInquiries() {
+    var root = document.getElementById("inquiry-log");
+    if (!inquiries.length) { root.innerHTML = "<p class=\"empty\">No inquiries logged yet in this session.</p>"; return; }
+    var html = "<table class=\"orders\"><thead><tr><th>Name</th><th>Tank</th><th>Interested plan</th></tr></thead><tbody>";
+    inquiries.slice().reverse().forEach(function (q) {
+      html += "<tr><td>" + escapeHtml(q.name) + "</td><td>" + escapeHtml(q.tank || "&mdash;") + "</td><td>" + escapeHtml(q.plan) + "</td></tr>";
+    });
+    html += "</tbody></table><p class=\"note-inline\">Routed to a separate new-lead queue, never mixed with the route-client schedule above.</p>";
+    root.innerHTML = html;
+  }
+
+  function renderAll() {
+    renderClientList();
+    renderVisit();
+    renderReminder();
+    renderHistory();
+    renderInquiries();
+  }
+
+  document.getElementById("confirm-resched").addEventListener("click", function () {
+    if (!pendingSlot) return;
+    var account = currentAccount();
+    account.history.push({ loggedAt: fmt(new Date()), newDate: pendingSlot.date, slot: pendingSlot.slot });
+    account.nextVisit = pendingSlot.date;
+    save();
+    renderAll();
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (tab) {
+    tab.addEventListener("click", function () {
+      Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (t) { t.classList.remove("active"); });
+      Array.prototype.forEach.call(document.querySelectorAll(".panel"), function (p) { p.classList.remove("active"); });
+      tab.classList.add("active");
+      document.querySelector(".panel[data-panel=\"" + tab.dataset.tab + "\"]").classList.add("active");
+    });
+  });
+
+  document.getElementById("inquiry-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = document.getElementById("inq-name").value.trim();
+    if (!name) return;
+    inquiries.push({
+      name: name,
+      tank: document.getElementById("inq-tank").value.trim(),
+      plan: document.getElementById("inq-plan").value
+    });
+    document.getElementById("inquiry-form").reset();
+    renderInquiries();
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
