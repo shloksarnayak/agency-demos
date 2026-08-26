@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Big Escape Rooms refund escalation tracker example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .stt-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .stt-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .stt-tab.active { background: var(--ink); color: var(--surface); }
+  .stt-view { display: none; }
+  .stt-view.active { display: block; }
+  .stt-cols { display: grid; grid-template-columns: 1fr 1.35fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .stt-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .ticket-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .ticket-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .ticket-title { font-weight: 660; }
+  .ticket-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.overdue { color: var(--hot); background: var(--hot-bg); }
+  .badge.repeat { color: #5c1030; background: var(--pink); }
+  .badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .badge.ontrack { color: var(--brand); background: var(--brand-soft); }
+  .badge.done { color: var(--good); background: var(--good-bg); }
+  .ticket-summary { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; }
+  .amount-note { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; font-style: italic; }
+  .ticket-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .log { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.8rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); margin-right: 0.4rem; }
+  .notif { margin-top: 0.5rem; }
+  .notif summary { font-size: 0.76rem; font-weight: 700; color: var(--brand); cursor: pointer; }
+  .notif-entry { font-size: 0.76rem; color: var(--muted); padding: 0.2rem 0 0.2rem 0.9rem; font-style: italic; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 460px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.2rem; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.5rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Service-ticket escalation tracker</a> / Big Escape Rooms example</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Grounded in a real business, still a work sample</span>
+  <h1 class="fx-h1">Four unresolved BBB complaints, one of them a locked building nobody ever refunded</h1>
+  <p class="fx-lede">Big Escape Rooms (Atlanta, GA and Silver Spring, MD) carries a BBB rating of F, driven entirely by "failure to respond to 4 complaint(s) filed against the business," including a customer who says they arrived to a locked, empty building and never got their money back. Public reviews on the puzzles, staff, and game design are genuinely strong, so the gap looks like a back-office one: refund requests come in by phone or email, get worked by whoever is at the front desk that day, and nothing tracks how long one has been sitting. This example adds a ticket the moment a refund is requested, a day-3 and day-7 escalation clock, and a status page a customer can check, layered behind the existing bookings@bigescaperooms.com inbox without replacing it.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional sample data.</strong> Customer names, refund amounts, and notes are illustrative, not Big Escape Rooms' real customers or records. This independent work sample is not affiliated with or endorsed by Big Escape Rooms.</p></div>
+
+  <div class="stt-tabs">
+    <button class="stt-tab active" data-view="office" type="button">Front-desk refund queue</button>
+    <button class="stt-tab" data-view="requester" type="button">Customer status check</button>
+  </div>
+
+  <section class="stt-view active" id="view-office">
+    <div class="stt-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new refund request</h2>
+        <p style="color:var(--muted);font-size:0.82rem;margin-top:-0.6rem;">In a real build this logs automatically the moment bookings@bigescaperooms.com or the front desk takes the request, instead of someone re-typing it here.</p>
+        <form id="add-form" class="form-grid">
+          <div class="field span2"><label for="f-property">Customer / booking</label><input type="text" id="f-property" placeholder="e.g. Sample customer, Atlanta"></div>
+          <div class="field span2"><label for="f-issue">Reason for refund</label><input type="text" id="f-issue" placeholder="e.g. Room malfunctioned mid-game"></div>
+          <div class="field"><label for="f-amount">Amount requested (illustrative)</label><input type="text" id="f-amount" placeholder="e.g. $120"></div>
+          <div class="field"><label for="f-location">Location</label><select id="f-location"><option>Atlanta, GA</option><option>Silver Spring, MD</option></select></div>
+          <div class="span2"><button class="fx-btn" type="submit">Log refund request</button></div>
+        </form>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Open refund requests, worst first</h2>
+        <div id="queue-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stt-view" id="view-requester">
+    <h2 class="fx-h2" style="margin-top:0;">Check the status of a refund request</h2>
+    <p style="color:var(--ink-2);font-size:0.92rem;margin-top:-0.6rem;max-width:66ch;">The BBB complaint record describes customers who could not get a straight answer on where their refund stood. This gives a customer a way to check without another call or email to bookings@bigescaperooms.com.</p>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. BER-1001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try BER-1001, BER-1002, BER-1003 or BER-1004 from the front-desk queue's sample data.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this maps to Big Escape Rooms specifically</h2>
+    <div class="limits">
+      <div class="lim"><b>Stages match the actual gap: requested, day-3 reminder, day-7 escalated, resolved.</b> The BBB record's headline complaint is a refund that sat unresolved for weeks after a locked-building no-show; the day-3 and day-7 clocks here are illustrative defaults modeled on that pattern, and the real cutoffs would be set with whoever owns bookings@bigescaperooms.com day to day.</div>
+      <div class="lim"><b>Sample tickets are built from the public complaint pattern, not invented scenarios.</b> BER-1001 mirrors the locked, empty building complaint; BER-1002 mirrors a staff-20-minutes-late complaint; BER-1003 mirrors a mid-game prop malfunction with no refund offered; all amounts shown are marked illustrative, no real transaction data is used.</div>
+      <div class="lim"><b>Sample tickets span both locations.</b> Atlanta, GA and Silver Spring, MD, matching Big Escape Rooms' two public locations, so the queue reads as one shared view rather than a single-room tool.</div>
+      <div class="lim"><b>Notifications here are a log entry only, nothing is actually sent.</b> A real build would text or email the customer at each stage change and alert whoever is on shift when a request crosses day 3 or day 7, through the existing bookings@ inbox, without requiring a new system anyone has to learn.</div>
+      <div class="lim"><b>Deliberately narrow in scope.</b> Some complaints describe genuine facility issues (no air conditioning, a malfunctioning puzzle prop), not just a slow refund. This tool tracks and escalates the status of a refund request; it does not fix the underlying game-room issue, and the page does not claim otherwise.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Big Escape Rooms.</strong></p><p>Prepared by Shlok Sarnayak. Fictional customer and refund data on this page, not connected to any live Big Escape Rooms system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "stt_big_escape_rooms_v1";
+
+  var STAGES = [
+    { key: "requested", label: "Requested" },
+    { key: "day3", label: "Day 3 reminder sent" },
+    { key: "day7", label: "Day 7 escalated" },
+    { key: "resolved", label: "Resolved" }
+  ];
+  var STAGE_INDEX = {}; STAGES.forEach(function (s, i) { STAGE_INDEX[s.key] = i; });
+  var RESOLVED_IDX = STAGE_INDEX.resolved;
+  var WATCH_HOURS = 72;   // illustrative: day 3
+  var OVERDUE_HOURS = 168; // illustrative: day 7
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function hoursFromNow(h) { return Date.now() + h * 3600000; }
+  function hoursAgo(ts) { return (Date.now() - ts) / 3600000; }
+  function fmtDuration(hrs) {
+    if (hrs < 1) return "under an hour";
+    var days = Math.floor(hrs / 24), rem = Math.round(hrs % 24);
+    if (days < 1) return Math.round(hrs) + "h";
+    return days + "d " + rem + "h";
+  }
+
+  function defaultData() {
+    return {
+      seq: 1004,
+      tickets: [
+        {
+          ref: "BER-1001", property: "Sample customer, Silver Spring", issue: "Arrived to a locked, empty building, no staff present, party of 6 turned away", amount: "$180 (illustrative)", location: "Silver Spring, MD",
+          stageIdx: STAGE_INDEX.day7, enteredStageAt: hoursFromNow(-190),
+          history: [ { stage: "requested", at: hoursFromNow(-360) }, { stage: "day3", at: hoursFromNow(-288) }, { stage: "day7", at: hoursFromNow(-190) } ],
+          notes: [{ at: hoursFromNow(-190), text: "Third follow-up email from customer, still no refund issued. Escalated to manager queue, this is now overdue past the 7-day window twice over." }],
+          notifications: [
+            { at: hoursFromNow(-360), text: "Simulated update to customer: your refund request has been received." },
+            { at: hoursFromNow(-288), text: "Simulated update to customer: still reviewing your request, thank you for your patience." },
+            { at: hoursFromNow(-190), text: "Simulated update to customer: your request has been escalated to a manager." }
+          ]
+        },
+        {
+          ref: "BER-1002", property: "Sample customer, Atlanta", issue: "Staff 20 minutes late for booked slot, group lost most of the session", amount: "$95 (illustrative)", location: "Atlanta, GA",
+          stageIdx: STAGE_INDEX.day3, enteredStageAt: hoursFromNow(-80),
+          history: [ { stage: "requested", at: hoursFromNow(-92) }, { stage: "day3", at: hoursFromNow(-80) } ],
+          notes: [],
+          notifications: [
+            { at: hoursFromNow(-92), text: "Simulated update to customer: your refund request has been received." },
+            { at: hoursFromNow(-80), text: "Simulated update to customer: still reviewing your request, thank you for your patience." }
+          ]
+        },
+        {
+          ref: "BER-1003", property: "Sample customer, Atlanta", issue: "Puzzle prop malfunctioned mid-game, staff confirmed the fault, group could not finish", amount: "$140 (illustrative)", location: "Atlanta, GA",
+          stageIdx: STAGE_INDEX.resolved, enteredStageAt: hoursFromNow(-6),
+          history: [ { stage: "requested", at: hoursFromNow(-96) }, { stage: "day3", at: hoursFromNow(-70) }, { stage: "resolved", at: hoursFromNow(-6) } ],
+          notes: [{ at: hoursFromNow(-6), text: "Full refund approved and processed, prop flagged for maintenance check." }],
+          notifications: [
+            { at: hoursFromNow(-96), text: "Simulated update to customer: your refund request has been received." },
+            { at: hoursFromNow(-70), text: "Simulated update to customer: still reviewing your request, thank you for your patience." },
+            { at: hoursFromNow(-6), text: "Simulated update to customer: your refund has been approved and processed." }
+          ]
+        },
+        {
+          ref: "BER-1004", property: "Sample customer, Silver Spring", issue: "No air conditioning during session, extreme heat, not disclosed beforehand", amount: "$110 (illustrative)", location: "Silver Spring, MD",
+          stageIdx: STAGE_INDEX.requested, enteredStageAt: hoursFromNow(-10),
+          history: [ { stage: "requested", at: hoursFromNow(-10) } ],
+          notes: [],
+          notifications: [ { at: hoursFromNow(-10), text: "Simulated update to customer: your refund request has been received." } ]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function badges(t) {
+    var out = [];
+    if (t.stageIdx >= RESOLVED_IDX) { out.push({ cls: "done", label: "Resolved" }); return out; }
+    var stuckHrs = hoursAgo(t.enteredStageAt);
+    if (stuckHrs > OVERDUE_HOURS) out.push({ cls: "overdue", label: "Overdue past day 7" });
+    else if (stuckHrs > WATCH_HOURS) out.push({ cls: "watch", label: "Past day 3" });
+    else out.push({ cls: "ontrack", label: "On track" });
+    return out;
+  }
+
+  function sortScore(t) {
+    if (t.stageIdx >= RESOLVED_IDX) return -1e9;
+    return hoursAgo(t.enteredStageAt);
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var open = data.tickets.filter(function (t) { return t.stageIdx < RESOLVED_IDX; })
+      .slice().sort(function (a, b) { return sortScore(b) - sortScore(a); });
+    var done = data.tickets.filter(function (t) { return t.stageIdx >= RESOLVED_IDX; })
+      .slice().sort(function (a, b) { return b.enteredStageAt - a.enteredStageAt; });
+    var html = "";
+    if (!open.length) html += '<p class="empty">Nothing open. Every refund request is resolved.</p>';
+    open.forEach(function (t) { html += renderCard(t); });
+    if (done.length) {
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently resolved</h3>';
+      done.slice(0, 5).forEach(function (t) { html += renderCard(t); });
+    }
+    root.innerHTML = html;
+  }
+
+  function renderCard(t) {
+    var idx = data.tickets.indexOf(t);
+    var stageLabel = STAGES[t.stageIdx].label;
+    var bs = badges(t);
+    var html = '<div class="ticket-card"><div class="ticket-head"><div><div class="ticket-title">' + escapeHtml(t.property) + " &middot; " + t.ref + '</div><div class="ticket-meta">' + escapeHtml(t.issue) + "</div></div><div class=\"badge-row\">" + bs.map(function (b) { return '<span class="badge ' + b.cls + '">' + b.label + '</span>'; }).join("") + "</div></div>";
+    html += '<div class="ticket-summary">Stage: ' + stageLabel + " (" + fmtDuration(hoursAgo(t.enteredStageAt)) + " in this stage)</div>";
+    html += '<div class="amount-note">Requested: ' + escapeHtml(t.amount) + " &middot; " + escapeHtml(t.location) + '</div>';
+    if (t.notes.length) {
+      html += '<div class="log">';
+      t.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+      html += "</div>";
+    }
+    if (t.notifications.length) {
+      html += '<details class="notif"><summary>Notification log (' + t.notifications.length + ')</summary>';
+      t.notifications.slice().reverse().forEach(function (n) { html += '<div class="notif-entry">' + fmtDate(n.at) + " &middot; " + escapeHtml(n.text) + "</div>"; });
+      html += "</details>";
+    }
+    if (t.stageIdx < RESOLVED_IDX) {
+      html += '<div class="note-row" style="display:flex;gap:0.4rem;margin-top:0.6rem;"><input type="text" id="note-' + idx + '" placeholder="Add an internal note" style="flex:1;font:inherit;font-size:0.8rem;padding:0.4rem 0.6rem;border:1px solid var(--rule);border-radius:var(--radius-sm);"><button class="fx-btn-ghost" onclick="__ber.addNote(' + idx + ')">Add</button></div>';
+      html += '<div class="ticket-actions">';
+      if (t.stageIdx === STAGE_INDEX.day7) {
+        html += '<button class="fx-btn" onclick="__ber.resolve(' + idx + ')">Approve refund, mark resolved</button>';
+      } else {
+        var nextLabel = STAGES[t.stageIdx + 1].label;
+        html += '<button class="fx-btn-ghost" onclick="__ber.advance(' + idx + ')">Advance to ' + escapeHtml(nextLabel) + '</button>';
+      }
+      html += '</div>';
+    }
+    html += "</div>";
+    return html;
+  }
+
+  function notify(t, text) { t.notifications.push({ at: Date.now(), text: "Simulated update to customer: " + text }); }
+
+  window.__ber = {
+    addNote: function (idx) {
+      var input = document.getElementById("note-" + idx);
+      var text = input.value.trim();
+      if (!text) return;
+      data.tickets[idx].notes.push({ at: Date.now(), text: text });
+      save(); renderQueue();
+    },
+    advance: function (idx) {
+      var t = data.tickets[idx];
+      t.stageIdx += 1;
+      t.enteredStageAt = Date.now();
+      t.history.push({ stage: STAGES[t.stageIdx].key, at: Date.now() });
+      var msgs = { day3: "still reviewing your request, thank you for your patience.", day7: "your request has been escalated to a manager." };
+      notify(t, msgs[STAGES[t.stageIdx].key] || "your refund status changed.");
+      save(); renderQueue();
+    },
+    resolve: function (idx) {
+      var t = data.tickets[idx];
+      t.stageIdx = RESOLVED_IDX;
+      t.enteredStageAt = Date.now();
+      t.history.push({ stage: "resolved", at: Date.now() });
+      notify(t, "your refund has been approved and processed.");
+      save(); renderQueue();
+    }
+  };
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var property = document.getElementById("f-property").value.trim();
+    var issue = document.getElementById("f-issue").value.trim();
+    var amount = document.getElementById("f-amount").value.trim() || "Not specified (illustrative)";
+    var location = document.getElementById("f-location").value;
+    if (!property || !issue) { alert("Fill in the customer/booking and the reason for the refund."); return; }
+    data.seq += 1;
+    var ref = "BER-" + data.seq;
+    var now = Date.now();
+    var t = { ref: ref, property: property, issue: issue, amount: amount, location: location, stageIdx: STAGE_INDEX.requested, enteredStageAt: now, history: [{ stage: "requested", at: now }], notes: [], notifications: [] };
+    notify(t, "your refund request has been received.");
+    data.tickets.push(t);
+    save(); renderQueue();
+    document.getElementById("add-form").reset();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue();
+  });
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var t = data.tickets.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
+    if (!t) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No record found for that reference code. Please contact bookings@bigescaperooms.com directly.</p></div>'; return; }
+    var html = '<div class="lookup-result"><h3>' + escapeHtml(t.issue) + '</h3><p class="amount-note">Requested: ' + escapeHtml(t.amount) + '</p>';
+    STAGES.forEach(function (s, i) {
+      var cls = i < t.stageIdx ? "done" : (i === t.stageIdx ? "active" : "pending");
+      var histEntry = t.history.filter(function (h) { return h.stage === s.key; })[0];
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === "pending" ? " pending-text" : "") + '">' + s.label + '</div><div class="stage-time">' + (histEntry ? fmtDate(histEntry.at) : (cls === "active" ? "In progress" : "Not started")) + "</div></div></div>";
+    });
+    html += "</div>";
+    root.innerHTML = html;
+  });
+
+  document.querySelectorAll(".stt-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".stt-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".stt-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderQueue();
+})();
+</script>
+</body>
+</html>
