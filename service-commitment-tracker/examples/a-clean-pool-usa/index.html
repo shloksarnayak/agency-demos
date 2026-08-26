@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>A Clean Pool USA, route completion confirmation example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .sct-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .sct-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .sct-tab.active { background: var(--ink); color: var(--surface); }
+  .sct-view { display: none; }
+  .sct-view.active { display: block; }
+  .sct-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .sct-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .check-row { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.86rem; padding: 0.2rem 0; }
+  .check-row input { margin-top: 0.2rem; }
+  .checklist-box { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.8rem 0.9rem; background: var(--surface-2); }
+  .stop-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .stop-card.is-flagged { border-color: var(--hot); box-shadow: 0 0 0 2px var(--hot-bg); }
+  .stop-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .stop-title { font-weight: 660; }
+  .stop-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.flagged { color: #fff; background: var(--hot); }
+  .badge.verified { color: var(--good); background: var(--good-bg); }
+  .badge.notified { color: var(--brand); background: var(--brand-soft); }
+  .flag-reason { font-size: 0.78rem; color: var(--hot); font-weight: 650; margin-top: 0.4rem; }
+  .stop-checklist { font-size: 0.85rem; color: var(--ink-2); margin-top: 0.55rem; display: flex; flex-direction: column; gap: 0.18rem; }
+  .stop-checklist .ci { display: flex; gap: 0.4rem; align-items: baseline; }
+  .stop-checklist .ci.done:before { content: "\2713"; color: var(--good); font-weight: 700; }
+  .stop-checklist .ci.missed:before { content: "\2717"; color: var(--hot); font-weight: 700; }
+  .stop-photo { margin-top: 0.6rem; }
+  .stop-photo img { max-width: 160px; max-height: 120px; border-radius: var(--radius-sm); border: 1px solid var(--rule); display: block; }
+  .stop-note { font-size: 0.83rem; color: var(--ink-2); margin-top: 0.5rem; font-style: italic; }
+  .log-note { margin-top: 0.6rem; font-size: 0.78rem; color: var(--muted); }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 480px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; padding: 1rem 1.1rem; border-radius: var(--radius-sm); background: var(--surface-2); }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.2rem; }
+  .lookup-result .lr-status { margin-top: 0.5rem; }
+  .lookup-result .lr-detail { font-size: 0.86rem; color: var(--ink-2); margin-top: 0.5rem; line-height: 1.5; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .rule-callout { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1.05rem; background: var(--surface-2); font-size: 0.85rem; color: var(--ink-2); margin-bottom: 1.1rem; max-width: 74ch; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .illus { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Service commitment tracker</a> / A Clean Pool USA</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">Every route stop leaves proof it actually happened, before the invoice goes out</h1>
+  <p class="fx-lede">A Clean Pool USA runs routes across 60-plus Central Florida zip codes (Orlando, Winter Park, Lake Nona, Dr. Phillips, Kissimmee, Seminole and Volusia County). With that many stops a week, a handful of public reviews describe a visit that was billed as completed while the homeowner wasn't sure the technician actually came that week. This page shows one small, working tool aimed at that exact gap: a technician confirms a short checklist (and optionally a photo) at each stop, anything incomplete gets flagged for the office before it's invoiced, and the homeowner can look up their own stop and see proof it happened, without calling the office.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by A Clean Pool USA, LLC.</strong> All technician names, addresses, and stop records inside the tool below are fictional sample data, clearly for illustration only. The service area, founding year, CPO-certification detail, and the "billed as completed but not sure it happened" complaint pattern are drawn from the company's own published site (acleanpoolusa.com) and its public Yelp/BBB review pages, fetched 2026-08-26. Any prices or figures below are labeled <span class="illus">Illustrative</span> and are not A Clean Pool USA's real numbers.</p></div>
+
+  <div class="sct-tabs">
+    <button class="sct-tab active" data-view="tech" type="button">Technician / route view</button>
+    <button class="sct-tab" data-view="office" type="button">Office review queue</button>
+    <button class="sct-tab" data-view="customer" type="button">Customer stop lookup</button>
+  </div>
+
+  <section class="sct-view active" id="view-tech">
+    <div class="sct-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Log a completed stop</h2>
+        <form id="add-form" class="form-grid">
+          <div class="field span2"><label for="f-customer">Customer / address label</label><input type="text" id="f-customer" placeholder="e.g. 118 Sample Cir, Winter Park"></div>
+          <div class="field span2">
+            <label>Checklist for this visit</label>
+            <div class="checklist-box">
+              <div class="check-row"><input type="checkbox" id="c-chem" checked><label for="c-chem">Chemicals tested &amp; balanced</label></div>
+              <div class="check-row"><input type="checkbox" id="c-skim" checked><label for="c-skim">Skimmer &amp; pump baskets emptied</label></div>
+              <div class="check-row"><input type="checkbox" id="c-filter" checked><label for="c-filter">Filter checked / backwashed as needed</label></div>
+              <div class="check-row"><input type="checkbox" id="c-net" checked><label for="c-net">Surface skimmed &amp; debris netted</label></div>
+              <div class="check-row"><input type="checkbox" id="c-equip" checked><label for="c-equip">Pump &amp; equipment visually inspected</label></div>
+            </div>
+          </div>
+          <div class="field span2"><label for="f-photo">Photo confirmation (optional)</label><input type="file" id="f-photo" accept="image/*"></div>
+          <div class="field span2"><label for="f-note">Technician note (optional)</label><textarea id="f-note" placeholder="e.g. Chlorine was low, added extra shock."></textarea></div>
+          <div class="field span2"><button type="submit" class="fx-btn">Complete stop &amp; notify customer</button></div>
+        </form>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Today's completed stops</h2>
+        <div id="stops-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sct-view" id="view-office">
+    <h2 class="fx-h2" style="margin-top:0;">Office review queue, before invoicing</h2>
+    <div class="rule-callout">A stop lands here automatically if any checklist item was left unchecked, or if a route's plan calls for photo confirmation and none was attached. The office can review and clear it, or follow up with the technician, before that visit is billed, catching the gap the reviews describe rather than finding it after a customer complains.</div>
+    <div id="flagged-root"></div>
+  </section>
+
+  <section class="sct-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check your own visit</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code (from your visit text/email)</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. ACP-1001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check my visit</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try ACP-1001, ACP-1002, ACP-1003, ACP-1004 or ACP-1005 from the sample stops.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The checklist matches the actual service plan.</b> A real build sets the items to whatever A Clean Pool USA's technicians already do per visit, not this demo's five defaults, and can vary by plan tier (e.g. photo required on premium routes only).</div>
+      <div class="lim"><b>The notification is real, not a page you have to load.</b> In production this sends an automatic text or email the moment a stop is marked complete, with the checklist summary and photo attached, so the homeowner never has to check a page unless they want more detail.</div>
+      <div class="lim"><b>It sits alongside the existing route app, it doesn't replace it.</b> This plugs into however routes are dispatched today and only adds the completion check, the office flag, and the customer-facing confirmation on top.</div>
+      <div class="lim"><b>The reference code is whatever the office already uses.</b> A real build ties this to the existing work-order or account number instead of a new code for the customer to remember.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by A Clean Pool USA, LLC.</strong></p><p>Prepared by Shlok Sarnayak. Fictional stop and customer data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "acp_route_completion_v1";
+
+  var CHECK_IDS = ["chem", "skim", "filter", "net", "equip"];
+  var CHECK_LABEL = {
+    chem: "Chemicals tested & balanced",
+    skim: "Skimmer & pump baskets emptied",
+    filter: "Filter checked / backwashed as needed",
+    net: "Surface skimmed & debris netted",
+    equip: "Pump & equipment visually inspected"
+  };
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function hoursFromNow(h) { return Date.now() + h * 3600000; }
+
+  function checklistFrom(missing) {
+    var out = {};
+    CHECK_IDS.forEach(function (k) { out[k] = missing.indexOf(k) === -1; });
+    return out;
+  }
+
+  function defaultData() {
+    return {
+      seq: 1005,
+      stops: [
+        {
+          id: "ACP-1001", ref: "ACP-1001", customer: "118 Sample Cir, Winter Park", checklist: checklistFrom([]),
+          hasPhoto: true, note: "Chlorine slightly low, added shock.", completedAt: hoursFromNow(-1),
+          history: ["Stop completed, checklist confirmed.", "Automatic text sent to customer with checklist summary and photo."]
+        },
+        {
+          id: "ACP-1002", ref: "ACP-1002", customer: "44 Sample Trl, Dr. Phillips", checklist: checklistFrom([]),
+          hasPhoto: false, note: "", completedAt: hoursFromNow(-3),
+          history: ["Stop completed, checklist confirmed.", "Automatic text sent to customer with checklist summary."]
+        },
+        {
+          id: "ACP-1003", ref: "ACP-1003", customer: "902 Sample Ave, Lake Nona", checklist: checklistFrom(["filter"]),
+          hasPhoto: false, note: "Filter backwash skipped, ran low on route time.", completedAt: hoursFromNow(-5),
+          history: ["Stop marked complete with one item unchecked.", "Flagged for office review before invoicing.", "Automatic text sent to customer, checklist summary only."]
+        },
+        {
+          id: "ACP-1004", ref: "ACP-1004", customer: "27 Sample Ln, Kissimmee", checklist: checklistFrom(["chem", "net"]),
+          hasPhoto: false, note: "Gate was locked, technician could not access pad fully.", completedAt: hoursFromNow(-26),
+          history: ["Stop marked complete with two items unchecked.", "Flagged for office review before invoicing.", "Office called customer to confirm gate access for next visit."]
+        },
+        {
+          id: "ACP-1005", ref: "ACP-1005", customer: "56 Sample Way, Orlando", checklist: checklistFrom([]),
+          hasPhoto: true, note: "", completedAt: hoursFromNow(-50),
+          history: ["Stop completed, checklist confirmed.", "Automatic text sent to customer with checklist summary and photo.", "Office cleared for invoicing."]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function missingItems(c) { return CHECK_IDS.filter(function (k) { return !c.checklist[k]; }); }
+  function isFlagged(c) { return missingItems(c).length > 0; }
+
+  function renderChecklist(c) {
+    var html = '<div class="stop-checklist">';
+    CHECK_IDS.forEach(function (k) {
+      html += '<div class="ci ' + (c.checklist[k] ? "done" : "missed") + '">' + CHECK_LABEL[k] + '</div>';
+    });
+    html += "</div>";
+    return html;
+  }
+
+  function renderCard(c) {
+    var flagged = isFlagged(c);
+    var html = '<div class="stop-card' + (flagged ? " is-flagged" : "") + '"><div class="stop-head"><div><div class="stop-title">' + escapeHtml(c.customer) + " &middot; " + c.ref + '</div><div class="stop-meta">Completed ' + fmtDate(c.completedAt) + '</div></div>';
+    if (flagged) html += '<span class="badge flagged">Flagged for review</span>';
+    else html += '<span class="badge verified">Checklist complete</span>';
+    html += "</div>";
+    if (flagged) html += '<div class="flag-reason">Why: ' + missingItems(c).map(function (k) { return CHECK_LABEL[k]; }).join("; ") + ' not checked off</div>';
+    html += renderChecklist(c);
+    if (c.hasPhoto) html += '<div class="stop-photo"><span class="badge notified">Photo attached</span></div>';
+    if (c.note) html += '<div class="stop-note">"' + escapeHtml(c.note) + '"</div>';
+    if (c.history && c.history.length) {
+      html += '<div class="log-note">' + c.history.map(escapeHtml).join(" &middot; ") + '</div>';
+    }
+    html += "</div>";
+    return html;
+  }
+
+  function renderStops() {
+    var root = document.getElementById("stops-root");
+    var stops = data.stops.slice().sort(function (a, b) { return b.completedAt - a.completedAt; });
+    var html = "";
+    if (!stops.length) html += '<p class="empty">No stops logged yet today.</p>';
+    stops.forEach(function (c) { html += renderCard(c); });
+    root.innerHTML = html;
+  }
+
+  function renderFlagged() {
+    var root = document.getElementById("flagged-root");
+    var flagged = data.stops.filter(isFlagged).slice().sort(function (a, b) { return b.completedAt - a.completedAt; });
+    var html = "";
+    if (!flagged.length) html += '<p class="empty">Nothing currently needs office review, every stop today has a complete checklist.</p>';
+    flagged.forEach(function (c) { html += renderCard(c); });
+    root.innerHTML = html;
+  }
+
+  function renderAll() { renderStops(); renderFlagged(); }
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("f-customer").value.trim();
+    if (!customer) { alert("Enter a customer / address label."); return; }
+    var checklist = {};
+    CHECK_IDS.forEach(function (k) { checklist[k] = document.getElementById("c-" + k).checked; });
+    var note = document.getElementById("f-note").value.trim();
+    var photoInput = document.getElementById("f-photo");
+    var hasPhoto = photoInput.files && photoInput.files.length > 0;
+    data.seq += 1;
+    var ref = "ACP-" + data.seq;
+    var flagged = CHECK_IDS.some(function (k) { return !checklist[k]; });
+    var history = [];
+    history.push(flagged ? "Stop marked complete with one or more items unchecked." : "Stop completed, checklist confirmed.");
+    if (flagged) history.push("Flagged for office review before invoicing.");
+    history.push("Automatic text sent to customer with checklist summary" + (hasPhoto ? " and photo." : "."));
+    data.stops.push({
+      id: ref, ref: ref, customer: customer, checklist: checklist, hasPhoto: hasPhoto,
+      note: note, completedAt: Date.now(), history: history
+    });
+    save(); renderAll();
+    document.getElementById("add-form").reset();
+    CHECK_IDS.forEach(function (k) { document.getElementById("c-" + k).checked = true; });
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset today's stops back to the original sample data?")) return;
+    data = defaultData(); save(); renderAll();
+  });
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var c = data.stops.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
+    if (!c) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No visit found for that reference code. Please call the office directly.</p></div>'; return; }
+    var flagged = isFlagged(c);
+    root.innerHTML = '<div class="lookup-result"><h3>' + escapeHtml(c.customer) + '</h3><div class="lr-status"><span class="badge ' + (flagged ? "flagged" : "verified") + '">' + (flagged ? "Being reviewed by the office" : "Visit confirmed") + '</span></div>' + renderChecklist(c) + (c.hasPhoto ? '<div class="stop-photo"><span class="badge notified">Photo confirmation on file</span></div>' : '') + '<div class="lr-detail">Completed ' + fmtDate(c.completedAt) + (c.note ? "<br>Technician note: \"" + escapeHtml(c.note) + "\"" : "") + '</div></div>';
+  });
+
+  document.querySelectorAll(".sct-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".sct-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".sct-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
