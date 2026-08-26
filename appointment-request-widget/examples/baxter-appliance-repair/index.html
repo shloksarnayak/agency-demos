@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Appointment request widget: working example for Baxter Appliance Repair</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .field { display: flex; flex-direction: column; gap: 0.5rem; }
+  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .field-hint { font-size: 0.82rem; color: var(--muted); margin-top: -0.2rem; }
+  .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .choice { font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.6rem 0.95rem; cursor: pointer; font-size: 0.92rem; }
+  .choice:hover { border-color: var(--brand); }
+  .choice.sel { border-color: var(--brand); background: var(--brand-soft); color: var(--ink); font-weight: 620; box-shadow: 0 0 0 1px var(--brand) inset; }
+  input[type="text"], textarea { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; max-width: 30rem; }
+  textarea { max-width: 40rem; min-height: 5rem; resize: vertical; font-family: inherit; }
+  input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--brand); }
+
+  .warranty-gate { border-radius: var(--radius-md); background: var(--surface-2); border: 1px solid var(--rule); padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .warranty-gate .choices { gap: 0.6rem; }
+
+  .screen-out { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .screen-out h3 { margin: 0; font-size: 1.05rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+  .screen-out p { margin: 0; font-size: 0.94rem; color: var(--ink-2); line-height: 1.55; }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.8rem; }
+  .confirm h3 { margin: 0; font-size: 1.05rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+  .confirm dl { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; }
+  .confirm dt { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .confirm dd { margin: 0 0 0.5rem; font-size: 0.94rem; color: var(--ink); }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Appointment request widget</a> / Baxter Appliance Repair</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Baxter Appliance Repair</span>
+  <h1 class="fx-h1">Catching the appliance details, and the warranty question, before the phone even rings</h1>
+  <p class="fx-lede">Two other appliance repair shops serving Greencastle, Sears Home Services and All-Budget Appliance Repair, already let customers book online. Baxter's site still routes everyone through a phone call or a basic contact form, and separately has to tell people on the phone "we do not do warranty work." This form asks the warranty question up front, and only takes appliance type, brand, model and symptom for the jobs Baxter would actually take.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the appliance categories, the warranty policy ("we do not do warranty work"), and the service area are copied from Baxter's own site today. What's illustrative: the specific brands and models in the confirmation screen below are sample entries, not real customer submissions.</p>
+  </div>
+  <div class="fx-card" id="form-root"></div>
+  <section>
+    <h2 class="fx-h2">What I'd flag before this goes live</h2>
+    <div class="limits">
+      <div class="lim"><b>The warranty question is the whole point.</b> Right now that question gets asked and answered on a phone call. Here it's asked first, so a warranty job never becomes a wasted trip or callback, it just gets a clear answer and a pointer to the manufacturer instead.</div>
+      <div class="lim"><b>This is a request form, not a live booking calendar.</b> It doesn't know which specific times are actually free, because it isn't connected to a real schedule. A customer submits appliance details and a rough preference, and it reaches Baxter the same way a phone call would, just with the diagnostic details already written down.</div>
+      <div class="lim"><b>Nothing here actually sends anything.</b> A real version would text or email Justin and Alyssa the moment someone submits, with the appliance type, brand, model and symptom already filled in before they call back. This demo just shows what that submission would look like.</div>
+      <div class="lim"><b>Missed-call text-back is a separate, paired idea, not built into this page.</b> The original idea was this intake form plus an automatic text reply when a call goes to voicemail mid-repair, pointing the caller to this same form. That's a phone-system integration and isn't something a static page can demonstrate, illustrative only.</div>
+      <div class="lim"><b>Appliance categories and the warranty line are copied from Baxter's site today.</b> If either changes, this needs a one-line update to match, it won't drift out of sync on its own.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Baxter Appliance Repair.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Justin and Alyssa Baxter. Appliance categories and warranty policy verified against Baxter's own site today. Not connected to Baxter's phone system or real appointment book.</p>
+</footer>
+
+<script>
+(function () {
+  var APPLIANCES = [
+    "Washer", "Dryer", "Refrigerator", "Ice maker", "Stove or oven",
+    "Dishwasher", "Microwave", "Garbage disposal", "Grill", "KitchenAid mixer"
+  ];
+
+  var TIME_PREFS = ["Morning", "Early afternoon", "Late afternoon"];
+
+  var state = {
+    warranty: null,
+    appliance: null, brand: "", model: "", symptom: "",
+    time: "", name: "", contact: "",
+    submitted: false
+  };
+  var root = document.getElementById("form-root");
+
+  function canSubmit() {
+    return state.appliance && state.brand.trim() && state.symptom.trim() && state.time && state.name.trim() && state.contact.trim();
+  }
+
+  function render() {
+    if (state.warranty === null) { renderWarrantyGate(); return; }
+    if (state.warranty === "yes") { renderScreenOut(); return; }
+    if (state.submitted) { renderConfirm(); return; }
+    renderForm();
+  }
+
+  function renderWarrantyGate() {
+    var html = '<div class="warranty-gate">';
+    html += '<div class="field-label">First, one quick question</div>';
+    html += '<div style="font-size:1rem; color:var(--ink);">Is this appliance still under manufacturer warranty?</div>';
+    html += '<div class="choices">';
+    html += '<button class="choice" data-warranty="yes">Yes, still under warranty</button>';
+    html += '<button class="choice" data-warranty="no">No, warranty has expired or this was never covered</button>';
+    html += '</div></div>';
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll('[data-warranty]'), function (b) {
+      b.addEventListener('click', function () { state.warranty = b.dataset.warranty; render(); });
+    });
+  }
+
+  function renderScreenOut() {
+    var html = '<div class="screen-out">';
+    html += '<h3>Baxter Appliance Repair does not do warranty work</h3>';
+    html += '<p>That is worth knowing before you set up a visit, so a truck does not get sent out for a repair Baxter cannot invoice under warranty terms. For a still-covered appliance, the manufacturer or the retailer you bought it from is the right place to start a warranty claim.</p>';
+    html += '<p>If you would still like an independent, paid diagnosis or repair outside the warranty process, you can go back and continue with the request.</p>';
+    html += '<button class="fx-btn-ghost" id="back-btn">Go back</button>';
+    html += '</div>';
+    root.innerHTML = html;
+    document.getElementById('back-btn').addEventListener('click', function () { state.warranty = null; render(); });
+  }
+
+  function renderForm() {
+    var html = '';
+    html += '<div class="field"><div class="field-label">Which appliance needs service?</div><div class="choices">';
+    APPLIANCES.forEach(function (a) {
+      html += '<button class="choice' + (state.appliance === a ? ' sel' : '') + '" data-appliance="' + a + '">' + a + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field"><div class="field-label">Brand</div><input type="text" id="brand-input" value="' + state.brand.replace(/"/g, '&quot;') + '" placeholder="e.g. Whirlpool, Frigidaire, GE"></div>';
+    html += '<div class="field"><div class="field-label">Model number, if you have it</div><input type="text" id="model-input" value="' + state.model.replace(/"/g, '&quot;') + '" placeholder="Usually on a sticker inside the door or on the back"><div class="field-hint">Optional, but it saves a trip if the part needs to be ordered ahead of time.</div></div>';
+    html += '<div class="field"><div class="field-label">What is it doing?</div><textarea id="symptom-input" placeholder="e.g. dryer runs but does not heat, fridge is loud and not cooling">' + state.symptom.replace(/</g, '&lt;') + '</textarea></div>';
+
+    html += '<div class="field"><div class="field-label">Preferred time of day</div><div class="choices">';
+    TIME_PREFS.forEach(function (t) {
+      html += '<button class="choice' + (state.time === t ? ' sel' : '') + '" data-time="' + t + '">' + t + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field"><div class="field-label">Your name</div><input type="text" id="name-input" value="' + state.name.replace(/"/g, '&quot;') + '" placeholder="First and last name"></div>';
+    html += '<div class="field"><div class="field-label">Phone or email</div><input type="text" id="contact-input" value="' + state.contact.replace(/"/g, '&quot;') + '" placeholder="How should we reach you?"></div>';
+
+    html += '<button class="fx-btn" id="submit-btn" style="margin-top:0.3rem;"' + (canSubmit() ? '' : ' disabled') + '>Request this repair</button>';
+    html += '<button class="fx-btn-ghost" id="restart-btn" style="align-self:flex-start;">Start over</button>';
+
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll('[data-appliance]'), function (b) {
+      b.addEventListener('click', function () { state.appliance = b.dataset.appliance; render(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-time]'), function (b) {
+      b.addEventListener('click', function () { state.time = b.dataset.time; render(); });
+    });
+
+    var brandInput = document.getElementById('brand-input');
+    var modelInput = document.getElementById('model-input');
+    var symptomInput = document.getElementById('symptom-input');
+    var nameInput = document.getElementById('name-input');
+    var contactInput = document.getElementById('contact-input');
+    brandInput.addEventListener('input', function () { state.brand = brandInput.value; syncSubmitState(); });
+    modelInput.addEventListener('input', function () { state.model = modelInput.value; });
+    symptomInput.addEventListener('input', function () { state.symptom = symptomInput.value; syncSubmitState(); });
+    nameInput.addEventListener('input', function () { state.name = nameInput.value; syncSubmitState(); });
+    contactInput.addEventListener('input', function () { state.contact = contactInput.value; syncSubmitState(); });
+
+    var submitBtn = document.getElementById('submit-btn');
+    submitBtn.addEventListener('click', function () {
+      if (!canSubmit()) return;
+      state.submitted = true;
+      render();
+    });
+    document.getElementById('restart-btn').addEventListener('click', resetAll);
+  }
+
+  function syncSubmitState() {
+    var btn = document.getElementById('submit-btn');
+    if (btn) btn.disabled = !canSubmit();
+  }
+
+  function renderConfirm() {
+    var html = '<div class="confirm">';
+    html += '<h3>Request captured, this is what Baxter would receive</h3>';
+    html += '<dl>';
+    html += '<dt>Appliance</dt><dd>' + state.appliance + '</dd>';
+    html += '<dt>Brand</dt><dd>' + escapeHtml(state.brand) + '</dd>';
+    html += '<dt>Model</dt><dd>' + (state.model.trim() ? escapeHtml(state.model) : 'Not provided') + '</dd>';
+    html += '<dt>Symptom</dt><dd>' + escapeHtml(state.symptom) + '</dd>';
+    html += '<dt>Warranty status</dt><dd>Not under warranty, confirmed before submission</dd>';
+    html += '<dt>Preferred time</dt><dd>' + state.time + '</dd>';
+    html += '<dt>Name</dt><dd>' + escapeHtml(state.name) + '</dd>';
+    html += '<dt>Contact</dt><dd>' + escapeHtml(state.contact) + '</dd>';
+    html += '</dl>';
+    html += '<p style="font-size:0.88rem; color:var(--ink-2);">A real version texts or emails this to Justin and Alyssa the moment it is submitted, appliance, brand, model and symptom already on hand before anyone calls back to confirm a time.</p>';
+    html += '<button class="fx-btn-ghost" id="reset-btn" style="align-self:flex-start;">Start over</button>';
+    html += '</div>';
+    root.innerHTML = html;
+    document.getElementById('reset-btn').addEventListener('click', resetAll);
+  }
+
+  function resetAll() {
+    state = { warranty: null, appliance: null, brand: "", model: "", symptom: "", time: "", name: "", contact: "", submitted: false };
+    render();
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
