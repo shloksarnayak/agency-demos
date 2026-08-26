@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Accord Appliance, arrival-verification &amp; no-show dispute log example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .deb-section { margin-top: 2.4rem; }
+  .deb-section-title { font-family: var(--serif); font-size: 1.25rem; margin: 0 0 0.3rem; }
+  .deb-section-sub { color: var(--muted); font-size: 0.86rem; margin: 0 0 1rem; max-width: 70ch; }
+  .deb-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.6rem; align-items: end; margin-bottom: 1.1rem; padding: 1rem 1.1rem; border: 1px dashed var(--rule); border-radius: 16px; }
+  .deb-field { display: flex; flex-direction: column; gap: 0.3rem; }
+  .deb-field label { font-size: 0.72rem; font-weight: 700; color: var(--ink-2); }
+  .deb-field input, .deb-field select, .deb-field textarea { font: inherit; font-size: 0.85rem; padding: 0.5rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  .deb-field input:focus, .deb-field select:focus, .deb-field textarea:focus { outline: none; border-color: var(--brand); }
+  .deb-submit-cell { display: flex; }
+  .deb-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 0.95rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.8rem; }
+  .deb-card-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .deb-card-title { font-weight: 660; font-size: 0.95rem; }
+  .deb-card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .deb-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem; }
+  .deb-badge { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.3rem 0.6rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .deb-badge.ok { color: var(--good); background: var(--good-bg); }
+  .deb-badge.hot { color: var(--hot); background: var(--hot-bg); }
+  .deb-badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .deb-badge.done { color: var(--muted); background: var(--surface-2); }
+  .deb-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.75rem; padding-top: 0.65rem; border-top: 1px solid var(--rule-soft); }
+  .deb-btn-sm { font: inherit; font-size: 0.76rem; font-weight: 650; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.4rem 0.8rem; cursor: pointer; }
+  .deb-btn-sm:hover { filter: brightness(0.97); }
+  .deb-btn-sm:disabled { opacity: 0.45; cursor: not-allowed; }
+  .deb-btn-sm.danger { color: var(--hot); background: var(--hot-bg); }
+  .deb-empty { color: var(--muted); font-style: italic; font-size: 0.86rem; }
+  .deb-log { margin-top: 0.65rem; padding-top: 0.6rem; border-top: 1px solid var(--rule-soft); }
+  .deb-log-item { font-size: 0.76rem; color: var(--ink-2); display: flex; justify-content: space-between; gap: 0.6rem; padding: 0.15rem 0; }
+  .deb-log-item span:last-child { color: var(--muted); font-family: var(--mono); font-size: 0.7rem; white-space: nowrap; }
+  .deb-reset-row { margin-top: 1.6rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
+  .case-box { margin: 1.4rem 0; padding: 1rem 1.2rem; border-left: 3px solid var(--hot); background: var(--hot-bg); font-size: 0.9rem; color: var(--ink-2); }
+  .case-box cite { display: block; margin-top: 0.5rem; font-size: 0.76rem; color: var(--muted); font-style: normal; }
+  .verify-block { margin-top: 0.65rem; padding: 0.6rem 0.7rem; border-radius: 12px; background: var(--surface-2); border: 1px dashed var(--rule); font-size: 0.8rem; }
+  .verify-block b { display: block; font-size: 0.82rem; margin-bottom: 0.15rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Dispatch ETA &amp; billing-reminder guard</a> / Accord Appliance</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">Accord Appliance: a technician's arrival gets logged, not just claimed</h1>
+  <p class="fx-lede">Accord Appliance's public BBB complaint record includes an April complaint describing a customer who stayed home all day waiting for a technician, was later told the technician had arrived at 1:25pm and found nobody there, and was marked as a no-show, while the customer's own Ring doorbell camera footage showed no technician ever came to the door. That single dispute sits inside a larger pattern: 33 BBB complaints over three years, 8 closed in just the last twelve months, with missed appointment windows and disputed no-shows recurring throughout. This example shows one small, working tool built directly around that gap: a technician's arrival has to be logged with a verification step at the time it happens, not asserted afterward, so a "we were there" claim and a "nobody came" claim don't have to be settled by whoever argues harder on the phone.</p>
+  <div class="fact-strip">
+    <span class="fact">Accord Appliance Repair, Inc.</span>
+    <span class="fact">Temecula, CA</span>
+    <span class="fact">Appliance repair since 2007 (BBB profile)</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Accord Appliance Repair, Inc.</strong> All customer names, jobs, and notes inside the tool below are fictional (SAMPLE data) and clearly for illustration only. The business description and complaint pattern referenced come from the company's public BBB profile.</p></div>
+
+  <div class="case-box">
+    Accord Appliance's public BBB profile shows 33 complaints filed over the last three years, 8 closed in the last twelve months, with a recurring pattern of missed appointment windows and no-shows that surface only when a customer calls to ask what happened. One April complaint describes a customer who waited home all day, was later told a technician arrived at 1:25pm and got no answer, and was marked a no-show, while the customer's own Ring camera footage showed no technician ever arrived at the property.
+    <cite>Source: Accord Appliance Repair, Inc.'s public BBB complaint profile.</cite>
+  </div>
+  <p style="color:var(--ink-2); font-size:0.92rem; max-width:74ch;">This is framed as the documented pattern the tool below is built to prevent going forward, not as a claim about any single visit. The fix isn't "trust the technician more" or "trust the customer more," it's removing the gap where an arrival can be recorded as fact with nothing behind it: every arrival now requires a logged verification step at the time it happens, and a window that closes without one is flagged automatically instead of quietly defaulting to "customer no-show."</p>
+
+  <section class="deb-section">
+    <h2 class="deb-section-title">Arrival-verification &amp; no-show dispute board</h2>
+    <p class="deb-section-sub">A technician can be marked "arrived" only by attaching a verification step (a code texted to the customer, a photo of the unit, or a signature). If a scheduled window closes with no verified arrival logged, the job flags automatically as unverified instead of silently becoming a no-show. If a customer disputes a visit, the tool checks the record: a dispute against a job with no verified arrival gets flagged for review rather than closed against the customer.</p>
+    <form id="job-form" class="deb-form">
+      <div class="deb-field"><label for="j-customer">Customer / address</label><input type="text" id="j-customer" placeholder="e.g. Sample Customer, Murrieta" required></div>
+      <div class="deb-field"><label for="j-service">Service</label><select id="j-service"></select></div>
+      <div class="deb-field"><label for="j-date">Date</label><input type="date" id="j-date" required></div>
+      <div class="deb-field"><label for="j-start">Window start</label><input type="time" id="j-start" required></div>
+      <div class="deb-field"><label for="j-end">Window end</label><input type="time" id="j-end" required></div>
+      <div class="deb-submit-cell"><button type="submit" class="fx-btn-ghost">Schedule job</button></div>
+    </form>
+    <div id="jobs-root"></div>
+  </section>
+
+  <div class="deb-reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+
+  <section class="deb-section">
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>Verification here is a typed note; a real build ties it to something harder to fake.</b> A code texted to the customer's phone at check-in, a geotagged photo, or a signature capture on the technician's own device, whichever fits how Accord's technicians already work in the field.</div>
+      <div class="lim"><b>The window-passed flag is a simple time comparison.</b> A real build can push that flag straight to a dispatcher's screen the moment it happens, not just show it here, so office staff know before the customer calls.</div>
+      <div class="lim"><b>This sits in front of whatever already schedules jobs.</b> It reads and writes the same job calendar dispatch already uses; it does not replace it, it just makes sure "arrived" always means something was actually logged.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Accord Appliance Repair, Inc.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job and dispute data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "deb_accordappliance_v1";
+
+  var SERVICES = ["Refrigerator repair", "Washer/dryer repair", "Dishwasher repair", "Oven/range repair", "Diagnostic visit"];
+  var VERIFY_METHODS = ["Code texted to customer", "Photo of unit / job site", "Customer signature"];
+
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function todayStr() { var d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function daysFromNowStr(n) { var d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function fmtDate(s) { if (!s) return ""; var d = new Date(s + "T00:00:00"); return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+  function fmtTime(t) { if (!t) return ""; var p = t.split(":"); var h = parseInt(p[0], 10); var m = p[1]; var ap = h >= 12 ? "PM" : "AM"; var h12 = h % 12; if (h12 === 0) h12 = 12; return h12 + ":" + m + " " + ap; }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function uid(prefix) { return prefix + Math.random().toString(36).slice(2, 8); }
+  function windowEndAt(job) { return new Date(job.date + "T" + job.winEnd + ":00"); }
+  function nowStamp() { return new Date().toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+
+  function defaultData() {
+    return {
+      jobs: [
+        {
+          id: "j1", customer: "Sample Customer, Temecula", service: "Refrigerator repair", date: daysFromNowStr(-2), winStart: "10:00", winEnd: "13:00",
+          status: "disputed", verification: null,
+          log: [{ status: "Scheduled", at: "6 days ago" }, { status: "Marked arrived by office (no verification attached)", at: "2 days ago" }, { status: "Customer disputes visit: “Ring camera shows no technician came to the door”", at: "1 day ago" }, { status: "Flagged for review: no verified arrival on file", at: "1 day ago" }]
+        },
+        {
+          id: "j2", customer: "Sample Customer, Murrieta", service: "Dishwasher repair", date: todayStr(), winStart: "08:00", winEnd: "10:00",
+          status: "arrived", verification: { method: "Photo of unit / job site", note: "Photo of dishwasher model plate + serial", at: "40 minutes ago" },
+          log: [{ status: "Scheduled", at: "5 days ago" }, { status: "Technician en route", at: "1 hour ago" }, { status: "Arrived, verified via Photo of unit / job site", at: "40 minutes ago" }]
+        },
+        {
+          id: "j3", customer: "Sample Customer, Wildomar", service: "Washer/dryer repair", date: todayStr(), winStart: "07:00", winEnd: "09:00",
+          status: "scheduled", verification: null,
+          log: [{ status: "Scheduled", at: "3 days ago" }]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function populateSelects() {
+    document.getElementById("j-service").innerHTML = SERVICES.map(function (s) { return "<option>" + escapeHtml(s) + "</option>"; }).join("");
+  }
+
+  var STATUS_LABEL = { scheduled: "Scheduled", en_route: "Technician en route", arrived: "Arrived, verified", disputed: "Disputed by customer", closed: "Closed" };
+  var STATUS_BADGE_CLASS = { scheduled: "watch", en_route: "watch", arrived: "ok", disputed: "hot", closed: "done" };
+
+  function jobIntegrity(job) {
+    var pastWindow = Date.now() > windowEndAt(job).getTime();
+    if (job.status === "disputed") {
+      return job.verification ? { cls: "watch", text: "Disputed, verified arrival on file for review" } : { cls: "hot", text: "Disputed: no verified arrival on file, do not bill as no-show" };
+    }
+    if (job.status === "arrived" && job.verification) return { cls: "ok", text: "Arrival verified" };
+    if (pastWindow) return { cls: "hot", text: "Window passed, no verified arrival, flag before calling it a no-show" };
+    return { cls: "watch", text: "Window open" };
+  }
+
+  function renderJobs() {
+    var root = document.getElementById("jobs-root");
+    var sorted = data.jobs.slice().sort(function (a, b) { return (a.date + a.winStart).localeCompare(b.date + b.winStart); });
+    if (!sorted.length) { root.innerHTML = '<p class="deb-empty">No jobs scheduled yet.</p>'; return; }
+    var html = "";
+    sorted.forEach(function (job) {
+      var integ = jobIntegrity(job);
+      html += '<div class="deb-card"><div class="deb-card-head"><div><div class="deb-card-title">' + escapeHtml(job.customer) + " &middot; " + escapeHtml(job.service) + '</div><div class="deb-card-meta">' + fmtDate(job.date) + ", " + fmtTime(job.winStart) + "&ndash;" + fmtTime(job.winEnd) + '</div></div></div>';
+      html += '<div class="deb-badges"><span class="deb-badge ' + STATUS_BADGE_CLASS[job.status] + '">' + STATUS_LABEL[job.status] + '</span><span class="deb-badge ' + integ.cls + '">' + integ.text + '</span></div>';
+      if (job.verification) {
+        html += '<div class="verify-block"><b>Verification on file</b>' + escapeHtml(job.verification.method) + (job.verification.note ? " &mdash; " + escapeHtml(job.verification.note) : "") + ' &middot; ' + escapeHtml(job.verification.at) + '</div>';
+      }
+      html += '<div class="deb-log">' + job.log.slice().reverse().map(function (l) { return '<div class="deb-log-item"><span>' + escapeHtml(l.status) + '</span><span>' + escapeHtml(l.at) + '</span></div>'; }).join("") + '</div>';
+      html += '<div class="deb-row">';
+      if (job.status === "scheduled") html += '<button class="deb-btn-sm" onclick="__deb.advance(\'' + job.id + '\',\'en_route\',\'Technician en route\')">Mark technician en route</button>';
+      if (job.status === "scheduled" || job.status === "en_route") html += '<button class="deb-btn-sm" onclick="__deb.logArrival(\'' + job.id + '\')">Log verified arrival</button>';
+      if (job.status !== "disputed" && job.status !== "closed") html += '<button class="deb-btn-sm danger" onclick="__deb.dispute(\'' + job.id + '\')">Customer disputes visit</button>';
+      if (job.status === "arrived" || job.status === "disputed") html += '<button class="deb-btn-sm" onclick="__deb.close(\'' + job.id + '\')">Close job</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+  }
+
+  window.__deb = {
+    advance: function (id, status, label) {
+      var job = data.jobs.filter(function (j) { return j.id === id; })[0];
+      if (!job) return;
+      job.status = status;
+      job.log.push({ status: label, at: nowStamp() });
+      save(); renderJobs();
+    },
+    logArrival: function (id) {
+      var job = data.jobs.filter(function (j) { return j.id === id; })[0];
+      if (!job) return;
+      var method = prompt("Verification method (" + VERIFY_METHODS.join(" / ") + "):", VERIFY_METHODS[0]);
+      if (!method) return;
+      var note = prompt("Optional note (e.g. what the photo shows, who signed):", "") || "";
+      job.status = "arrived";
+      job.verification = { method: method, note: note, at: nowStamp() };
+      job.log.push({ status: "Arrived, verified via " + method, at: nowStamp() });
+      save(); renderJobs();
+    },
+    dispute: function (id) {
+      var job = data.jobs.filter(function (j) { return j.id === id; })[0];
+      if (!job) return;
+      var note = prompt("Customer's dispute note (SAMPLE):", "Customer says no technician came to the door");
+      if (note === null) return;
+      job.status = "disputed";
+      job.log.push({ status: "Customer disputes visit: “" + note + "”", at: nowStamp() });
+      if (!job.verification) job.log.push({ status: "Flagged for review: no verified arrival on file", at: nowStamp() });
+      save(); renderJobs();
+    },
+    close: function (id) {
+      var job = data.jobs.filter(function (j) { return j.id === id; })[0];
+      if (!job) return;
+      job.status = "closed";
+      job.log.push({ status: "Closed", at: nowStamp() });
+      save(); renderJobs();
+    }
+  };
+
+  document.getElementById("job-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("j-customer").value.trim();
+    var start = document.getElementById("j-start").value;
+    var end = document.getElementById("j-end").value;
+    if (!customer || !start || !end) return;
+    data.jobs.push({
+      id: uid("j"), customer: customer, service: document.getElementById("j-service").value,
+      date: document.getElementById("j-date").value || todayStr(), winStart: start, winEnd: end,
+      status: "scheduled", verification: null, log: [{ status: "Scheduled", at: nowStamp() }]
+    });
+    save(); renderJobs(); e.target.reset();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the board back to the original sample data?")) return;
+    data = defaultData(); save(); renderJobs();
+  });
+
+  populateSelects();
+  renderJobs();
+})();
+</script>
+</body>
+</html>
