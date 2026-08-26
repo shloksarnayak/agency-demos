@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Auskeeper Cleaning, booking-confirmation gap example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .deb-section { margin-top: 2.4rem; }
+  .deb-section-title { font-family: var(--serif); font-size: 1.25rem; margin: 0 0 0.3rem; }
+  .deb-section-sub { color: var(--muted); font-size: 0.86rem; margin: 0 0 1rem; max-width: 70ch; }
+  .deb-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.6rem; align-items: end; margin-bottom: 1.1rem; padding: 1rem 1.1rem; border: 1px dashed var(--rule); border-radius: 16px; }
+  .deb-field { display: flex; flex-direction: column; gap: 0.3rem; }
+  .deb-field label { font-size: 0.72rem; font-weight: 700; color: var(--ink-2); }
+  .deb-field input, .deb-field select, .deb-field textarea { font: inherit; font-size: 0.85rem; padding: 0.5rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  .deb-field input:focus, .deb-field select:focus, .deb-field textarea:focus { outline: none; border-color: var(--brand); }
+  .deb-submit-cell { display: flex; }
+  .deb-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 0.95rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.8rem; }
+  .deb-card-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .deb-card-title { font-weight: 660; font-size: 0.95rem; }
+  .deb-card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .deb-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem; }
+  .deb-badge { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.3rem 0.6rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .deb-badge.ok { color: var(--good); background: var(--good-bg); }
+  .deb-badge.hot { color: var(--hot); background: var(--hot-bg); }
+  .deb-badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .deb-badge.done { color: var(--muted); background: var(--surface-2); }
+  .deb-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.75rem; padding-top: 0.65rem; border-top: 1px solid var(--rule-soft); }
+  .deb-btn-sm { font: inherit; font-size: 0.76rem; font-weight: 650; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.4rem 0.8rem; cursor: pointer; }
+  .deb-btn-sm:hover { filter: brightness(0.97); }
+  .deb-btn-sm:disabled { opacity: 0.45; cursor: not-allowed; }
+  .deb-btn-sm.danger { color: var(--hot); background: var(--hot-bg); }
+  .deb-empty { color: var(--muted); font-style: italic; font-size: 0.86rem; }
+  .deb-log { margin-top: 0.65rem; padding-top: 0.6rem; border-top: 1px solid var(--rule-soft); }
+  .deb-log-item { font-size: 0.76rem; color: var(--ink-2); display: flex; justify-content: space-between; gap: 0.6rem; padding: 0.15rem 0; }
+  .deb-log-item span:last-child { color: var(--muted); font-family: var(--mono); font-size: 0.7rem; white-space: nowrap; }
+  .deb-reset-row { margin-top: 1.6rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
+  .case-box { margin: 1.4rem 0; padding: 1rem 1.2rem; border-left: 3px solid var(--hot); background: var(--hot-bg); font-size: 0.9rem; color: var(--ink-2); }
+  .case-box cite { display: block; margin-top: 0.5rem; font-size: 0.76rem; color: var(--muted); font-style: normal; }
+  .verify-block { margin-top: 0.65rem; padding: 0.6rem 0.7rem; border-radius: 12px; background: var(--surface-2); border: 1px dashed var(--rule); font-size: 0.8rem; }
+  .verify-block b { display: block; font-size: 0.82rem; margin-bottom: 0.15rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Dispatch ETA &amp; billing-reminder guard</a> / Auskeeper Cleaning</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">Auskeeper Cleaning: a booking only reads "Confirmed" once a cleaner has actually accepted it</h1>
+  <p class="fx-lede">Public reviews of Auskeeper Cleaning describe the same pattern surfacing roughly a year apart: a customer is told their booking is "confirmed," no cleaner ever shows up on the day, and no one calls to explain what happened. The company's site currently takes bookings through a contact form with a date and time field, so "confirmed" most likely just means a reply email went out, not that any cleaner actually agreed to be there. This example shows one small, working tool built directly around that gap: a booking cannot show as "Confirmed" until a cleaner has logged their own acceptance of the job, and a booking still unaccepted as its appointment window approaches gets flagged automatically instead of quietly sitting there labeled as if everything were fine.</p>
+  <div class="fact-strip">
+    <span class="fact">Auskeeper Cleaning Service</span>
+    <span class="fact">Gold Coast &middot; Sydney &middot; Brisbane</span>
+    <span class="fact">Domestic &amp; commercial cleaning, operating since 2013</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Auskeeper Cleaning Service.</strong> All customer names, bookings, and notes inside the tool below are fictional (SAMPLE data) and clearly for illustration only. The business description and review pattern referenced come from Auskeeper Cleaning's public website and public customer reviews.</p></div>
+
+  <div class="case-box">
+    Public customer reviews of Auskeeper Cleaning describe two separate bookings, close to a year apart, where the booking had been marked "confirmed" but no cleaner arrived on the scheduled day and the customer received no call explaining why. Auskeeper's own site currently books appointments through a simple contact form with a date and time field, which suggests a "confirmed" booking is set the moment a reply goes out, before any cleaner has actually agreed to attend.
+    <cite>Source: Auskeeper Cleaning's public website (booking form) and publicly posted customer reviews describing this pattern.</cite>
+  </div>
+  <p style="color:var(--ink-2); font-size:0.92rem; max-width:74ch;">This is framed as the documented pattern the tool below is built to prevent going forward, not as a claim about any single booking. The fix isn't "reply to bookings faster," it's removing the gap where "confirmed" can be shown to a customer with nothing behind it: a booking only becomes Confirmed once a specific cleaner has logged acceptance, a day-before reminder goes out to the customer automatically once that happens, and any booking still unaccepted as its window approaches is flagged for the office instead of silently staying labeled "confirmed."</p>
+
+  <section class="deb-section">
+    <h2 class="deb-section-title">Booking-confirmation &amp; dispatch-acknowledgement board</h2>
+    <p class="deb-section-sub">A new booking starts as Pending. It can only move to Confirmed after a specific cleaner is assigned and logs their own acceptance, at which point a day-before reminder is queued for the customer automatically. A booking that is still unaccepted as its appointment window gets close is flagged automatically, instead of ever being shown to a customer as "confirmed" by default.</p>
+    <form id="job-form" class="deb-form">
+      <div class="deb-field"><label for="j-customer">Customer / suburb</label><input type="text" id="j-customer" placeholder="e.g. Sample Customer, Southport" required></div>
+      <div class="deb-field"><label for="j-service">Service</label><select id="j-service"></select></div>
+      <div class="deb-field"><label for="j-date">Date</label><input type="date" id="j-date" required></div>
+      <div class="deb-field"><label for="j-start">Window start</label><input type="time" id="j-start" required></div>
+      <div class="deb-field"><label for="j-end">Window end</label><input type="time" id="j-end" required></div>
+      <div class="deb-submit-cell"><button type="submit" class="fx-btn-ghost">Take booking</button></div>
+    </form>
+    <div id="jobs-root"></div>
+  </section>
+
+  <div class="deb-reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+
+  <section class="deb-section">
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>Cleaner acceptance here is a manual button; a real build pushes the ask to the cleaner directly.</b> A text or app notification the cleaner taps to accept, so "confirmed" always traces back to a specific person agreeing, not office staff assuming on their behalf.</div>
+      <div class="lim"><b>The day-before reminder is simulated here.</b> A real build sends it automatically by SMS or email the moment acceptance is logged, and can also nudge the customer to reply if they need to reschedule.</div>
+      <div class="lim"><b>The unaccepted-window flag is a simple time comparison.</b> A real build can push that flag straight to a dispatcher's screen (or a text to the office) well before the appointment, not just show it here, so a gap gets caught days ahead instead of on the morning of.</div>
+      <div class="lim"><b>This sits in front of whatever already takes bookings.</b> It can read the same contact-form or calendar submissions Auskeeper already receives; it does not replace how a booking comes in, it just makes sure "confirmed" always means a cleaner said yes.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Auskeeper Cleaning Service.</strong></p><p>Prepared by Shlok Sarnayak. Fictional booking and dispatch data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "deb_auskeepercleaning_v1";
+
+  var SERVICES = ["Domestic clean", "Deep clean", "End-of-lease clean", "Commercial clean", "Carpet clean"];
+  var CLEANERS = ["Cleaner: J. Alvarez", "Cleaner: M. Tran", "Cleaner: S. Bekele"];
+
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function todayStr() { var d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function daysFromNowStr(n) { var d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function fmtDate(s) { if (!s) return ""; var d = new Date(s + "T00:00:00"); return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+  function fmtTime(t) { if (!t) return ""; var p = t.split(":"); var h = parseInt(p[0], 10); var m = p[1]; var ap = h >= 12 ? "PM" : "AM"; var h12 = h % 12; if (h12 === 0) h12 = 12; return h12 + ":" + m + " " + ap; }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function uid(prefix) { return prefix + Math.random().toString(36).slice(2, 8); }
+  function windowStartAt(job) { return new Date(job.date + "T" + job.winStart + ":00"); }
+  function nowStamp() { return new Date().toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function hoursUntil(job) { return (windowStartAt(job).getTime() - Date.now()) / 3600000; }
+
+  function defaultData() {
+    return {
+      jobs: [
+        {
+          id: "j1", customer: "Sample Customer, Broadbeach", service: "Domestic clean", date: daysFromNowStr(1), winStart: "09:00", winEnd: "11:00",
+          status: "pending", cleaner: null, reminderSent: false,
+          log: [{ status: "Booking taken via contact form", at: "3 days ago" }]
+        },
+        {
+          id: "j2", customer: "Sample Customer, Surfers Paradise", service: "End-of-lease clean", date: todayStr(), winStart: "13:00", winEnd: "16:00",
+          status: "confirmed", cleaner: "Cleaner: M. Tran", reminderSent: true,
+          log: [{ status: "Booking taken via contact form", at: "6 days ago" }, { status: "Assigned to Cleaner: M. Tran", at: "4 days ago" }, { status: "Cleaner accepted, booking Confirmed", at: "4 days ago" }, { status: "Day-before reminder sent to customer", at: "1 day ago" }]
+        },
+        {
+          id: "j3", customer: "Sample Customer, Robina", service: "Deep clean", date: daysFromNowStr(0), winStart: "07:30", winEnd: "09:00",
+          status: "assigned", cleaner: "Cleaner: J. Alvarez", reminderSent: false,
+          log: [{ status: "Booking taken via contact form", at: "5 days ago" }, { status: "Assigned to Cleaner: J. Alvarez", at: "5 days ago" }]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function populateSelects() {
+    document.getElementById("j-service").innerHTML = SERVICES.map(function (s) { return "<option>" + escapeHtml(s) + "</option>"; }).join("");
+  }
+
+  var STATUS_LABEL = { pending: "Pending, not assigned", assigned: "Assigned, awaiting cleaner", confirmed: "Confirmed by cleaner", declined: "Cleaner declined", completed: "Completed" };
+  var STATUS_BADGE_CLASS = { pending: "watch", assigned: "watch", confirmed: "ok", declined: "hot", completed: "done" };
+
+  function jobIntegrity(job) {
+    var hrs = hoursUntil(job);
+    if (job.status === "confirmed" || job.status === "completed") return { cls: "ok", text: "Cleaner accepted, safe to tell customer confirmed" };
+    if (job.status === "declined") return { cls: "hot", text: "Cleaner declined, needs reassignment before it can confirm" };
+    if (hrs <= 24) return { cls: "hot", text: "Under 24 hours out, no cleaner has accepted, flag for dispatcher" };
+    return { cls: "watch", text: "Not yet confirmed by a cleaner" };
+  }
+
+  function renderJobs() {
+    var root = document.getElementById("jobs-root");
+    var sorted = data.jobs.slice().sort(function (a, b) { return (a.date + a.winStart).localeCompare(b.date + b.winStart); });
+    if (!sorted.length) { root.innerHTML = '<p class="deb-empty">No bookings yet.</p>'; return; }
+    var html = "";
+    sorted.forEach(function (job) {
+      var integ = jobIntegrity(job);
+      html += '<div class="deb-card"><div class="deb-card-head"><div><div class="deb-card-title">' + escapeHtml(job.customer) + " &middot; " + escapeHtml(job.service) + '</div><div class="deb-card-meta">' + fmtDate(job.date) + ", " + fmtTime(job.winStart) + "&ndash;" + fmtTime(job.winEnd) + '</div></div></div>';
+      html += '<div class="deb-badges"><span class="deb-badge ' + STATUS_BADGE_CLASS[job.status] + '">' + STATUS_LABEL[job.status] + '</span><span class="deb-badge ' + integ.cls + '">' + integ.text + '</span></div>';
+      if (job.cleaner) {
+        html += '<div class="verify-block"><b>Assigned</b>' + escapeHtml(job.cleaner) + (job.reminderSent ? " &middot; day-before reminder sent to customer" : "") + '</div>';
+      }
+      html += '<div class="deb-log">' + job.log.slice().reverse().map(function (l) { return '<div class="deb-log-item"><span>' + escapeHtml(l.status) + '</span><span>' + escapeHtml(l.at) + '</span></div>'; }).join("") + '</div>';
+      html += '<div class="deb-row">';
+      if (job.status === "pending" || job.status === "declined") html += '<button class="deb-btn-sm" onclick="__deb.assign(\'' + job.id + '\')">Assign cleaner</button>';
+      if (job.status === "assigned") {
+        html += '<button class="deb-btn-sm" onclick="__deb.accept(\'' + job.id + '\')">Cleaner accepts</button>';
+        html += '<button class="deb-btn-sm danger" onclick="__deb.decline(\'' + job.id + '\')">Cleaner declines</button>';
+      }
+      if (job.status === "confirmed") html += '<button class="deb-btn-sm" onclick="__deb.complete(\'' + job.id + '\')">Mark completed</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+  }
+
+  window.__deb = {
+    assign: function (id) {
+      var job = data.jobs.filter(function (j) { return j.id === id; })[0];
+      if (!job) return;
+      var cleaner = prompt("Assign which cleaner? (" + CLEANERS.join(" / ") + ")", CLEANERS[0]);
+      if (!cleaner) return;
+      job.status = "assigned";
+      job.cleaner = cleaner;
+      job.log.push({ status: "Assigned to " + cleaner, at: nowStamp() });
+      save(); renderJobs();
+    },
+    accept: function (id) {
+      var job = data.jobs.filter(function (j) { return j.id === id; })[0];
+      if (!job) return;
+      job.status = "confirmed";
+      job.reminderSent = true;
+      job.log.push({ status: "Cleaner accepted, booking Confirmed", at: nowStamp() });
+      job.log.push({ status: "Day-before reminder sent to customer", at: nowStamp() });
+      save(); renderJobs();
+    },
+    decline: function (id) {
+      var job = data.jobs.filter(function (j) { return j.id === id; })[0];
+      if (!job) return;
+      job.status = "declined";
+      job.log.push({ status: escapeHtml(job.cleaner) + " declined, needs reassignment", at: nowStamp() });
+      job.cleaner = null;
+      save(); renderJobs();
+    },
+    complete: function (id) {
+      var job = data.jobs.filter(function (j) { return j.id === id; })[0];
+      if (!job) return;
+      job.status = "completed";
+      job.log.push({ status: "Job completed", at: nowStamp() });
+      save(); renderJobs();
+    }
+  };
+
+  document.getElementById("job-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("j-customer").value.trim();
+    var start = document.getElementById("j-start").value;
+    var end = document.getElementById("j-end").value;
+    if (!customer || !start || !end) return;
+    data.jobs.push({
+      id: uid("j"), customer: customer, service: document.getElementById("j-service").value,
+      date: document.getElementById("j-date").value || todayStr(), winStart: start, winEnd: end,
+      status: "pending", cleaner: null, reminderSent: false, log: [{ status: "Booking taken via contact form", at: nowStamp() }]
+    });
+    save(); renderJobs(); e.target.reset();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the board back to the original sample data?")) return;
+    data = defaultData(); save(); renderJobs();
+  });
+
+  populateSelects();
+  renderJobs();
+})();
+</script>
+</body>
+</html>
