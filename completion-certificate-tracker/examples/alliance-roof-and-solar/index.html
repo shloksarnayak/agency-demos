@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Alliance Roof and Solar, install-completion confirmation &amp; promise tracker (working example)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input[type="text"], .field input[type="number"], .field input[type="date"], .field select {
+    font: inherit; font-size: 0.95rem; padding: 0.65rem 0.8rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .check-row { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.88rem; }
+  .check-row input { margin-top: 0.2rem; }
+  .samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.7rem; }
+  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.78rem; }
+  .discrepancy { padding: 0.9rem 1rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--warn-bg); color: #4f4716; font-size: 0.87rem; box-shadow: 3px 3px 0 var(--ink); }
+  .cert { border: 2px dashed var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: #fff; font-family: var(--mono); font-size: 0.85rem; line-height: 1.7; }
+  .cert h4 { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.6rem; }
+  .cert .line { display: flex; justify-content: space-between; gap: 1rem; border-bottom: 1px dotted var(--rule-soft); padding: 0.25rem 0; }
+  .job-table { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .job-row { background: var(--surface); padding: 0.85rem 1rem; display: grid; grid-template-columns: 1.4fr 1fr auto auto; gap: 0.8rem; align-items: center; font-size: 0.87rem; }
+  .job-meta { color: var(--muted); font-size: 0.76rem; }
+  .badge { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.28rem 0.6rem; border-radius: 999px; white-space: nowrap; }
+  .badge.ok { color: var(--good); background: var(--good-bg); }
+  .badge.flag { color: var(--hot); background: var(--hot-bg); }
+  .followup-list { display: flex; flex-direction: column; gap: 0.6rem; }
+  .followup-item { border: 2px solid var(--ink); border-radius: var(--radius-sm); padding: 0.8rem 1rem; background: #fff7cf; box-shadow: 3px 3px 0 var(--ink); display: flex; justify-content: space-between; gap: 1rem; align-items: center; flex-wrap: wrap; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.9rem; }
+  .fact-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; }
+  .fact-pill { font-family: var(--mono); font-size: 0.72rem; }
+  .audit-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.7rem 1rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--surface); box-shadow: 3px 3px 0 var(--ink); font-size: 0.87rem; }
+  .audit-row + .audit-row { margin-top: 0.6rem; }
+  @media print {
+    body * { visibility: hidden; }
+    #cert-print, #cert-print * { visibility: visible; }
+    #cert-print { position: absolute; left: 0; top: 0; width: 100%; }
+  }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Job completion certificate</a> / Alliance Roof and Solar</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Alliance Roof and Solar (formerly RedRocks Roof and Solar)</span>
+  <h1 class="fx-h1">A confirmed, wired-and-producing sign-off, every install</h1>
+  <p class="fx-lede">Two public BBB complaints filed under the RedRocks name describe the same underlying gap: one customer discovered four months after her install that 9 of her 14 panels had never actually been wired into the system, and a separate complaint mentions a $1,000 compensation promise for a wiring issue that was never paid out. Neither is about workmanship, it's that there's no step confirming a job is fully wired and producing before it's called done, and no tracker that keeps a verbal promise visible until it's honored. This working example shows the fix: a completion checklist that requires a panel-by-panel wired count and a live production reading before a job can close, an automatic customer confirmation, and a promise tracker that stays open until someone resolves it.</p>
+  <div class="fact-row" aria-label="Verified facts about Alliance Roof and Solar / RedRocks Roof and Solar LLC">
+    <span class="fx-pill fact-pill">BBB rating: F (not accredited)</span>
+    <span class="fx-pill fact-pill">BBB: failure to respond to 2 complaints on file</span>
+    <span class="fx-pill fact-pill">In business since 10/2022</span>
+    <span class="fx-pill fact-pill">Serves CO / NM / AZ</span>
+    <span class="fx-pill fact-pill">Publishes a guaranteed-activation-date promise with monthly reimbursement if missed</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything interactive below uses fictional sample installs and client names.</strong> The company facts in the strip above (BBB rating and complaint count, time in business, service states, the activation-guarantee/reimbursement promise) are sourced directly from Redrocks Roof and Solar LLC's own BBB profile and website. No real Alliance Roof and Solar / RedRocks customer data, install records, or proprietary information is used anywhere on this page. All dollar figures below are illustrative.</p></div>
+
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.5rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Log a completed install</div>
+      <div class="samples">
+        <span style="font-size:0.82rem; color:var(--muted);">Try a sample:</span>
+        <button class="fx-btn-ghost sample-chip" data-sample="match">Standard install (all panels wired)</button>
+        <button class="fx-btn-ghost sample-chip" data-sample="mismatch">Under-wired example (flags a discrepancy)</button>
+      </div>
+      <form id="job-form" class="form-grid" style="margin-top:1rem;">
+        <div class="field"><label for="f-client">Customer / site name</label><input type="text" id="f-client" required></div>
+        <div class="field"><label for="f-date">Install (walkthrough) date</label><input type="date" id="f-date" required></div>
+        <div class="field"><label for="f-expected">Panels installed (quoted)</label><input type="number" id="f-expected" min="0" required></div>
+        <div class="field"><label for="f-actual">Panels confirmed wired &amp; producing (tech entry)</label><input type="number" id="f-actual" min="0" required></div>
+        <div class="field"><label for="f-production">Live production reading captured (kW)</label><input type="number" id="f-production" min="0" step="0.1" required></div>
+        <div class="field"><label for="f-photos">Photos attached (panels + inverter)</label><input type="number" id="f-photos" min="0" required></div>
+        <div class="field span2"><label for="f-signoff">Customer sign-off name</label><input type="text" id="f-signoff" placeholder="Typed name confirms the wired count and reading above" required></div>
+        <div class="field span2 check-row"><input type="checkbox" id="f-confirm" required><label for="f-confirm">Customer confirms the wired panel count and production reading above are correct</label></div>
+        <div id="discrepancy-box"></div>
+        <div class="field"><label for="f-promise-desc">Promised follow-up item (optional, e.g. compensation, callback, part replacement)</label><input type="text" id="f-promise-desc" placeholder="e.g. $1,000 compensation for wiring delay"></div>
+        <div class="field"><label for="f-promise-amount">Promised amount, if any ($, illustrative)</label><input type="number" id="f-promise-amount" min="0" step="1"></div>
+        <div class="field span2" style="flex-direction:row; gap:0.6rem;"><button type="submit" class="fx-btn">Complete install &amp; generate confirmation</button></div>
+      </form>
+    </div>
+    <div id="cert-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">Open promises &amp; follow-ups</h2>
+    <p style="color:var(--ink-2); font-size:0.92rem; margin-top:-0.6rem;">This is the piece that was missing in both public complaints: a wiring mismatch or a verbal promise like a $1,000 compensation payment stays listed here, visibly open, until someone marks it resolved. Nothing depends on a customer remembering to follow up.</p>
+    <div id="followup-root" style="margin-top:1rem;"></div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">Install log</h2>
+    <div id="joblog-root"></div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">Website promise audit</h2>
+    <p style="color:var(--ink-2); font-size:0.92rem; margin-top:-0.6rem;">A quick check of a live promise on the company's own site, run as part of this build:</p>
+    <div style="margin-top:1rem;">
+      <div class="audit-row"><span>Guaranteed activation date, monthly reimbursement if missed</span><span class="badge flag">Published promise, no tracker to confirm it was ever honored per customer</span></div>
+    </div>
+    <p style="color:var(--muted); font-size:0.82rem; margin-top:0.8rem;">Alliance's own site guarantees a specific activation timeframe and commits to a monthly reimbursement if that date is missed. That is exactly the kind of promise this tracker is built for: logged the moment it's made, and visible until it's paid or the activation date is confirmed met, instead of relying on a customer to escalate months later the way the BBB complaints describe.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>Plugs into the existing install and walkthrough process.</b> Techs already do a final walkthrough, this adds the wired-panel count, the production reading, and the photo requirement to that same step, it doesn't replace how installs are scheduled or signed off today.</div>
+      <div class="lim"><b>Confirmation becomes automatic, not manual.</b> The customer gets an emailed confirmation the moment the install is marked complete, with the wired count, reading, and photos attached, closing the exact gap behind the "9 of 14 panels never wired" complaint.</div>
+      <div class="lim"><b>Back to the generic template: <a href="../../index.html">job completion certificate &amp; follow-up tracker</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Alliance Roof and Solar or Redrocks Roof and Solar LLC.</strong></p><p>Prepared by Shlok Sarnayak. Company facts (BBB rating and complaint count, time in business, service states, activation-guarantee promise) are sourced from Redrocks Roof and Solar LLC's own BBB profile and website. All install records, client names, panel counts, and dollar figures on this page are fictional/illustrative samples, not real Alliance Roof and Solar data.</p></footer>
+<script>
+(function () {
+  var STORE_KEY = "cct-demo-joblog-alliance-roof-and-solar";
+  var form = document.getElementById("job-form");
+  var discBox = document.getElementById("discrepancy-box");
+  var certRoot = document.getElementById("cert-root");
+  var followupRoot = document.getElementById("followup-root");
+  var joblogRoot = document.getElementById("joblog-root");
+  var expected = document.getElementById("f-expected");
+  var actual = document.getElementById("f-actual");
+  var ackDiscrepancy = false;
+
+  var SEED = [
+    { id: "INS-1001", client: "Whitfield residence, Lakewood", date: "2026-08-05", expected: 16, actual: 16, production: 6.2, photos: 4, signoff: "D. Whitfield", flagged: false, promiseDesc: "", promiseAmount: 0, reason: "", loggedAt: Date.now() - 9 * 86400000 },
+    { id: "INS-1002", client: "Ortega residence, Aurora", date: "2026-08-12", expected: 14, actual: 9, production: 3.1, photos: 3, signoff: "M. Ortega", flagged: true, promiseDesc: "$1,000 compensation for wiring delay, promised verbally at walkthrough", promiseAmount: 1000, reason: "Wiring mismatch (14 panels installed, only 9 confirmed wired), plus a $1,000 promise not yet paid", loggedAt: Date.now() - 6 * 86400000 },
+    { id: "INS-1003", client: "Kessler residence, Broomfield", date: "2026-08-18", expected: 22, actual: 22, production: 8.4, photos: 5, signoff: "R. Kessler", flagged: false, promiseDesc: "", promiseAmount: 0, reason: "", loggedAt: Date.now() - 2 * 86400000 }
+  ];
+
+  function loadJobs() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    saveJobs(SEED);
+    return SEED.slice();
+  }
+  function saveJobs(jobs) { localStorage.setItem(STORE_KEY, JSON.stringify(jobs)); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function checkDiscrepancy() {
+    var e = parseInt(expected.value, 10), a = parseInt(actual.value, 10);
+    ackDiscrepancy = false;
+    if (!isNaN(e) && !isNaN(a) && e !== a) {
+      discBox.innerHTML = '<div class="discrepancy field span2"><strong>Wiring mismatch:</strong> ' + e + ' panels installed, only ' + a + ' confirmed wired &amp; producing. <label style="display:flex; gap:0.5rem; margin-top:0.5rem; align-items:flex-start;"><input type="checkbox" id="f-ack">This was reviewed with the customer before completing the job</label></div>';
+      var ackBox = document.getElementById("f-ack");
+      ackBox.addEventListener("change", function () { ackDiscrepancy = ackBox.checked; });
+    } else {
+      discBox.innerHTML = "";
+    }
+  }
+  expected.addEventListener("input", checkDiscrepancy);
+  actual.addEventListener("input", checkDiscrepancy);
+
+  function renderCert(job) {
+    var html = '<div id="cert-print" class="cert">' +
+      '<h4>Install Completion Confirmation, Alliance Roof and Solar</h4>' +
+      '<div class="line"><span>Confirmation ID</span><span>' + job.id + '</span></div>' +
+      '<div class="line"><span>Customer / site</span><span>' + escapeHtml(job.client) + '</span></div>' +
+      '<div class="line"><span>Install date</span><span>' + job.date + '</span></div>' +
+      '<div class="line"><span>Panels wired &amp; producing</span><span>' + job.actual + ' of ' + job.expected + '</span></div>' +
+      '<div class="line"><span>Live production reading</span><span>' + job.production + ' kW</span></div>' +
+      '<div class="line"><span>Photos attached</span><span>' + job.photos + '</span></div>' +
+      '<div class="line"><span>Customer sign-off</span><span>' + escapeHtml(job.signoff) + '</span></div>' +
+      '<div class="line"><span>Status</span><span>' + (job.flagged ? "Completed, follow-up flagged" : "Completed") + '</span></div>' +
+      (job.promiseDesc ? '<div class="line"><span>Promised follow-up</span><span>' + escapeHtml(job.promiseDesc) + '</span></div>' : '') +
+      '<p style="margin-top:0.9rem; color:var(--muted); font-size:0.78rem;">In production, this would be emailed to the customer automatically the moment the install is marked complete, instead of the customer having no record until an issue surfaces months later.</p>' +
+      '</div><button class="fx-btn-ghost" style="margin-top:0.8rem;" onclick="window.print()">Print / save as PDF</button>';
+    certRoot.innerHTML = html;
+  }
+
+  function renderFollowups(jobs) {
+    var open = jobs.filter(function (j) { return j.flagged; });
+    if (!open.length) { followupRoot.innerHTML = '<p class="empty">No open promises or follow-ups.</p>'; return; }
+    var html = '<div class="followup-list">';
+    open.forEach(function (j) {
+      var days = Math.max(0, Math.round((Date.now() - j.loggedAt) / 86400000));
+      var amt = j.promiseAmount ? (' &middot; illustrative amount owed: $' + j.promiseAmount) : '';
+      html += '<div class="followup-item"><div><b>' + escapeHtml(j.client) + '</b><div class="job-meta">' + escapeHtml(j.reason) + amt + ' &middot; open ' + days + ' day' + (days === 1 ? '' : 's') + '</div></div><button class="fx-btn-ghost" data-resolve="' + j.id + '">Mark resolved</button></div>';
+    });
+    html += '</div>';
+    followupRoot.innerHTML = html;
+    Array.prototype.forEach.call(followupRoot.querySelectorAll("[data-resolve]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var jobs = loadJobs();
+        jobs.forEach(function (j) { if (j.id === btn.getAttribute("data-resolve")) j.flagged = false; });
+        saveJobs(jobs);
+        renderAll();
+      });
+    });
+  }
+
+  function renderJoblog(jobs) {
+    if (!jobs.length) { joblogRoot.innerHTML = '<p class="empty">No installs logged yet.</p>'; return; }
+    var html = '<div class="job-table">';
+    jobs.slice().reverse().forEach(function (j) {
+      html += '<div class="job-row"><div><b>' + escapeHtml(j.client) + '</b><div class="job-meta">' + j.date + ' &middot; ' + j.production + ' kW reading &middot; ' + j.photos + ' photos</div></div><div class="job-meta">' + j.actual + ' wired (of ' + j.expected + ')</div><span class="badge ' + (j.flagged ? "flag" : "ok") + '">' + (j.flagged ? "Follow-up open" : "Clear") + '</span><span class="job-meta">' + j.id + '</span></div>';
+    });
+    html += '</div>';
+    joblogRoot.innerHTML = html;
+  }
+
+  function renderAll() {
+    var jobs = loadJobs();
+    renderFollowups(jobs);
+    renderJoblog(jobs);
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var e2 = parseInt(expected.value, 10), a2 = parseInt(actual.value, 10);
+    var mismatch = !isNaN(e2) && !isNaN(a2) && e2 !== a2;
+    if (mismatch && !ackDiscrepancy) {
+      var box = discBox.querySelector(".discrepancy");
+      if (box) box.style.outline = "3px solid var(--hot)";
+      return;
+    }
+    var jobs = loadJobs();
+    var id = "INS-" + (1000 + jobs.length + 1);
+    var promiseDesc = document.getElementById("f-promise-desc").value.trim();
+    var promiseAmount = parseInt(document.getElementById("f-promise-amount").value, 10) || 0;
+    var flagged = mismatch || !!promiseDesc;
+    var reasonParts = [];
+    if (mismatch) reasonParts.push("Wiring mismatch (" + e2 + " panels installed, only " + a2 + " confirmed wired)");
+    if (promiseDesc) reasonParts.push(promiseDesc);
+    var job = {
+      id: id,
+      client: document.getElementById("f-client").value,
+      date: document.getElementById("f-date").value,
+      expected: e2, actual: a2,
+      production: parseFloat(document.getElementById("f-production").value) || 0,
+      photos: parseInt(document.getElementById("f-photos").value, 10) || 0,
+      signoff: document.getElementById("f-signoff").value,
+      flagged: flagged,
+      promiseDesc: promiseDesc,
+      promiseAmount: promiseAmount,
+      reason: reasonParts.join(" + ") || "Manually flagged for callback",
+      loggedAt: Date.now()
+    };
+    jobs.push(job);
+    saveJobs(jobs);
+    renderCert(job);
+    renderAll();
+    form.reset();
+    discBox.innerHTML = "";
+  });
+
+  document.querySelectorAll(".sample-chip").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var kind = btn.getAttribute("data-sample");
+      document.getElementById("f-client").value = kind === "mismatch" ? "Bell residence, Thornton" : "Farrow residence, Golden";
+      document.getElementById("f-date").value = new Date().toISOString().slice(0, 10);
+      document.getElementById("f-expected").value = kind === "mismatch" ? 18 : 12;
+      document.getElementById("f-actual").value = kind === "mismatch" ? 11 : 12;
+      document.getElementById("f-production").value = kind === "mismatch" ? 2.8 : 5.6;
+      document.getElementById("f-photos").value = kind === "mismatch" ? 2 : 4;
+      document.getElementById("f-signoff").value = "J. Bell";
+      document.getElementById("f-confirm").checked = true;
+      document.getElementById("f-promise-desc").value = kind === "mismatch" ? "$750 compensation promised for delayed wiring completion" : "";
+      document.getElementById("f-promise-amount").value = kind === "mismatch" ? 750 : "";
+      checkDiscrepancy();
+    });
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
