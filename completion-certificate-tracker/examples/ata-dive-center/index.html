@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>All Things Aquatic (ATA Dive Center), course completion &amp; PADI submission tracker (working example)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input[type="text"], .field input[type="number"], .field input[type="date"], .field select {
+    font: inherit; font-size: 0.95rem; padding: 0.65rem 0.8rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .check-row { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.88rem; }
+  .check-row input { margin-top: 0.2rem; }
+  .samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.7rem; }
+  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.78rem; }
+  .cert { border: 2px dashed var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: #fff; font-family: var(--mono); font-size: 0.85rem; line-height: 1.7; }
+  .cert h4 { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.6rem; }
+  .cert .line { display: flex; justify-content: space-between; gap: 1rem; border-bottom: 1px dotted var(--rule-soft); padding: 0.25rem 0; }
+  .job-table { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .job-row { background: var(--surface); padding: 0.85rem 1rem; display: grid; grid-template-columns: 1.4fr 1fr auto auto; gap: 0.8rem; align-items: center; font-size: 0.87rem; }
+  .job-meta { color: var(--muted); font-size: 0.76rem; }
+  .badge { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.28rem 0.6rem; border-radius: 999px; white-space: nowrap; }
+  .badge.ok { color: var(--good); background: var(--good-bg); }
+  .badge.flag { color: var(--hot); background: var(--hot-bg); }
+  .followup-list { display: flex; flex-direction: column; gap: 0.6rem; }
+  .followup-item { border: 2px solid var(--ink); border-radius: var(--radius-sm); padding: 0.8rem 1rem; background: #fff7cf; box-shadow: 3px 3px 0 var(--ink); display: flex; justify-content: space-between; gap: 1rem; align-items: center; flex-wrap: wrap; }
+  .followup-item.critical { background: #ffe3e0; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.9rem; }
+  .fact-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; }
+  .fact-pill { font-family: var(--mono); font-size: 0.72rem; }
+  .audit-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.7rem 1rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--surface); box-shadow: 3px 3px 0 var(--ink); font-size: 0.87rem; }
+  .audit-row + .audit-row { margin-top: 0.6rem; }
+  @media print {
+    body * { visibility: hidden; }
+    #cert-print, #cert-print * { visibility: visible; }
+    #cert-print { position: absolute; left: 0; top: 0; width: 100%; }
+  }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Job completion certificate</a> / All Things Aquatic (ATA Dive Center)</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for All Things Aquatic Dive Center (ATA Dive Center)</span>
+  <h1 class="fx-h1">A course isn't done until the certification is confirmed submitted</h1>
+  <p class="fx-lede">Two BBB complaints from 2022 describe divers who paid $1,069.90, passed every requirement, and still never received their PADI certification paperwork, both still marked unanswered. With scheduling, gear, and travel bookings largely handled by one person, it's an easy step to lose once a course wraps up. This working example shows the fix: every completed course stays visibly open, flagged for follow-up, until someone confirms the PADI submission went through and logs the confirmation number, so a paid certification never quietly falls through the cracks again.</p>
+  <div class="fact-row" aria-label="Verified facts about All Things Aquatic Dive Center">
+    <span class="fx-pill fact-pill">BBB: 2 complaints filed 2022, both still unanswered</span>
+    <span class="fx-pill fact-pill">Complaint course fee: $1,069.90</span>
+    <span class="fx-pill fact-pill">Family-owned by Beth since 2013</span>
+    <span class="fx-pill fact-pill">Pittsburgh, PA &middot; "We take the time to care"</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything interactive below uses fictional sample students and course records.</strong> The facts in the strip above (the two 2022 BBB complaints and their unanswered status, the $1,069.90 fee referenced in those complaints, the business being family-owned by Beth since 2013, the Pittsburgh location and "We take the time to care" tagline) are sourced directly from ATA Dive Center's own BBB profile and website. No real ATA Dive Center student data, course records, or proprietary information is used anywhere on this page. All dollar figures and confirmation numbers below are illustrative.</p></div>
+
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.5rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Log a completed course</div>
+      <div class="samples">
+        <span style="font-size:0.82rem; color:var(--muted);">Try a sample:</span>
+        <button class="fx-btn-ghost sample-chip" data-sample="fresh">Just wrapped up (submit today)</button>
+        <button class="fx-btn-ghost sample-chip" data-sample="atrisk">At-risk example (weeks old, never submitted)</button>
+      </div>
+      <form id="job-form" class="form-grid" style="margin-top:1rem;">
+        <div class="field"><label for="f-client">Student name</label><input type="text" id="f-client" required></div>
+        <div class="field"><label for="f-course">Course</label>
+          <select id="f-course" required>
+            <option value="">Select a course&hellip;</option>
+            <option>Open Water Certification</option>
+            <option>Advanced Open Water Certification</option>
+            <option>Rescue Diver Certification</option>
+            <option>Divemaster / Professional Level</option>
+          </select>
+        </div>
+        <div class="field"><label for="f-date">Course completion date</label><input type="date" id="f-date" required></div>
+        <div class="field"><label for="f-fee">Course fee paid ($, illustrative)</label><input type="number" id="f-fee" min="0" step="0.01" value="1069.90" required></div>
+        <div class="field span2"><label for="f-signoff">Instructor sign-off name</label><input type="text" id="f-signoff" placeholder="Confirms student passed all requirements" required></div>
+        <div class="field span2 check-row"><input type="checkbox" id="f-confirm" required><label for="f-confirm">Instructor confirms all skills, dives, and exams for this course were completed and passed</label></div>
+        <div class="field span2" style="flex-direction:row; gap:0.6rem;"><button type="submit" class="fx-btn">Complete course &amp; open submission record</button></div>
+      </form>
+    </div>
+    <div id="cert-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">Open PADI submissions</h2>
+    <p style="color:var(--ink-2); font-size:0.92rem; margin-top:-0.6rem;">This is the piece that was missing in both public complaints: a completed, paid-for course stays listed here, visibly open, until someone confirms it was submitted to PADI and logs a confirmation number. Records open more than 14 days are flagged critical, so nothing sits unanswered for years the way the BBB complaints describe.</p>
+    <div id="followup-root" style="margin-top:1rem;"></div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">Course log</h2>
+    <div id="joblog-root"></div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">BBB complaint audit</h2>
+    <p style="color:var(--ink-2); font-size:0.92rem; margin-top:-0.6rem;">A quick check of ATA's own BBB profile, run as part of this build:</p>
+    <div style="margin-top:1rem;">
+      <div class="audit-row"><span>Two complaints (2022): paid students, requirements passed, PADI paperwork never received</span><span class="badge flag">Both marked unanswered, no tracker to confirm submission ever happened</span></div>
+    </div>
+    <p style="color:var(--muted); font-size:0.82rem; margin-top:0.8rem;">Both complaints describe the same underlying gap: nothing in the shop's process forces a completed course to stay visible until the PADI submission is confirmed. That is exactly the kind of promise this tracker is built for: logged the moment a course wraps up, and visible until it's submitted and confirmed, instead of relying on a paying customer to notice their certification never arrived.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>Plugs into the existing sign-off process.</b> Instructors already confirm when a student finishes their final dive or exam, this adds the PADI submission step to that same moment, it doesn't replace how courses are taught or scheduled today.</div>
+      <div class="lim"><b>Submission becomes a tracked step, not a memory.</b> Nothing closes as "done" until someone marks it submitted to PADI with a confirmation number, closing the exact gap behind both BBB complaints.</div>
+      <div class="lim"><b>Back to the generic template: <a href="../../index.html">job completion certificate &amp; follow-up tracker</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample, not affiliated with or endorsed by All Things Aquatic Dive Center (ATA Dive Center).</strong></p><p>Prepared by Shlok Sarnayak. Business facts (the two 2022 BBB complaints and their unanswered status, the $1,069.90 course fee referenced in those complaints, ownership since 2013, the Pittsburgh location and tagline) are sourced from ATA Dive Center's own BBB profile and website. All student names, course records, and dollar figures on this page are fictional/illustrative samples, not real ATA Dive Center data.</p></footer>
+<script>
+(function () {
+  var STORE_KEY = "cct-demo-joblog-ata-dive-center";
+  var form = document.getElementById("job-form");
+  var certRoot = document.getElementById("cert-root");
+  var followupRoot = document.getElementById("followup-root");
+  var joblogRoot = document.getElementById("joblog-root");
+  var DAY = 86400000;
+  var CRITICAL_DAYS = 14;
+
+  var SEED = [
+    { id: "CRS-1001", client: "R. Alvarez", course: "Open Water Certification", date: "2026-07-28", fee: 549.00, signoff: "B. Cochran", submitted: true, confirmationNo: "PADI-88214X", loggedAt: Date.now() - 29 * DAY, submittedAt: Date.now() - 26 * DAY },
+    { id: "CRS-1002", client: "T. Marsh", course: "Advanced Open Water Certification", date: "2026-08-04", fee: 425.00, signoff: "B. Cochran", submitted: false, confirmationNo: "", loggedAt: Date.now() - 22 * DAY, submittedAt: null },
+    { id: "CRS-1003", client: "K. Devine", course: "Rescue Diver Certification", date: "2026-08-19", fee: 675.00, signoff: "B. Cochran", submitted: false, confirmationNo: "", loggedAt: Date.now() - 7 * DAY, submittedAt: null }
+  ];
+
+  function loadJobs() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    saveJobs(SEED);
+    return SEED.slice();
+  }
+  function saveJobs(jobs) { localStorage.setItem(STORE_KEY, JSON.stringify(jobs)); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderCert(job) {
+    var html = '<div id="cert-print" class="cert">' +
+      '<h4>Course Completion &amp; Submission Record, All Things Aquatic Dive Center</h4>' +
+      '<div class="line"><span>Record ID</span><span>' + job.id + '</span></div>' +
+      '<div class="line"><span>Student</span><span>' + escapeHtml(job.client) + '</span></div>' +
+      '<div class="line"><span>Course</span><span>' + escapeHtml(job.course) + '</span></div>' +
+      '<div class="line"><span>Completion date</span><span>' + job.date + '</span></div>' +
+      '<div class="line"><span>Course fee paid</span><span>$' + job.fee.toFixed(2) + '</span></div>' +
+      '<div class="line"><span>Instructor sign-off</span><span>' + escapeHtml(job.signoff) + '</span></div>' +
+      '<div class="line"><span>PADI submission status</span><span>' + (job.submitted ? "Submitted, confirmation " + escapeHtml(job.confirmationNo) : "Pending submission") + '</span></div>' +
+      '<p style="margin-top:0.9rem; color:var(--muted); font-size:0.78rem;">In production, this record would be created automatically the moment a course is marked complete, and updated the moment the PADI submission is confirmed, instead of relying on memory once the class wraps up.</p>' +
+      '</div><button class="fx-btn-ghost" style="margin-top:0.8rem;" onclick="window.print()">Print / save as PDF</button>';
+    certRoot.innerHTML = html;
+  }
+
+  function renderFollowups(jobs) {
+    var open = jobs.filter(function (j) { return !j.submitted; });
+    if (!open.length) { followupRoot.innerHTML = '<p class="empty">No open PADI submissions. Every completed course has been confirmed submitted.</p>'; return; }
+    var html = '<div class="followup-list">';
+    open.forEach(function (j) {
+      var days = Math.max(0, Math.round((Date.now() - j.loggedAt) / DAY));
+      var critical = days >= CRITICAL_DAYS;
+      html += '<div class="followup-item' + (critical ? ' critical' : '') + '"><div><b>' + escapeHtml(j.client) + '</b><div class="job-meta">' + escapeHtml(j.course) + ' &middot; completed ' + j.date + ' &middot; $' + j.fee.toFixed(2) + ' paid &middot; ' + (critical ? '<strong>' + days + ' days open, unanswered</strong>' : days + ' day' + (days === 1 ? '' : 's') + ' open') + '</div></div><button class="fx-btn-ghost" data-submit="' + j.id + '">Mark submitted to PADI</button></div>';
+    });
+    html += '</div>';
+    followupRoot.innerHTML = html;
+    Array.prototype.forEach.call(followupRoot.querySelectorAll("[data-submit]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-submit");
+        var conf = window.prompt("Enter the PADI confirmation number for this submission:", "PADI-");
+        if (conf === null || conf.trim() === "") return;
+        var jobs = loadJobs();
+        jobs.forEach(function (j) { if (j.id === id) { j.submitted = true; j.confirmationNo = conf.trim(); j.submittedAt = Date.now(); } });
+        saveJobs(jobs);
+        renderAll();
+      });
+    });
+  }
+
+  function renderJoblog(jobs) {
+    if (!jobs.length) { joblogRoot.innerHTML = '<p class="empty">No courses logged yet.</p>'; return; }
+    var html = '<div class="job-table">';
+    jobs.slice().reverse().forEach(function (j) {
+      html += '<div class="job-row"><div><b>' + escapeHtml(j.client) + '</b><div class="job-meta">' + escapeHtml(j.course) + ' &middot; ' + j.date + '</div></div><div class="job-meta">$' + j.fee.toFixed(2) + '</div><span class="badge ' + (j.submitted ? "ok" : "flag") + '">' + (j.submitted ? "Submitted (" + escapeHtml(j.confirmationNo) + ")" : "Pending submission") + '</span><span class="job-meta">' + j.id + '</span></div>';
+    });
+    html += '</div>';
+    joblogRoot.innerHTML = html;
+  }
+
+  function renderAll() {
+    var jobs = loadJobs();
+    renderFollowups(jobs);
+    renderJoblog(jobs);
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var jobs = loadJobs();
+    var id = "CRS-" + (1000 + jobs.length + 1);
+    var job = {
+      id: id,
+      client: document.getElementById("f-client").value,
+      course: document.getElementById("f-course").value,
+      date: document.getElementById("f-date").value,
+      fee: parseFloat(document.getElementById("f-fee").value) || 0,
+      signoff: document.getElementById("f-signoff").value,
+      submitted: false,
+      confirmationNo: "",
+      loggedAt: Date.now(),
+      submittedAt: null
+    };
+    jobs.push(job);
+    saveJobs(jobs);
+    renderCert(job);
+    renderAll();
+    form.reset();
+    document.getElementById("f-fee").value = "1069.90";
+  });
+
+  document.querySelectorAll(".sample-chip").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var kind = btn.getAttribute("data-sample");
+      document.getElementById("f-client").value = kind === "atrisk" ? "J. Whitcombe" : "S. Nakamura";
+      document.getElementById("f-course").value = kind === "atrisk" ? "Rescue Diver Certification" : "Open Water Certification";
+      document.getElementById("f-date").value = new Date().toISOString().slice(0, 10);
+      document.getElementById("f-fee").value = kind === "atrisk" ? "675.00" : "549.00";
+      document.getElementById("f-signoff").value = "B. Cochran";
+      document.getElementById("f-confirm").checked = true;
+    });
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
