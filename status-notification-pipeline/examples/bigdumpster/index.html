@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for BigDumpster.com</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .window-line { font-size: 0.85rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .win-row { display: none; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.3rem; }
+  .win-row.open { display: flex; }
+  .win-row input[type="text"] { font: inherit; font-size: 0.82rem; padding: 0.45rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-raised); width: 17rem; }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 92%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .field { display: flex; flex-direction: column; gap: 0.45rem; }
+  .field-label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  input[type="text"].wide { width: 100%; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus, select:focus { outline: none; border-color: var(--brand); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .confirm h3 { margin: 0; font-size: 1.02rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+  .sample-tag { display:inline-block; background:var(--brand-soft); color:var(--brand); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:0.25rem 0.6rem; border-radius:5px; margin-bottom:0.9rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / BigDumpster.com</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for BigDumpster.com</span>
+  <h1 class="fx-h1">The pickup confirmation that removes the callback nobody wants to make</h1>
+  <p class="fx-lede">Public Trustpilot reviews for BigDumpster.com describe the same complaint more than once: a pickup request goes in by phone or email and the customer gets no confirmation and no pickup, in one case for months, with a reviewer describing unanswered voicemails since June. The order itself isn't the problem, it's that "pickup requested" has no visible next step for the customer. This page shows an automatic status pipeline, from order confirmed through delivery to a pickup request that gets an immediate confirmation and a real time window, sitting on top of whatever system already runs dispatch.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> BigDumpster.com is a roll-off dumpster rental company headquartered in Northeast Ohio, operating since 2007 and serving Cuyahoga, Lorain, Summit, Medina, Geauga, Portage, and Erie counties among others, with online ordering and a flat 7-day rental rate that includes delivery and pickup. No specific owner, manager, or founder name is published on the site's About page or in public listings that could be independently verified, so none is used here or in the original outreach note. The pickup-request pain point (no confirmation, multi-day or multi-month delays) reflects a pattern described in more than one public Trustpilot review referenced in the original outreach email.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the orders, customers, and driver name below are a fictional sample, not real BigDumpster.com customers or open orders. All addresses, dumpster sizes, and time windows are illustrative. Nothing here sends a real text or email, this shows exactly what a customer would receive at each step. A real build connects to whatever system BigDumpster.com's dispatch team already uses to mark an order's status, and sends through an actual SMS/email service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Dispatch view: update an order</h3>
+      <span class="sample-tag">Sample orders, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the customer sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top:1.4rem;">
+    <h3 class="panel-title">Self-serve pickup request: replaces the unanswered phone call</h3>
+    <p style="font-size:0.85rem; color:var(--ink-2); margin-top:-0.4rem;">Instead of a customer leaving a voicemail or email that can sit unanswered, this form logs the request instantly and immediately confirms it landed, before dispatch has even assigned a driver.</p>
+    <div id="form-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before this goes further</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real text or email.</b> This demo shows exactly what a customer would receive at each step. A real version needs an actual SMS/email service (for example Twilio or SendGrid) wired to whatever system BigDumpster.com's dispatch team uses to track orders.</div>
+      <div class="lim"><b>The five stages shown (order confirmed, driver assigned, delivered, pickup requested, pickup confirmed) are built directly from the sequence described in the original outreach note, not copied from BigDumpster.com's internal dispatch system.</b> Worth a short conversation before this gets built for real; residential cleanouts and commercial construction accounts may move through this differently.</div>
+      <div class="lim"><b>The pickup-request form only logs a request and gives an instant "received" confirmation, it doesn't assign a driver or a time window itself.</b> That happens in the dispatch view, deliberately kept as a separate step so a real build can slot into however routing already works.</div>
+      <div class="lim"><b>No owner or manager name is used anywhere in this demo or the original outreach note</b>, because none could be verified from BigDumpster.com's public About page or business listings.</div>
+      <div class="lim"><b>The Trustpilot complaint pattern (no confirmation, long delays) is drawn from public reviews referenced in the original outreach email; it can shift as new reviews come in.</b> Worth confirming against current reviews before this goes further.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by BigDumpster.com.</strong></p>
+  <p>Prepared by Shlok Sarnayak for BigDumpster.com. Company details referenced were checked against bigdumpster.com and public business listings today. Order, customer, and driver data below is a fictional sample, not connected to any real BigDumpster.com order or dispatch system.</p>
+</footer>
+
+<script>
+(function () {
+  var STAGE_NAMES = ["Order confirmed", "Driver assigned", "Delivered", "Pickup requested", "Pickup confirmed"];
+  var DRIVER_NAME = "Marcus";
+  var STORAGE_KEY = "bd-status-pipeline-orders-v1";
+
+  var STAGE_MESSAGES = [
+    null,
+    function (o) { return "This is BigDumpster.com. " + DRIVER_NAME + " has been assigned to deliver your " + o.size + " dumpster to " + o.address + ". Delivery window: " + o.window + "."; },
+    function (o) { return "Your " + o.size + " dumpster has been delivered to " + o.address + ". Your 7-day rental clock starts today. Text or use the request form when you're ready for pickup, no need to call."; },
+    function (o) { return "We've got your pickup request for " + o.address + ". A driver will be assigned shortly and you'll get a confirmed pickup window, no need to call to check."; },
+    function (o) { return DRIVER_NAME + " is confirmed to pick up your dumpster at " + o.address + " during this window: " + o.window + "."; }
+  ];
+
+  function seedOrders() {
+    var now = 1755878400000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "BD-3301",
+        customer: "T. Whitfield",
+        contact: "(216) 555-0131",
+        address: "412 Maple Ave, Cleveland",
+        size: "20-yard",
+        stage: 1,
+        window: "Monday, 8:00 AM to 12:00 PM",
+        notifications: [
+          { text: "This is BigDumpster.com. Marcus has been assigned to deliver your 20-yard dumpster to 412 Maple Ave, Cleveland. Delivery window: Monday, 8:00 AM to 12:00 PM.", at: now }
+        ]
+      },
+      {
+        id: "BD-3308",
+        customer: "R. Popovich",
+        contact: "(330) 555-0147",
+        address: "88 Fairview Rd, Akron",
+        size: "30-yard",
+        stage: 3,
+        window: "Delivered Aug 12",
+        notifications: [
+          { text: "This is BigDumpster.com. Marcus has been assigned to deliver your 30-yard dumpster to 88 Fairview Rd, Akron. Delivery window: Wednesday, 9:00 AM to 1:00 PM.", at: now - 7200000 },
+          { text: "Your 30-yard dumpster has been delivered to 88 Fairview Rd, Akron. Your 7-day rental clock starts today. Text or use the request form when you're ready for pickup, no need to call.", at: now - 3600000 },
+          { text: "We've got your pickup request for 88 Fairview Rd, Akron. A driver will be assigned shortly and you'll get a confirmed pickup window, no need to call to check.", at: now }
+        ]
+      },
+      {
+        id: "BD-3314",
+        customer: "N. Ableman",
+        contact: "(440) 555-0163",
+        address: "1207 Center St, Lorain",
+        size: "15-yard",
+        stage: 4,
+        window: "Friday, 7:00 AM to 10:00 AM",
+        notifications: [
+          { text: "This is BigDumpster.com. Marcus has been assigned to deliver your 15-yard dumpster to 1207 Center St, Lorain. Delivery window: Tuesday, 10:00 AM to 2:00 PM.", at: now - 10800000 },
+          { text: "Your 15-yard dumpster has been delivered to 1207 Center St, Lorain. Your 7-day rental clock starts today. Text or use the request form when you're ready for pickup, no need to call.", at: now - 7200000 },
+          { text: "We've got your pickup request for 1207 Center St, Lorain. A driver will be assigned shortly and you'll get a confirmed pickup window, no need to call to check.", at: now - 3600000 },
+          { text: "Marcus is confirmed to pick up your dumpster at 1207 Center St, Lorain during this window: Friday, 7:00 AM to 10:00 AM.", at: now }
+        ]
+      },
+      {
+        id: "BD-3319",
+        customer: "G. Ostrowski",
+        contact: "(234) 555-0179",
+        address: "56 Summit Pkwy, Medina",
+        size: "10-yard",
+        stage: 0,
+        window: "Not yet scheduled",
+        notifications: []
+      }
+    ];
+  }
+
+  function loadOrders() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedOrders();
+    saveOrders(seeded);
+    return seeded;
+  }
+  function saveOrders(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var orders = loadOrders();
+  var winOpenFor = null;
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    orders.forEach(function (o) {
+      var atLast = o.stage >= STAGE_NAMES.length - 1;
+      // Advancing from "Pickup requested" (3) to "Pickup confirmed" (4) needs a window entered first.
+      var needsWindowToAdvance = o.stage === 1 || o.stage === 3;
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + o.id + ' - ' + escapeHtml(o.customer) + '</h4><span class="stage-pill">' + STAGE_NAMES[o.stage] + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(o.size) + ' dumpster &middot; ' + escapeHtml(o.address) + ' &middot; ' + escapeHtml(o.contact) + '</div>';
+      html += '<div class="window-line">' + (o.stage === 0 ? "Delivery window: " : (o.stage <= 2 ? "Delivery window: " : "Pickup window: ")) + escapeHtml(o.window) + '</div>';
+      html += '<div class="job-actions">';
+      if (needsWindowToAdvance) {
+        html += '<button class="btn-sm" data-win-toggle="' + o.id + '">' + (o.stage === 1 ? "Set delivery window &amp; advance" : "Set pickup window &amp; confirm") + '</button>';
+      } else {
+        html += '<button class="btn-sm" data-advance="' + o.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+      }
+      html += '</div>';
+      html += '<div class="win-row' + (winOpenFor === o.id ? " open" : "") + '" id="win-' + o.id + '">';
+      html += '<input type="text" id="win-input-' + o.id + '" placeholder="e.g. Friday, 7:00 AM to 10:00 AM">';
+      html += '<button class="btn-sm" data-win-submit="' + o.id + '">Send</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceOrder(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-win-toggle]"), function (btn) {
+      btn.addEventListener("click", function () {
+        winOpenFor = winOpenFor === btn.dataset.winToggle ? null : btn.dataset.winToggle;
+        renderShop();
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-win-submit]"), function (btn) {
+      btn.addEventListener("click", function () { submitWindow(btn.dataset.winSubmit); });
+    });
+  }
+
+  function pushNotification(order, text) {
+    order.notifications.push({ text: text, at: Date.now() });
+  }
+
+  function advanceOrder(id) {
+    var o = orders.find(function (x) { return x.id === id; });
+    if (!o || o.stage >= STAGE_NAMES.length - 1) return;
+    o.stage += 1;
+    var msg = STAGE_MESSAGES[o.stage];
+    if (msg) pushNotification(o, msg(o));
+    saveOrders(orders);
+    renderShop();
+    renderThread();
+  }
+
+  function submitWindow(id) {
+    var o = orders.find(function (x) { return x.id === id; });
+    var input = document.getElementById("win-input-" + id);
+    var val = (input.value || "").trim();
+    if (!o || !val) return;
+    o.window = val;
+    o.stage += 1;
+    var msg = STAGE_MESSAGES[o.stage];
+    if (msg) pushNotification(o, msg(o));
+    winOpenFor = null;
+    saveOrders(orders);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    var prevVal = sel.value;
+    sel.innerHTML = "";
+    orders.forEach(function (o) {
+      var opt = document.createElement("option");
+      opt.value = o.id;
+      opt.textContent = o.id + " - " + o.customer + " (" + o.address.split(",").pop().trim() + ")";
+      sel.appendChild(opt);
+    });
+    if (prevVal && orders.some(function (o) { return o.id === prevVal; })) sel.value = prevVal;
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var o = orders.find(function (x) { return x.id === sel.value; }) || orders[0];
+    var root = document.getElementById("thread-root");
+    if (!o.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this customer. Advance the order in the dispatch view on the left.</p>';
+      return;
+    }
+    var html = "";
+    o.notifications.forEach(function (n) {
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-time">Text to ' + escapeHtml(o.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  // ---- Pickup request form ----
+  var formState = { orderId: "", name: "", contact: "", submitted: false };
+  var formRoot = document.getElementById("form-root");
+
+  function deliveredOrders() {
+    return orders.filter(function (o) { return o.stage === 2; });
+  }
+
+  function canSubmitForm() {
+    return formState.orderId.trim() && formState.name.trim() && formState.contact.trim();
+  }
+
+  function renderForm() {
+    if (formState.submitted) { renderFormConfirm(); return; }
+    var eligible = deliveredOrders();
+    var html = "";
+    if (!eligible.length) {
+      html += '<p style="font-size:0.88rem; color:var(--muted); font-style:italic;">No orders are currently at "Delivered" awaiting a pickup request. Advance an order to "Delivered" in the dispatch view above to try this form.</p>';
+      formRoot.innerHTML = html;
+      return;
+    }
+    html += '<div class="form-grid">';
+    html += '<div class="field"><div class="field-label">Order</div><select id="f-order">';
+    html += '<option value="">Select your order</option>';
+    eligible.forEach(function (o) {
+      html += '<option value="' + o.id + '"' + (formState.orderId === o.id ? " selected" : "") + '>' + o.id + ' - ' + escapeHtml(o.address) + '</option>';
+    });
+    html += '</select></div>';
+    html += '<div class="field"><div class="field-label">Your name</div><input type="text" class="wide" id="f-name" value="' + escapeHtml(formState.name) + '" placeholder="First and last name"></div>';
+    html += '<div class="field"><div class="field-label">Phone or email</div><input type="text" class="wide" id="f-contact" value="' + escapeHtml(formState.contact) + '" placeholder="How should we reach you?"></div>';
+    html += '</div>';
+    html += '<button class="fx-btn" id="f-submit" style="margin-top:1rem;"' + (canSubmitForm() ? "" : " disabled") + '>Request pickup</button>';
+    formRoot.innerHTML = html;
+
+    document.getElementById("f-order").addEventListener("change", function (e) { formState.orderId = e.target.value; syncFormBtn(); });
+    document.getElementById("f-name").addEventListener("input", function (e) { formState.name = e.target.value; syncFormBtn(); });
+    document.getElementById("f-contact").addEventListener("input", function (e) { formState.contact = e.target.value; syncFormBtn(); });
+    document.getElementById("f-submit").addEventListener("click", function () {
+      if (!canSubmitForm()) return;
+      var o = orders.find(function (x) { return x.id === formState.orderId; });
+      if (!o) return;
+      o.stage = 3;
+      var msg = STAGE_MESSAGES[3];
+      if (msg) pushNotification(o, msg(o));
+      saveOrders(orders);
+      formState.submitted = true;
+      formState.lastId = o.id;
+      renderForm();
+      renderShop();
+      populatePicker();
+      renderThread();
+    });
+  }
+
+  function syncFormBtn() {
+    var btn = document.getElementById("f-submit");
+    if (btn) btn.disabled = !canSubmitForm();
+  }
+
+  function renderFormConfirm() {
+    var html = '<div class="confirm">';
+    html += '<h3>Pickup requested for ' + formState.lastId + '</h3>';
+    html += '<p style="font-size:0.9rem; color:var(--ink-2);">The customer got an instant confirmation, shown in the thread panel above, instead of waiting on a callback. It now appears at "Pickup requested" in the dispatch view, ready for a driver and window to be assigned.</p>';
+    html += '<button class="fx-btn-ghost" id="f-reset" style="align-self:flex-start;">Submit another request</button>';
+    html += '</div>';
+    formRoot.innerHTML = html;
+    document.getElementById("f-reset").addEventListener("click", function () {
+      formState = { orderId: "", name: "", contact: "", submitted: false };
+      renderForm();
+    });
+  }
+
+  renderShop();
+  populatePicker();
+  renderThread();
+  renderForm();
+})();
+</script>
+</body>
+</html>
