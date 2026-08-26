@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Repair ticket tracker: working example for Boat World MN</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .rtt-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .rtt-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .rtt-tab.active { background: var(--ink); color: var(--surface); }
+  .rtt-view { display: none; }
+  .rtt-view.active { display: block; }
+  .rtt-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .rtt-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .rtt-filter-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
+  .loc-chip { font: inherit; font-size: 0.76rem; font-weight: 700; padding: 0.4rem 0.8rem; border: 2px solid var(--ink); border-radius: 999px; background: #fff; color: var(--ink); cursor: pointer; }
+  .loc-chip.active { background: var(--brand); color: #fff; }
+  .ticket-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .ticket-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .ticket-title { font-weight: 660; }
+  .ticket-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .ticket-loc { display: inline-block; font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-top: 0.25rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.stuck { color: var(--hot); background: var(--hot-bg); }
+  .badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .badge.ontrack { color: var(--brand); background: var(--brand-soft); }
+  .badge.done { color: var(--good); background: var(--good-bg); }
+  .ticket-summary { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; }
+  .ticket-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .log { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.8rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); margin-right: 0.4rem; }
+  .log-entry .notif { color: var(--brand); font-weight: 700; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 460px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.2rem; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.5rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Repair ticket tracker</a> / Boat World MN</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Boat World MN</span>
+  <h1 class="fx-h1">Five brands, a parts counter and a body shop, and one phone number to reach all of it</h1>
+  <p class="fx-lede">Boat World MN's own site lists Tahoe, Bentley, Princecraft, Avalon and MirroCraft (plus Montego Bay pontoons) under one roof at the East Bethel lot, along with a marine parts department and boat storage. There is no online scheduling, order-status page or live chat anywhere on the site: sales and service both route through one phone number and Sales@boatworldmarine.com. That matches a specific, unresolved BBB complaint on file: a customer who paid for a boat and then made "multiple phone calls with questions about protocol and boat information with no return calls."</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> Boat World MN's About Us page (fetched directly) lists Tahoe, Bentley, Princecraft, Avalon, MirroCraft and Montego Bay pontoons, a marine engine repair/parts department, boat storage, and a body shop run through a named partner, George's Repair, not an in-house department. Its BBB profile lists Randy Crumpler as owner, 13 years in business, an A rating (not accredited), and one unresolved complaint describing exactly the post-purchase communication gap this page is scoped around. The site itself has no order-status page, booking widget or live chat; contact is one phone number, (763) 434-9655, and Sales@boatworldmarine.com.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the sample tickets below are fictional, not real customers or boats. Because the body shop is run by an outside partner (George's Repair) rather than in-house, this prototype tags every ticket by department so a body-shop job is visibly distinct from a parts order or a sales delivery, instead of guessing at an internal process Boat World MN hasn't published anywhere.</p>
+  </div>
+
+  <div class="rtt-tabs">
+    <button class="rtt-tab active" data-view="office" type="button">Office view, all departments</button>
+    <button class="rtt-tab" data-view="customer" type="button">Customer status check</button>
+  </div>
+
+  <section class="rtt-view active" id="view-office">
+    <div class="rtt-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new ticket</h2>
+        <form id="add-form" class="form-grid">
+          <div class="field span2"><label for="f-customer">Customer name</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
+          <div class="field span2"><label for="f-item">Boat / order description</label><input type="text" id="f-item" placeholder="e.g. Tahoe 500 tritoon, new delivery"></div>
+          <div class="field"><label for="f-type">Department</label><select id="f-type"></select></div>
+          <div class="field"><label for="f-stage">Starting stage</label><select id="f-stage"></select></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
+        </form>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Open queue, longest stuck first</h2>
+        <p style="color:var(--muted);font-size:0.8rem;margin:0 0 0.7rem;max-width:60ch;">One shared view across sales delivery, the parts counter and the George's Repair body shop, instead of each area only knowing its own jobs.</p>
+        <div class="rtt-filter-row" id="loc-filter-row"></div>
+        <div id="queue-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="rtt-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check the status of an order</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. BWMN-1001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try BWMN-1001, BWMN-1002, BWMN-1003 or BWMN-1004 from the office view's sample queue.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before this goes further</h2>
+    <div class="limits">
+      <div class="lim"><b>Only the four sample reference codes above return anything.</b> This isn't connected to a real sale or work order, so it can't look up an actual customer's boat. A real build would read from whatever Boat World MN already tracks orders and repairs in, likely a simple shared spreadsheet or Airtable base the sales floor, parts counter and George's Repair can all update.</div>
+      <div class="lim"><b>Automatic SMS/email pings are simulated as an internal log entry here, not actually sent.</b> A real build wires each stage change to an SMS or email provider so the customer update goes out the moment staff mark the change, instead of relying on someone remembering to call back.</div>
+      <div class="lim"><b>Two different flows are scoped here on purpose:</b> a delivery checklist for a boat that's been sold (rigging, registration, walkthrough, handoff) and a parts/repair tracker for service and body-shop jobs. Both are the proposed structure, not a copy of an internal process Boat World MN already runs, since no such system is visible on the public site.</div>
+      <div class="lim"><b>The body shop is a named outside partner, George's Repair, per Boat World MN's own About Us page,</b> not an in-house team. Any real build would need to confirm how status updates actually flow back from that partner before promising real-time accuracy on body-shop jobs specifically.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Boat World MN.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Boat World MN. boatworldmn.com's lack of an order/status tracker was checked directly. Ticket data is a labeled sample, not connected to any real customer or boat.</p>
+</footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "rtt_boat_world_mn_v1";
+
+  var TYPES = {
+    delivery: {
+      label: "Sales delivery",
+      stages: [
+        { key: "sale_confirmed", label: "Sale confirmed" },
+        { key: "rigging_prep", label: "Rigging & dealer prep" },
+        { key: "registration", label: "Registration & paperwork" },
+        { key: "walkthrough_scheduled", label: "Walkthrough scheduled" },
+        { key: "delivered", label: "Delivered to customer" }
+      ]
+    },
+    parts: {
+      label: "Parts counter",
+      stages: [
+        { key: "ordered", label: "Order placed" },
+        { key: "backordered", label: "Confirmed with supplier" },
+        { key: "arrived", label: "Arrived at dealership" },
+        { key: "ready", label: "Ready for pickup" }
+      ]
+    },
+    bodyshop: {
+      label: "Body shop (George's Repair)",
+      stages: [
+        { key: "received", label: "Received" },
+        { key: "estimate", label: "Diagnosing / estimate" },
+        { key: "waiting_on_parts", label: "Waiting on parts" },
+        { key: "in_repair", label: "In repair" },
+        { key: "ready_for_pickup", label: "Ready for pickup" }
+      ]
+    }
+  };
+  var TYPE_KEYS = Object.keys(TYPES);
+  var STUCK_HOURS = 72;
+
+  function stagesFor(type) { return TYPES[type].stages; }
+  function stageIndexFor(type) { var m = {}; stagesFor(type).forEach(function (s, i) { m[s.key] = i; }); return m; }
+  function lastStageIdx(type) { return stagesFor(type).length - 1; }
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function hoursFromNow(h) { return Date.now() + h * 3600000; }
+  function hoursAgo(ts) { return (Date.now() - ts) / 3600000; }
+  function fmtDuration(hrs) {
+    if (hrs < 1) return "under an hour";
+    var days = Math.floor(hrs / 24), rem = Math.round(hrs % 24);
+    if (days < 1) return Math.round(hrs) + "h";
+    return days + "d " + rem + "h";
+  }
+
+  function defaultData() {
+    return {
+      seq: 1004,
+      activeLoc: "all",
+      tickets: [
+        {
+          id: "BWMN-1001", ref: "BWMN-1001", customer: "Sample Customer A", item: "Tahoe 500 tritoon, new delivery", type: "delivery",
+          stageIdx: 1, enteredStageAt: hoursFromNow(-30),
+          history: [{ stage: "sale_confirmed", at: hoursFromNow(-96) }, { stage: "rigging_prep", at: hoursFromNow(-30) }],
+          notes: [{ at: hoursFromNow(-29), text: "Rigging started, dealer prep in progress.", sms: true }]
+        },
+        {
+          id: "BWMN-1002", ref: "BWMN-1002", customer: "Sample Customer B", item: "Bentley pontoon, outboard lower unit", type: "parts",
+          stageIdx: 1, enteredStageAt: hoursFromNow(-260),
+          history: [{ stage: "ordered", at: hoursFromNow(-280) }, { stage: "backordered", at: hoursFromNow(-260) }],
+          notes: [
+            { at: hoursFromNow(-259), text: "Supplier confirmed 2-3 week lead time on the lower unit.", sms: true },
+            { at: hoursFromNow(-40), text: "Customer called in asking for an update, none logged since confirmation.", sms: false }
+          ]
+        },
+        {
+          id: "BWMN-1003", ref: "BWMN-1003", customer: "Sample Customer C", item: "Princecraft, hull scrape and gelcoat repair", type: "bodyshop",
+          stageIdx: 3, enteredStageAt: hoursFromNow(-14),
+          history: [{ stage: "received", at: hoursFromNow(-40) }, { stage: "estimate", at: hoursFromNow(-34) }, { stage: "waiting_on_parts", at: hoursFromNow(-24) }, { stage: "in_repair", at: hoursFromNow(-14) }],
+          notes: [{ at: hoursFromNow(-13), text: "George's Repair confirmed gelcoat work in progress.", sms: true }]
+        },
+        {
+          id: "BWMN-1004", ref: "BWMN-1004", customer: "Sample Customer D", item: "Avalon pontoon, new delivery", type: "delivery",
+          stageIdx: 4, enteredStageAt: hoursFromNow(-2),
+          history: [{ stage: "sale_confirmed", at: hoursFromNow(-120) }, { stage: "rigging_prep", at: hoursFromNow(-90) }, { stage: "registration", at: hoursFromNow(-48) }, { stage: "walkthrough_scheduled", at: hoursFromNow(-20) }, { stage: "delivered", at: hoursFromNow(-2) }],
+          notes: [{ at: hoursFromNow(-2), text: "Walkthrough complete, keys handed off.", sms: true }]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) { var d = JSON.parse(raw); if (!d.activeLoc) d.activeLoc = "all"; return d; } } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function statusInfo(t) {
+    if (t.stageIdx >= lastStageIdx(t.type)) return { cls: "done", label: TYPES[t.type].label === "Sales delivery" ? "Delivered" : "Ready" };
+    var stuckHrs = hoursAgo(t.enteredStageAt);
+    if (stuckHrs > STUCK_HOURS) return { cls: "stuck", label: "Stuck" };
+    if (stuckHrs > STUCK_HOURS * 0.6) return { cls: "watch", label: "Watch" };
+    return { cls: "ontrack", label: "On track" };
+  }
+
+  function populateStageSelect() {
+    var typeSel = document.getElementById("f-type");
+    var type = typeSel.value || TYPE_KEYS[0];
+    var sel = document.getElementById("f-stage");
+    sel.innerHTML = stagesFor(type).slice(0, -1).map(function (s) { return '<option value="' + s.key + '">' + escapeHtml(s.label) + "</option>"; }).join("");
+  }
+  function populateTypeSelect() {
+    var sel = document.getElementById("f-type");
+    sel.innerHTML = TYPE_KEYS.map(function (k) { return '<option value="' + k + '">' + escapeHtml(TYPES[k].label) + "</option>"; }).join("");
+    sel.addEventListener("change", populateStageSelect);
+  }
+  function renderLocFilter() {
+    var root = document.getElementById("loc-filter-row");
+    var opts = ["all"].concat(TYPE_KEYS);
+    root.innerHTML = opts.map(function (k) {
+      var label = k === "all" ? "All departments" : TYPES[k].label;
+      var cls = "loc-chip" + (data.activeLoc === k ? " active" : "");
+      return '<button type="button" class="' + cls + '" data-loc="' + escapeHtml(k) + '">' + escapeHtml(label) + "</button>";
+    }).join("");
+    root.querySelectorAll(".loc-chip").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        data.activeLoc = btn.getAttribute("data-loc");
+        save(); renderLocFilter(); renderQueue();
+      });
+    });
+  }
+
+  function visibleTickets() {
+    if (data.activeLoc === "all") return data.tickets;
+    return data.tickets.filter(function (t) { return t.type === data.activeLoc; });
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var pool = visibleTickets();
+    var open = pool.filter(function (t) { return t.stageIdx < lastStageIdx(t.type); })
+      .slice().sort(function (a, b) { return hoursAgo(b.enteredStageAt) - hoursAgo(a.enteredStageAt); });
+    var done = pool.filter(function (t) { return t.stageIdx >= lastStageIdx(t.type); })
+      .slice().sort(function (a, b) { return b.enteredStageAt - a.enteredStageAt; });
+    var html = "";
+    if (!open.length) html += '<p class="empty">Nothing open for this department. Every ticket is caught up.</p>';
+    open.forEach(function (t) { html += renderCard(t); });
+    if (done.length) {
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently completed</h3>';
+      done.slice(0, 5).forEach(function (t) { html += renderCard(t); });
+    }
+    root.innerHTML = html;
+  }
+
+  function renderCard(t) {
+    var st = statusInfo(t);
+    var idx = data.tickets.indexOf(t);
+    var stages = stagesFor(t.type);
+    var stageLabel = stages[t.stageIdx].label;
+    var html = '<div class="ticket-card"><div class="ticket-head"><div><div class="ticket-title">' + escapeHtml(t.customer) + " &middot; " + t.ref + '</div><div class="ticket-meta">' + escapeHtml(t.item) + '</div><div class="ticket-loc">' + escapeHtml(TYPES[t.type].label) + "</div></div><span class=\"badge " + st.cls + '">' + st.label + "</span></div>";
+    html += '<div class="ticket-summary">Stage: ' + stageLabel + " (" + fmtDuration(hoursAgo(t.enteredStageAt)) + " in this stage)</div>";
+    if (t.notes.length) {
+      html += '<div class="log">';
+      t.notes.slice().reverse().forEach(function (n) {
+        html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + (n.sms ? ' <span class="notif">[customer SMS/email sent]</span>' : "") + "</div>";
+      });
+      html += "</div>";
+    }
+    if (t.stageIdx < lastStageIdx(t.type)) {
+      var nextLabel = stages[t.stageIdx + 1].label;
+      html += '<div class="note-row" style="display:flex;gap:0.4rem;margin-top:0.6rem;"><input type="text" id="note-' + idx + '" placeholder="Add an internal note" style="flex:1;font:inherit;font-size:0.8rem;padding:0.4rem 0.6rem;border:1px solid var(--rule);border-radius:var(--radius-sm);"><button class="fx-btn-ghost" onclick="__rtt.addNote(' + idx + ')">Add</button></div>';
+      html += '<div class="ticket-actions"><button class="fx-btn-ghost" onclick="__rtt.advance(' + idx + ')">Advance to ' + escapeHtml(nextLabel) + '</button></div>';
+    }
+    html += "</div>";
+    return html;
+  }
+
+  window.__rtt = {
+    addNote: function (idx) {
+      var input = document.getElementById("note-" + idx);
+      var text = input.value.trim();
+      if (!text) return;
+      data.tickets[idx].notes.push({ at: Date.now(), text: text, sms: false });
+      save(); renderQueue();
+    },
+    advance: function (idx) {
+      var t = data.tickets[idx];
+      var stages = stagesFor(t.type);
+      t.stageIdx += 1;
+      t.enteredStageAt = Date.now();
+      t.history.push({ stage: stages[t.stageIdx].key, at: Date.now() });
+      t.notes.push({ at: Date.now(), text: "Stage changed to " + stages[t.stageIdx].label + ".", sms: true });
+      save(); renderQueue();
+    }
+  };
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("f-customer").value.trim();
+    var item = document.getElementById("f-item").value.trim();
+    var type = document.getElementById("f-type").value;
+    var stageKey = document.getElementById("f-stage").value;
+    if (!customer || !item) { alert("Fill in the customer name and boat/order description."); return; }
+    data.seq += 1;
+    var ref = "BWMN-" + data.seq;
+    var now = Date.now();
+    data.tickets.push({ id: ref, ref: ref, customer: customer, item: item, type: type, stageIdx: stageIndexFor(type)[stageKey], enteredStageAt: now, history: [{ stage: stageKey, at: now }], notes: [{ at: now, text: "Ticket opened under " + TYPES[type].label + ".", sms: true }] });
+    save(); renderQueue();
+    document.getElementById("add-form").reset();
+    populateTypeSelect(); populateStageSelect();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderLocFilter(); renderQueue();
+  });
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var t = data.tickets.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
+    if (!t) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No record found for that reference code. Please contact the dealership directly.</p></div>'; return; }
+    var stages = stagesFor(t.type);
+    var html = '<div class="lookup-result"><h3>' + escapeHtml(t.item) + '</h3><p style="color:var(--muted);font-size:0.8rem;margin:0 0 0.6rem;">' + escapeHtml(TYPES[t.type].label) + '</p>';
+    stages.forEach(function (s, i) {
+      var cls = i < t.stageIdx ? "done" : (i === t.stageIdx ? "active" : "pending");
+      var histEntry = t.history.filter(function (h) { return h.stage === s.key; })[0];
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === "pending" ? " pending-text" : "") + '">' + s.label + '</div><div class="stage-time">' + (histEntry ? fmtDate(histEntry.at) : (cls === "active" ? "In progress" : "Not started")) + "</div></div></div>";
+    });
+    html += "</div>";
+    root.innerHTML = html;
+  });
+
+  document.querySelectorAll(".rtt-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".rtt-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".rtt-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  populateTypeSelect();
+  populateStageSelect();
+  renderLocFilter();
+  renderQueue();
+})();
+</script>
+</body>
+</html>
