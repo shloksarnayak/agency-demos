@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Outside/Inside Aquarium &amp; Pond (Afishionado)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .window-line { font-size: 0.85rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .note-row { display: none; flex-direction: column; gap: 0.4rem; margin-top: 0.3rem; }
+  .note-row.open { display: flex; }
+  .note-row input[type="text"] { font: inherit; font-size: 0.82rem; padding: 0.45rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-raised); width: 100%; }
+  .note-row select { font: inherit; font-size: 0.82rem; padding: 0.45rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-raised); width: 100%; }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 24rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 92%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-photo { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.55rem; padding: 0.5rem 0.6rem; border: 1px dashed var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); }
+  .bubble-photo svg { flex: 0 0 auto; }
+  .bubble-photo-label { font-size: 0.72rem; color: var(--muted); line-height: 1.4; }
+  .bubble-photo-label b { color: var(--ink-2); }
+  .bubble-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .lim a { color: var(--brand); }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+  .sample-tag { display:inline-block; background:var(--brand-soft); color:var(--brand); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:0.25rem 0.6rem; border-radius:5px; margin-bottom:0.9rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Outside/Inside Aquarium &amp; Pond</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Outside/Inside Aquarium &amp; Pond (Afishionado)</span>
+  <h1 class="fx-h1">Proof each visit happened, without you lifting a finger</h1>
+  <p class="fx-lede">Outside/Inside has been Naples' aquarium and pond service since 1980, running on trust, a phone number, and an email address, no booking site, no customer portal. That works when you're the one doing the job. It's shakier when a customer can't see you working and has to take it on faith that a tank was actually checked, especially while you're traveling. This shows the fix: mark a visit complete on your phone, and the customer gets a text confirming it happened, with a photo, automatically.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> a direct fetch of your live site (afishionado76.com) today found a Word-generated, phone-and-email-only site with no online booking, no scheduling widget, and no customer portal or visit-confirmation system of any kind, just a phone number, (239) 465-9043, and AFISHIONADO@AOL.COM. The site states you've served Naples since 1980. Our first outreach to you referenced a review raising uncertainty about whether a tank was properly checked while you were traveling, that review is what this demo is built to answer, not something we re-verified line by line.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the customers, addresses, and visit notes below are fictional, not your real route or clients. The "photo attached" thumbnails are placeholders showing where a real visit photo would sit, nothing here sends a real text or email. A real build connects to however you already track your route (even a paper list or a spreadsheet works to start from) and sends through an actual SMS/email service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Your view: close out a visit</h3>
+      <span class="sample-tag">Sample route, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the customer sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real text, email, or photo.</b> This demo shows exactly what a customer would receive the moment you tap "Visit complete." A real version needs an actual SMS/email service (for example Twilio or SendGrid) and a way to attach the photo you already take on your phone.</div>
+      <div class="lim"><b>The three stages shown (scheduled, technician on site, visit complete) are a typical service-route flow, not copied from how you actually run a day.</b> Worth a five-minute conversation before this gets built for real, you may check in on a tank without a formal "on site" step, or batch photos differently for saltwater vs. freshwater vs. pond visits.</div>
+      <div class="lim"><b>The visit note and photo are required before a visit can be marked complete,</b> so the confirmation a customer receives always includes something specific, not a generic "done" text. That's a deliberate design choice worth confirming with you, some customers may prefer a shorter message.</div>
+      <div class="lim"><b>This sits alongside your phone and email, it doesn't replace them.</b> The gap it closes is narrow and specific: proof a visit happened when you're not the one a customer can ask directly, particularly while traveling.</div>
+      <div class="lim"><b>Pricing below is illustrative only.</b> A working build like this typically runs as a small flat project fee plus a low monthly cost for the SMS/email service itself, exact numbers depend on your visit volume.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Outside/Inside Aquarium &amp; Pond or Afishionado.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Outside/Inside Aquarium &amp; Pond (afishionado76.com). Site content and contact details verified by direct fetch today. Customer, route, and visit data below is a fictional sample, not connected to your real customers or schedule.</p>
+</footer>
+
+<script>
+(function () {
+  var STAGE_NAMES = ["Scheduled", "Technician on site", "Visit complete"];
+  var TECH_NAME = "David";
+  var STORAGE_KEY = "afishionado-status-pipeline-visits-v1";
+
+  var STAGE_MESSAGES = [
+    null,
+    function (j) { return "This is Outside/Inside Aquarium & Pond. " + TECH_NAME + " has arrived for " + j.clientFirst + "'s " + j.serviceType + " visit and is getting started."; },
+    function (j) { return j.clientFirst + "'s " + j.serviceType + " visit is complete. " + j.visitNote + " Photo attached below."; }
+  ];
+
+  function seedJobs() {
+    var now = 1755878400000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "OI-2201",
+        client: "M. Delacroix",
+        clientFirst: "Marguerite",
+        contact: "(239) 555-0142",
+        address: "Port Royal, Naples",
+        serviceType: "saltwater tank",
+        stage: 1,
+        visitNote: "",
+        notifications: [
+          { text: "This is Outside/Inside Aquarium & Pond. " + TECH_NAME + " has arrived for Marguerite's saltwater tank visit and is getting started.", at: now, photo: false }
+        ]
+      },
+      {
+        id: "OI-2204",
+        client: "R. Petrakis",
+        clientFirst: "Ray",
+        contact: "(239) 555-0187",
+        address: "Pelican Bay, Naples",
+        serviceType: "koi pond",
+        stage: 2,
+        visitNote: "Filters cleaned, water tested (ammonia and nitrite both normal), koi fed and all six accounted for.",
+        notifications: [
+          { text: "This is Outside/Inside Aquarium & Pond. " + TECH_NAME + " has arrived for Ray's koi pond visit and is getting started.", at: now + 3600000, photo: false },
+          { text: "Ray's koi pond visit is complete. Filters cleaned, water tested (ammonia and nitrite both normal), koi fed and all six accounted for. Photo attached below.", at: now + 7200000, photo: true }
+        ]
+      },
+      {
+        id: "OI-2209",
+        client: "S. Whitcombe",
+        clientFirst: "Sandra",
+        contact: "(239) 555-0163",
+        address: "Aqualane Shores, Naples",
+        serviceType: "reef tank",
+        stage: 0,
+        visitNote: "",
+        notifications: []
+      }
+    ];
+  }
+
+  function loadJobs() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedJobs();
+    saveJobs(seeded);
+    return seeded;
+  }
+  function saveJobs(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var jobs = loadJobs();
+  var noteOpenFor = null;
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    jobs.forEach(function (j) {
+      var atLast = j.stage >= STAGE_NAMES.length - 1;
+      var isCompleteStep = j.stage === STAGE_NAMES.length - 2; // about to complete, needs a note
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.client) + '</h4><span class="stage-pill">' + STAGE_NAMES[j.stage] + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(j.serviceType) + ' &middot; ' + escapeHtml(j.address) + ' &middot; ' + escapeHtml(j.contact) + '</div>';
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+      if (isCompleteStep) {
+        html += '<button class="btn-sm" data-note-toggle="' + j.id + '">Add visit note &amp; photo to complete</button>';
+      }
+      html += '</div>';
+      html += '<div class="note-row' + (noteOpenFor === j.id ? " open" : "") + '" id="note-' + j.id + '">';
+      html += '<input type="text" id="note-input-' + j.id + '" placeholder="e.g. filters cleaned, water tested, fish fed">';
+      html += '<button class="btn-sm" data-note-submit="' + j.id + '">Complete visit with note &amp; photo</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceJob(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-note-toggle]"), function (btn) {
+      btn.addEventListener("click", function () {
+        noteOpenFor = noteOpenFor === btn.dataset.noteToggle ? null : btn.dataset.noteToggle;
+        renderShop();
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-note-submit]"), function (btn) {
+      btn.addEventListener("click", function () { completeWithNote(btn.dataset.noteSubmit); });
+    });
+  }
+
+  function pushNotification(job, text, photo) {
+    job.notifications.push({ text: text, at: Date.now(), photo: !!photo });
+  }
+
+  function advanceJob(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGE_NAMES.length - 1) return;
+    if (j.stage === STAGE_NAMES.length - 2) {
+      noteOpenFor = id;
+      renderShop();
+      return;
+    }
+    j.stage += 1;
+    var msg = STAGE_MESSAGES[j.stage];
+    if (msg) pushNotification(j, msg(j), false);
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function completeWithNote(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    var input = document.getElementById("note-input-" + id);
+    var val = (input.value || "").trim();
+    if (!j || !val) return;
+    j.stage += 1;
+    j.visitNote = val;
+    pushNotification(j, STAGE_MESSAGES[j.stage](j), true);
+    noteOpenFor = null;
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    sel.innerHTML = "";
+    jobs.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.client + " (" + j.serviceType + ")";
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderThread);
+  }
+
+  var PHOTO_ICON = '<svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="40" height="40" rx="6" stroke="currentColor" stroke-opacity="0.4"/><path d="M9 30 L16 20 L21 26 L27 17 L33 30 Z" fill="currentColor" fill-opacity="0.35"/><circle cx="14" cy="14" r="2.6" fill="currentColor" fill-opacity="0.45"/></svg>';
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = jobs.find(function (x) { return x.id === sel.value; }) || jobs[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this customer. Advance the visit in your view on the left.</p>';
+      return;
+    }
+    var html = "";
+    j.notifications.forEach(function (n) {
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div>';
+      if (n.photo) {
+        html += '<div class="bubble-photo">' + PHOTO_ICON + '<div class="bubble-photo-label"><b>Illustrative photo</b><br>placeholder for the real visit photo taken on site</div></div>';
+      }
+      html += '<div class="bubble-time">Text to ' + escapeHtml(j.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  renderShop();
+  populatePicker();
+  renderThread();
+})();
+</script>
+</body>
+</html>
