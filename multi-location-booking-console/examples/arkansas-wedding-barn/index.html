@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>Multi-location booking console: working example for Arkansas Wedding Barn</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .mlc-section { margin-top: 2.4rem; }
+  .mlc-section-title { font-family: var(--serif); font-size: 1.25rem; margin: 0 0 0.3rem; }
+  .mlc-section-sub { color: var(--muted); font-size: 0.86rem; margin: 0 0 1rem; max-width: 68ch; }
+  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+  .field { margin-top: 1.15rem; }
+  .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  input[type="text"], input[type="date"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; max-width: 26rem; }
+  input[type="text"]:focus, input[type="date"]:focus { outline: none; border-color: var(--brand); }
+  .policy-box { border-radius: var(--radius-md); background: var(--surface-2); box-shadow: var(--shadow-inset); padding: 1.1rem 1.3rem; margin-top: 0.4rem; }
+  .policy-box h4 { margin: 0 0 0.5rem; font-size: 0.92rem; }
+  .policy-box .rate { font-family: var(--serif); font-size: 1.7rem; color: var(--brand); margin: 0.2rem 0 0.6rem; }
+  .policy-box ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; color: var(--ink-2); line-height: 1.6; }
+  .policy-box .sample-tag { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--hot); background: var(--hot-bg); border-radius: 999px; padding: 0.2rem 0.55rem; display: inline-block; margin-bottom: 0.6rem; }
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.8rem; }
+  .confirm h3 { margin: 0; font-size: 1.05rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+  .confirm dl { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; }
+  .confirm dt { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .confirm dd { margin: 0 0 0.5rem; font-size: 0.94rem; color: var(--ink); }
+  .conflict { border-radius: var(--radius-md); background: var(--hot-bg); box-shadow: var(--shadow-inset); padding: 1.1rem 1.3rem; margin-top: 0.4rem; color: var(--hot); font-size: 0.9rem; }
+  .conflict b { display: block; margin-bottom: 0.3rem; font-size: 0.95rem; }
+  .load-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.8rem; margin-bottom: 1.2rem; }
+  .load-card { border: 1px solid var(--rule); border-radius: 16px; padding: 0.9rem 1rem; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .load-card .loc-name { font-weight: 660; font-size: 0.88rem; }
+  .load-card .loc-city { color: var(--muted); font-size: 0.72rem; }
+  .load-card .loc-count { font-family: var(--serif); font-size: 1.9rem; margin-top: 0.3rem; }
+  .load-card .loc-label { color: var(--muted); font-size: 0.72rem; }
+  .load-bar { height: 6px; border-radius: 8px; background: var(--surface-2); overflow: hidden; margin-top: 0.6rem; }
+  .load-bar i { display: block; height: 100%; background: var(--brand); }
+  .req-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 0.9rem 1.1rem; box-shadow: var(--shadow-sm); margin-bottom: 0.75rem; }
+  .req-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .req-title { font-weight: 660; font-size: 0.94rem; }
+  .req-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .req-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+  .req-badge { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.3rem 0.6rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .req-badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .req-badge.ok { color: var(--good); background: var(--good-bg); }
+  .req-badge.loc { color: var(--ink-2); background: var(--surface-2); }
+  .req-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.7rem; padding-top: 0.6rem; border-top: 1px solid var(--rule-soft); }
+  .req-btn-sm { font: inherit; font-size: 0.76rem; font-weight: 650; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.38rem 0.75rem; cursor: pointer; }
+  .req-btn-sm:disabled { opacity: 0.5; cursor: not-allowed; }
+  .req-empty { color: var(--muted); font-style: italic; font-size: 0.86rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Multi-location booking &amp; boarding-intake console</a> / Arkansas Wedding Barn</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Arkansas Wedding Barn</span>
+  <h1 class="fx-h1">One calendar across all four rental spaces that refuses to double-book</h1>
+  <p class="fx-lede">A WeddingWire review from December 27, 2025 describes showing up for a booked guest house rental and finding it not ready, then being told the booking "didn't have it marked down" even though there was a confirmation. A 2017 review on The Knot describes almost the same thing: the guest house double-booked while the owner was out of town. This shows what changes when the barn, the micro chapel, the stables, and the guest house all share one request queue that blocks a conflicting date before it's accepted, and echoes back exactly what's reserved instead of relying on memory or a notebook.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>What's real:</strong> the four rental spaces and their starting prices (the barn from $1,200, the micro chapel from $200, the stables from $600, the guest house at $250 a night) are copied from your own site today. <strong>What's fictional:</strong> the sample bookings seeded below, including the illustrative guest house conflict, are placeholder data built to demonstrate the double-booking check, not real reservations. That gap between "a confirmation existed" and "the date wasn't actually marked down anywhere staff could see it" is exactly what this replaces.</p></div>
+
+  <section class="mlc-section">
+    <h2 class="mlc-section-title">1. Booking request, all four spaces</h2>
+    <p class="mlc-section-sub">Picking a space and a date checks that date against every other request already on the books for that same space before it can be submitted, so a second booking for an already-reserved guest house night gets caught here instead of at the door.</p>
+    <div class="fx-card" id="form-root"></div>
+  </section>
+
+  <section class="mlc-section">
+    <h2 class="mlc-section-title">2. Reservation book, across all four spaces</h2>
+    <p class="mlc-section-sub">Every request lands here the moment it's submitted, so whoever is answering the phone or the DMs can see the whole calendar at once, instead of the one memory or notebook the venue is running on today.</p>
+    <div class="load-grid" id="load-root"></div>
+    <div id="requests-root"></div>
+    <div class="mlc-section" style="margin-top:1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+  </section>
+
+  <section class="mlc-section">
+    <h2 class="fx-h2">What I'd flag before you roll this out</h2>
+    <div class="limits">
+      <div class="lim"><b>This is a request-and-conflict-check queue, not a synced calendar app.</b> It blocks a second request for a space that already has a confirmed or pending date in this queue. It doesn't pull from Google Calendar, a wedding-planning app, or anywhere else a booking might already live, so the first real build has to bring every existing reservation into this one place before it can be trusted.</div>
+      <div class="lim"><b>Prices shown are your own published starting rates.</b> The barn, chapel, and stables are flat per-event rates on your site; the guest house is per night. If any of these change or a rate depends on guest count or season, that logic needs to be added before this goes live.</div>
+      <div class="lim"><b>The confirmation shown here is on-screen only.</b> A real build emails this same space/date/price summary to the client automatically the moment a request is accepted, which is the actual gap both reviews describe: a confirmation that existed but wasn't visible to whoever was checking the day of.</div>
+      <div class="lim"><b>Space names and prices are copied from your own site today.</b> If a rate or space changes, this needs a one-line update to match, it won't drift out of sync on its own.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Arkansas Wedding Barn.</strong></p>
+  <p>Prepared by Shlok Sarnayak. Space names and starting prices verified against your own site today. Sample bookings, including the guest house conflict example, are fictional placeholder data. Not connected to your phone, email, or real reservation book.</p>
+</footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "mlbc_arkansaswb_v1";
+
+  var SPACES = [
+    { id: "barn", name: "The Wedding Barn", note: "From $1,200 / event", rate: 1200, unit: "event" },
+    { id: "chapel", name: "The Micro Chapel", note: "From $200 / event", rate: 200, unit: "event" },
+    { id: "stables", name: "The Stables", note: "From $600 / event", rate: 600, unit: "event" },
+    { id: "guesthouse", name: "The Guest House", note: "$250 / night", rate: 250, unit: "night" }
+  ];
+  var POLICY = [
+    "Date is locked to this space the moment a request is accepted",
+    "A second request for the same space and date is blocked automatically, not caught later",
+    "Confirmation below is exactly what a client's email confirmation would show"
+  ];
+
+  function todayStr() { return new Date().toISOString().slice(0, 10); }
+  function daysAgoStr(n) { var d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); }
+  function daysFromNowStr(n) { var d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function uid(prefix) { return prefix + Math.random().toString(36).slice(2, 8); }
+  function spaceById(id) { return SPACES.filter(function (s) { return s.id === id; })[0]; }
+  function spaceName(id) { var s = spaceById(id); return s ? s.name : id; }
+
+  function defaultData() {
+    return {
+      requests: [
+        { id: "r1", spaceId: "barn", date: daysFromNowStr(21), name: "Sample Client A", contact: "sample.a@example.com", status: "confirmed", submittedAt: daysAgoStr(6) },
+        { id: "r2", spaceId: "guesthouse", date: daysFromNowStr(14), name: "Sample Client B", contact: "sample.b@example.com", status: "confirmed", submittedAt: daysAgoStr(5) },
+        { id: "r3", spaceId: "stables", date: daysFromNowStr(30), name: "Sample Client C", contact: "sample.c@example.com", status: "new", submittedAt: daysAgoStr(2) },
+        { id: "r4", spaceId: "chapel", date: daysFromNowStr(10), name: "Sample Client D", contact: "sample.d@example.com", status: "new", submittedAt: todayStr() }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  var formRoot = document.getElementById("form-root");
+  var loadRoot = document.getElementById("load-root");
+  var requestsRoot = document.getElementById("requests-root");
+
+  var state = { spaceId: null, date: "", name: "", contact: "", submitted: false };
+
+  function conflictFor(spaceId, date) {
+    if (!spaceId || !date) return null;
+    var hit = data.requests.filter(function (r) {
+      return r.spaceId === spaceId && r.date === date && r.status !== "cancelled";
+    })[0];
+    return hit || null;
+  }
+
+  function canSubmit() {
+    if (!state.spaceId || !state.date || !state.name.trim() || !state.contact.trim()) return false;
+    if (conflictFor(state.spaceId, state.date)) return false;
+    return true;
+  }
+
+  function renderForm() {
+    if (state.submitted) { renderConfirm(); return; }
+    var html = "";
+    html += '<div class="field"><div class="field-label">Which space?</div><div class="choices">';
+    SPACES.forEach(function (s) { html += '<button class="fx-opt' + (state.spaceId === s.id ? ' sel' : '') + '" style="padding:0.65rem 1rem;" data-space="' + s.id + '">' + escapeHtml(s.name) + ' <span class="sub">(' + escapeHtml(s.note) + ')</span></button>'; });
+    html += '</div></div>';
+
+    html += '<div class="field"><div class="field-label">Date</div><input type="date" id="date-input" value="' + escapeHtml(state.date) + '"></div>';
+
+    var conflict = conflictFor(state.spaceId, state.date);
+    if (conflict) {
+      html += '<div class="field conflict"><b>That date is already reserved for this space.</b>' + escapeHtml(spaceName(conflict.spaceId)) + ' on ' + escapeHtml(conflict.date) + ' is held for ' + escapeHtml(conflict.name) + ' (status: ' + escapeHtml(conflict.status) + '). Pick a different date or a different space, this request cannot go through as-is.</div>';
+    } else if (state.spaceId && state.date) {
+      var sp = spaceById(state.spaceId);
+      html += '<div class="field policy-box"><span class="sample-tag">Illustrative price, replace with your real current rate</span>';
+      html += '<h4>Locked price and policy for this request</h4>';
+      html += '<div class="rate">$' + sp.rate + (sp.unit === "night" ? ' / night' : ' / event') + '</div>';
+      html += '<ul>'; POLICY.forEach(function (p) { html += '<li>' + escapeHtml(p) + '</li>'; }); html += '</ul></div>';
+    }
+
+    html += '<div class="field"><div class="field-label">Your name</div><input type="text" id="name-input" value="' + state.name.replace(/"/g, '&quot;') + '" placeholder="First and last name"></div>';
+    html += '<div class="field"><div class="field-label">Phone or email</div><input type="text" id="contact-input" value="' + state.contact.replace(/"/g, '&quot;') + '" placeholder="How should we reach you?"></div>';
+    html += '<button class="fx-btn" id="submit-btn" style="margin-top:1.3rem;"' + (canSubmit() ? '' : ' disabled') + '>Send this request</button>';
+
+    formRoot.innerHTML = html;
+
+    Array.prototype.forEach.call(formRoot.querySelectorAll('[data-space]'), function (b) { b.addEventListener('click', function () { state.spaceId = b.dataset.space; renderForm(); }); });
+
+    var dateInput = document.getElementById('date-input');
+    dateInput.addEventListener('input', function () { state.date = dateInput.value; renderForm(); });
+
+    var nameInput = document.getElementById('name-input');
+    var contactInput = document.getElementById('contact-input');
+    nameInput.addEventListener('input', function () { state.name = nameInput.value; syncSubmit(); });
+    contactInput.addEventListener('input', function () { state.contact = contactInput.value; syncSubmit(); });
+    document.getElementById('submit-btn').addEventListener('click', function () { if (!canSubmit()) return; submitRequest(); });
+  }
+
+  function syncSubmit() { var b = document.getElementById('submit-btn'); if (b) b.disabled = !canSubmit(); }
+
+  function submitRequest() {
+    if (conflictFor(state.spaceId, state.date)) return;
+    var sp = spaceById(state.spaceId);
+    var req = { id: uid("r"), spaceId: state.spaceId, date: state.date, name: state.name, contact: state.contact, rate: sp.rate, unit: sp.unit, status: "new", submittedAt: todayStr() };
+    data.requests.push(req);
+    save();
+    state.submitted = true;
+    renderForm();
+    renderLoad();
+    renderRequests();
+  }
+
+  function renderConfirm() {
+    var last = data.requests[data.requests.length - 1];
+    var html = '<div class="confirm"><h3>Request captured, this is exactly what the client\'s confirmation email would say</h3><dl>';
+    html += '<dt>Space</dt><dd>' + escapeHtml(spaceName(last.spaceId)) + '</dd>';
+    html += '<dt>Date</dt><dd>' + escapeHtml(last.date) + '</dd>';
+    html += '<dt>Price</dt><dd>$' + last.rate + (last.unit === "night" ? ' / night (illustrative)' : ' / event (illustrative)') + '</dd>';
+    html += '<dt>Name</dt><dd>' + escapeHtml(last.name) + '</dd>';
+    html += '<dt>Contact</dt><dd>' + escapeHtml(last.contact) + '</dd>';
+    html += '</dl><p style="font-size:0.88rem; color:var(--ink-2);">A real version emails this exact summary to the client the moment a request is accepted, and blocks anyone else from booking this space on this date going forward, so nothing depends on a call being remembered or a line in a notebook.</p><button class="fx-btn-ghost" id="reset-form-btn">Start another request</button></div>';
+    formRoot.innerHTML = html;
+    document.getElementById('reset-form-btn').addEventListener('click', function () {
+      state = { spaceId: null, date: "", name: "", contact: "", submitted: false };
+      renderForm();
+    });
+  }
+
+  function renderLoad() {
+    var max = 1;
+    var counts = {};
+    SPACES.forEach(function (s) { counts[s.id] = 0; });
+    data.requests.forEach(function (r) { if (r.status !== "cancelled") { counts[r.spaceId] = (counts[r.spaceId] || 0) + 1; } });
+    SPACES.forEach(function (s) { if (counts[s.id] > max) max = counts[s.id]; });
+    var html = "";
+    SPACES.forEach(function (s) {
+      var c = counts[s.id] || 0;
+      var pct = Math.round((c / max) * 100);
+      html += '<div class="load-card"><div class="loc-name">' + escapeHtml(s.name) + '</div><div class="loc-city">' + escapeHtml(s.note) + '</div><div class="loc-count">' + c + '</div><div class="loc-label">date' + (c === 1 ? '' : 's') + ' on the books</div><div class="load-bar"><i style="width:' + pct + '%;"></i></div></div>';
+    });
+    loadRoot.innerHTML = html;
+  }
+
+  function renderRequests() {
+    if (!data.requests.length) { requestsRoot.innerHTML = '<p class="req-empty">No requests yet.</p>'; return; }
+    var sorted = data.requests.slice().sort(function (a, b) { return b.date.localeCompare(a.date); });
+    var html = "";
+    sorted.forEach(function (r) {
+      var idx = data.requests.indexOf(r);
+      html += '<div class="req-card"><div class="req-head"><div><div class="req-title">' + escapeHtml(r.name) + ' &middot; ' + escapeHtml(r.date) + '</div><div class="req-meta">Submitted ' + r.submittedAt + ' &middot; ' + escapeHtml(r.contact) + '</div></div></div>';
+      html += '<div class="req-badges"><span class="req-badge loc">' + escapeHtml(spaceName(r.spaceId)) + '</span>' + (r.status === "confirmed" ? '<span class="req-badge ok">Confirmed</span>' : '<span class="req-badge watch">New</span>') + '</div>';
+      if (r.status !== "confirmed") html += '<div class="req-row"><button class="req-btn-sm" onclick="__mlbc.confirm(' + idx + ')">Mark confirmed</button></div>';
+      html += '</div>';
+    });
+    requestsRoot.innerHTML = html;
+  }
+
+  document.getElementById('reset-btn').addEventListener('click', function () {
+    data = defaultData(); save();
+    state = { spaceId: null, date: "", name: "", contact: "", submitted: false };
+    renderForm(); renderLoad(); renderRequests();
+  });
+
+  window.__mlbc = {
+    confirm: function (idx) { data.requests[idx].status = "confirmed"; save(); renderLoad(); renderRequests(); }
+  };
+
+  renderForm();
+  renderLoad();
+  renderRequests();
+})();
+</script>
+</body>
+</html>
