@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Beavers Bend Luxury Cabin Rentals</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .channel-pill { display: inline-block; font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.03em; text-transform: uppercase; background: var(--surface-raised); border: 1px solid var(--rule); color: var(--ink-2); padding: 0.18rem 0.55rem; border-radius: 999px; }
+  .window-line { font-size: 0.85rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 24rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 92%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); white-space: pre-line; }
+  .bubble-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .field { display: flex; flex-direction: column; gap: 0.45rem; }
+  .field-label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  input[type="text"].wide, input[type="date"].wide { width: 100%; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus, input[type="date"].wide:focus, select:focus { outline: none; border-color: var(--brand); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .confirm h3 { margin: 0; font-size: 1.02rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+  .sample-tag { display:inline-block; background:var(--brand-soft); color:var(--brand); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:0.25rem 0.6rem; border-radius:5px; margin-bottom:0.9rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Beavers Bend Luxury Cabin Rentals</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Beavers Bend Luxury Cabin Rentals</span>
+  <h1 class="fx-h1">The confirmation, arrival details, and review request that don't wait on the office to remember them</h1>
+  <p class="fx-lede">Beavers Bend Luxury Cabin Rentals runs a large, growing set of cabins near Broken Bow Lake, booked across a direct site and (typically for cabin operators this size) channels like Airbnb and VRBO. Every one of those bookings needs the same three touchpoints: a confirmation the moment it lands, arrival details a few days out, and a review request after checkout. This page shows what that sequence looks like running automatically, on top of whatever booking channels are already in use, no platform switch required.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> Beavers Bend Luxury Cabin Rentals lists <strong>51 properties</strong> in Broken Bow, Oklahoma, ranging from 1-bedroom cottages to 14-bedroom estates (2 to 28 guests), marketed near Broken Bow Lake and Beavers Bend State Park, with each property page showing 550 days of nightly pricing and live availability (beaversbendcabins4rent.com, checked today). Reservations route through reservations@beaversbendcabins4rent.com. The original outreach note referenced roughly 57 listings and an estimated 70% year-over-year growth; the live site shows 51 listings today, which could reflect a normal change in active listings since that estimate was made, or simply be an approximation in the original note &mdash; it was not independently re-verified against a dated source. <strong>No owner or manager name is publicly listed on the site</strong>, so none is used here.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the reservations, guest names, cabin names, door codes, and channel mix (direct site / Airbnb / VRBO) below are a fictional sample, not real Beavers Bend bookings. Multi-channel distribution is a reasonable assumption for a cabin operator this size, not a confirmed fact about this specific business. All dollar figures, if shown, are illustrative. Nothing here sends a real text or email, this shows exactly what a guest would receive at each step. A real build connects to the booking channels' APIs or webhooks (direct site, Airbnb, VRBO) and sends through an actual SMS/email service, triggered by the reservation date rather than a manual click.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Office view: reservations</h3>
+      <span class="sample-tag">Sample reservations, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the guest sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top:1.4rem;">
+    <h3 class="panel-title">New reservation: captures which channel it came from</h3>
+    <p style="font-size:0.85rem; color:var(--ink-2); margin-top:-0.4rem;">Since bookings can land through the direct site, Airbnb, or VRBO, the intake form tags the channel up front, so the same confirmation-to-review sequence fires no matter where the booking originated.</p>
+    <div id="form-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before this goes further</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real text or email.</b> This demo shows exactly what a guest would receive at each step. A real version needs an actual SMS/email service (for example Twilio or SendGrid), wired to trigger on booking events and elapsed time rather than a manual button.</div>
+      <div class="lim"><b>The three touchpoints (confirmed, arrival details, review request) are driven by a manual "send next message" click here, for demo purposes.</b> A real build fires the arrival-details message automatically a set number of days before check-in, and the review request automatically some time after checkout, using each reservation's actual dates, no one has to remember to click anything.</div>
+      <div class="lim"><b>Pulling reservations from three channels (direct site, Airbnb, VRBO) at once is the harder part.</b> Airbnb and VRBO both restrict direct guest contact and API access differently than a site's own booking system; the real integration work is figuring out what each channel actually allows, not the messaging logic itself.</div>
+      <div class="lim"><b>The door code, WiFi details, and check-in time in the arrival message are placeholders.</b> A real build pulls each cabin's actual access details from wherever they're currently stored (property management system, spreadsheet, etc.), so the automation doesn't require re-entering that information anywhere.</div>
+      <div class="lim"><b>The 51-listing count and channel mix should be confirmed directly with the team before this gets built for real.</b> Everything above is pulled from the public site today; it can change, and internal booking-channel usage isn't something a public site page shows.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Beavers Bend Luxury Cabin Rentals.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Beavers Bend Luxury Cabin Rentals. Listing count and property details referenced were checked against beaversbendcabins4rent.com today. Reservation, guest, and cabin data below is a fictional sample, not connected to any real Beavers Bend booking, guest, or channel account.</p>
+</footer>
+
+<script>
+(function () {
+  var STAGE_NAMES = ["Booked", "Confirmed", "Arrival details sent", "Review requested"];
+  var STORAGE_KEY = "bbc-status-pipeline-reservations-v1";
+
+  function stageMessage(stage, r) {
+    if (stage === 1) {
+      return "Thanks for booking " + r.cabin + " with Beavers Bend Luxury Cabin Rentals! Your stay is confirmed for " + r.checkin + " to " + r.checkout + ". We'll send arrival details a few days before check-in, no need to reach out to confirm.";
+    }
+    if (stage === 2) {
+      return "Your stay at " + r.cabin + " starts soon (check-in " + r.checkin + ", 4:00 PM CT). Door code: " + r.doorCode + " (changes each stay). WiFi: " + r.wifi + ". Directions and a full arrival guide were also emailed. Text us here with any questions.";
+    }
+    if (stage === 3) {
+      return "Thanks for staying at " + r.cabin + "! We hope you had a great trip to Broken Bow. If you have a minute, a quick review helps other guests find us: [review link]. Hope to host you again.";
+    }
+    return null;
+  }
+
+  function seedReservations() {
+    var now = 1755878400000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "BBC-4401",
+        customer: "K. Renwick",
+        contact: "(405) 555-0118",
+        cabin: "Whispering Pines Lodge",
+        channel: "Direct site",
+        checkin: "Sep 4, 2026",
+        checkout: "Sep 7, 2026",
+        doorCode: "7734",
+        wifi: "BBCabins-Pines / lakeview2026",
+        stage: 1,
+        notifications: [
+          { text: "Thanks for booking Whispering Pines Lodge with Beavers Bend Luxury Cabin Rentals! Your stay is confirmed for Sep 4, 2026 to Sep 7, 2026. We'll send arrival details a few days before check-in, no need to reach out to confirm.", at: now }
+        ]
+      },
+      {
+        id: "BBC-4407",
+        customer: "D. & M. Osei",
+        contact: "(214) 555-0142",
+        cabin: "Broken Bow Overlook",
+        channel: "Airbnb",
+        checkin: "Sep 11, 2026",
+        checkout: "Sep 14, 2026",
+        doorCode: "2951",
+        wifi: "BBCabins-Overlook / cabinguest",
+        stage: 0,
+        notifications: []
+      },
+      {
+        id: "BBC-4412",
+        customer: "T. Vasquez",
+        contact: "(972) 555-0175",
+        cabin: "Cedar Ridge Retreat",
+        channel: "VRBO",
+        checkin: "Aug 28, 2026",
+        checkout: "Sep 1, 2026",
+        doorCode: "5083",
+        wifi: "BBCabins-Cedar / ridgeguest",
+        stage: 3,
+        notifications: [
+          { text: "Thanks for booking Cedar Ridge Retreat with Beavers Bend Luxury Cabin Rentals! Your stay is confirmed for Aug 28, 2026 to Sep 1, 2026. We'll send arrival details a few days before check-in, no need to reach out to confirm.", at: now + 3600000 },
+          { text: "Your stay at Cedar Ridge Retreat starts soon (check-in Aug 28, 2026, 4:00 PM CT). Door code: 5083 (changes each stay). WiFi: BBCabins-Cedar / ridgeguest. Directions and a full arrival guide were also emailed. Text us here with any questions.", at: now + 7200000 },
+          { text: "Thanks for staying at Cedar Ridge Retreat! We hope you had a great trip to Broken Bow. If you have a minute, a quick review helps other guests find us: [review link]. Hope to host you again.", at: now + 10800000 }
+        ]
+      },
+      {
+        id: "BBC-4418",
+        customer: "R. Halloran",
+        contact: "(479) 555-0193",
+        cabin: "Lakeside Hideaway",
+        channel: "Direct site",
+        checkin: "Sep 18, 2026",
+        checkout: "Sep 21, 2026",
+        doorCode: "6620",
+        wifi: "BBCabins-Lakeside / hideaway21",
+        stage: 0,
+        notifications: []
+      }
+    ];
+  }
+
+  function loadReservations() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedReservations();
+    saveReservations(seeded);
+    return seeded;
+  }
+  function saveReservations(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var reservations = loadReservations();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    reservations.forEach(function (r) {
+      var atLast = r.stage >= STAGE_NAMES.length - 1;
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + r.id + ' &mdash; ' + escapeHtml(r.customer) + '</h4><span class="stage-pill">' + STAGE_NAMES[r.stage] + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(r.cabin) + ' &middot; <span class="channel-pill">' + escapeHtml(r.channel) + '</span> &middot; ' + escapeHtml(r.contact) + '</div>';
+      html += '<div class="window-line">Check-in ' + escapeHtml(r.checkin) + ' &rarr; Check-out ' + escapeHtml(r.checkout) + '</div>';
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-advance="' + r.id + '"' + (atLast ? " disabled" : "") + '>' + (atLast ? "Sequence complete" : "Send next message (" + STAGE_NAMES[r.stage + 1] + ")") + '</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceReservation(btn.dataset.advance); });
+    });
+  }
+
+  function pushNotification(r, text) {
+    r.notifications.push({ text: text, at: Date.now() });
+  }
+
+  function advanceReservation(id) {
+    var r = reservations.find(function (x) { return x.id === id; });
+    if (!r || r.stage >= STAGE_NAMES.length - 1) return;
+    r.stage += 1;
+    var msg = stageMessage(r.stage, r);
+    if (msg) pushNotification(r, msg);
+    saveReservations(reservations);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    var prevVal = sel.value;
+    sel.innerHTML = "";
+    reservations.forEach(function (r) {
+      var opt = document.createElement("option");
+      opt.value = r.id;
+      opt.textContent = r.id + " - " + r.customer + " (" + r.cabin + ")";
+      sel.appendChild(opt);
+    });
+    if (prevVal && reservations.some(function (r) { return r.id === prevVal; })) sel.value = prevVal;
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var r = reservations.find(function (x) { return x.id === sel.value; }) || reservations[0];
+    var root = document.getElementById("thread-root");
+    if (!r.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this reservation. Send the next message in the office view on the left.</p>';
+      return;
+    }
+    var html = "";
+    r.notifications.forEach(function (n) {
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-time">Text/email to ' + escapeHtml(r.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  // ---- New reservation form ----
+  var CABIN_OPTIONS = ["Whispering Pines Lodge", "Broken Bow Overlook", "Cedar Ridge Retreat", "Lakeside Hideaway", "Hochatown Ridge House"];
+  var CHANNEL_OPTIONS = ["Direct site", "Airbnb", "VRBO"];
+  var formState = { name: "", contact: "", cabin: CABIN_OPTIONS[0], channel: CHANNEL_OPTIONS[0], checkin: "", checkout: "", submitted: false };
+  var formRoot = document.getElementById("form-root");
+
+  function canSubmitForm() {
+    return formState.name.trim() && formState.contact.trim() && formState.checkin.trim() && formState.checkout.trim();
+  }
+
+  function renderForm() {
+    if (formState.submitted) { renderFormConfirm(); return; }
+    var html = "";
+    html += '<div class="form-grid">';
+    html += '<div class="field"><div class="field-label">Guest name</div><input type="text" class="wide" id="f-name" value="' + escapeHtml(formState.name) + '" placeholder="First and last name"></div>';
+    html += '<div class="field"><div class="field-label">Phone or email</div><input type="text" class="wide" id="f-contact" value="' + escapeHtml(formState.contact) + '" placeholder="How should we reach them?"></div>';
+    html += '<div class="field"><div class="field-label">Cabin</div><select id="f-cabin">' + CABIN_OPTIONS.map(function (c) { return '<option' + (c === formState.cabin ? " selected" : "") + '>' + escapeHtml(c) + '</option>'; }).join("") + '</select></div>';
+    html += '<div class="field"><div class="field-label">Booking channel</div><select id="f-channel">' + CHANNEL_OPTIONS.map(function (c) { return '<option' + (c === formState.channel ? " selected" : "") + '>' + escapeHtml(c) + '</option>'; }).join("") + '</select></div>';
+    html += '<div class="field"><div class="field-label">Check-in</div><input type="text" class="wide" id="f-checkin" value="' + escapeHtml(formState.checkin) + '" placeholder="e.g. Oct 3, 2026"></div>';
+    html += '<div class="field"><div class="field-label">Check-out</div><input type="text" class="wide" id="f-checkout" value="' + escapeHtml(formState.checkout) + '" placeholder="e.g. Oct 6, 2026"></div>';
+    html += '</div>';
+    html += '<button class="fx-btn" id="f-submit" style="margin-top:1rem;"' + (canSubmitForm() ? "" : " disabled") + '>Submit reservation</button>';
+    formRoot.innerHTML = html;
+
+    document.getElementById("f-name").addEventListener("input", function (e) { formState.name = e.target.value; syncFormBtn(); });
+    document.getElementById("f-contact").addEventListener("input", function (e) { formState.contact = e.target.value; syncFormBtn(); });
+    document.getElementById("f-cabin").addEventListener("change", function (e) { formState.cabin = e.target.value; });
+    document.getElementById("f-channel").addEventListener("change", function (e) { formState.channel = e.target.value; });
+    document.getElementById("f-checkin").addEventListener("input", function (e) { formState.checkin = e.target.value; syncFormBtn(); });
+    document.getElementById("f-checkout").addEventListener("input", function (e) { formState.checkout = e.target.value; syncFormBtn(); });
+    document.getElementById("f-submit").addEventListener("click", function () {
+      if (!canSubmitForm()) return;
+      var newId = "BBC-" + (4420 + reservations.length * 5);
+      var newRes = {
+        id: newId,
+        customer: formState.name,
+        contact: formState.contact,
+        cabin: formState.cabin,
+        channel: formState.channel,
+        checkin: formState.checkin,
+        checkout: formState.checkout,
+        doorCode: String(1000 + Math.floor(Math.random() * 8999)),
+        wifi: "BBCabins-Guest / stayguest",
+        stage: 0,
+        notifications: []
+      };
+      reservations.push(newRes);
+      saveReservations(reservations);
+      formState.submitted = true;
+      formState.lastId = newId;
+      formState.lastChannel = formState.channel;
+      renderForm();
+      renderShop();
+      populatePicker();
+    });
+  }
+
+  function syncFormBtn() {
+    var btn = document.getElementById("f-submit");
+    if (btn) btn.disabled = !canSubmitForm();
+  }
+
+  function renderFormConfirm() {
+    var html = '<div class="confirm">';
+    html += '<h3>Reservation captured as ' + formState.lastId + ', tagged as ' + escapeHtml(formState.lastChannel) + '</h3>';
+    html += '<p style="font-size:0.9rem; color:var(--ink-2);">It now appears at "Booked" in the office view above. A real version sends the guest their confirmation the moment this is submitted, whichever channel it came in through.</p>';
+    html += '<button class="fx-btn-ghost" id="f-reset" style="align-self:flex-start;">Submit another reservation</button>';
+    html += '</div>';
+    formRoot.innerHTML = html;
+    document.getElementById("f-reset").addEventListener("click", function () {
+      formState = { name: "", contact: "", cabin: CABIN_OPTIONS[0], channel: CHANNEL_OPTIONS[0], checkin: "", checkout: "", submitted: false };
+      renderForm();
+    });
+  }
+
+  renderShop();
+  populatePicker();
+  renderThread();
+  renderForm();
+})();
+</script>
+</body>
+</html>
