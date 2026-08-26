@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Service-ticket escalation tracker template</title>
-<link rel="stylesheet" href="../assets/theme.css">
+<title>Advanced Eye Care Center billing dispute tracker example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
 <style>
   .stt-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
   .stt-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
@@ -59,40 +59,42 @@
   .limits { display: flex; flex-direction: column; gap: 1.1rem; }
   .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
   .lim b { color: var(--ink); font-weight: 640; }
+  .price-tag { font-family: var(--mono); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
 </style>
 </head>
 <body>
 <nav class="fx-nav">
   <div class="fx-nav-row">
-    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
-    <span class="fx-crumb"><a href="../index.html">Templates</a> / Service-ticket escalation tracker</span>
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Service-ticket escalation tracker</a> / Advanced Eye Care Center example</span>
   </div>
 </nav>
 <header class="fx-hero">
-  <span class="fx-kicker">Template, not built for a specific business</span>
-  <h1 class="fx-h1">A repeat visit that never fixed anything should not restart from scratch</h1>
-  <p class="fx-lede">Many field-service businesses take a request through a web form or a shared inbox, dispatch someone, and hope it gets logged. When a fix doesn't hold, the customer calls back, describes the same problem again, and the case effectively starts over with no record that this is the third truck roll for the same issue. This page shows one small, working tool that fixes that: an internal queue where each request is a ticket with a stage (received, dispatched, visited, resolved and verified), an automatic flag when a ticket sits too long in one stage, and a repeat-visit counter so a case that keeps coming back surfaces instead of blending into the queue as if it were new.</p>
+  <span class="fx-kicker">Grounded in a real business, still a work sample</span>
+  <h1 class="fx-h1">A billing dispute should not go quiet for six months</h1>
+  <p class="fx-lede">Advanced Eye Care Center's own BBB file (Denton, TX) includes a complaint filed October 23, 2024: a patient called before a March 5, 2024 appointment to confirm the office accepted their new insurance, was billed $127.52 as out-of-network anyway, then emailed the office twice (6/26/24 and 7/10/24, the second bounced back as if the address was blocked), and mailed a paper letter, all with no response, until the account was sent to collections. The BBB record shows no business response was ever filed. This example adds a stage-tracked billing dispute queue behind the office's existing phone and email intake, so a dispute that has gone unanswered for a set number of days surfaces automatically instead of relying on someone remembering to check back.</p>
 </header>
 <main class="fx-main">
-  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the office view reads from whatever already takes the request (a web form, a shared inbox, a dispatch app), and the overdue/repeat-visit thresholds and any automatic status message are set to match how that business actually operates.</p></div>
+  <div class="fx-notice"><p><strong>Everything below is fictional sample data.</strong> Patient names, dispute records, and dollar amounts are illustrative and do not represent any real Advanced Eye Care Center patient, account, or medical/billing record. This independent work sample is not affiliated with or endorsed by Advanced Eye Care Center.</p></div>
 
   <div class="stt-tabs">
-    <button class="stt-tab active" data-view="office" type="button">Office / dispatch view</button>
-    <button class="stt-tab" data-view="requester" type="button">Requester status check</button>
+    <button class="stt-tab active" data-view="office" type="button">Billing office view</button>
+    <button class="stt-tab" data-view="requester" type="button">Patient status check</button>
   </div>
 
   <section class="stt-view active" id="view-office">
     <div class="stt-cols">
       <div>
-        <h2 class="fx-h2" style="margin-top:0;">Log a new ticket</h2>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new billing dispute</h2>
+        <p style="color:var(--muted);font-size:0.82rem;margin-top:-0.6rem;">In a real build, this logs automatically the moment a patient calls, emails, or mails in a billing question, instead of someone re-typing it here.</p>
         <form id="add-form" class="form-grid">
-          <div class="field span2"><label for="f-property">Property / account</label><input type="text" id="f-property" placeholder="e.g. Sample Property A"></div>
-          <div class="field span2"><label for="f-issue">Issue description</label><input type="text" id="f-issue" placeholder="e.g. Unit 4 dryer, no heat"></div>
+          <div class="field span2"><label for="f-property">Patient / account (sample)</label><input type="text" id="f-property" placeholder="e.g. Sample patient, acct #4471"></div>
+          <div class="field span2"><label for="f-issue">Dispute description</label><input type="text" id="f-issue" placeholder="e.g. Billed out-of-network despite confirmed coverage"></div>
           <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
         </form>
       </div>
       <div>
-        <h2 class="fx-h2" style="margin-top:0;">Open tickets, worst first</h2>
+        <h2 class="fx-h2" style="margin-top:0;">Open disputes, worst first</h2>
         <div id="queue-root"></div>
         <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
       </div>
@@ -100,44 +102,46 @@
   </section>
 
   <section class="stt-view" id="view-requester">
-    <h2 class="fx-h2" style="margin-top:0;">Check the status of a service ticket</h2>
+    <h2 class="fx-h2" style="margin-top:0;">Check the status of a billing dispute</h2>
+    <p style="color:var(--ink-2);font-size:0.92rem;margin-top:-0.6rem;max-width:66ch;">The BBB record describes a patient who called, emailed twice, and mailed a letter over several months just to find out whether anyone had looked at their dispute. This gives a patient a way to check without another unanswered call.</p>
     <div class="lookup-box">
       <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code</label>
-      <input type="text" id="lookup-ref" placeholder="e.g. ST-1001">
+      <input type="text" id="lookup-ref" placeholder="e.g. AEC-1001">
       <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
       <div id="lookup-root"></div>
     </div>
-    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try ST-1001, ST-1002, ST-1003 or ST-1004 from the office view's sample queue.</p>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try AEC-1001, AEC-1002, AEC-1003 or AEC-1004 from the billing office view's sample queue.</p>
   </section>
 
   <section>
-    <h2 class="fx-h2">How this gets built for real</h2>
+    <h2 class="fx-h2">How this maps to Advanced Eye Care Center specifically</h2>
     <div class="limits">
-      <div class="lim"><b>The overdue and repeat-visit thresholds shown here are illustrative.</b> A real build uses whatever cutoff the business actually treats as too long, and whatever visit count it considers a pattern worth escalating.</div>
-      <div class="lim"><b>The status message here is only a log entry.</b> A real build sends it as an actual text or email through the business's existing channel, not a new system the customer has to learn.</div>
-      <div class="lim"><b>The reference code is whatever the business already hands out.</b> A real build reads from an existing ticket, work order, or confirmation number instead of inventing a new one.</div>
-      <div class="lim"><b>See it built for a real business: <a href="examples/fmb-laundry/">FMB Laundry</a>, <a href="examples/sun-solar/">Sun Solar</a>, or <a href="examples/advanced-eye-care-center/">Advanced Eye Care Center</a>.</b></div>
+      <div class="lim"><b>Stages mirror what actually happened in the BBB complaint.</b> Logged, first response sent, second follow-up (patient escalates), escalated internally, resolved. The AEC-1001 sample dispute below models the real timeline: initial call before the appointment, a charge the patient disputed, two follow-up emails (the second effectively undeliverable), and no internal escalation before it aged into collections.</div>
+      <div class="lim"><b>The overdue window shown here (14 days sitting in one stage) is illustrative.</b> The real complaint describes gaps of weeks between contact attempts and a total unanswered period of several months; the real cutoff would be set with Advanced Eye Care's billing team, not guessed.</div>
+      <div class="lim"><b>Notifications here are a log entry only, nothing is actually sent.</b> A real build would confirm receipt and each status change to the patient automatically, through the office's existing phone/email intake, so a second or third follow-up from the patient's side is never the only way to get a response.</div>
+      <div class="lim"><b>No stakeholder name is used because none was publicly confirmed.</b> Advanced Eye Care Center's own site lists four treating clinicians (Lawrence A. Shafron, M.D., F.A.C.S.; Rodgers Eckhart, M.D.; Israel Ackerman, M.D.; and Eurika Rajbanshi, O.D.) but does not name a billing or practice manager, so this example addresses the billing office generally rather than inventing a contact.</div>
+      <div class="lim"><b>Deliberately narrow in scope.</b> This tool tracks and escalates the status of a billing dispute once it's logged; it does not adjudicate insurance network status or determine who owes what. Illustrative dollar amounts (like the $127.52 figure referenced from the public BBB record) are shown only to make the sample realistic.</div>
     </div>
   </section>
 </main>
-<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional ticket and requester data on this page, not connected to any live system.</p></footer>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Advanced Eye Care Center.</strong></p><p>Prepared by Shlok Sarnayak. Fictional patient and dispute data on this page, not connected to any live Advanced Eye Care Center system, and no real patient or health information is used.</p></footer>
 <script>
 (function () {
   "use strict";
-  var STORE_KEY = "stt_template_generic_v1";
+  var STORE_KEY = "stt_advanced_eye_care_v1";
 
   var STAGES = [
-    { key: "received", label: "Received" },
-    { key: "dispatched", label: "Dispatched" },
-    { key: "visited", label: "Visited" },
-    { key: "resolved", label: "Resolved & verified" }
+    { key: "logged", label: "Logged" },
+    { key: "first-response", label: "First response sent" },
+    { key: "followup", label: "Patient followed up again" },
+    { key: "resolved", label: "Resolved" }
   ];
   var STAGE_INDEX = {}; STAGES.forEach(function (s, i) { STAGE_INDEX[s.key] = i; });
-  var VISITED_IDX = STAGE_INDEX.visited;
+  var FOLLOWUP_IDX = STAGE_INDEX.followup;
   var RESOLVED_IDX = STAGE_INDEX.resolved;
-  var OVERDUE_HOURS = 120; // illustrative: 5 days sitting in one open stage
+  var OVERDUE_HOURS = 336; // illustrative: 14 days sitting in one open stage
   var WATCH_HOURS = OVERDUE_HOURS * 0.6;
-  var REPEAT_VISIT_THRESHOLD = 3;
+  var REPEAT_CONTACT_THRESHOLD = 2;
 
   function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
   function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
@@ -155,46 +159,45 @@
       seq: 1004,
       tickets: [
         {
-          ref: "ST-1001", property: "Sample Property A", issue: "Building 2 washer, will not drain", visitCount: 3,
-          stageIdx: STAGE_INDEX.dispatched, enteredStageAt: hoursFromNow(-30),
+          ref: "AEC-1001", property: "Sample patient, acct #4471", issue: "Billed $127.52 out-of-network despite confirming coverage before 3/5 appointment (illustrative)", visitCount: 2,
+          stageIdx: STAGE_INDEX.followup, enteredStageAt: hoursFromNow(-820),
           history: [
-            { stage: "received", at: hoursFromNow(-260) }, { stage: "dispatched", at: hoursFromNow(-255) },
-            { stage: "visited", at: hoursFromNow(-190) }, { stage: "dispatched", at: hoursFromNow(-186) },
-            { stage: "visited", at: hoursFromNow(-96) }, { stage: "dispatched", at: hoursFromNow(-30) }
+            { stage: "logged", at: hoursFromNow(-2800) }, { stage: "first-response", at: hoursFromNow(-2650) },
+            { stage: "followup", at: hoursFromNow(-1550) }, { stage: "first-response", at: hoursFromNow(-1500) },
+            { stage: "followup", at: hoursFromNow(-820) }
           ],
-          notes: [{ at: hoursFromNow(-95), text: "Second visit, replaced pump, still not draining fully. Redispatched a third time." }],
+          notes: [{ at: hoursFromNow(-819), text: "Second follow-up email from patient bounced back as undeliverable. Third contact attempt (mailed letter) logged, no internal escalation recorded yet. This is the pattern described in the October 2024 BBB complaint." }],
           notifications: [
-            { at: hoursFromNow(-255), text: "Simulated update to requester: your ticket has been dispatched." },
-            { at: hoursFromNow(-96), text: "Simulated update to requester: technician visited, issue not resolved, another visit has been scheduled." },
-            { at: hoursFromNow(-30), text: "Simulated update to requester: your ticket has been dispatched." }
+            { at: hoursFromNow(-2650), text: "Simulated update to patient: your billing dispute has been received." },
+            { at: hoursFromNow(-1500), text: "Simulated update to patient: we are reviewing your dispute, will follow up." },
+            { at: hoursFromNow(-820), text: "Simulated update to patient: your follow-up has been logged and escalated." }
           ]
         },
         {
-          ref: "ST-1002", property: "Sample Property B", issue: "Unit 4 dryer, no heat", visitCount: 0,
-          stageIdx: STAGE_INDEX.received, enteredStageAt: hoursFromNow(-150),
-          history: [{ stage: "received", at: hoursFromNow(-150) }],
+          ref: "AEC-1002", property: "Sample patient, acct #4502", issue: "Requesting itemized statement after insurance EOB mismatch (illustrative)", visitCount: 0,
+          stageIdx: STAGE_INDEX.logged, enteredStageAt: hoursFromNow(-40),
+          history: [{ stage: "logged", at: hoursFromNow(-40) }],
           notes: [],
-          notifications: [{ at: hoursFromNow(-150), text: "Simulated update to requester: your ticket has been received." }]
+          notifications: [{ at: hoursFromNow(-40), text: "Simulated update to patient: your billing dispute has been received." }]
         },
         {
-          ref: "ST-1003", property: "Sample Property C", issue: "Card reader on machine 6 not accepting payment", visitCount: 0,
-          stageIdx: STAGE_INDEX.visited, enteredStageAt: hoursFromNow(-8),
-          history: [{ stage: "received", at: hoursFromNow(-40) }, { stage: "dispatched", at: hoursFromNow(-36) }, { stage: "visited", at: hoursFromNow(-8) }],
-          notes: [{ at: hoursFromNow(-8), text: "Card reader reseated and tested, working." }],
+          ref: "AEC-1003", property: "Sample patient, acct #4519", issue: "Disputes copay amount charged at check-in (illustrative)", visitCount: 0,
+          stageIdx: STAGE_INDEX["first-response"], enteredStageAt: hoursFromNow(-60),
+          history: [{ stage: "logged", at: hoursFromNow(-96) }, { stage: "first-response", at: hoursFromNow(-60) }],
+          notes: [{ at: hoursFromNow(-60), text: "Billing reviewed copay schedule, response sent to patient explaining charge." }],
           notifications: [
-            { at: hoursFromNow(-36), text: "Simulated update to requester: your ticket has been dispatched." },
-            { at: hoursFromNow(-8), text: "Simulated update to requester: technician visited, pending verification." }
+            { at: hoursFromNow(-60), text: "Simulated update to patient: we have reviewed your dispute and responded." }
           ]
         },
         {
-          ref: "ST-1004", property: "Sample Property D", issue: "Building 1 dryer, drum not turning", visitCount: 1,
-          stageIdx: STAGE_INDEX.resolved, enteredStageAt: hoursFromNow(-2),
-          history: [{ stage: "received", at: hoursFromNow(-96) }, { stage: "dispatched", at: hoursFromNow(-92) }, { stage: "visited", at: hoursFromNow(-20) }, { stage: "resolved", at: hoursFromNow(-2) }],
-          notes: [{ at: hoursFromNow(-2), text: "Belt replaced, tested through a full cycle, confirmed working." }],
+          ref: "AEC-1004", property: "Sample patient, acct #4488", issue: "Refund owed after overpayment at time of service (illustrative)", visitCount: 1,
+          stageIdx: STAGE_INDEX.resolved, enteredStageAt: hoursFromNow(-5),
+          history: [{ stage: "logged", at: hoursFromNow(-190) }, { stage: "first-response", at: hoursFromNow(-160) }, { stage: "followup", at: hoursFromNow(-80) }, { stage: "resolved", at: hoursFromNow(-5) }],
+          notes: [{ at: hoursFromNow(-5), text: "Refund of $42.00 (illustrative) issued and confirmed with patient by phone." }],
           notifications: [
-            { at: hoursFromNow(-92), text: "Simulated update to requester: your ticket has been dispatched." },
-            { at: hoursFromNow(-20), text: "Simulated update to requester: technician visited, pending verification." },
-            { at: hoursFromNow(-2), text: "Simulated update to requester: your issue is resolved and verified." }
+            { at: hoursFromNow(-160), text: "Simulated update to patient: we are reviewing your dispute, will follow up." },
+            { at: hoursFromNow(-80), text: "Simulated update to patient: your follow-up has been logged and escalated." },
+            { at: hoursFromNow(-5), text: "Simulated update to patient: your dispute is resolved." }
           ]
         }
       ]
@@ -211,7 +214,7 @@
   function badges(t) {
     var out = [];
     if (t.stageIdx >= RESOLVED_IDX) { out.push({ cls: "done", label: "Resolved" }); return out; }
-    if (t.visitCount >= REPEAT_VISIT_THRESHOLD) out.push({ cls: "repeat", label: "Repeat visit ×" + t.visitCount });
+    if (t.visitCount >= REPEAT_CONTACT_THRESHOLD) out.push({ cls: "repeat", label: "Repeat contact ×" + t.visitCount });
     var stuckHrs = hoursAgo(t.enteredStageAt);
     if (stuckHrs > OVERDUE_HOURS) out.push({ cls: "overdue", label: "Overdue" });
     else if (stuckHrs > WATCH_HOURS) out.push({ cls: "watch", label: "Watch" });
@@ -222,7 +225,7 @@
   function sortScore(t) {
     if (t.stageIdx >= RESOLVED_IDX) return -1e9;
     var score = hoursAgo(t.enteredStageAt);
-    if (t.visitCount >= REPEAT_VISIT_THRESHOLD) score += 10000;
+    if (t.visitCount >= REPEAT_CONTACT_THRESHOLD) score += 10000;
     return score;
   }
 
@@ -233,7 +236,7 @@
     var done = data.tickets.filter(function (t) { return t.stageIdx >= RESOLVED_IDX; })
       .slice().sort(function (a, b) { return b.enteredStageAt - a.enteredStageAt; });
     var html = "";
-    if (!open.length) html += '<p class="empty">Nothing open. Every ticket is resolved and verified.</p>';
+    if (!open.length) html += '<p class="empty">Nothing open. Every dispute is resolved.</p>';
     open.forEach(function (t) { html += renderCard(t); });
     if (done.length) {
       html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently resolved</h3>';
@@ -248,7 +251,7 @@
     var bs = badges(t);
     var html = '<div class="ticket-card"><div class="ticket-head"><div><div class="ticket-title">' + escapeHtml(t.property) + " &middot; " + t.ref + '</div><div class="ticket-meta">' + escapeHtml(t.issue) + "</div></div><div class=\"badge-row\">" + bs.map(function (b) { return '<span class="badge ' + b.cls + '">' + b.label + '</span>'; }).join("") + "</div></div>";
     html += '<div class="ticket-summary">Stage: ' + stageLabel + " (" + fmtDuration(hoursAgo(t.enteredStageAt)) + " in this stage)</div>";
-    if (t.visitCount > 0) html += '<div class="visit-note">Visited ' + t.visitCount + " time" + (t.visitCount === 1 ? "" : "s") + " on this ticket without a confirmed fix so far.</div>";
+    if (t.visitCount > 0) html += '<div class="visit-note">Patient has followed up ' + t.visitCount + " time" + (t.visitCount === 1 ? "" : "s") + " on this dispute without resolution so far.</div>";
     if (t.notes.length) {
       html += '<div class="log">';
       t.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
@@ -262,9 +265,9 @@
     if (t.stageIdx < RESOLVED_IDX) {
       html += '<div class="note-row" style="display:flex;gap:0.4rem;margin-top:0.6rem;"><input type="text" id="note-' + idx + '" placeholder="Add an internal note" style="flex:1;font:inherit;font-size:0.8rem;padding:0.4rem 0.6rem;border:1px solid var(--rule);border-radius:var(--radius-sm);"><button class="fx-btn-ghost" onclick="__stt.addNote(' + idx + ')">Add</button></div>';
       html += '<div class="ticket-actions">';
-      if (t.stageIdx === VISITED_IDX) {
-        html += '<button class="fx-btn" onclick="__stt.resolve(' + idx + ')">Resolved, mark verified</button>';
-        html += '<button class="fx-btn-ghost" onclick="__stt.redispatch(' + idx + ')">Not fixed, redispatch</button>';
+      if (t.stageIdx === FOLLOWUP_IDX) {
+        html += '<button class="fx-btn" onclick="__stt.resolve(' + idx + ')">Resolved</button>';
+        html += '<button class="fx-btn-ghost" onclick="__stt.escalateAgain(' + idx + ')">Respond, but not yet resolved</button>';
       } else {
         var nextLabel = STAGES[t.stageIdx + 1].label;
         html += '<button class="fx-btn-ghost" onclick="__stt.advance(' + idx + ')">Advance to ' + escapeHtml(nextLabel) + '</button>';
@@ -275,7 +278,7 @@
     return html;
   }
 
-  function notify(t, text) { t.notifications.push({ at: Date.now(), text: "Simulated update to requester: " + text }); }
+  function notify(t, text) { t.notifications.push({ at: Date.now(), text: "Simulated update to patient: " + text }); }
 
   window.__stt = {
     addNote: function (idx) {
@@ -290,8 +293,8 @@
       t.stageIdx += 1;
       t.enteredStageAt = Date.now();
       t.history.push({ stage: STAGES[t.stageIdx].key, at: Date.now() });
-      var msgs = { dispatched: "your ticket has been dispatched.", visited: "technician visited, pending verification." };
-      notify(t, msgs[STAGES[t.stageIdx].key] || "your ticket status changed.");
+      var msgs = { "first-response": "we are reviewing your dispute, will follow up.", followup: "your follow-up has been logged and escalated." };
+      notify(t, msgs[STAGES[t.stageIdx].key] || "your dispute status changed.");
       save(); renderQueue();
     },
     resolve: function (idx) {
@@ -299,16 +302,16 @@
       t.stageIdx = RESOLVED_IDX;
       t.enteredStageAt = Date.now();
       t.history.push({ stage: "resolved", at: Date.now() });
-      notify(t, "your issue is resolved and verified.");
+      notify(t, "your dispute is resolved.");
       save(); renderQueue();
     },
-    redispatch: function (idx) {
+    escalateAgain: function (idx) {
       var t = data.tickets[idx];
       t.visitCount += 1;
-      t.stageIdx = STAGE_INDEX.dispatched;
+      t.stageIdx = STAGE_INDEX["first-response"];
       t.enteredStageAt = Date.now();
-      t.history.push({ stage: "dispatched", at: Date.now() });
-      notify(t, "technician visited, issue not resolved, another visit has been scheduled.");
+      t.history.push({ stage: "first-response", at: Date.now() });
+      notify(t, "we responded, still working on your dispute.");
       save(); renderQueue();
     }
   };
@@ -317,12 +320,12 @@
     e.preventDefault();
     var property = document.getElementById("f-property").value.trim();
     var issue = document.getElementById("f-issue").value.trim();
-    if (!property || !issue) { alert("Fill in the property/account and the issue description."); return; }
+    if (!property || !issue) { alert("Fill in the patient/account and the dispute description."); return; }
     data.seq += 1;
-    var ref = "ST-" + data.seq;
+    var ref = "AEC-" + data.seq;
     var now = Date.now();
-    var t = { ref: ref, property: property, issue: issue, visitCount: 0, stageIdx: STAGE_INDEX.received, enteredStageAt: now, history: [{ stage: "received", at: now }], notes: [], notifications: [] };
-    notify(t, "your ticket has been received.");
+    var t = { ref: ref, property: property, issue: issue, visitCount: 0, stageIdx: STAGE_INDEX.logged, enteredStageAt: now, history: [{ stage: "logged", at: now }], notes: [], notifications: [] };
+    notify(t, "your billing dispute has been received.");
     data.tickets.push(t);
     save(); renderQueue();
     document.getElementById("add-form").reset();
@@ -340,7 +343,7 @@
     var t = data.tickets.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
     if (!t) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No record found for that reference code. Please contact the office directly.</p></div>'; return; }
     var html = '<div class="lookup-result"><h3>' + escapeHtml(t.issue) + '</h3>';
-    if (t.visitCount > 0) html += '<p class="visit-note">This ticket has needed ' + t.visitCount + " visit" + (t.visitCount === 1 ? "" : "s") + " so far without a confirmed fix.</p>";
+    if (t.visitCount > 0) html += '<p class="visit-note">You have followed up ' + t.visitCount + " time" + (t.visitCount === 1 ? "" : "s") + " on this dispute so far.</p>";
     STAGES.forEach(function (s, i) {
       var cls = i < t.stageIdx ? "done" : (i === t.stageIdx ? "active" : "pending");
       var histEntry = t.history.filter(function (h) { return h.stage === s.key; })[0];
