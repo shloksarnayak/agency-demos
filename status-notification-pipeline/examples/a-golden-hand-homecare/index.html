@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for A Golden Hand Home Care</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .window-line { font-size: 0.85rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .note-row { display: none; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.3rem; }
+  .note-row.open { display: flex; }
+  .note-row input[type="text"] { font: inherit; font-size: 0.82rem; padding: 0.45rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-raised); width: 16rem; flex: 1; }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 92%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .field { display: flex; flex-direction: column; gap: 0.45rem; }
+  .field-label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  input[type="text"].wide { width: 100%; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus, select:focus { outline: none; border-color: var(--brand); }
+  textarea { font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; resize: vertical; min-height: 4rem; }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .confirm h3 { margin: 0; font-size: 1.02rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+  .sample-tag { display:inline-block; background:var(--brand-soft); color:var(--brand); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:0.25rem 0.6rem; border-radius:5px; margin-bottom:0.9rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / A Golden Hand Home Care</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for A Golden Hand Home Care</span>
+  <h1 class="fx-h1">The visit update a family shouldn't have to call and ask for</h1>
+  <p class="fx-lede">Your team runs a dedicated Client Coordinator, Care Coordinator, and Accounting Coordinator, all reachable by phone and a single contact form. Your own site describes the agency as "only a phone call away," which is reassuring, but it also means a family only learns a caregiver is running late, a visit changed, or a shift is confirmed by picking up the phone and asking. Nearby franchises like Home Instead and SYNERGY HomeCare already give families a portal that shows caregiver visits and schedule changes automatically.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> a direct fetch of your live site today found personal care, companion care, medication management, Alzheimer's/Dementia support, and 24-hour on-call RN service listed, plus a Client Coordinator, Care Coordinator, and Accounting Coordinator role structure, phone (971-600-5949) and a contact form are the only ways a family can reach anyone, and no scheduling portal, family app, or visit-confirmation system appears anywhere on the site.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the clients, family contacts, and caregiver name below are fictional, not your real clients or schedules. Nothing here sends a real text or email, this shows exactly what a family member would receive at each step. A real build connects to whatever system your Care Coordinator already uses to confirm a shift, and swaps in an actual SMS/email service to send it.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Care Coordinator view: update a visit</h3>
+      <span class="sample-tag">Sample visits, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the family sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top:1.4rem;">
+    <h3 class="panel-title">Family request: replaces phone-only intake</h3>
+    <div id="form-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real text or email.</b> This demo shows exactly what a family member would receive at each step. A real version needs an actual SMS/email service (for example Twilio or SendGrid) connected to whatever your Care Coordinator already uses to confirm caregiver shifts.</div>
+      <div class="lim"><b>The four stages shown (visit scheduled, caregiver confirmed, visit in progress, visit complete) are a typical home-care visit flow, not copied from your internal process.</b> Worth a short conversation with your Care Coordinator before this gets built for real, your team may track shift confirmation differently.</div>
+      <div class="lim"><b>The "only a phone call away" language and coordinator role structure are quoted and described directly from your live site, the gap is a reasonable read of what's publicly visible, not a claim about what happens on calls we haven't heard.</b> Families may already get informal updates by phone that don't show up on your website.</div>
+      <div class="lim"><b>The family request form only captures a schedule question or update request, it doesn't book a specific visit.</b> Keeping it to "what's needed and how to reach you" is deliberate, matching your current phone/contact-form intake rather than promising a live scheduling calendar this demo doesn't have.</div>
+      <div class="lim"><b>Visit notes shown below (e.g. "assisted with morning routine, blood pressure checked") are fictional placeholders.</b> A real build only surfaces whatever level of detail your caregivers and RN are comfortable sharing with family, and stays within any HIPAA-related handling your agency already follows.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for A Golden Hand Home Care Services. Site content, coordinator roles, and contact structure verified by direct fetch today. Client, family, and caregiver data below is a fictional sample, not connected to any of your real clients or schedules.</p>
+</footer>
+
+<script>
+(function () {
+  var STAGE_NAMES = ["Visit scheduled", "Caregiver confirmed", "Visit in progress", "Visit complete"];
+  var CAREGIVER_NAME = "Renee";
+  var STORAGE_KEY = "aghhc-status-pipeline-jobs-v1";
+
+  var STAGE_MESSAGES = [
+    null,
+    function (j) { return "This is A Golden Hand Home Care. " + CAREGIVER_NAME + " is confirmed for " + j.clientFirst + "'s visit " + j.window + ". We'll text you again when the visit starts, no need to call and check."; },
+    function (j) { return CAREGIVER_NAME + " has arrived and " + j.clientFirst + "'s visit is now in progress."; },
+    function (j) { return j.clientFirst + "'s visit is complete. Today's notes: " + j.visitNote + "."; }
+  ];
+
+  function seedJobs() {
+    var now = 1755878400000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "AGH-3011",
+        client: "D. Whitfield",
+        clientFirst: "Dorothy",
+        contact: "(503) 555-0131",
+        familyContact: "Karen (daughter)",
+        service: "Personal care & medication reminders",
+        stage: 1,
+        window: "this morning, 9:00 to 11:00 AM",
+        visitNote: "",
+        notifications: [
+          { text: "This is A Golden Hand Home Care. " + CAREGIVER_NAME + " is confirmed for Dorothy's visit this morning, 9:00 to 11:00 AM. We'll text you again when the visit starts, no need to call and check.", at: now }
+        ]
+      },
+      {
+        id: "AGH-3014",
+        client: "H. Ostrander",
+        clientFirst: "Harold",
+        contact: "(503) 555-0176",
+        familyContact: "Mike (son)",
+        service: "Companion care & wellness check",
+        stage: 3,
+        window: "this afternoon, 1:00 to 3:00 PM",
+        visitNote: "assisted with lunch, went for a short walk, blood pressure checked and within normal range",
+        notifications: [
+          { text: "This is A Golden Hand Home Care. " + CAREGIVER_NAME + " is confirmed for Harold's visit this afternoon, 1:00 to 3:00 PM. We'll text you again when the visit starts, no need to call and check.", at: now + 3600000 },
+          { text: CAREGIVER_NAME + " has arrived and Harold's visit is now in progress.", at: now + 7200000 },
+          { text: "Harold's visit is complete. Today's notes: assisted with lunch, went for a short walk, blood pressure checked and within normal range.", at: now + 10800000 }
+        ]
+      },
+      {
+        id: "AGH-3019",
+        client: "P. Nguyen",
+        clientFirst: "Phuong",
+        contact: "(503) 555-0154",
+        familyContact: "Linh (daughter)",
+        service: "Alzheimer's/Dementia support",
+        stage: 0,
+        window: "tomorrow, 10:00 to 12:00 PM",
+        visitNote: "",
+        notifications: []
+      }
+    ];
+  }
+
+  function loadJobs() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedJobs();
+    saveJobs(seeded);
+    return seeded;
+  }
+  function saveJobs(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var jobs = loadJobs();
+  var noteOpenFor = null;
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    jobs.forEach(function (j) {
+      var atLast = j.stage >= STAGE_NAMES.length - 1;
+      var isCompleteStep = j.stage === STAGE_NAMES.length - 2; // about to complete, needs a note
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.client) + '</h4><span class="stage-pill">' + STAGE_NAMES[j.stage] + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(j.service) + ' &middot; family contact: ' + escapeHtml(j.familyContact) + ' &middot; ' + escapeHtml(j.contact) + '</div>';
+      html += '<div class="window-line">Visit window: ' + escapeHtml(j.window) + '</div>';
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+      if (isCompleteStep) {
+        html += '<button class="btn-sm" data-note-toggle="' + j.id + '">Add visit notes before completing</button>';
+      }
+      html += '</div>';
+      html += '<div class="note-row' + (noteOpenFor === j.id ? " open" : "") + '" id="note-' + j.id + '">';
+      html += '<input type="text" id="note-input-' + j.id + '" placeholder="e.g. assisted with morning routine, blood pressure checked">';
+      html += '<button class="btn-sm" data-note-submit="' + j.id + '">Complete visit with notes</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceJob(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-note-toggle]"), function (btn) {
+      btn.addEventListener("click", function () {
+        noteOpenFor = noteOpenFor === btn.dataset.noteToggle ? null : btn.dataset.noteToggle;
+        renderShop();
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-note-submit]"), function (btn) {
+      btn.addEventListener("click", function () { completeWithNote(btn.dataset.noteSubmit); });
+    });
+  }
+
+  function pushNotification(job, text) {
+    job.notifications.push({ text: text, at: Date.now() });
+  }
+
+  function advanceJob(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGE_NAMES.length - 1) return;
+    // If about to move into the final "Visit complete" stage, require notes via the dedicated flow instead.
+    if (j.stage === STAGE_NAMES.length - 2) {
+      noteOpenFor = id;
+      renderShop();
+      return;
+    }
+    j.stage += 1;
+    var msg = STAGE_MESSAGES[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function completeWithNote(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    var input = document.getElementById("note-input-" + id);
+    var val = (input.value || "").trim();
+    if (!j || !val) return;
+    j.stage += 1;
+    j.visitNote = val;
+    pushNotification(j, STAGE_MESSAGES[j.stage](j));
+    noteOpenFor = null;
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    sel.innerHTML = "";
+    jobs.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.client + " (" + j.familyContact + ")";
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = jobs.find(function (x) { return x.id === sel.value; }) || jobs[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this family. Advance the visit in the Care Coordinator view on the left.</p>';
+      return;
+    }
+    var html = "";
+    j.notifications.forEach(function (n) {
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-time">Text to ' + escapeHtml(j.familyContact) + ' at ' + escapeHtml(j.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  // ---- Family request form ----
+  var formState = { client: "", request: "", name: "", contact: "", submitted: false };
+  var formRoot = document.getElementById("form-root");
+
+  function canSubmitForm() {
+    return formState.client.trim() && formState.request.trim() && formState.name.trim() && formState.contact.trim();
+  }
+
+  function renderForm() {
+    if (formState.submitted) { renderFormConfirm(); return; }
+    var html = "";
+    html += '<div class="field"><div class="field-label">Client name</div><input type="text" class="wide" id="f-client" value="' + escapeHtml(formState.client) + '" placeholder="e.g. Dorothy Whitfield"></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">What do you need</div><textarea id="f-request" placeholder="e.g. Can we move Tuesday\'s visit to the afternoon?">' + escapeHtml(formState.request) + '</textarea></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Your name</div><input type="text" class="wide" id="f-name" value="' + escapeHtml(formState.name) + '" placeholder="First and last name"></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Phone or email</div><input type="text" class="wide" id="f-contact" value="' + escapeHtml(formState.contact) + '" placeholder="How should we reach you?"></div>';
+    html += '<button class="fx-btn" id="f-submit" style="margin-top:1rem;"' + (canSubmitForm() ? "" : " disabled") + '>Submit request</button>';
+    formRoot.innerHTML = html;
+
+    document.getElementById("f-client").addEventListener("input", function (e) { formState.client = e.target.value; syncFormBtn(); });
+    document.getElementById("f-request").addEventListener("input", function (e) { formState.request = e.target.value; syncFormBtn(); });
+    document.getElementById("f-name").addEventListener("input", function (e) { formState.name = e.target.value; syncFormBtn(); });
+    document.getElementById("f-contact").addEventListener("input", function (e) { formState.contact = e.target.value; syncFormBtn(); });
+    document.getElementById("f-submit").addEventListener("click", function () {
+      if (!canSubmitForm()) return;
+      formState.submitted = true;
+      renderForm();
+    });
+  }
+
+  function syncFormBtn() {
+    var btn = document.getElementById("f-submit");
+    if (btn) btn.disabled = !canSubmitForm();
+  }
+
+  function renderFormConfirm() {
+    var html = '<div class="confirm">';
+    html += '<h3>Request received for ' + escapeHtml(formState.client) + '</h3>';
+    html += '<p style="font-size:0.9rem; color:var(--ink-2);">A real version emails or texts your Client Coordinator the moment this is submitted, replacing phone/contact-form-only intake, and confirms back to the family automatically once it\'s handled.</p>';
+    html += '<button class="fx-btn-ghost" id="f-reset" style="align-self:flex-start;">Submit another request</button>';
+    html += '</div>';
+    formRoot.innerHTML = html;
+    document.getElementById("f-reset").addEventListener("click", function () {
+      formState = { client: "", request: "", name: "", contact: "", submitted: false };
+      renderForm();
+    });
+  }
+
+  renderShop();
+  populatePicker();
+  renderThread();
+  renderForm();
+})();
+</script>
+</body>
+</html>
