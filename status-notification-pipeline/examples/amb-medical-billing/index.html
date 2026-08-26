@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>Status notification pipeline: working example for Accurate Medical Billing (AMB)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .window-line { font-size: 0.85rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .note-row { display: none; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.3rem; }
+  .note-row.open { display: flex; }
+  .note-row input[type="text"] { font: inherit; font-size: 0.82rem; padding: 0.45rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-raised); width: 10rem; flex: 1; min-width: 8rem; }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 20rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 92%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .field { display: flex; flex-direction: column; gap: 0.45rem; }
+  .field-label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  input[type="text"].wide { width: 100%; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus, select:focus { outline: none; border-color: var(--brand); }
+  textarea { font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; resize: vertical; min-height: 4rem; }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .confirm h3 { margin: 0; font-size: 1.02rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+  .sample-tag { display:inline-block; background:var(--brand-soft); color:var(--brand); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:0.25rem 0.6rem; border-radius:5px; margin-bottom:0.9rem; }
+
+  .lookup-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .lookup-row input[type="text"] { flex: 1; min-width: 12rem; }
+  .receipt { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 1rem 1.1rem; margin-top: 1rem; }
+  .receipt-row { display: flex; justify-content: space-between; font-size: 0.9rem; padding: 0.3rem 0; border-bottom: 1px dashed var(--rule); }
+  .receipt-row:last-child { border-bottom: none; font-weight: 700; }
+  .receipt-note { font-size: 0.78rem; color: var(--muted); margin-top: 0.6rem; }
+  .status-msg { font-size: 0.9rem; color: var(--ink-2); margin-top: 1rem; padding: 0.8rem 1rem; border-radius: var(--radius-sm); background: var(--surface-2); border: 1px solid var(--rule); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Accurate Medical Billing (AMB)</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Accurate Medical Billing (AMB)</span>
+  <h1 class="fx-h1">The claim update a patient shouldn't have to call and ask for</h1>
+  <p class="fx-lede">AMB runs billing for family practices, surgeons, physical therapists, chiropractors, massage therapists, and other providers on a contingency basis, "we don't get paid unless you do." Two BBB complaints filed about two weeks apart earlier this year describe the same pattern: calls and emails going unanswered while a patient tried to get a receipt or a billing update. AMB operates on phone, fax, and email, with no online way for a patient to check a claim's status or pull their own receipt without calling in.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> a direct fetch of amb5280.com today found Accurate Medical Billing describing over 30 years in medical billing, a contingency-based "we don't get paid unless you do" model, and service to family practices, surgeons, nurses, physical therapists, physician assistants, chiropractors, and massage therapists, reachable at (303) 940-1613. Two BBB complaints filed roughly two weeks apart earlier this year both describe calls and emails going unanswered while a patient tried to get a receipt or billing update, and no self-serve claim/receipt status option appears anywhere online for AMB.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the patients, claim numbers, practices, and dollar amounts below are fictional sample records, not real patients or real billing data. Nothing here sends a real text or email, this shows exactly what a patient would receive at each step. A real build connects to whatever system AMB's billing staff already use to track a claim, and swaps in an actual SMS/email service to send it.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Billing staff view: update a claim</h3>
+      <span class="sample-tag">Sample claims, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the patient sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top:1.4rem;">
+    <h3 class="panel-title">Self-serve claim &amp; receipt lookup</h3>
+    <p style="font-size:0.88rem; color:var(--ink-2); margin-top:-0.4rem;">Replaces the "where's my receipt" phone call. A patient enters their claim number or last name, no login required, no call needed.</p>
+    <div class="lookup-row">
+      <input type="text" id="lookup-input" class="wide" placeholder="Claim number (e.g. AMB-58231) or last name">
+      <button class="fx-btn" id="lookup-btn">Look up my claim</button>
+    </div>
+    <div id="lookup-result"></div>
+  </div>
+
+  <div class="fx-card" style="margin-top:1.4rem;">
+    <h3 class="panel-title">Patient request: replaces phone/email-only intake</h3>
+    <div id="form-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real text or email.</b> This demo shows exactly what a patient would receive at each step. A real version needs an actual SMS/email service (for example Twilio or SendGrid) connected to whatever system AMB's billing staff already use to track a claim.</div>
+      <div class="lim"><b>The four stages shown (claim submitted, insurance review, payment posted, receipt ready) are a typical medical billing claim flow, not copied from AMB's internal process.</b> Worth a short conversation with AMB's billing staff before this gets built for real, the actual claim lifecycle may have more steps (denials, appeals, secondary insurance) than this demo shows.</div>
+      <div class="lim"><b>The contingency model, 30-plus-year history, and provider types served are quoted and described directly from amb5280.com, and the BBB complaint pattern is from two filed complaints.</b> The gap described (no self-serve status option) is a reasonable read of what's publicly visible, not a claim about what happens on calls we haven't heard.</div>
+      <div class="lim"><b>The patient request form only captures a billing question and how to reach the patient back, it doesn't process a payment or dispute a charge.</b> Keeping it to "what's needed and how to reach you" is deliberate, matching AMB's current phone/email intake rather than promising a live payment portal this demo doesn't have.</div>
+      <div class="lim"><b>Claim numbers, patient names, practice names, and every dollar figure below are fictional placeholders, not real patient or billing data.</b> A real build only surfaces whatever a patient is already entitled to see about their own account, and stays within HIPAA-related handling AMB already follows.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Accurate Medical Billing (AMB).</strong></p>
+  <p>Prepared by Shlok Sarnayak for Accurate Medical Billing (AMB). Site content and BBB complaint pattern verified by direct research today. Patient, claim, and billing data below is a fictional sample, not connected to any real patient or account.</p>
+</footer>
+
+<script>
+(function () {
+  var STAGE_NAMES = ["Claim submitted", "Insurance review", "Payment posted", "Receipt ready"];
+  var STORAGE_KEY = "amb-status-pipeline-claims-v1";
+
+  function stageMessage(j, stage) {
+    if (stage === 1) return "This is Accurate Medical Billing. Your claim " + j.id + " for " + j.clientFirst + "'s " + j.service + " has been submitted to your insurance for review. We'll text you again as soon as it's processed, no need to call and check.";
+    if (stage === 2) return "Your insurance has processed claim " + j.id + ". Payment has posted. We're finalizing your receipt now.";
+    if (stage === 3) return "Your receipt for claim " + j.id + " is ready. Insurance paid $" + j.insurancePaid.toFixed(2) + ", you owe $" + j.patientOwes.toFixed(2) + ". Look it up any time at the AMB claim lookup, no call needed.";
+    return null;
+  }
+
+  function seedJobs() {
+    var now = 1755878400000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "AMB-58231",
+        client: "M. Alvarado",
+        clientFirst: "Marisol",
+        lastName: "Alvarado",
+        contact: "(303) 555-0131",
+        practice: "Sunrise Family Practice",
+        service: "office visit",
+        charge: 185.00,
+        stage: 3,
+        insurancePaid: 140.00,
+        patientOwes: 45.00,
+        notifications: []
+      },
+      {
+        id: "AMB-58244",
+        client: "R. Delgado",
+        clientFirst: "Ramon",
+        lastName: "Delgado",
+        contact: "(303) 555-0176",
+        practice: "Peak Chiropractic",
+        service: "chiropractic adjustment series",
+        charge: 260.00,
+        stage: 2,
+        insurancePaid: 0,
+        patientOwes: 0,
+        notifications: []
+      },
+      {
+        id: "AMB-58259",
+        client: "J. Whitcombe",
+        clientFirst: "Jenna",
+        lastName: "Whitcombe",
+        contact: "(303) 555-0154",
+        practice: "Vail Valley Physical Therapy",
+        service: "physical therapy session",
+        charge: 130.00,
+        stage: 0,
+        insurancePaid: 0,
+        patientOwes: 0,
+        notifications: []
+      }
+    ];
+  }
+
+  function loadJobs() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedJobs();
+    var now = 1755878400000;
+    seeded.forEach(function (j) {
+      for (var s = 1; s <= j.stage; s++) {
+        j.notifications.push({ text: stageMessage(j, s), at: now + s * 3600000 });
+      }
+    });
+    saveJobs(seeded);
+    return seeded;
+  }
+  function saveJobs(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var jobs = loadJobs();
+  var finalizeOpenFor = null;
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    jobs.forEach(function (j) {
+      var atLast = j.stage >= STAGE_NAMES.length - 1;
+      var needsFinalize = j.stage === STAGE_NAMES.length - 2; // Payment posted, about to become Receipt ready
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.client) + '</h4><span class="stage-pill">' + STAGE_NAMES[j.stage] + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(j.practice) + ' &middot; ' + escapeHtml(j.service) + ' &middot; ' + escapeHtml(j.contact) + '</div>';
+      html += '<div class="window-line">Charge: $' + j.charge.toFixed(2) + ' <span style="opacity:0.7;">(Illustrative)</span></div>';
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+      if (needsFinalize) {
+        html += '<button class="btn-sm" data-finalize-toggle="' + j.id + '">Finalize payment &amp; generate receipt</button>';
+      }
+      html += '</div>';
+      html += '<div class="note-row' + (finalizeOpenFor === j.id ? " open" : "") + '" id="finalize-' + j.id + '">';
+      html += '<input type="text" id="finalize-paid-' + j.id + '" placeholder="Insurance paid, e.g. 140.00">';
+      html += '<input type="text" id="finalize-owes-' + j.id + '" placeholder="Patient owes, e.g. 45.00">';
+      html += '<button class="btn-sm" data-finalize-submit="' + j.id + '">Complete &amp; notify patient</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceJob(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-finalize-toggle]"), function (btn) {
+      btn.addEventListener("click", function () {
+        finalizeOpenFor = finalizeOpenFor === btn.dataset.finalizeToggle ? null : btn.dataset.finalizeToggle;
+        renderShop();
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-finalize-submit]"), function (btn) {
+      btn.addEventListener("click", function () { finalizeJob(btn.dataset.finalizeSubmit); });
+    });
+  }
+
+  function pushNotification(job, text) {
+    job.notifications.push({ text: text, at: Date.now() });
+  }
+
+  function advanceJob(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGE_NAMES.length - 1) return;
+    if (j.stage === STAGE_NAMES.length - 2) {
+      finalizeOpenFor = id;
+      renderShop();
+      return;
+    }
+    j.stage += 1;
+    var msg = stageMessage(j, j.stage);
+    if (msg) pushNotification(j, msg);
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function finalizeJob(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    var paidInput = document.getElementById("finalize-paid-" + id);
+    var owesInput = document.getElementById("finalize-owes-" + id);
+    var paid = parseFloat(paidInput.value);
+    var owes = parseFloat(owesInput.value);
+    if (!j || isNaN(paid) || isNaN(owes)) return;
+    j.insurancePaid = paid;
+    j.patientOwes = owes;
+    j.stage += 1;
+    pushNotification(j, stageMessage(j, j.stage));
+    finalizeOpenFor = null;
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    sel.innerHTML = "";
+    jobs.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.client + " (" + j.practice + ")";
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = jobs.find(function (x) { return x.id === sel.value; }) || jobs[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this patient. Advance the claim in the billing staff view on the left.</p>';
+      return;
+    }
+    var html = "";
+    j.notifications.forEach(function (n) {
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-time">Text to ' + escapeHtml(j.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  // ---- Self-serve claim & receipt lookup ----
+  function renderLookupResult(j, query) {
+    var root = document.getElementById("lookup-result");
+    if (!j) {
+      root.innerHTML = '<div class="status-msg">No claim found for "' + escapeHtml(query) + '". Try a claim number like AMB-58231, or the patient\'s last name.</div>';
+      return;
+    }
+    if (j.stage < STAGE_NAMES.length - 1) {
+      root.innerHTML = '<div class="status-msg"><strong>' + j.id + '</strong> for ' + escapeHtml(j.client) + ' at ' + escapeHtml(j.practice) + ' is currently: <strong>' + STAGE_NAMES[j.stage] + '</strong>. Your receipt will appear here automatically once payment posts and the claim is finalized, no need to call.</div>';
+      return;
+    }
+    var html = '<div class="receipt">';
+    html += '<div class="receipt-row"><span>Claim</span><span>' + j.id + '</span></div>';
+    html += '<div class="receipt-row"><span>Patient</span><span>' + escapeHtml(j.client) + '</span></div>';
+    html += '<div class="receipt-row"><span>Practice</span><span>' + escapeHtml(j.practice) + '</span></div>';
+    html += '<div class="receipt-row"><span>Service</span><span>' + escapeHtml(j.service) + '</span></div>';
+    html += '<div class="receipt-row"><span>Total charge (Illustrative)</span><span>$' + j.charge.toFixed(2) + '</span></div>';
+    html += '<div class="receipt-row"><span>Insurance paid (Illustrative)</span><span>$' + j.insurancePaid.toFixed(2) + '</span></div>';
+    html += '<div class="receipt-row"><span>You owe (Illustrative)</span><span>$' + j.patientOwes.toFixed(2) + '</span></div>';
+    html += '</div>';
+    html += '<div class="receipt-note">A real version lets a patient view or print this any time from a link texted or emailed to them, no phone call to AMB required.</div>';
+    root.innerHTML = html;
+  }
+
+  function doLookup() {
+    var input = document.getElementById("lookup-input");
+    var query = (input.value || "").trim();
+    if (!query) { document.getElementById("lookup-result").innerHTML = ""; return; }
+    var qLower = query.toLowerCase();
+    var match = jobs.find(function (j) {
+      return j.id.toLowerCase() === qLower || j.lastName.toLowerCase() === qLower || j.lastName.toLowerCase().indexOf(qLower) === 0;
+    });
+    renderLookupResult(match, query);
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", doLookup);
+  document.getElementById("lookup-input").addEventListener("keydown", function (e) { if (e.key === "Enter") doLookup(); });
+
+  // ---- Patient request form ----
+  var formState = { claim: "", request: "", name: "", contact: "", submitted: false };
+  var formRoot = document.getElementById("form-root");
+
+  function canSubmitForm() {
+    return formState.request.trim() && formState.name.trim() && formState.contact.trim();
+  }
+
+  function renderForm() {
+    if (formState.submitted) { renderFormConfirm(); return; }
+    var html = "";
+    html += '<div class="field"><div class="field-label">Claim number (if known)</div><input type="text" class="wide" id="f-claim" value="' + escapeHtml(formState.claim) + '" placeholder="e.g. AMB-58231, or leave blank"></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">What do you need</div><textarea id="f-request" placeholder="e.g. I need a copy of my receipt for my HSA">' + escapeHtml(formState.request) + '</textarea></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Your name</div><input type="text" class="wide" id="f-name" value="' + escapeHtml(formState.name) + '" placeholder="First and last name"></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Phone or email</div><input type="text" class="wide" id="f-contact" value="' + escapeHtml(formState.contact) + '" placeholder="How should we reach you?"></div>';
+    html += '<button class="fx-btn" id="f-submit" style="margin-top:1rem;"' + (canSubmitForm() ? "" : " disabled") + '>Submit request</button>';
+    formRoot.innerHTML = html;
+
+    document.getElementById("f-claim").addEventListener("input", function (e) { formState.claim = e.target.value; syncFormBtn(); });
+    document.getElementById("f-request").addEventListener("input", function (e) { formState.request = e.target.value; syncFormBtn(); });
+    document.getElementById("f-name").addEventListener("input", function (e) { formState.name = e.target.value; syncFormBtn(); });
+    document.getElementById("f-contact").addEventListener("input", function (e) { formState.contact = e.target.value; syncFormBtn(); });
+    document.getElementById("f-submit").addEventListener("click", function () {
+      if (!canSubmitForm()) return;
+      formState.submitted = true;
+      renderForm();
+    });
+  }
+
+  function syncFormBtn() {
+    var btn = document.getElementById("f-submit");
+    if (btn) btn.disabled = !canSubmitForm();
+  }
+
+  function renderFormConfirm() {
+    var html = '<div class="confirm">';
+    html += '<h3>Request received' + (formState.claim ? " for " + escapeHtml(formState.claim) : "") + '</h3>';
+    html += '<p style="font-size:0.9rem; color:var(--ink-2);">A real version emails or texts AMB\'s billing staff the moment this is submitted, replacing phone/email-only intake, and confirms back to the patient automatically once it\'s handled.</p>';
+    html += '<button class="fx-btn-ghost" id="f-reset" style="align-self:flex-start;">Submit another request</button>';
+    html += '</div>';
+    formRoot.innerHTML = html;
+    document.getElementById("f-reset").addEventListener("click", function () {
+      formState = { claim: "", request: "", name: "", contact: "", submitted: false };
+      renderForm();
+    });
+  }
+
+  renderShop();
+  populatePicker();
+  renderThread();
+  renderForm();
+})();
+</script>
+</body>
+</html>
