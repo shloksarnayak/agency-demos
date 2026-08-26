@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Appointment request widget: working example for American Asphalt Sealcoating (USA Pave)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .aas-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .aas-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .aas-tab.active { background: var(--ink); color: var(--surface); }
+  .aas-view { display: none; }
+  .aas-view.active { display: block; }
+
+  .field { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.1rem; }
+  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .choice { font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.6rem 0.95rem; cursor: pointer; font-size: 0.92rem; }
+  .choice:hover { border-color: var(--brand); }
+  .choice.sel { border-color: var(--brand); background: var(--brand-soft); color: var(--ink); font-weight: 620; box-shadow: 0 0 0 1px var(--brand) inset; }
+  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; max-width: 26rem; }
+  input[type="text"]:focus { outline: none; border-color: var(--brand); }
+
+  .call-banner { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.2rem 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  .call-banner .cb-num { font-family: var(--mono); font-size: 1.05rem; font-weight: 700; }
+  .call-banner .cb-meta { font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem; }
+  .call-ring { display: inline-block; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--hot); margin-right: 0.4rem; animation: aas-pulse 1s infinite; }
+  @keyframes aas-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+  .texting { margin-top: 1.4rem; border: 2px solid var(--ink); border-radius: var(--radius-md); background: var(--surface); box-shadow: var(--shadow-sm); padding: 1.2rem 1.3rem; }
+  .bubble { max-width: 30rem; padding: 0.7rem 0.95rem; border-radius: 14px; font-size: 0.92rem; line-height: 1.5; margin-bottom: 0.7rem; }
+  .bubble.out { background: var(--brand); color: var(--brand-ink); margin-right: auto; border-bottom-left-radius: 3px; }
+  .bubble.in { background: var(--surface-2); color: var(--ink); margin-left: auto; border-bottom-right-radius: 3px; text-align: right; }
+  .bubble-tag { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0.5rem 0 0.2rem; }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1.2rem; }
+  .confirm h3 { margin: 0; font-size: 1.05rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+  .confirm dl { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; }
+  .confirm dt { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .confirm dd { margin: 0 0 0.5rem; font-size: 0.94rem; color: var(--ink); }
+
+  .stat-strip { display: flex; flex-wrap: wrap; gap: 0.9rem; margin-bottom: 1.3rem; }
+  .stat { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 0.85rem 1.1rem; background: var(--surface); box-shadow: var(--shadow-sm); min-width: 11rem; }
+  .stat .n { font-family: var(--serif); font-size: 1.5rem; font-weight: 700; }
+  .stat .l { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .stat .tag { font-family: var(--mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--faint); }
+
+  .lead-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .lead-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .lead-title { font-weight: 660; }
+  .lead-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .lead-detail { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; line-height: 1.55; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.new { color: var(--brand); background: var(--brand-soft); }
+  .badge.texted { color: var(--warn); background: var(--warn-bg); }
+  .badge.replied { color: var(--good); background: var(--good-bg); }
+  .badge.callback { color: var(--hot); background: var(--hot-bg); }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Appointment request widget</a> / American Asphalt Sealcoating</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for American Asphalt Sealcoating (USA Pave)</span>
+  <h1 class="fx-h1">The call that goes unanswered mid-shift, texted back before the caller hangs up</h1>
+  <p class="fx-lede">Your BBB profile shows a couple of customer inquiries that never got a reply, not because anyone dropped the ball on purpose, but because calls and messages land somewhere nobody's watching while the crew is mid-pour or mid-drive. This is a working example of a missed-call text-back and intake system: the phone rings, nobody picks up, the caller gets an instant text instead of a dial tone, and the job details are waiting in a queue by the time someone's back in the truck.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the service list, service area, and phone number below are copied from usapave.com today. <strong>What's simulated:</strong> no text message actually sends anywhere in this demo, and "Illustrative" figures and sample leads are invented to show the shape of the data, not real jobs or real customers.</p>
+  </div>
+
+  <div class="aas-tabs">
+    <button class="aas-tab active" data-view="call">Simulate a missed call</button>
+    <button class="aas-tab" data-view="inbox">USA Pave's lead inbox</button>
+  </div>
+
+  <div class="aas-view active" id="view-call">
+    <div class="fx-card">
+      <div class="call-banner">
+        <div>
+          <div class="cb-num"><span class="call-ring"></span>Incoming call: (440) 555-0148</div>
+          <div class="cb-meta">2:14 PM &middot; crew is on a driveway job in Chagrin Falls, nobody's near the shop phone</div>
+        </div>
+        <button class="fx-btn" id="miss-btn">Let it ring through to voicemail</button>
+      </div>
+
+      <div class="texting" id="texting-root" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div class="aas-view" id="view-inbox">
+    <div class="stat-strip">
+      <div class="stat"><span class="tag">Illustrative</span><div class="n">3</div><div class="l">missed calls text-answered this week</div></div>
+      <div class="stat"><span class="tag">Illustrative</span><div class="n">~45 sec</div><div class="l">average time to first reply</div></div>
+      <div class="stat"><span class="tag">Illustrative</span><div class="n">0</div><div class="l">inquiries sitting unanswered right now</div></div>
+    </div>
+    <div id="inbox-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before this touches a real phone number</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here actually sends a text.</b> A real version connects to a texting line (the same number on your trucks and site signs works, or a forwarding number) so the auto-reply and job details move over SMS the moment a call is missed, not through a demo page.</div>
+      <div class="lim"><b>This isn't a replacement for the crew calling back.</b> It's the same as picking up the phone, just automatic and instant: the caller gets acknowledged and the job details get written down, so nothing sits unanswered until someone's back at a desk.</div>
+      <div class="lim"><b>Service list and area are copied from usapave.com today.</b> Sealcoating, crack sealing, patching, resurfacing, and full-depth paving across Chardon, Chagrin Falls, Burton, Middlefield, and the surrounding area &mdash; if that list changes, this needs a one-line update to match.</div>
+      <div class="lim"><b>The lead inbox here is a static illustration.</b> A real version would live wherever the crew already looks: a shared inbox, a group text, or a simple dashboard, not a separate tool to remember to check.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by American Asphalt Sealcoating or USA Pave.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Todd. Service list, area, and phone number checked against usapave.com. Not connected to your phone system or a real text messaging line.</p>
+</footer>
+
+<script>
+(function () {
+  var SERVICES = ["Driveway sealcoating", "Crack sealing/filling", "Asphalt patch or repair", "Parking lot striping", "Full-depth paving", "Not sure / just asking"];
+  var CALLBACK = ["Today, evening", "Tomorrow, morning", "Tomorrow, afternoon", "Anytime this week"];
+
+  var callState = { step: "ring", service: null, callback: null, name: "", address: "", phone: "(440) 555-0148", submitted: false };
+  var texRoot = document.getElementById("texting-root");
+  var missBtn = document.getElementById("miss-btn");
+
+  var STORAGE_KEY = "aas-demo-leads";
+  var SAMPLE_LEADS = [
+    { name: "R. Talvitie", phone: "(440) 555-0119", service: "Driveway sealcoating", address: "Off Rt. 87, Newbury Township", callback: "Tomorrow, morning", status: "replied", missedAt: "Mon, 4:02 PM" },
+    { name: "K. Osei", phone: "(440) 555-0176", service: "Crack sealing/filling", address: "Chardon Rd., Chardon", callback: "Anytime this week", status: "callback", missedAt: "Tue, 11:40 AM" },
+    { name: "D. Marsh", phone: "(330) 555-0193", service: "Parking lot striping", address: "Commercial plaza, Akron", callback: "Today, evening", status: "texted", missedAt: "Wed, 1:18 PM" }
+  ];
+
+  function loadLeads() {
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return SAMPLE_LEADS.slice();
+  }
+  function saveLeads(leads) {
+    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(leads)); } catch (e) {}
+  }
+  var leads = loadLeads();
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+  // --- Tabs ---
+  Array.prototype.forEach.call(document.querySelectorAll(".aas-tab"), function (tab) {
+    tab.addEventListener("click", function () {
+      Array.prototype.forEach.call(document.querySelectorAll(".aas-tab"), function (t) { t.classList.remove("active"); });
+      Array.prototype.forEach.call(document.querySelectorAll(".aas-view"), function (v) { v.classList.remove("active"); });
+      tab.classList.add("active");
+      document.getElementById("view-" + tab.dataset.view).classList.add("active");
+      if (tab.dataset.view === "inbox") renderInbox();
+    });
+  });
+
+  // --- Call simulation ---
+  missBtn.addEventListener("click", function () {
+    missBtn.disabled = true;
+    missBtn.textContent = "Call missed — text-back sent";
+    texRoot.style.display = "block";
+    renderTexting();
+  });
+
+  function renderTexting() {
+    var html = "";
+    html += '<div class="bubble-tag">USA Pave (auto-reply, instant)</div>';
+    html += '<div class="bubble out">Sorry we missed your call! This is American Asphalt Sealcoating / USA Pave. What can we help with today?</div>';
+
+    if (!callState.service) {
+      html += '<div class="field"><div class="field-label">Reply as the caller: what do you need?</div><div class="choices">';
+      SERVICES.forEach(function (s) { html += '<button class="choice" data-service="' + s + '">' + s + '</button>'; });
+      html += '</div></div>';
+      texRoot.innerHTML = html;
+      bindServiceButtons();
+      return;
+    }
+
+    html += '<div class="bubble in">' + escapeHtml(callState.service) + '</div>';
+    html += '<div class="bubble-tag">USA Pave (auto-reply, instant)</div>';
+    html += '<div class="bubble out">Got it. What\'s the address, and what\'s your name?</div>';
+
+    if (!callState.submitted) {
+      html += '<div class="field"><div class="field-label">Your name</div><input type="text" id="name-input" value="' + callState.name.replace(/"/g, "&quot;") + '" placeholder="First and last name"></div>';
+      html += '<div class="field"><div class="field-label">Property address (street and town)</div><input type="text" id="address-input" value="' + callState.address.replace(/"/g, "&quot;") + '" placeholder="e.g. 412 Maple St, Chardon"></div>';
+      html += '<div class="field"><div class="field-label">Best time for a callback</div><div class="choices">';
+      CALLBACK.forEach(function (c) { html += '<button class="choice' + (callState.callback === c ? ' sel' : '') + '" data-callback="' + c + '">' + c + '</button>'; });
+      html += '</div></div>';
+      html += '<button class="fx-btn" id="submit-btn" style="margin-top:1.1rem;"' + (canSubmit() ? '' : ' disabled') + '>Send reply</button>';
+      texRoot.innerHTML = html;
+      bindReplyControls();
+      return;
+    }
+
+    html += '<div class="bubble in">' + escapeHtml(callState.name) + ' &middot; ' + escapeHtml(callState.address) + '</div>';
+    html += '<div class="bubble-tag">USA Pave (auto-reply, instant)</div>';
+    html += '<div class="bubble out">Thanks! We\'ve got your ' + callState.service.toLowerCase() + ' request for ' + escapeHtml(callState.callback).toLowerCase() + '. Someone from the crew will call to confirm.</div>';
+    html += '<div class="confirm"><h3>Lead captured, this is what lands in the inbox</h3><dl>';
+    html += '<dt>Service</dt><dd>' + callState.service + '</dd>';
+    html += '<dt>Name</dt><dd>' + escapeHtml(callState.name) + '</dd>';
+    html += '<dt>Address</dt><dd>' + escapeHtml(callState.address) + '</dd>';
+    html += '<dt>Callback window</dt><dd>' + callState.callback + '</dd>';
+    html += '</dl><button class="fx-btn-ghost" id="view-inbox-btn">See it in the lead inbox</button> <button class="fx-btn-ghost" id="reset-call-btn">Simulate another call</button></div>';
+    texRoot.innerHTML = html;
+    document.getElementById("reset-call-btn").addEventListener("click", resetCall);
+    document.getElementById("view-inbox-btn").addEventListener("click", function () {
+      document.querySelector('.aas-tab[data-view="inbox"]').click();
+    });
+  }
+
+  function bindServiceButtons() {
+    Array.prototype.forEach.call(texRoot.querySelectorAll("[data-service]"), function (b) {
+      b.addEventListener("click", function () { callState.service = b.dataset.service; renderTexting(); });
+    });
+  }
+
+  function canSubmit() { return callState.name.trim() && callState.address.trim() && callState.callback; }
+
+  function bindReplyControls() {
+    var nameInput = document.getElementById("name-input");
+    var addressInput = document.getElementById("address-input");
+    nameInput.addEventListener("input", function () { callState.name = nameInput.value; syncSubmit(); });
+    addressInput.addEventListener("input", function () { callState.address = addressInput.value; syncSubmit(); });
+    Array.prototype.forEach.call(texRoot.querySelectorAll("[data-callback]"), function (b) {
+      b.addEventListener("click", function () { callState.callback = b.dataset.callback; renderTexting(); });
+    });
+    var submitBtn = document.getElementById("submit-btn");
+    if (submitBtn) submitBtn.addEventListener("click", function () {
+      if (!canSubmit()) return;
+      callState.submitted = true;
+      leads.unshift({
+        name: callState.name, phone: callState.phone, service: callState.service,
+        address: callState.address, callback: callState.callback, status: "texted",
+        missedAt: "Just now", isNew: true
+      });
+      saveLeads(leads);
+      renderTexting();
+    });
+  }
+
+  function syncSubmit() {
+    var b = document.getElementById("submit-btn");
+    if (b) b.disabled = !canSubmit();
+  }
+
+  function resetCall() {
+    callState = { step: "ring", service: null, callback: null, name: "", address: "", phone: "(440) 555-" + (100 + Math.floor(Math.random() * 900)), submitted: false };
+    missBtn.disabled = false;
+    missBtn.textContent = "Let it ring through to voicemail";
+    texRoot.style.display = "none";
+    texRoot.innerHTML = "";
+    document.querySelector(".call-banner .cb-num").innerHTML = '<span class="call-ring"></span>Incoming call: ' + callState.phone;
+  }
+
+  // --- Inbox ---
+  function renderInbox() {
+    var root = document.getElementById("inbox-root");
+    if (!leads.length) { root.innerHTML = '<p class="lead-detail">No inquiries right now.</p>'; return; }
+    var html = "";
+    leads.forEach(function (l) {
+      var badgeClass = l.status === "replied" ? "replied" : (l.status === "callback" ? "callback" : "texted");
+      var badgeText = l.status === "replied" ? "Replied" : (l.status === "callback" ? "Needs callback" : "Text-back sent");
+      html += '<div class="lead-card">';
+      html += '<div class="lead-head"><span class="lead-title">' + escapeHtml(l.name) + (l.isNew ? ' <span class="badge new">New</span>' : '') + '</span><span class="badge ' + badgeClass + '">' + badgeText + '</span></div>';
+      html += '<div class="lead-meta">Missed call ' + escapeHtml(l.missedAt) + ' &middot; ' + escapeHtml(l.phone) + '</div>';
+      html += '<div class="lead-detail"><b>' + escapeHtml(l.service) + '</b><br>' + escapeHtml(l.address) + '<br>Callback preference: ' + escapeHtml(l.callback) + '</div>';
+      html += '</div>';
+    });
+    root.innerHTML = html;
+  }
+
+  renderInbox();
+})();
+</script>
+</body>
+</html>
