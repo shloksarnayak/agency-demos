@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>Appointment request widget: working example for Breakaway Chiropractic</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .field { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.2rem; }
+  .field:first-child { margin-top: 0; }
+  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .field-hint { font-size: 0.82rem; color: var(--muted); margin-top: -0.2rem; }
+  .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .choice { font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.6rem 0.95rem; cursor: pointer; font-size: 0.92rem; }
+  .choice:hover { border-color: var(--brand); }
+  .choice.sel { border-color: var(--brand); background: var(--brand-soft); color: var(--ink); font-weight: 620; box-shadow: 0 0 0 1px var(--brand) inset; }
+  .choice:disabled { opacity: 0.4; cursor: not-allowed; }
+  input[type="text"], select { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; max-width: 26rem; }
+  input[type="text"]:focus, select:focus { outline: none; border-color: var(--brand); }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.8rem; }
+  .confirm h3 { margin: 0; font-size: 1.05rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+  .confirm dl { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; }
+  .confirm dt { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .confirm dd { margin: 0 0 0.5rem; font-size: 0.94rem; color: var(--ink); }
+
+  .estimate { border-radius: var(--radius-md); background: var(--surface-2); border: 1px dashed var(--rule); padding: 1.1rem 1.3rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; }
+  .estimate h4 { margin: 0; font-size: 0.95rem; color: var(--ink); font-family: var(--serif); font-weight: 600; }
+  .estimate-tag { display: inline-block; font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--brand); background: var(--brand-soft); border-radius: 999px; padding: 0.15rem 0.6rem; align-self: flex-start; }
+  .estimate-row { display: flex; justify-content: space-between; font-size: 0.92rem; color: var(--ink-2); border-top: 1px solid var(--rule); padding-top: 0.5rem; }
+  .estimate-row.total { color: var(--ink); font-weight: 640; }
+  .estimate-fine { font-size: 0.8rem; color: var(--muted); line-height: 1.5; margin: 0; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">FP</span><span class="fx-brand-name">FixPoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Appointment request widget</a> / Breakaway Chiropractic</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Breakaway Chiropractic &amp; Wellness</span>
+  <h1 class="fx-h1">An instant confirmation, and an insurance number before the visit instead of after</h1>
+  <p class="fx-lede">Booking today is a two-step process: a request goes in, then someone from the front desk calls back to confirm. For a practice seeing 150 to 200 patients a week, that callback step is a meaningful chunk of front-desk time every day. This form confirms the moment someone submits, and adds a second message most booking widgets skip entirely: a plain-language estimate of what insurance is expected to cover, so a patient sees a number before the visit instead of a surprise on the invoice afterward.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the service list, the insurance carriers Breakaway accepts (Blue Cross, Aetna, United Healthcare, and VA through TriWest), and the practice hours are copied from breakawaychiro.com today. <strong>What's illustrative:</strong> the estimated dollar amounts in the insurance panel below are sample figures for demonstration, not a real benefits check against any patient's actual plan.</p>
+  </div>
+  <div class="fx-card" id="form-root"></div>
+  <section>
+    <h2 class="fx-h2">What I'd flag before this goes live</h2>
+    <div class="limits">
+      <div class="lim"><b>This replaces the callback, not the front desk.</b> The confirmation you see below is what a patient would get the instant they submit, no waiting on someone to call back and confirm a time. The front desk still sees every request, they just aren't the ones creating the confirmation.</div>
+      <div class="lim"><b>The insurance estimate is illustrative math, not a real eligibility check.</b> A live version would need to either pull real coverage through a clearinghouse (e.g. Availity, Change Healthcare) via patient-authorized lookup, or work from Breakaway's own fee schedule and typical plan terms per carrier. What's shown here is a placeholder calculation using the accepted carrier list, meant to demonstrate the idea: a number appears before the visit, not after.</div>
+      <div class="lim"><b>This is a request form, not a live booking calendar.</b> It doesn't know which specific times are actually open, because it isn't connected to Breakaway's real schedule. A patient submits a service, day and time preference, and it reaches the front desk the same way a phone call would, just with the details and insurance carrier already on hand.</div>
+      <div class="lim"><b>Nothing here actually sends anything.</b> A real version would text or email the front desk the moment someone submits, and separately text or email the patient their confirmation and estimate. This demo just shows what both of those would look like.</div>
+      <div class="lim"><b>Service list, accepted carriers and hours are copied from breakawaychiro.com today.</b> If any of these change, this needs a one-line update to match, it won't drift out of sync on its own.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Breakaway Chiropractic &amp; Wellness.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Dr. Hasheen Lad. Service list, accepted insurance carriers and hours verified against breakawaychiro.com today. Insurance estimate amounts are illustrative sample figures only, not connected to any real clearinghouse, patient record, or Breakaway's real appointment book.</p>
+</footer>
+
+<script>
+(function () {
+  var SERVICES = [
+    "New patient consultation", "Chiropractic adjustment", "X-ray and consultation",
+    "Pediatric chiropractic care", "Spinal decompression", "Auto accident injury care",
+    "Cold level laser therapy", "Normatec therapy"
+  ];
+
+  var DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday"];
+  var HOURS = {
+    "Monday": "8:30am–6:00pm",
+    "Tuesday": "12:30pm–6:00pm",
+    "Wednesday": "8:30am–6:00pm",
+    "Thursday": "7:30am–6:00pm"
+  };
+  var TIME_PREFS = ["Morning", "Early afternoon", "Late afternoon"];
+
+  var CARRIERS = ["Blue Cross Blue Shield", "Aetna", "United Healthcare", "VA (through TriWest)", "Self-pay, no insurance"];
+
+  // Illustrative only: sample coinsurance/copay assumptions per carrier, used purely to
+  // demonstrate the mechanism of a pre-visit estimate. Not real plan data.
+  var CARRIER_ESTIMATE = {
+    "Blue Cross Blue Shield": { label: "Est. specialist copay", patientShare: 40, planShare: 95 },
+    "Aetna": { label: "Est. coinsurance (20%)", patientShare: 27, planShare: 108 },
+    "United Healthcare": { label: "Est. coinsurance (30%)", patientShare: 41, planShare: 95 },
+    "VA (through TriWest)": { label: "Est. patient share", patientShare: 0, planShare: 135 },
+    "Self-pay, no insurance": { label: "Self-pay visit rate", patientShare: 120, planShare: 0 }
+  };
+
+  var state = {
+    service: null, day: null, time: null,
+    carrier: null, name: "", contact: "",
+    submitted: false
+  };
+  var root = document.getElementById("form-root");
+
+  function canSubmit() {
+    return state.service && state.day && state.time && state.carrier && state.name.trim() && state.contact.trim();
+  }
+
+  function render() {
+    if (state.submitted) { renderConfirm(); return; }
+    renderForm();
+  }
+
+  function renderForm() {
+    var html = '';
+    html += '<div class="field"><div class="field-label">What do you need?</div><div class="choices">';
+    SERVICES.forEach(function (s) {
+      html += '<button class="choice' + (state.service === s ? ' sel' : '') + '" data-service="' + s + '">' + s + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field"><div class="field-label">Preferred day</div><div class="choices">';
+    DAYS.forEach(function (d) {
+      html += '<button class="choice' + (state.day === d ? ' sel' : '') + '" data-day="' + d + '">' + d + '</button>';
+    });
+    html += '</div>';
+    if (state.day) {
+      html += '<div class="field-hint">Breakaway is open ' + HOURS[state.day] + ' on ' + state.day + 's.</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="field"><div class="field-label">Preferred time of day</div><div class="choices">';
+    TIME_PREFS.forEach(function (t) {
+      html += '<button class="choice' + (state.time === t ? ' sel' : '') + '" data-time="' + t + '">' + t + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field"><div class="field-label">Insurance carrier</div><div class="choices">';
+    CARRIERS.forEach(function (c) {
+      html += '<button class="choice' + (state.carrier === c ? ' sel' : '') + '" data-carrier="' + c + '">' + c + '</button>';
+    });
+    html += '</div><div class="field-hint">Used to show a sample pre-visit cost estimate below.</div></div>';
+
+    html += '<div class="field"><div class="field-label">Your name</div><input type="text" id="name-input" value="' + state.name.replace(/"/g, '&quot;') + '" placeholder="First and last name"></div>';
+    html += '<div class="field"><div class="field-label">Phone or email</div><input type="text" id="contact-input" value="' + state.contact.replace(/"/g, '&quot;') + '" placeholder="How should we reach you?"></div>';
+
+    html += '<button class="fx-btn" id="submit-btn" style="margin-top:1.3rem;"' + (canSubmit() ? '' : ' disabled') + '>Request this appointment</button>';
+
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll('[data-service]'), function (b) {
+      b.addEventListener('click', function () { state.service = b.dataset.service; render(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-day]'), function (b) {
+      b.addEventListener('click', function () { state.day = b.dataset.day; render(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-time]'), function (b) {
+      b.addEventListener('click', function () { state.time = b.dataset.time; render(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-carrier]'), function (b) {
+      b.addEventListener('click', function () { state.carrier = b.dataset.carrier; render(); });
+    });
+
+    var nameInput = document.getElementById('name-input');
+    var contactInput = document.getElementById('contact-input');
+    nameInput.addEventListener('input', function () { state.name = nameInput.value; syncSubmitState(); });
+    contactInput.addEventListener('input', function () { state.contact = contactInput.value; syncSubmitState(); });
+
+    var submitBtn = document.getElementById('submit-btn');
+    submitBtn.addEventListener('click', function () {
+      if (!canSubmit()) return;
+      state.submitted = true;
+      render();
+    });
+  }
+
+  function syncSubmitState() {
+    var btn = document.getElementById('submit-btn');
+    if (btn) btn.disabled = !canSubmit();
+  }
+
+  function renderConfirm() {
+    var est = CARRIER_ESTIMATE[state.carrier];
+    var html = '<div class="confirm">';
+    html += '<h3>Confirmed, no callback needed</h3>';
+    html += '<dl>';
+    html += '<dt>Service</dt><dd>' + escapeHtml(state.service) + '</dd>';
+    html += '<dt>Day</dt><dd>' + state.day + ' (' + HOURS[state.day] + ')</dd>';
+    html += '<dt>Preferred time</dt><dd>' + state.time + '</dd>';
+    html += '<dt>Name</dt><dd>' + escapeHtml(state.name) + '</dd>';
+    html += '<dt>Contact</dt><dd>' + escapeHtml(state.contact) + '</dd>';
+    html += '</dl>';
+    html += '<p style="font-size:0.88rem; color:var(--ink-2);">A real version texts or emails this to the front desk the instant it is submitted, and sends this same confirmation to the patient, no phone tag required to lock in a time.</p>';
+
+    html += '<div class="estimate">';
+    html += '<span class="estimate-tag">Illustrative estimate</span>';
+    html += '<h4>Pre-visit insurance estimate for ' + escapeHtml(state.carrier) + '</h4>';
+    html += '<div class="estimate-row"><span>' + est.label + '</span><span>$' + est.patientShare + '</span></div>';
+    html += '<div class="estimate-row"><span>Est. covered by plan</span><span>$' + est.planShare + '</span></div>';
+    html += '<div class="estimate-row total"><span>Est. total visit value</span><span>$' + (est.patientShare + est.planShare) + '</span></div>';
+    html += '<p class="estimate-fine">Sample figures only, calculated from a placeholder table, not a real benefits check. A live version would confirm this against Breakaway\'s actual fee schedule and the patient\'s real plan terms before the visit, that is the whole point: a number here, not a surprise on the invoice after.</p>';
+    html += '</div>';
+
+    html += '<button class="fx-btn-ghost" id="reset-btn" style="align-self:flex-start; margin-top:0.4rem;">Start over</button>';
+    html += '</div>';
+    root.innerHTML = html;
+    document.getElementById('reset-btn').addEventListener('click', resetAll);
+  }
+
+  function resetAll() {
+    state = { service: null, day: null, time: null, carrier: null, name: "", contact: "", submitted: false };
+    render();
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
