@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for All Fencing &amp; Repair</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .stage-pill.flag { background: #f4dede; color: #9c3b3b; }
+  .window-line { font-size: 0.85rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-sm.warn { border-color: #c76a6a; color: #9c3b3b; }
+  .btn-sm.warn:hover:not(:disabled) { border-color: #9c3b3b; }
+  .narrow-row { display: none; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.3rem; }
+  .narrow-row.open { display: flex; }
+  .narrow-row input[type="text"] { font: inherit; font-size: 0.82rem; padding: 0.45rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-raised); width: 16rem; flex: 1; min-width: 12rem; }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 92%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble.flag { border-color: #c76a6a; background: #fbf1f1; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .field { display: flex; flex-direction: column; gap: 0.45rem; }
+  .field-label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  input[type="text"].wide { width: 100%; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus, select:focus { outline: none; border-color: var(--brand); }
+  textarea { font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; resize: vertical; min-height: 4rem; }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .confirm h3 { margin: 0; font-size: 1.02rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+  .sample-tag { display:inline-block; background:var(--brand-soft); color:var(--brand); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:0.25rem 0.6rem; border-radius:5px; margin-bottom:0.9rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / All Fencing &amp; Repair</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for All Fencing &amp; Repair</span>
+  <h1 class="fx-h1">The permit and inspection update that goes out on its own</h1>
+  <p class="fx-lede">A BBB complaint filed 07/23/2024 against your business reads: "The job never passed inspection. We tried to contact [representative] several times to have the fence fixed to pass the inspection and he either didnt show up or wouldnt call us back." A second complaint from the same month describes texting "many, many times" with no response from the office. Both describe the same gap: once a job hits the permit/inspection stage, nothing tells the customer what's happening unless they chase it themselves.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> both quotes above are taken directly from your BBB complaint page (2 complaints on file, filed and closed in 2024). A direct fetch of your live site today (allfencingandrepair.com) found a "Get a Quote" link to an estimate page, but no permit-status tracker, no customer portal, and no CRM or scheduling-vendor signature of any kind &mdash; office contact is phone and the mary@allfencingfl.com inbox. Licensed under CGC1517256, family-owned since 1997, per your site.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the jobs, customers, and addresses below are fictional, not your real jobs or files with the City. Nothing here sends a real text or email &mdash; it shows exactly what a customer would receive at each step. A real build connects to whatever your office already uses to track a permit (spreadsheet, paper folder, or your existing quote-request flow) and swaps in an actual SMS/email service to send it.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Office view: update a job</h3>
+      <span class="sample-tag">Sample jobs, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the customer sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top:1.4rem;">
+    <h3 class="panel-title">Log a new job for permit tracking: internal, separate from your public quote form</h3>
+    <div id="form-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real text or email.</b> This demo shows exactly what a customer would receive at each step. A real version needs an actual SMS/email service (for example Twilio or SendGrid) wired to whatever your office already uses to mark a permit filed, approved, or an inspection scheduled.</div>
+      <div class="lim"><b>The six stages shown (permit submitted, permit approved, install scheduled, install complete, inspection scheduled, passed) are a typical fence-permit flow, not copied from your internal process.</b> Worth a short call before this gets built for real &mdash; your office may track city permits by jurisdiction differently (Sunrise, Davie, Plantation, and Coral Springs don't all move the same way).</div>
+      <div class="lim"><b>The "Mark inspection failed" button is the part built directly from your BBB complaints.</b> Try it on the second sample job: instead of the customer having to call and re-call, they get an automatic message the moment the office flags a correction, plus a re-inspection date once it's rescheduled. That is the specific gap both complaints describe.</div>
+      <div class="lim"><b>The BBB complaints are real and quoted directly; the fix is a reasonable response to the documented pattern, not a guarantee every inspection passes the first time.</b> A correction still has to get made. What this changes is whether the customer hears about it automatically instead of texting the office repeatedly and getting no reply.</div>
+      <div class="lim"><b>The "log a new job" form here is separate from your existing quote-request form.</b> Your quote form already works for bringing in leads &mdash; this piece only starts once a job is signed and needs a permit, so it wouldn't replace anything currently working.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for All Fencing &amp; Repair. BBB complaint text, and the absence of any permit-tracking or CRM system on your live site, verified by direct fetch today. Job, customer, and address data below is a fictional sample, not connected to any of your real permits or files.</p>
+</footer>
+
+<script>
+(function () {
+  var BASE_STAGES = ["Permit submitted", "Permit approved", "Install scheduled", "Install complete", "Inspection scheduled", "Passed inspection"];
+  var CORRECTION_STAGES = ["Corrections needed", "Re-inspection scheduled"];
+  var OFFICE_NAME = "the office";
+  var STORAGE_KEY = "afr-status-pipeline-jobs-v1";
+
+  function stageMessage(job, stageName) {
+    switch (stageName) {
+      case "Permit approved":
+        return "This is All Fencing & Repair. The city has approved your fence permit for " + job.address + ". We'll text again once your installation is scheduled.";
+      case "Install scheduled":
+        return "Your installation is scheduled for the window: " + job.window + ". No need to call to confirm, we'll text if anything changes.";
+      case "Install complete":
+        return "Your " + job.fenceType + " installation is complete. We've requested your final inspection from the city and will text you the date once it's set.";
+      case "Inspection scheduled":
+        return "Your inspection is scheduled for " + job.window + ". Nothing needed from you, we'll text the result the same day.";
+      case "Corrections needed":
+        return "The inspector flagged an item that needs a correction before final sign-off: " + (job.correctionReason || "a code item on the permit") + ". We're scheduling the fix now, no need to call the office.";
+      case "Re-inspection scheduled":
+        return "The correction is done. Re-inspection is scheduled for " + job.window + ".";
+      case "Passed inspection":
+        return "Your fence passed inspection. Job complete, thank you for choosing All Fencing & Repair.";
+      default:
+        return null;
+    }
+  }
+
+  function seedJobs() {
+    var now = 1755878400000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "AFR-2210",
+        customer: "D. Castillo",
+        contact: "(954) 555-0121",
+        address: "142 NW 88th Ave, Sunrise, FL",
+        fenceType: "PVC privacy fence",
+        window: "Week of March 3, exact day to be confirmed",
+        stages: BASE_STAGES.slice(),
+        stage: 1,
+        correctionReason: "",
+        notifications: [
+          { text: "This is All Fencing & Repair. The city has approved your fence permit for 142 NW 88th Ave, Sunrise, FL. We'll text again once your installation is scheduled.", at: now }
+        ]
+      },
+      {
+        id: "AFR-2214",
+        customer: "K. Whitfield",
+        contact: "(954) 555-0138",
+        address: "3310 SW 61st Terrace, Davie, FL",
+        fenceType: "Aluminum fence with pool gate",
+        window: "Inspection window: 9:00 AM to 12:00 PM, Thursday",
+        stages: BASE_STAGES.slice(),
+        stage: 4,
+        correctionReason: "self-latching gate hardware on the pool side",
+        notifications: [
+          { text: "Your installation is scheduled for the window: This week, exact day to be confirmed. No need to call to confirm, we'll text if anything changes.", at: now + 3600000 },
+          { text: "Your Aluminum fence with pool gate installation is complete. We've requested your final inspection from the city and will text you the date once it's set.", at: now + 7200000 },
+          { text: "Your inspection is scheduled for Inspection window: 9:00 AM to 12:00 PM, Thursday. Nothing needed from you, we'll text the result the same day.", at: now + 10800000 }
+        ]
+      },
+      {
+        id: "AFR-2219",
+        customer: "R. Nunez",
+        contact: "(954) 555-0154",
+        address: "980 NW 44th St, Coral Springs, FL",
+        fenceType: "Wood privacy fence",
+        window: "Not yet scheduled",
+        stages: BASE_STAGES.slice(),
+        stage: 0,
+        correctionReason: "",
+        notifications: []
+      }
+    ];
+  }
+
+  function loadJobs() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedJobs();
+    saveJobs(seeded);
+    return seeded;
+  }
+  function saveJobs(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var jobs = loadJobs();
+  var narrowOpenFor = null;
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function currentStageName(j) { return j.stages[j.stage]; }
+  function atLastStage(j) { return j.stage >= j.stages.length - 1; }
+  function canFlagFailedInspection(j) { return currentStageName(j) === "Inspection scheduled"; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    jobs.forEach(function (j) {
+      var stageName = currentStageName(j);
+      var isFlagStage = stageName === "Corrections needed";
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.customer) + '</h4><span class="stage-pill' + (isFlagStage ? ' flag' : '') + '">' + escapeHtml(stageName) + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(j.fenceType) + ' &middot; ' + escapeHtml(j.address) + ' &middot; ' + escapeHtml(j.contact) + '</div>';
+      html += '<div class="window-line">' + escapeHtml(j.window) + '</div>';
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLastStage(j) ? " disabled" : "") + '>Advance to next stage</button>';
+      html += '<button class="btn-sm" data-narrow-toggle="' + j.id + '">Update window/date</button>';
+      if (canFlagFailedInspection(j)) {
+        html += '<button class="btn-sm warn" data-flag-fail="' + j.id + '">Mark inspection failed</button>';
+      }
+      html += '</div>';
+      html += '<div class="narrow-row' + (narrowOpenFor === j.id ? " open" : "") + '" id="narrow-' + j.id + '">';
+      html += '<input type="text" id="narrow-input-' + j.id + '" placeholder="e.g. Week of March 10, 9am-12pm">';
+      html += '<button class="btn-sm" data-narrow-submit="' + j.id + '">Send updated window</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceJob(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-narrow-toggle]"), function (btn) {
+      btn.addEventListener("click", function () {
+        narrowOpenFor = narrowOpenFor === btn.dataset.narrowToggle ? null : btn.dataset.narrowToggle;
+        renderShop();
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-narrow-submit]"), function (btn) {
+      btn.addEventListener("click", function () { submitNarrow(btn.dataset.narrowSubmit); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-flag-fail]"), function (btn) {
+      btn.addEventListener("click", function () { flagFailedInspection(btn.dataset.flagFail); });
+    });
+  }
+
+  function pushNotification(job, text, flagged) {
+    job.notifications.push({ text: text, at: Date.now(), flagged: !!flagged });
+  }
+
+  function advanceJob(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || atLastStage(j)) return;
+    j.stage += 1;
+    var msg = stageMessage(j, currentStageName(j));
+    if (msg) pushNotification(j, msg, currentStageName(j) === "Corrections needed");
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function flagFailedInspection(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || !canFlagFailedInspection(j)) return;
+    var reasonInput = window.prompt("What did the inspector flag? (shown to the customer)", j.correctionReason || "a code item on the permit");
+    if (reasonInput === null) return;
+    j.correctionReason = reasonInput.trim() || "a code item on the permit";
+    // splice in the two correction stages right after the current stage
+    var insertAt = j.stage + 1;
+    j.stages = j.stages.slice(0, insertAt).concat(CORRECTION_STAGES, j.stages.slice(insertAt));
+    j.stage = insertAt; // move into "Corrections needed"
+    j.window = "Re-inspection date to be confirmed";
+    var msg = stageMessage(j, currentStageName(j));
+    pushNotification(j, msg, true);
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function submitNarrow(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    var input = document.getElementById("narrow-input-" + id);
+    var val = (input.value || "").trim();
+    if (!j || !val) return;
+    j.window = val;
+    pushNotification(j, "Your date/window has been updated to: " + val + ".");
+    narrowOpenFor = null;
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    sel.innerHTML = "";
+    jobs.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.customer;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = jobs.find(function (x) { return x.id === sel.value; }) || jobs[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this customer. Advance the job in the office view on the left.</p>';
+      return;
+    }
+    var html = "";
+    j.notifications.forEach(function (n) {
+      html += '<div class="bubble' + (n.flagged ? ' flag' : '') + '"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-time">Text to ' + escapeHtml(j.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  // ---- New job intake form (internal, for permit tracking) ----
+  var formState = { address: "", fenceType: "", jurisdiction: "", name: "", contact: "", submitted: false };
+  var formRoot = document.getElementById("form-root");
+
+  function canSubmitForm() {
+    return formState.address.trim() && formState.fenceType.trim() && formState.name.trim() && formState.contact.trim();
+  }
+
+  function renderForm() {
+    if (formState.submitted) { renderFormConfirm(); return; }
+    var html = "";
+    html += '<div class="field"><div class="field-label">Job address</div><input type="text" class="wide" id="f-address" value="' + escapeHtml(formState.address) + '" placeholder="e.g. 555 NW 12th St, Sunrise, FL"></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Fence type</div><input type="text" class="wide" id="f-fenceType" value="' + escapeHtml(formState.fenceType) + '" placeholder="e.g. Chain link, wood privacy, aluminum with pool gate"></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Permitting city/jurisdiction</div><input type="text" class="wide" id="f-jurisdiction" value="' + escapeHtml(formState.jurisdiction) + '" placeholder="e.g. Sunrise, Davie, Plantation, Coral Springs"></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Customer name</div><input type="text" class="wide" id="f-name" value="' + escapeHtml(formState.name) + '" placeholder="First and last name"></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Customer phone or email</div><input type="text" class="wide" id="f-contact" value="' + escapeHtml(formState.contact) + '" placeholder="How should we reach them?"></div>';
+    html += '<button class="fx-btn" id="f-submit" style="margin-top:1rem;"' + (canSubmitForm() ? "" : " disabled") + '>Add to permit tracking</button>';
+    formRoot.innerHTML = html;
+
+    document.getElementById("f-address").addEventListener("input", function (e) { formState.address = e.target.value; syncFormBtn(); });
+    document.getElementById("f-fenceType").addEventListener("input", function (e) { formState.fenceType = e.target.value; syncFormBtn(); });
+    document.getElementById("f-jurisdiction").addEventListener("input", function (e) { formState.jurisdiction = e.target.value; syncFormBtn(); });
+    document.getElementById("f-name").addEventListener("input", function (e) { formState.name = e.target.value; syncFormBtn(); });
+    document.getElementById("f-contact").addEventListener("input", function (e) { formState.contact = e.target.value; syncFormBtn(); });
+    document.getElementById("f-submit").addEventListener("click", function () {
+      if (!canSubmitForm()) return;
+      var newId = "AFR-" + (2220 + Math.floor(jobs.length * 7) + jobs.length);
+      jobs.push({
+        id: newId,
+        customer: formState.name,
+        contact: formState.contact,
+        address: formState.address,
+        fenceType: formState.fenceType,
+        window: "Not yet scheduled",
+        stages: BASE_STAGES.slice(),
+        stage: 0,
+        correctionReason: "",
+        notifications: []
+      });
+      saveJobs(jobs);
+      formState.submitted = true;
+      formState.lastId = newId;
+      renderForm();
+      renderShop();
+      populatePicker();
+    });
+  }
+
+  function syncFormBtn() {
+    var btn = document.getElementById("f-submit");
+    if (btn) btn.disabled = !canSubmitForm();
+  }
+
+  function renderFormConfirm() {
+    var html = '<div class="confirm">';
+    html += '<h3>Added as ' + formState.lastId + ', this is what your office view now shows</h3>';
+    html += '<p style="font-size:0.9rem; color:var(--ink-2);">It now appears at "Permit submitted" in the office view above. A real version would pull this from wherever your office already logs a signed job, rather than a second form to fill out.</p>';
+    html += '<button class="fx-btn-ghost" id="f-reset" style="align-self:flex-start;">Add another job</button>';
+    html += '</div>';
+    formRoot.innerHTML = html;
+    document.getElementById("f-reset").addEventListener("click", function () {
+      formState = { address: "", fenceType: "", jurisdiction: "", name: "", contact: "", submitted: false };
+      renderForm();
+    });
+  }
+
+  renderShop();
+  populatePicker();
+  renderThread();
+  renderForm();
+})();
+</script>
+</body>
+</html>
