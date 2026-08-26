@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Review response &amp; tenant retention: working example for AAA Storage of Indio</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .stat { background: var(--surface); padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .stat-n { font-family: var(--serif); font-size: 1.7rem; line-height: 1; }
+  .stat-l { font-size: 0.78rem; color: var(--muted); line-height: 1.35; }
+
+  .asw-tabs { display: flex; gap: 0.5rem; margin: 1.4rem 0 1.1rem; flex-wrap: wrap; }
+  .asw-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .asw-tab.active { background: var(--ink); color: var(--surface); }
+  .asw-view { display: none; }
+  .asw-view.active { display: block; }
+
+  .review { background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--shadow-inset), var(--shadow-sm); padding: 1.2rem; display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem; }
+  .review-top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+  .review-source { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .stars { color: var(--warn); letter-spacing: 0.05em; font-size: 0.9rem; }
+  .review-text { font-size: 0.93rem; color: var(--ink-2); line-height: 1.55; }
+  .review-meta { font-size: 0.78rem; color: var(--muted); }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.needs { color: var(--warn); background: var(--warn-bg); }
+  .badge.sent { color: var(--good); background: var(--good-bg); }
+  .draft-box { margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px dashed var(--rule-soft); }
+  .draft-box label { font-size: 0.74rem; font-weight: 700; color: var(--ink-2); display: block; margin-bottom: 0.3rem; }
+  .draft-box textarea { width: 100%; min-height: 4.2rem; font: inherit; font-size: 0.85rem; padding: 0.6rem 0.7rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: #fff; color: var(--ink); resize: vertical; }
+  .review-actions { display: flex; gap: 0.5rem; margin-top: 0.6rem; flex-wrap: wrap; align-items: center; }
+  .sent-note { font-family: var(--mono); font-size: 0.68rem; color: var(--good); margin-top: 0.5rem; }
+
+  .tenant-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .tenant-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .tenant-title { font-weight: 660; }
+  .tenant-meta { font-size: 0.78rem; color: var(--ink-2); margin-top: 0.2rem; line-height: 1.5; }
+  .risk { color: var(--muted); background: var(--surface-2); }
+  .risk.watch { color: var(--warn); background: var(--warn-bg); }
+  .risk.high { color: var(--hot); background: var(--hot-bg); }
+  .risk.sent { color: var(--good); background: var(--good-bg); }
+  .text-preview { margin-top: 0.7rem; padding: 0.75rem 0.9rem; border-radius: var(--radius-sm); background: var(--surface-2); font-size: 0.85rem; color: var(--ink-2); line-height: 1.5; }
+  .tenant-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Review showcase widget</a> / AAA Storage of Indio</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for AAA Storage of Indio</span>
+  <h1 class="fx-h1">A well-funded competitor just opened a mile away. Here's the response, in one console.</h1>
+  <p class="fx-lede">West Coast Self-Storage opened less than a mile from you last August, pitching online rentals, later access, and climate control as "the next generation of storage facilities." Your own reviews already say what a chain can't: 30+ years family-run, no corporate rate hikes, staff tenants know by name. This example shows the two pieces that turn that advantage into action &mdash; getting in front of your public reviews, and reaching tenants directly with the reasons they picked you over a chain in the first place.</p>
+  <div class="fact-strip" style="display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:1.1rem;">
+    <span class="fact" style="font-family:var(--mono);font-size:0.7rem;letter-spacing:0.02em;padding:0.4rem 0.7rem;border:1px solid var(--rule);border-radius:999px;color:var(--ink-2);background:var(--surface);">82521 Market St, Indio, CA</span>
+    <span class="fact" style="font-family:var(--mono);font-size:0.7rem;letter-spacing:0.02em;padding:0.4rem 0.7rem;border:1px solid var(--rule);border-radius:999px;color:var(--ink-2);background:var(--surface);">Family owned, 30+ years</span>
+    <span class="fact" style="font-family:var(--mono);font-size:0.7rem;letter-spacing:0.02em;padding:0.4rem 0.7rem;border:1px solid var(--rule);border-radius:999px;color:var(--ink-2);background:var(--surface);">12-month rate lock guarantee</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's directly verified:</strong> AAA Storage of Indio's 12-month rate lock / no-rate-hike guarantee and "$1 first month" offer (from aaastorageofindio.com's own rates page, checked directly), the address and 30+ years in business, and that West Coast Self-Storage opened under a mile away in August 2025 marketing itself on online rentals and later access. Aggregated third-party review data (Birdeye) shows a 4.9-star rating across 75 reviews, with tenants repeatedly naming staff (including one named "Jose") for cleanliness and service.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> every review, tenant record, and drafted response/text below. Real review text and real tenant renewal dates aren't something I can pull without access to your Google Business, Yelp, and Cubby accounts, so every entry here is a labeled sample built to match the tone the public reviews describe, not a verbatim quote or a real tenant.</p>
+  </div>
+  <div class="strip">
+    <div class="stat"><span class="stat-n">4.9★</span><span class="stat-l">Aggregate rating across 75 public reviews (Birdeye)</span></div>
+    <div class="stat"><span class="stat-n">&lt;1mi</span><span class="stat-l">Distance to West Coast Self-Storage, opened Aug 2025</span></div>
+    <div class="stat"><span class="stat-n">30+</span><span class="stat-l">Years family-owned and operated, per your own site</span></div>
+  </div>
+
+  <div class="asw-tabs">
+    <button class="asw-tab active" data-view="reviews" type="button">Review response queue</button>
+    <button class="asw-tab" data-view="tenants" type="button">Tenant retention texts</button>
+  </div>
+
+  <section class="asw-view active" id="view-reviews">
+    <h2 class="fx-h2" style="margin-top:0;">Recent reviews needing a public response</h2>
+    <p style="color:var(--ink-2); font-size:0.88rem; max-width:70ch; margin-top:-0.4rem;">Every new review pulled into one place, with a drafted response ready to edit and post. Responding publicly, especially to the rare critical one, is exactly the kind of personal touch a corporate chain down the street won't bother with.</p>
+    <div id="reviews-root"></div>
+  </section>
+
+  <section class="asw-view" id="view-tenants">
+    <h2 class="fx-h2" style="margin-top:0;">Tenants worth a retention text before they shop around</h2>
+    <p style="color:var(--ink-2); font-size:0.88rem; max-width:70ch; margin-top:-0.4rem;">Month-to-month tenants coming up on a full year, or tenants in unit sizes West Coast Self-Storage is actively advertising, flagged for a short personal text reminding them why they're here instead of a rate lock, a real person on the phone, no corporate hikes.</p>
+    <div id="tenants-root"></div>
+    <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn" type="button">Reset to sample data</button></div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before this goes further</h2>
+    <div class="limits">
+      <div class="lim"><b>The review text and tenant list here are labeled samples.</b> I don't have access to your Google Business, Yelp, or Cubby accounts, so nothing below is a real review or a real tenant. A real build pulls actual reviews through Google's and Yelp's own APIs, and actual tenant/lease data through Cubby's export or API, not a scrape or a guess.</div>
+      <div class="lim"><b>Posting the response is still your call, always.</b> This drafts a reply and stages a text, it never auto-posts to Google or auto-sends an SMS on its own. A real build can flag anything unusual (a 1&ndash;2 star review, a tenant who mentions moving out) for you to review before it goes out.</div>
+      <div class="lim"><b>This doesn't touch your Cubby account itself.</b> It sits on top of it: Cubby stays the system of record for rentals and billing, this layer is specifically the outward-facing follow-up &mdash; responding publicly and reaching tenants directly &mdash; that nothing in Cubby automates today.</div>
+      <div class="lim"><b>I could not confirm a single named decision-maker for AAA Storage of Indio.</b> Public sources disagree: the BBB profile lists "Ms. Diana" as property manager, while a separate directory listing names a "George Kramer" as manager. Rather than guess which is current, I addressed the original outreach to the team generally.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by AAA Storage of Indio.</strong></p>
+  <p>Prepared by Shlok Sarnayak. Facts about rate-lock guarantee, address, years in business, and the nearby competitor are drawn from AAA Storage of Indio's own website and public review aggregation. Review text, tenant names, and lease dates below are illustrative samples, not real data, and not connected to any live system.</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "asw_aaa_storage_indio_v1";
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function stars(n) { var s = ""; for (var i = 0; i < 5; i++) s += i < n ? "★" : "☆"; return s; }
+
+  function defaultData() {
+    return {
+      reviews: [
+        {
+          id: "r1", source: "Google (sample)", stars: 5, author: "Sample Tenant A.",
+          text: "Been with AAA for almost 3 years now. Same friendly staff every time, no surprise rate hikes like my last place. Jose always keeps the lot spotless.",
+          status: "needs",
+          draft: "Thank you so much for the kind words and for sticking with us for 3 years! We'll pass this along to Jose, he'll be glad to hear it. Let us know if there's ever anything we can do better."
+        },
+        {
+          id: "r2", source: "Yelp (sample)", stars: 4, author: "Sample Tenant B.",
+          text: "Good value and easy drive-up access. Wish the online account portal was a little easier to find from the homepage, took me a minute to figure out where to pay my bill.",
+          status: "needs",
+          draft: "Thanks for the honest feedback! We hear you on the online portal, we're working on making it easier to spot from the homepage. In the meantime the direct link is aaastorageofindio.cubby.cc/account, happy to walk you through it any time at the office."
+        },
+        {
+          id: "r3", source: "Google (sample)", stars: 5, author: "Sample Tenant C.",
+          text: "Family owned and it shows. They know me by name and my rate hasn't moved in 2 years. Considered the new place down the road but no reason to switch.",
+          status: "sent",
+          draft: "This means a lot, thank you! That's exactly what we're here for, and we're glad the rate-lock guarantee has held up for you. See you at renewal time."
+        }
+      ],
+      tenants: [
+        {
+          id: "t1", name: "Sample Tenant 1204", unit: "10x20 Drive Up", anniversary: "11 months on-site (month-to-month)", risk: "high",
+          text: "Hi from AAA Storage of Indio! You're coming up on a year with us. As a thank you, your 12-month rate lock renews automatically, no increase, no new contract. Questions? Just reply or call (760) 342-5911.",
+          status: "pending"
+        },
+        {
+          id: "t2", name: "Sample Tenant 0871", unit: "10x10 Drive Up", anniversary: "8 months on-site (month-to-month)", risk: "watch",
+          text: "Hi from AAA Storage of Indio! Quick reminder your online account lets you pay, view your gate code, and manage your unit anytime at aaastorageofindio.cubby.cc. We're a phone call away if you'd rather talk to a real person.",
+          status: "pending"
+        },
+        {
+          id: "t3", name: "Sample Commercial Tenant, ABC Co.", unit: "10x30 Drive Up", anniversary: "2 years on-site", risk: "sent",
+          text: "Hi from AAA Storage of Indio! Thanks for 2 years with us. Same drive-up unit, same locked-in rate, same team. Let us know if your storage needs change, we'll always find a fit before you'd need to look elsewhere.",
+          status: "sent"
+        },
+        {
+          id: "t4", name: "Sample Tenant 0459", unit: "5x10 Drive Up", anniversary: "13 months on-site (month-to-month)", risk: "high",
+          text: "Hi from AAA Storage of Indio! You've been with us over a year now, no rate increase yet and none coming with your lock guarantee. If a new place nearby ever offers you a \"deal,\" ask them if it's locked for 12 months in writing, ours is.",
+          status: "pending"
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function renderReviews() {
+    var root = document.getElementById("reviews-root");
+    var html = "";
+    data.reviews.forEach(function (r) {
+      html += '<div class="review">';
+      html += '<div class="review-top"><span class="review-source">' + escapeHtml(r.source) + ' &middot; ' + escapeHtml(r.author) + '</span><span class="stars">' + stars(r.stars) + '</span></div>';
+      html += '<div class="review-text">"' + escapeHtml(r.text) + '"</div>';
+      if (r.status === "needs") {
+        html += '<span class="badge needs">Needs response</span>';
+        html += '<div class="draft-box"><label for="draft-' + r.id + '">Drafted public response (edit before sending)</label>';
+        html += '<textarea id="draft-' + r.id + '">' + escapeHtml(r.draft) + '</textarea></div>';
+        html += '<div class="review-actions"><button class="fx-btn" type="button" onclick="__asw.sendResponse(\'' + r.id + '\')">Post this response</button></div>';
+      } else {
+        html += '<span class="badge sent">Response posted</span>';
+        html += '<div class="sent-note">Posted publicly: "' + escapeHtml(r.draft) + '"</div>';
+      }
+      html += '</div>';
+    });
+    root.innerHTML = html;
+  }
+
+  function renderTenants() {
+    var root = document.getElementById("tenants-root");
+    var html = "";
+    data.tenants.forEach(function (t) {
+      var riskClass = t.status === "sent" ? "sent" : t.risk;
+      var riskLabel = t.status === "sent" ? "Text sent" : (t.risk === "high" ? "High priority" : "Watch");
+      html += '<div class="tenant-card"><div class="tenant-head"><div><div class="tenant-title">' + escapeHtml(t.name) + '</div><div class="tenant-meta">' + escapeHtml(t.unit) + ' &middot; ' + escapeHtml(t.anniversary) + '</div></div><span class="badge risk ' + riskClass + '">' + riskLabel + '</span></div>';
+      html += '<div class="text-preview">' + escapeHtml(t.text) + '</div>';
+      if (t.status === "pending") {
+        html += '<div class="tenant-actions"><button class="fx-btn" type="button" onclick="__asw.sendText(\'' + t.id + '\')">Send retention text</button></div>';
+      } else {
+        html += '<div class="tenant-actions"><span style="font-family:var(--mono);font-size:0.68rem;color:var(--good);">Sent</span></div>';
+      }
+      html += '</div>';
+    });
+    root.innerHTML = html;
+  }
+
+  window.__asw = {
+    sendResponse: function (id) {
+      var r = data.reviews.filter(function (x) { return x.id === id; })[0];
+      if (!r) return;
+      var ta = document.getElementById("draft-" + id);
+      if (ta) r.draft = ta.value;
+      r.status = "sent";
+      save();
+      renderReviews();
+    },
+    sendText: function (id) {
+      var t = data.tenants.filter(function (x) { return x.id === id; })[0];
+      if (!t) return;
+      t.status = "sent";
+      save();
+      renderTenants();
+    }
+  };
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the review queue and tenant list back to the original sample data?")) return;
+    data = defaultData();
+    save();
+    renderReviews();
+    renderTenants();
+  });
+
+  document.querySelectorAll(".asw-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".asw-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".asw-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderReviews();
+  renderTenants();
+})();
+</script>
+</body>
+</html>
