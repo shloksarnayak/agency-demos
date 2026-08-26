@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for All About Gutters, Inc.</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .window-line { font-size: 0.85rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .resched-row { display: none; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.3rem; }
+  .resched-row.open { display: flex; }
+  .resched-row input[type="text"] { font: inherit; font-size: 0.82rem; padding: 0.45rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-raised); width: 15rem; }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 92%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .field { display: flex; flex-direction: column; gap: 0.45rem; }
+  .field-label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  input[type="text"].wide { width: 100%; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus, select:focus { outline: none; border-color: var(--brand); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .confirm h3 { margin: 0; font-size: 1.02rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+  .sample-tag { display:inline-block; background:var(--brand-soft); color:var(--brand); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:0.25rem 0.6rem; border-radius:5px; margin-bottom:0.9rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / All About Gutters, Inc.</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for All About Gutters, Inc.</span>
+  <h1 class="fx-h1">The confirmation and reschedule notice a wide territory can't reliably deliver by phone</h1>
+  <p class="fx-lede">All About Gutters already books jobs through Jobber across a service area that runs from Langley out to Whistler and Pemberton, over 20 towns in the Lower Mainland and Fraser Valley. Once a crew is covering that much ground, a schedule slip on one job is easy for the office to miss telling the next customer about, not because anyone drops the ball, but because nothing pings the customer automatically the moment a booking calendar changes. This page shows what an automatic confirmation and reschedule notice on top of Jobber would look like.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> All About Gutters, Inc. is a Langley-based gutter and exterior-maintenance company with 25+ years in the trade, serving Greater Vancouver, the Lower Mainland, and the Fraser Valley (site lists 20+ towns including Surrey, Langley, Abbotsford, Mission, Coquitlam, North Vancouver, and Port Moody, with coverage extending to Whistler and Pemberton). The company books jobs through Jobber, with a "Book Now" flow live on its site, and holds an A+ BBB rating (not BBB-accredited). Ryan Moster is listed publicly as Owner &amp; CEO. The specific claim in the original outreach note, that a few customer reviews mentioned reschedules or missed follow-up calls, reflects a pattern common to wide-territory service businesses; it could not be independently re-verified against a public review with a permanent link at the time this was built, so it is not repeated here as a sourced quote.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the jobs, customers, and crew name below are a fictional sample, not real All About Gutters customers or open tickets. All dollar figures and job details are illustrative. Nothing here sends a real text or email, this shows exactly what a customer would receive at each step. A real build connects to Jobber's job-status and scheduling data (via its API or webhooks) and sends through an actual SMS/email service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Office view: update a job</h3>
+      <span class="sample-tag">Sample jobs, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the customer sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top:1.4rem;">
+    <h3 class="panel-title">New booking request: captures the town up front</h3>
+    <p style="font-size:0.85rem; color:var(--ink-2); margin-top:-0.4rem;">Given the service area spans Langley to Whistler and Pemberton, the intake form asks for the town before anything else, so the office can route it to whichever crew already covers that zone.</p>
+    <div id="form-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before this goes further</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real text or email.</b> This demo shows exactly what a customer would receive at each step. A real version needs an actual SMS/email service (for example Twilio or SendGrid) wired to Jobber's job data, either through Jobber's API or a webhook triggered when a job's schedule changes.</div>
+      <div class="lim"><b>The four stages shown (booked, confirmed, crew en route, complete) are a typical gutter-service flow, not copied from All About Gutters' internal Jobber setup.</b> Worth a short conversation before this gets built for real; a routine cleaning, a full gutter install, and an exterior-repair job may move through this differently.</div>
+      <div class="lim"><b>Reschedule notice is a separate action from advancing a job's stage, on purpose.</b> That mirrors exactly what the original outreach note proposed: a confirmation the moment a job is booked, plus a distinct reschedule notice if the technician's day changes, without requiring a platform switch away from Jobber.</div>
+      <div class="lim"><b>The booking-request form only captures a request and a town, it doesn't book a specific time slot.</b> Keeping it to "what you need, where, and how to reach you" is deliberate; a live scheduling calendar synced to crew routes across 20+ towns is a bigger, separate project.</div>
+      <div class="lim"><b>The BBB rating and service-area list are pulled from public listings today; they can shift.</b> Worth confirming against Jobber and the live site before anything here gets built for real.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by All About Gutters, Inc.</strong></p>
+  <p>Prepared by Shlok Sarnayak for All About Gutters, Inc. Company and service-area details referenced were checked against allaboutguttersinc.com and public BBB/business listings today. Job, customer, and crew data below is a fictional sample, not connected to any real All About Gutters job, customer, or Jobber account.</p>
+</footer>
+
+<script>
+(function () {
+  var STAGE_NAMES = ["Booked", "Confirmed", "Crew en route", "Complete"];
+  var CREW_NAME = "Dave";
+  var STORAGE_KEY = "aag-status-pipeline-jobs-v1";
+
+  var STAGE_MESSAGES = [
+    null,
+    function (j) { return "This is All About Gutters. Your " + j.jobType + " is confirmed for " + j.window + " in " + j.town + ". We'll text again if anything changes, no need to call to confirm."; },
+    function (j) { return CREW_NAME + " is on the way to your " + j.town + " address and expected within your window: " + j.window + "."; },
+    function (j) { return "Your " + j.jobType + " is complete. Thanks for choosing All About Gutters."; }
+  ];
+
+  function seedJobs() {
+    var now = 1755878400000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "AAG-2201",
+        customer: "L. Fenwick",
+        contact: "(604) 555-0131",
+        town: "Langley",
+        jobType: "gutter cleaning and inspection",
+        stage: 1,
+        window: "Tuesday, 9:00 AM to 11:00 AM",
+        notifications: [
+          { text: "This is All About Gutters. Your gutter cleaning and inspection is confirmed for Tuesday, 9:00 AM to 11:00 AM in Langley. We'll text again if anything changes, no need to call to confirm.", at: now }
+        ]
+      },
+      {
+        id: "AAG-2206",
+        customer: "P. Aujla",
+        contact: "(604) 555-0147",
+        town: "Whistler",
+        jobType: "hidden gutter installation",
+        stage: 0,
+        window: "Not yet scheduled",
+        notifications: []
+      },
+      {
+        id: "AAG-2212",
+        customer: "M. Delacruz",
+        contact: "(604) 555-0163",
+        town: "Pemberton",
+        jobType: "fascia board repair",
+        stage: 2,
+        window: "Thursday, 1:00 PM to 3:00 PM",
+        notifications: [
+          { text: "This is All About Gutters. Your fascia board repair is confirmed for Thursday, 1:00 PM to 3:00 PM in Pemberton. We'll text again if anything changes, no need to call to confirm.", at: now + 3600000 },
+          { text: "Your appointment has been rescheduled to Friday, 8:00 AM to 10:00 AM in Pemberton. Sorry for the shuffle, we'll text again once the crew is on the way.", at: now + 7200000 },
+          { text: "Dave is on the way to your Pemberton address and expected within your window: Friday, 8:00 AM to 10:00 AM.", at: now + 10800000 }
+        ]
+      },
+      {
+        id: "AAG-2219",
+        customer: "S. Okafor",
+        contact: "(604) 555-0179",
+        town: "Abbotsford",
+        jobType: "leaf guard system install",
+        stage: 0,
+        window: "Not yet scheduled",
+        notifications: []
+      }
+    ];
+  }
+
+  function loadJobs() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedJobs();
+    saveJobs(seeded);
+    return seeded;
+  }
+  function saveJobs(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var jobs = loadJobs();
+  var reschedOpenFor = null;
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    jobs.forEach(function (j) {
+      var atLast = j.stage >= STAGE_NAMES.length - 1;
+      var canResched = j.stage >= 1 && j.stage < STAGE_NAMES.length - 1;
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.customer) + '</h4><span class="stage-pill">' + STAGE_NAMES[j.stage] + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(j.jobType) + ' &middot; ' + escapeHtml(j.town) + ' &middot; ' + escapeHtml(j.contact) + '</div>';
+      html += '<div class="window-line">Window: ' + escapeHtml(j.window) + '</div>';
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+      html += '<button class="btn-sm" data-resched-toggle="' + j.id + '"' + (canResched ? "" : " disabled") + '>Reschedule job</button>';
+      html += '</div>';
+      html += '<div class="resched-row' + (reschedOpenFor === j.id ? " open" : "") + '" id="resched-' + j.id + '">';
+      html += '<input type="text" id="resched-input-' + j.id + '" placeholder="e.g. Friday, 8:00 AM to 10:00 AM">';
+      html += '<button class="btn-sm" data-resched-submit="' + j.id + '">Send reschedule notice</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceJob(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-resched-toggle]"), function (btn) {
+      btn.addEventListener("click", function () {
+        reschedOpenFor = reschedOpenFor === btn.dataset.reschedToggle ? null : btn.dataset.reschedToggle;
+        renderShop();
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-resched-submit]"), function (btn) {
+      btn.addEventListener("click", function () { submitResched(btn.dataset.reschedSubmit); });
+    });
+  }
+
+  function pushNotification(job, text) {
+    job.notifications.push({ text: text, at: Date.now() });
+  }
+
+  function advanceJob(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGE_NAMES.length - 1) return;
+    j.stage += 1;
+    var msg = STAGE_MESSAGES[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function submitResched(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    var input = document.getElementById("resched-input-" + id);
+    var val = (input.value || "").trim();
+    if (!j || !val) return;
+    j.window = val;
+    pushNotification(j, "Your appointment has been rescheduled to " + val + " in " + j.town + ". Sorry for the shuffle, we'll text again once the crew is on the way.");
+    reschedOpenFor = null;
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    var prevVal = sel.value;
+    sel.innerHTML = "";
+    jobs.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.customer + " (" + j.town + ")";
+      sel.appendChild(opt);
+    });
+    if (prevVal && jobs.some(function (j) { return j.id === prevVal; })) sel.value = prevVal;
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = jobs.find(function (x) { return x.id === sel.value; }) || jobs[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this customer. Advance the job or reschedule it in the office view on the left.</p>';
+      return;
+    }
+    var html = "";
+    j.notifications.forEach(function (n) {
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-time">Text to ' + escapeHtml(j.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  // ---- New booking request form ----
+  var formState = { town: "", jobType: "", name: "", contact: "", submitted: false };
+  var formRoot = document.getElementById("form-root");
+
+  function canSubmitForm() {
+    return formState.town.trim() && formState.jobType.trim() && formState.name.trim() && formState.contact.trim();
+  }
+
+  function renderForm() {
+    if (formState.submitted) { renderFormConfirm(); return; }
+    var html = "";
+    html += '<div class="form-grid">';
+    html += '<div class="field"><div class="field-label">Town</div><input type="text" class="wide" id="f-town" value="' + escapeHtml(formState.town) + '" placeholder="e.g. Whistler"></div>';
+    html += '<div class="field"><div class="field-label">What you need</div><input type="text" class="wide" id="f-jobtype" value="' + escapeHtml(formState.jobType) + '" placeholder="e.g. gutter cleaning"></div>';
+    html += '<div class="field"><div class="field-label">Your name</div><input type="text" class="wide" id="f-name" value="' + escapeHtml(formState.name) + '" placeholder="First and last name"></div>';
+    html += '<div class="field"><div class="field-label">Phone or email</div><input type="text" class="wide" id="f-contact" value="' + escapeHtml(formState.contact) + '" placeholder="How should we reach you?"></div>';
+    html += '</div>';
+    html += '<button class="fx-btn" id="f-submit" style="margin-top:1rem;"' + (canSubmitForm() ? "" : " disabled") + '>Submit request</button>';
+    formRoot.innerHTML = html;
+
+    document.getElementById("f-town").addEventListener("input", function (e) { formState.town = e.target.value; syncFormBtn(); });
+    document.getElementById("f-jobtype").addEventListener("input", function (e) { formState.jobType = e.target.value; syncFormBtn(); });
+    document.getElementById("f-name").addEventListener("input", function (e) { formState.name = e.target.value; syncFormBtn(); });
+    document.getElementById("f-contact").addEventListener("input", function (e) { formState.contact = e.target.value; syncFormBtn(); });
+    document.getElementById("f-submit").addEventListener("click", function () {
+      if (!canSubmitForm()) return;
+      var newId = "AAG-" + (2220 + Math.floor(jobs.length * 6) + jobs.length);
+      jobs.push({
+        id: newId,
+        customer: formState.name,
+        contact: formState.contact,
+        town: formState.town,
+        jobType: formState.jobType,
+        stage: 0,
+        window: "Not yet scheduled",
+        notifications: []
+      });
+      saveJobs(jobs);
+      formState.submitted = true;
+      formState.lastId = newId;
+      formState.lastTown = formState.town;
+      renderForm();
+      renderShop();
+      populatePicker();
+    });
+  }
+
+  function syncFormBtn() {
+    var btn = document.getElementById("f-submit");
+    if (btn) btn.disabled = !canSubmitForm();
+  }
+
+  function renderFormConfirm() {
+    var html = '<div class="confirm">';
+    html += '<h3>Request captured as ' + formState.lastId + ', routed to the ' + escapeHtml(formState.lastTown) + ' crew</h3>';
+    html += '<p style="font-size:0.9rem; color:var(--ink-2);">It now appears at "Booked" in the office view above. A real version emails or texts the office the moment this is submitted, with the town already flagged for routing.</p>';
+    html += '<button class="fx-btn-ghost" id="f-reset" style="align-self:flex-start;">Submit another request</button>';
+    html += '</div>';
+    formRoot.innerHTML = html;
+    document.getElementById("f-reset").addEventListener("click", function () {
+      formState = { town: "", jobType: "", name: "", contact: "", submitted: false };
+      renderForm();
+    });
+  }
+
+  renderShop();
+  populatePicker();
+  renderThread();
+  renderForm();
+})();
+</script>
+</body>
+</html>
