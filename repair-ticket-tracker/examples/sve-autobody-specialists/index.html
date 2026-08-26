@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Repair ticket tracker template</title>
-<link rel="stylesheet" href="../assets/theme.css">
+<title>Repair ticket tracker: working example for SVE Autobody Specialists</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
 <style>
   .rtt-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
   .rtt-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
@@ -39,6 +39,9 @@
   .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
   .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 460px; }
   .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-divider { display: flex; align-items: center; gap: 0.6rem; margin: 1rem 0; color: var(--muted); font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .lookup-divider::before, .lookup-divider::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+  .lookup-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
   .lookup-result { margin-top: 1.1rem; }
   .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.2rem; }
   .not-found { color: var(--hot); font-size: 0.88rem; }
@@ -58,17 +61,22 @@
 <body>
 <nav class="fx-nav">
   <div class="fx-nav-row">
-    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
-    <span class="fx-crumb"><a href="../index.html">Templates</a> / Repair ticket tracker</span>
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Repair ticket tracker</a> / SVE Autobody Specialists</span>
   </div>
 </nav>
 <header class="fx-hero">
-  <span class="fx-kicker">Template, not built for a specific business</span>
-  <h1 class="fx-h1">A repair that sits untouched for weeks should flag itself</h1>
-  <p class="fx-lede">Many repair shops track jobs the same way: a bench, a paper ticket or a spreadsheet row, and a staff member who is supposed to remember to call the customer at each step. When that person gets busy, a job can sit untouched for weeks with nobody noticing until the customer calls to ask. This page shows one small, working tool that fixes both sides of that gap: an internal queue that surfaces every open ticket sorted by how long it has sat in its current stage, and a customer-facing status page so a customer can check where their item stands without calling first.</p>
+  <span class="fx-kicker">Working example, built for SVE Autobody Specialists</span>
+  <h1 class="fx-h1">Right now, checking on a repair means catching Tom, Lena or Cailee on the phone</h1>
+  <p class="fx-lede">I checked your homepage and contact page directly. Status updates on a vehicle in for repair happen when a staff member calls, emails or texts, or when a customer calls in and someone happens to be free to look it up. There is no self-service way to check where a repair stands. A June 2025 review describes exactly that gap breaking down: four to five calls over three months just to get clarity on one estimate and its status. Your review record overall is very strong (hundreds of positive reviews across Google, Carwise and other sites), this is a narrow gap in one channel, not a trust problem.</p>
 </header>
 <main class="fx-main">
-  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the office view reads from whatever already tracks the job (a bench log, a spreadsheet, a POS system), and the reference code on the customer view is whatever the shop already hands out, not a new system to adopt.</p></div>
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> your live site (checked directly) describes status updates as happening by phone, email or text from your team, with no self-service tracker anywhere. Tom, Lena and Cailee are named on your own site as front-office staff. Your free-estimate form already asks for vehicle make, model, year and VIN, so a claim system has that information on day one. The four to five call pattern comes from a review that Yelp's own site blocks from being fetched directly; it was read through a third party mirror of the page rather than Yelp itself, so it is worth a quick confirmation on Yelp directly before this goes into anything sent to a customer.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the four sample claims below are not real vehicles or customers. The seven stages (estimate approved, parts ordered, teardown, paint, reassembly, quality check, ready for pickup) follow the general order a collision repair moves through and match the language a customer already knows from an insurance claim, they are not copied from any internal SVE process document, worth a short conversation before this gets built for real.</p>
+  </div>
 
   <div class="rtt-tabs">
     <button class="rtt-tab active" data-view="office" type="button">Office view</button>
@@ -78,10 +86,11 @@
   <section class="rtt-view active" id="view-office">
     <div class="rtt-cols">
       <div>
-        <h2 class="fx-h2" style="margin-top:0;">Log a new ticket</h2>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new claim</h2>
         <form id="add-form" class="form-grid">
           <div class="field span2"><label for="f-customer">Customer name</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
-          <div class="field span2"><label for="f-item">Item / repair description</label><input type="text" id="f-item" placeholder="e.g. Espresso machine, descale and rebuild"></div>
+          <div class="field span2"><label for="f-phone">Phone number</label><input type="text" id="f-phone" placeholder="e.g. (303) 555-0114"></div>
+          <div class="field span2"><label for="f-item">Vehicle / repair description</label><input type="text" id="f-item" placeholder="e.g. 2021 BMW 330i, rear quarter panel and bumper"></div>
           <div class="field span2"><label for="f-stage">Starting stage</label><select id="f-stage"></select></div>
           <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
         </form>
@@ -97,39 +106,49 @@
   <section class="rtt-view" id="view-customer">
     <h2 class="fx-h2" style="margin-top:0;">Check the status of a repair</h2>
     <div class="lookup-box">
-      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code</label>
-      <input type="text" id="lookup-ref" placeholder="e.g. RT-1001">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Claim number</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. SVE-3001">
+      <div class="lookup-divider">or</div>
+      <div class="lookup-pair">
+        <div class="field"><label for="lookup-phone">Phone number</label><input type="text" id="lookup-phone" placeholder="(303) 555-0114"></div>
+        <div class="field"><label for="lookup-lastname">Last name</label><input type="text" id="lookup-lastname" placeholder="e.g. A"></div>
+      </div>
       <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
       <div id="lookup-root"></div>
     </div>
-    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try RT-1001, RT-1002, RT-1003 or RT-1004 from the office view's sample queue.</p>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try claim SVE-3001, SVE-3002, SVE-3003 or SVE-3004 from the office view's sample queue, or use the matching phone number and last name shown on each card.</p>
   </section>
 
   <section>
-    <h2 class="fx-h2">How this gets built for real</h2>
+    <h2 class="fx-h2">What I'd flag before this goes further</h2>
     <div class="limits">
-      <div class="lim"><b>The reference code is whatever the shop already hands out.</b> A real build reads from an existing ticket or work order number instead of inventing a new one for the customer to remember.</div>
-      <div class="lim"><b>"Stuck" here is a simple timer per stage.</b> A real build can text or email the customer automatically the moment a stage changes, instead of relying on staff remembering to call.</div>
-      <div class="lim"><b>The customer view shows only customer-safe wording.</b> Internal notes stay in the office view, nothing typed there is exposed on the lookup page.</div>
-      <div class="lim"><b>See it built for a real business: <a href="examples/karv-repair/">KA RV Repair</a>, <a href="examples/watchrepair-net/">WatchRepair.net</a>, <a href="examples/boat-world-mn/">Boat World MN</a>, or <a href="examples/sve-autobody-specialists/">SVE Autobody Specialists</a>.</b></div>
+      <div class="lim"><b>Only the four sample claims above return anything.</b> This is not connected to your real intake, it cannot look up an actual customer's vehicle. A real version would read from the same free-estimate form you already run, so a claim record exists the moment a car is checked in.</div>
+      <div class="lim"><b>The four to five call pattern is real but thin, one documented review out of hundreds of positive ones,</b> and it was read through a third party mirror since Yelp blocks direct fetching of its own reviews. Worth confirming directly on Yelp before it is referenced anywhere client facing. The fix on offer here is meant to sit alongside the personal updates Tom, Lena and Cailee already give, not replace them with something automated and impersonal.</div>
+      <div class="lim"><b>The seven stages shown are a typical collision repair flow, not your literal internal process.</b> Your real stage names and order may differ, worth a short conversation before this gets built for real.</div>
+      <div class="lim"><b>Phone plus last name is the customer's main path in, claim number is the fallback.</b> A real build would also need a rule for what happens with two customers sharing a last name and phone on file, a small detail worth deciding up front rather than after launch.</div>
     </div>
   </section>
 </main>
-<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional ticket and customer data on this page, not connected to any live system.</p></footer>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for SVE Autobody Specialists. Your live site's lack of a self-service status tracker was checked directly today. Claim data on this page is a labeled sample, not connected to any real customer or vehicle.</p>
+</footer>
 <script>
 (function () {
   "use strict";
-  var STORE_KEY = "rtt_template_generic_v1";
+  var STORE_KEY = "rtt_sve_autobody_v1";
 
   var STAGES = [
-    { key: "received", label: "Received" },
-    { key: "diagnosed", label: "Diagnosed" },
-    { key: "in_repair", label: "In repair" },
+    { key: "estimate_approved", label: "Estimate approved" },
+    { key: "parts_ordered", label: "Parts ordered" },
+    { key: "teardown", label: "Teardown" },
+    { key: "paint", label: "Paint" },
+    { key: "reassembly", label: "Reassembly" },
     { key: "quality_check", label: "Quality check" },
-    { key: "complete", label: "Complete" }
+    { key: "ready_for_pickup", label: "Ready for pickup" }
   ];
   var STAGE_INDEX = {}; STAGES.forEach(function (s, i) { STAGE_INDEX[s.key] = i; });
-  var STUCK_HOURS = 72;
+  var STUCK_HOURS = 96;
 
   function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
   function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
@@ -141,34 +160,43 @@
     if (days < 1) return Math.round(hrs) + "h";
     return days + "d " + rem + "h";
   }
+  function lastNameOf(fullName) {
+    var parts = fullName.trim().split(/\s+/);
+    return parts[parts.length - 1] || "";
+  }
+  function normPhone(p) { return (p || "").replace(/\D/g, ""); }
 
   function defaultData() {
     return {
-      seq: 1004,
+      seq: 3004,
       tickets: [
         {
-          id: "RT-1001", ref: "RT-1001", customer: "Sample Customer A", item: "Espresso machine, descale and rebuild",
-          stageIdx: 1, enteredStageAt: hoursFromNow(-80),
-          history: [{ stage: "received", at: hoursFromNow(-100) }, { stage: "diagnosed", at: hoursFromNow(-80) }],
-          notes: [{ at: hoursFromNow(-79), text: "Waiting on a replacement gasket, backordered." }]
+          id: "SVE-3001", ref: "SVE-3001", customer: "Sample Customer A", phone: "(303) 555-0114",
+          item: "2021 BMW 330i, rear quarter panel and bumper replacement",
+          stageIdx: 1, enteredStageAt: hoursFromNow(-260),
+          history: [{ stage: "estimate_approved", at: hoursFromNow(-280) }, { stage: "parts_ordered", at: hoursFromNow(-260) }],
+          notes: [{ at: hoursFromNow(-255), text: "OEM quarter panel backordered from BMW, dealer estimates two more weeks." }]
         },
         {
-          id: "RT-1002", ref: "RT-1002", customer: "Sample Customer B", item: "Turntable, belt and stylus replacement",
-          stageIdx: 0, enteredStageAt: hoursFromNow(-6),
-          history: [{ stage: "received", at: hoursFromNow(-6) }],
-          notes: []
+          id: "SVE-3002", ref: "SVE-3002", customer: "Sample Customer B", phone: "(303) 555-0122",
+          item: "2019 Audi Q5, structural frame repair after rear-end collision",
+          stageIdx: 2, enteredStageAt: hoursFromNow(-18),
+          history: [{ stage: "estimate_approved", at: hoursFromNow(-40) }, { stage: "parts_ordered", at: hoursFromNow(-30) }, { stage: "teardown", at: hoursFromNow(-18) }],
+          notes: [{ at: hoursFromNow(-16), text: "On the frame rack, measuring against factory specs." }]
         },
         {
-          id: "RT-1003", ref: "RT-1003", customer: "Sample Customer C", item: "Camera body, shutter repair",
-          stageIdx: 2, enteredStageAt: hoursFromNow(-20),
-          history: [{ stage: "received", at: hoursFromNow(-40) }, { stage: "diagnosed", at: hoursFromNow(-30) }, { stage: "in_repair", at: hoursFromNow(-20) }],
-          notes: [{ at: hoursFromNow(-18), text: "Shutter assembly ordered, on bench." }]
+          id: "SVE-3003", ref: "SVE-3003", customer: "Sample Customer C", phone: "(303) 555-0138",
+          item: "2022 Mercedes-Benz GLC 300, paint and clear-coat blend on driver door",
+          stageIdx: 3, enteredStageAt: hoursFromNow(-9),
+          history: [{ stage: "estimate_approved", at: hoursFromNow(-70) }, { stage: "parts_ordered", at: hoursFromNow(-60) }, { stage: "teardown", at: hoursFromNow(-30) }, { stage: "paint", at: hoursFromNow(-9) }],
+          notes: [{ at: hoursFromNow(-8), text: "Color matched, in the booth today." }]
         },
         {
-          id: "RT-1004", ref: "RT-1004", customer: "Sample Customer D", item: "Mixer, motor replacement",
-          stageIdx: 4, enteredStageAt: hoursFromNow(-2),
-          history: [{ stage: "received", at: hoursFromNow(-96) }, { stage: "diagnosed", at: hoursFromNow(-90) }, { stage: "in_repair", at: hoursFromNow(-60) }, { stage: "quality_check", at: hoursFromNow(-10) }, { stage: "complete", at: hoursFromNow(-2) }],
-          notes: [{ at: hoursFromNow(-2), text: "Tested, ready for pickup." }]
+          id: "SVE-3004", ref: "SVE-3004", customer: "Sample Customer D", phone: "(303) 555-0147",
+          item: "2020 Lexus RX 350, insurance claim, front-end collision repair",
+          stageIdx: 6, enteredStageAt: hoursFromNow(-3),
+          history: [{ stage: "estimate_approved", at: hoursFromNow(-340) }, { stage: "parts_ordered", at: hoursFromNow(-300) }, { stage: "teardown", at: hoursFromNow(-220) }, { stage: "paint", at: hoursFromNow(-140) }, { stage: "reassembly", at: hoursFromNow(-60) }, { stage: "quality_check", at: hoursFromNow(-10) }, { stage: "ready_for_pickup", at: hoursFromNow(-3) }],
+          notes: [{ at: hoursFromNow(-3), text: "Passed quality check, washed and ready out front." }]
         }
       ]
     };
@@ -182,7 +210,7 @@
   function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
 
   function statusInfo(t) {
-    if (t.stageIdx >= STAGES.length - 1) return { cls: "done", label: "Complete" };
+    if (t.stageIdx >= STAGES.length - 1) return { cls: "done", label: "Ready for pickup" };
     var stuckHrs = hoursAgo(t.enteredStageAt);
     if (stuckHrs > STUCK_HOURS) return { cls: "stuck", label: "Stuck" };
     if (stuckHrs > STUCK_HOURS * 0.6) return { cls: "watch", label: "Watch" };
@@ -201,10 +229,10 @@
     var done = data.tickets.filter(function (t) { return t.stageIdx >= STAGES.length - 1; })
       .slice().sort(function (a, b) { return b.enteredStageAt - a.enteredStageAt; });
     var html = "";
-    if (!open.length) html += '<p class="empty">Nothing open. Every ticket is caught up.</p>';
+    if (!open.length) html += '<p class="empty">Nothing open. Every claim is caught up.</p>';
     open.forEach(function (t) { html += renderCard(t); });
     if (done.length) {
-      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently completed</h3>';
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently ready for pickup</h3>';
       done.slice(0, 5).forEach(function (t) { html += renderCard(t); });
     }
     root.innerHTML = html;
@@ -214,7 +242,7 @@
     var st = statusInfo(t);
     var idx = data.tickets.indexOf(t);
     var stageLabel = STAGES[t.stageIdx].label;
-    var html = '<div class="ticket-card"><div class="ticket-head"><div><div class="ticket-title">' + escapeHtml(t.customer) + " &middot; " + t.ref + '</div><div class="ticket-meta">' + escapeHtml(t.item) + "</div></div><span class=\"badge " + st.cls + '">' + st.label + "</span></div>";
+    var html = '<div class="ticket-card"><div class="ticket-head"><div><div class="ticket-title">' + escapeHtml(t.customer) + " &middot; " + t.ref + '</div><div class="ticket-meta">' + escapeHtml(t.item) + " &middot; " + escapeHtml(t.phone) + "</div></div><span class=\"badge " + st.cls + '">' + st.label + "</span></div>";
     html += '<div class="ticket-summary">Stage: ' + stageLabel + " (" + fmtDuration(hoursAgo(t.enteredStageAt)) + " in this stage)</div>";
     if (t.notes.length) {
       html += '<div class="log">';
@@ -250,13 +278,14 @@
   document.getElementById("add-form").addEventListener("submit", function (e) {
     e.preventDefault();
     var customer = document.getElementById("f-customer").value.trim();
+    var phone = document.getElementById("f-phone").value.trim();
     var item = document.getElementById("f-item").value.trim();
     var stageKey = document.getElementById("f-stage").value;
-    if (!customer || !item) { alert("Fill in the customer name and item description."); return; }
+    if (!customer || !item) { alert("Fill in the customer name and vehicle description."); return; }
     data.seq += 1;
-    var ref = "RT-" + data.seq;
+    var ref = "SVE-" + data.seq;
     var now = Date.now();
-    data.tickets.push({ id: ref, ref: ref, customer: customer, item: item, stageIdx: STAGE_INDEX[stageKey], enteredStageAt: now, history: [{ stage: stageKey, at: now }], notes: [] });
+    data.tickets.push({ id: ref, ref: ref, customer: customer, phone: phone, item: item, stageIdx: STAGE_INDEX[stageKey], enteredStageAt: now, history: [{ stage: stageKey, at: now }], notes: [] });
     save(); renderQueue();
     document.getElementById("add-form").reset();
     populateStageSelect();
@@ -268,11 +297,21 @@
   });
 
   document.getElementById("lookup-btn").addEventListener("click", function () {
-    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var claim = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var phone = document.getElementById("lookup-phone").value.trim();
+    var last = document.getElementById("lookup-lastname").value.trim().toLowerCase();
     var root = document.getElementById("lookup-root");
-    if (!ref) { root.innerHTML = ""; return; }
-    var t = data.tickets.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
-    if (!t) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No record found for that reference code. Please contact the shop directly.</p></div>'; return; }
+    var t = null;
+    if (claim) {
+      t = data.tickets.filter(function (x) { return x.ref.toUpperCase() === claim; })[0];
+    } else if (phone && last) {
+      var np = normPhone(phone);
+      t = data.tickets.filter(function (x) { return normPhone(x.phone) === np && lastNameOf(x.customer).toLowerCase() === last; })[0];
+    } else {
+      root.innerHTML = '<div class="lookup-result"><p class="not-found">Enter a claim number, or a phone number and last name.</p></div>';
+      return;
+    }
+    if (!t) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No record found for that claim. Please call the shop directly.</p></div>'; return; }
     var html = '<div class="lookup-result"><h3>' + escapeHtml(t.item) + '</h3>';
     STAGES.forEach(function (s, i) {
       var cls = i < t.stageIdx ? "done" : (i === t.stageIdx ? "active" : "pending");
