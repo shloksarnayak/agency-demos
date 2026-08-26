@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Appointment request widget: working example for 1C Barn</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .field { display: flex; flex-direction: column; gap: 0.5rem; }
+  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .field-row { display: flex; flex-wrap: wrap; gap: 1rem; }
+  .field-row .field { flex: 1 1 220px; }
+  input[type="text"], input[type="date"], input[type="number"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; max-width: 26rem; }
+  input[type="text"]:focus, input[type="date"]:focus, input[type="number"]:focus { outline: none; border-color: var(--brand); }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.4rem 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+  .confirm h3 { margin: 0; font-size: 1.1rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+  .confirm dl { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; }
+  .confirm dt { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .confirm dd { margin: 0 0 0.5rem; font-size: 0.94rem; color: var(--ink); }
+
+  .info-block { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 1rem 1.2rem; }
+  .info-block h4 { margin: 0 0 0.5rem; font-size: 0.86rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-2); font-family: var(--mono); }
+  .price-tiers { display: flex; flex-direction: column; gap: 0.5rem; }
+  .price-tier { display: flex; justify-content: space-between; font-size: 0.9rem; padding: 0.4rem 0; border-bottom: 1px solid var(--rule-soft); }
+  .price-tier:last-child { border-bottom: none; }
+  .price-tier b { color: var(--ink); }
+  .illustrative-tag { display: inline-block; margin-top: 0.6rem; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--warn); background: var(--warn-bg); padding: 0.25rem 0.55rem; border-radius: 999px; }
+  .policy-list { margin: 0; padding-left: 1.1rem; font-size: 0.88rem; line-height: 1.6; color: var(--ink-2); display: flex; flex-direction: column; gap: 0.4rem; }
+  .cap-warning { margin-top: 0.9rem; padding: 0.75rem 0.9rem; border-radius: var(--radius-sm); background: var(--hot-bg); color: var(--hot); font-size: 0.88rem; font-weight: 600; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Appointment request widget</a> / 1C Barn</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for 1C Barn</span>
+  <h1 class="fx-h1">An inquiry that gets answered the second it's sent, not whenever someone gets to the inbox</h1>
+  <p class="fx-lede">Some of your reviews call 1C Barn fantastic and very responsive. One describes unanswered calls and emails. That split usually means the same thing: a family running weddings, a home, and a shared inbox is going to miss a message sometimes, not that anyone stopped caring. This shows what a visitor sees the moment they submit an inquiry, before a person ever opens the message: their date, your guest cap, your down payment and insurance policies, and a plain confirmation that a person will follow up.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the guest cap (50), the $500 non-refundable down payment, and the event-insurance and caterer-approval rules below are copied from 1cbarn.com and its policies page today. <strong>What's illustrative:</strong> the dollar figures shown as venue rental pricing tiers are placeholders, since 1C Barn does not publish package pricing on its site — a real build would use your actual rates.</p>
+  </div>
+  <div class="fx-card" id="form-root"></div>
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>This sends nothing yet.</b> A real version emails or texts onecbarn@gmail.com the moment someone submits, the same way a phone call or email reaches you today, just guaranteed to go out instantly instead of sitting until someone checks the inbox.</div>
+      <div class="lim"><b>The pricing shown is a placeholder.</b> 1C Barn doesn't list package prices publicly, so this demo clearly labels the figures as illustrative. A real build swaps in your actual rate sheet.</div>
+      <div class="lim"><b>Guest cap, deposit, and insurance rules are pulled from your own site and policies page today.</b> If any of those change, this needs a one-line update to match, it won't drift out of sync on its own.</div>
+      <div class="lim"><b>It still confirms a human follows up.</b> This isn't meant to replace the conversation you have with a couple, it's meant to make sure nobody wonders whether their message went through while you're mid-season.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. This is not affiliated with or endorsed by 1C Barn.</strong></p>
+  <p>Prepared by Shlok Sarnayak. Guest cap, deposit amount, and insurance/caterer policy details are copied from 1cbarn.com and its policies page as published. Venue rental pricing is illustrative sample data, not 1C Barn's real pricing. Not connected to 1C Barn's real inbox, phone, or booking calendar.</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var GUEST_CAP = 50;
+  var INSURANCE_THRESHOLD = 25;
+  var DEPOSIT = 500;
+
+  var PRICING_TIERS = [
+    { name: "Elopement / small gathering (up to 15 guests)", price: "$2,200 (illustrative)" },
+    { name: "Half-day rental, 12 hours (up to 50 guests)", price: "$4,800 (illustrative)" },
+    { name: "Full weekend rental, 48 hours (up to 50 guests)", price: "$7,500 (illustrative)" }
+  ];
+
+  var state = { name: "", date: "", guests: "", contact: "", submitted: false };
+  var root = document.getElementById("form-root");
+
+  function canSubmit() {
+    return state.name.trim() && state.date && state.guests !== "" && Number(state.guests) > 0 && state.contact.trim();
+  }
+
+  function render() {
+    if (state.submitted) { renderConfirm(); return; }
+
+    var html = '';
+    html += '<div class="field"><div class="field-label">Your name</div><input type="text" id="name-input" value="' + escapeAttr(state.name) + '" placeholder="First and last name"></div>';
+
+    html += '<div class="field-row" style="margin-top:1.1rem;">';
+    html += '<div class="field"><div class="field-label">Event date</div><input type="date" id="date-input" value="' + escapeAttr(state.date) + '"></div>';
+    html += '<div class="field"><div class="field-label">Expected guest count</div><input type="number" id="guests-input" min="1" value="' + escapeAttr(state.guests) + '" placeholder="e.g. 40"></div>';
+    html += '</div>';
+
+    html += '<div class="field" style="margin-top:1.1rem;"><div class="field-label">Phone or email</div><input type="text" id="contact-input" value="' + escapeAttr(state.contact) + '" placeholder="How should we reach you?"></div>';
+
+    html += '<button class="fx-btn" id="submit-btn" style="margin-top:1.3rem;"' + (canSubmit() ? '' : ' disabled') + '>Send inquiry</button>';
+
+    root.innerHTML = html;
+
+    document.getElementById('name-input').addEventListener('input', function (e) { state.name = e.target.value; syncSubmit(); });
+    document.getElementById('date-input').addEventListener('input', function (e) { state.date = e.target.value; syncSubmit(); });
+    document.getElementById('guests-input').addEventListener('input', function (e) { state.guests = e.target.value; syncSubmit(); });
+    document.getElementById('contact-input').addEventListener('input', function (e) { state.contact = e.target.value; syncSubmit(); });
+    document.getElementById('submit-btn').addEventListener('click', function () {
+      if (!canSubmit()) return;
+      state.submitted = true;
+      render();
+    });
+  }
+
+  function syncSubmit() {
+    var b = document.getElementById('submit-btn');
+    if (b) b.disabled = !canSubmit();
+  }
+
+  function fmtDate(s) {
+    if (!s) return "";
+    var d = new Date(s + "T00:00:00");
+    if (isNaN(d.getTime())) return s;
+    return d.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  }
+
+  function renderConfirm() {
+    var guests = Number(state.guests);
+    var overCap = guests > GUEST_CAP;
+    var overInsuranceThreshold = guests > INSURANCE_THRESHOLD;
+
+    var html = '<div class="confirm">';
+    html += '<h3>Inquiry received, here is what 1C Barn would get right now</h3>';
+    html += '<dl>';
+    html += '<dt>Name</dt><dd>' + escapeHtml(state.name) + '</dd>';
+    html += '<dt>Event date</dt><dd>' + fmtDate(state.date) + '</dd>';
+    html += '<dt>Guest count</dt><dd>' + escapeHtml(state.guests) + '</dd>';
+    html += '<dt>Contact</dt><dd>' + escapeHtml(state.contact) + '</dd>';
+    html += '</dl>';
+
+    if (overCap) {
+      html += '<div class="cap-warning">1C Barn\'s published guest cap is ' + GUEST_CAP + '. Your count of ' + guests + ' is above that, so this would need a direct conversation before anything is booked, rather than an automatic acknowledgment.</div>';
+    }
+
+    html += '<div class="info-block"><h4>Venue rental pricing</h4><div class="price-tiers">';
+    PRICING_TIERS.forEach(function (t) {
+      html += '<div class="price-tier"><span>' + t.name + '</span><b>' + t.price + '</b></div>';
+    });
+    html += '</div><span class="illustrative-tag">Illustrative pricing, not 1C Barn\'s real rates</span></div>';
+
+    html += '<div class="info-block" style="margin-top:0.9rem;"><h4>Guest cap &amp; key policies</h4><ul class="policy-list">';
+    html += '<li>Maximum ' + GUEST_CAP + ' guests' + (overCap ? ' (your count is above this)' : '') + '.</li>';
+    html += '<li>A $' + DEPOSIT + ' down payment is required to hold a date. It is non-refundable and non-transferable if you need to reschedule.</li>';
+    if (overInsuranceThreshold) {
+      html += '<li>Since your guest count is over ' + INSURANCE_THRESHOLD + ', event insurance is required (typically $70-100) and catering must go through an approved caterer.</li>';
+    } else {
+      html += '<li>For gatherings of ' + INSURANCE_THRESHOLD + ' guests or fewer, your food plan needs to be approved by the venue in advance.</li>';
+    }
+    html += '<li>Serving alcohol requires an insured bartender.</li>';
+    html += '</ul></div>';
+
+    html += '<p style="font-size:0.88rem; color:var(--ink-2); margin:0;">A real version of this page sends this same summary to onecbarn@gmail.com the instant it is submitted, and confirms back to you that Alyce or David will follow up personally to talk through your date and finalize details, before anything is booked or charged.</p>';
+
+    html += '<button class="fx-btn-ghost" id="reset-btn" style="align-self:flex-start;">Start over</button>';
+    html += '</div>';
+
+    root.innerHTML = html;
+    document.getElementById('reset-btn').addEventListener('click', function () {
+      state = { name: "", date: "", guests: "", contact: "", submitted: false };
+      render();
+    });
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s == null ? "" : s;
+    return d.innerHTML;
+  }
+  function escapeAttr(s) {
+    return (s == null ? "" : s).replace(/"/g, '&quot;');
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
