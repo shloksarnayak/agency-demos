@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>AMB Driving School, in-car lesson booking &amp; reminder example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .bst-section { margin-top: 2.4rem; }
+  .bst-section-title { font-family: var(--serif); font-size: 1.25rem; margin: 0 0 0.3rem; }
+  .bst-section-sub { color: var(--muted); font-size: 0.86rem; margin: 0 0 1rem; max-width: 72ch; }
+  .bst-instr-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .bst-instr { font: inherit; font-size: 0.78rem; font-weight: 650; padding: 0.55rem 0.9rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; text-align: left; }
+  .bst-instr.active { background: var(--brand-soft); border-color: var(--brand); color: var(--ink); }
+  .bst-instr .lang { display: block; font-size: 0.66rem; color: var(--muted); font-weight: 500; }
+  .bst-days { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .bst-day { font: inherit; font-size: 0.8rem; font-weight: 650; padding: 0.5rem 0.85rem; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .bst-day.active { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+  .bst-day:disabled { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
+  .bst-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.5rem; margin-bottom: 1.2rem; }
+  .bst-slot { font: inherit; font-size: 0.8rem; font-weight: 650; padding: 0.6rem 0.5rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); cursor: pointer; text-align: center; }
+  .bst-slot:hover { background: var(--brand-soft); }
+  .bst-slot.taken { text-decoration: line-through; color: var(--faint); background: var(--surface-2); cursor: not-allowed; }
+  .bst-hours-note { font-size: 0.74rem; color: var(--faint); font-style: italic; margin: -0.5rem 0 1rem; }
+  .bst-owner-toggle { margin-top: 0.6rem; }
+  .bst-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 0.8rem; }
+  .bst-table th, .bst-table td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--rule-soft); }
+  .bst-table th { color: var(--ink-2); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .bst-field { display: flex; flex-direction: column; gap: 0.3rem; }
+  .bst-field label { font-size: 0.72rem; font-weight: 700; color: var(--ink-2); }
+  .bst-field input { font: inherit; font-size: 0.85rem; padding: 0.5rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  .bst-field input:focus { outline: none; border-color: var(--brand); }
+  .bst-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 0.95rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.8rem; }
+  .bst-card-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .bst-card-title { font-weight: 660; font-size: 0.95rem; }
+  .bst-card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .bst-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem; }
+  .bst-badge { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.3rem 0.6rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .bst-badge.ok { color: var(--good); background: var(--good-bg); }
+  .bst-badge.hot { color: var(--hot); background: var(--hot-bg); }
+  .bst-badge.watch { color: var(--warn); background: var(--warn-bg); }
+  .bst-badge.done { color: var(--muted); background: var(--surface-2); }
+  .bst-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.75rem; padding-top: 0.65rem; border-top: 1px solid var(--rule-soft); }
+  .bst-btn-sm { font: inherit; font-size: 0.76rem; font-weight: 650; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.4rem 0.8rem; cursor: pointer; }
+  .bst-btn-sm:hover { filter: brightness(0.97); }
+  .bst-btn-sm:disabled { opacity: 0.45; cursor: not-allowed; }
+  .bst-empty { color: var(--muted); font-style: italic; font-size: 0.86rem; }
+  .bst-log { margin-top: 0.65rem; padding-top: 0.6rem; border-top: 1px solid var(--rule-soft); }
+  .bst-log-item { font-size: 0.76rem; color: var(--ink-2); display: flex; justify-content: space-between; gap: 0.6rem; padding: 0.15rem 0; }
+  .bst-log-item span:last-child { color: var(--muted); font-family: var(--mono); font-size: 0.7rem; white-space: nowrap; }
+  .bst-reset-row { margin-top: 1.6rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
+  .case-box { margin: 1.4rem 0; padding: 1rem 1.2rem; border-left: 3px solid var(--hot); background: var(--hot-bg); font-size: 0.9rem; color: var(--ink-2); }
+  .case-box cite { display: block; margin-top: 0.5rem; font-size: 0.76rem; color: var(--muted); font-style: normal; }
+  .sample-tag { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--hot); background: var(--hot-bg); border-radius: 999px; padding: 0.2rem 0.55rem; display: inline-block; margin-bottom: 0.6rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Booking &amp; service-ticket portal</a> / AMB Driving School</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">AMB Driving School: a real slot to book with your assigned instructor, plus automatic confirmations and reminders</h1>
+  <p class="fx-lede">AMB Driving School is a Ministry of Transportation-approved Beginner Driver Education provider operating in the GTA since 1993, with 8 locations across Toronto, Markham, Richmond Hill, Newmarket and Scarborough and courses taught in eight languages. Its own published FAQ explains that once in-class instruction ends, a student is simply handed an in-car instructor's name and phone number and has to call or text to book every lesson directly, based on that instructor's personal availability, no online scheduling anywhere in the process. This example shows what a self-serve booking calendar tied to each instructor's real availability could look like, plus an automatic confirmation and reminder queue so a booked lesson is not just a text message nobody follow-up on.</p>
+  <div class="fact-strip">
+    <span class="fact">AMB Driving School</span>
+    <span class="fact">Toronto &amp; GTA &middot; 8 locations</span>
+    <span class="fact">MTO-approved BDE provider since 1993</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with, endorsed by, or produced in partnership with AMB Driving School.</strong> All student names, bookings, instructors and reminder logs inside the tool below are fictional and clearly for illustration only. The business description, location count, languages offered and FAQ quote are drawn from AMB Driving School's own published site.</p></div>
+
+  <div class="case-box">
+    AMB Driving School's own FAQ page states that after in-class instruction ends, a student receives their in-car instructor's name and phone number and must contact that instructor directly to book appointments based on availability. Public reviews on Yelp describe what that process looks like in practice: weeks spent texting and calling an instructor with no response, a last-minute meeting location well outside the area the student expected, and an instructor changing more than once in the same day without notice. Two local competitors, Young Drivers of Canada and Kruzee, both already advertise instant online booking for in-car lessons.
+    <cite>Sources: AMB Driving School's own FAQ page (ambdriving.com/faq.html); Yelp reviews for AMB Driving School locations; Young Drivers of Canada's and Kruzee's own booking pages.</cite>
+  </div>
+  <p style="color:var(--ink-2); font-size:0.92rem; max-width:74ch;">This is framed as closing a specific gap against named competitors, not as a broader complaint about instruction quality; the classroom side of AMB's program is not in question here. The tools below only address the handoff moment: after class ends, how a student actually gets a lesson on the calendar with their assigned instructor.</p>
+
+  <section class="bst-section">
+    <h2 class="bst-section-title">1. Self-service in-car lesson booking, by instructor</h2>
+    <p class="bst-section-sub">Pick your assigned instructor, then a day and an open slot from their real schedule. No more texting and waiting to hear back before you know what's even available.</p>
+    <span class="sample-tag">Illustrative instructors &amp; slots</span>
+    <div class="bst-instr-row" id="instr-row"></div>
+    <div class="bst-days" id="day-row"></div>
+    <p class="bst-hours-note">Instructor hours and open slots shown are illustrative for this example. A real build reads each instructor's actual availability.</p>
+    <div class="bst-slots" id="slot-grid"></div>
+    <div class="bst-owner-toggle"><button class="fx-btn-ghost" id="owner-toggle-1">Show dispatcher view (all bookings)</button></div>
+    <div id="bookings-owner" style="display:none;"></div>
+  </section>
+
+  <section class="bst-section">
+    <h2 class="bst-section-title">2. Automatic confirmation &amp; reminder queue</h2>
+    <p class="bst-section-sub">The exact gap named in the outreach: once a lesson is booked, it should not depend on the instructor remembering to text back. Every booking gets a confirmation the moment it's made, and a reminder queued for the day before.</p>
+    <div id="reminders-root"></div>
+  </section>
+
+  <div class="bst-reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+
+  <section class="bst-section">
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The calendar is a standalone log here.</b> A real build reads and writes each instructor's actual availability, however AMB's dispatch office currently tracks it, so instructors see one schedule, not a second one to keep in sync by hand.</div>
+      <div class="lim"><b>Confirmations and reminders are on-screen and in local storage only.</b> A real build sends an actual text or email the moment a lesson is booked, and again the day before, instead of relying on the instructor to respond personally.</div>
+      <div class="lim"><b>Instructor list, languages and locations are illustrative.</b> A real build starts from AMB's actual instructor roster and each instructor's real coverage area and language, not the placeholder names used here.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with, endorsed by, or produced in partnership with AMB Driving School.</strong></p><p>Prepared by Shlok Sarnayak. Fictional booking and reminder data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "bst_amb_driving_school_v1";
+
+  var INSTRUCTORS = [
+    { id: "i1", name: "Sample Instructor 1", lang: "English, Hindi · Scarborough / Markham" },
+    { id: "i2", name: "Sample Instructor 2", lang: "English, Cantonese · Toronto" },
+    { id: "i3", name: "Sample Instructor 3", lang: "English, Urdu · Richmond Hill / Newmarket" }
+  ];
+  var SLOT_MINUTES = 60;
+  var OPEN_HOUR = 9;
+  var CLOSE_HOUR = 19;
+  var DAYS_AHEAD = 7;
+  var CLOSED_WEEKDAYS = [0];
+
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function dateStrFromOffset(n) { var d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function weekdayOf(dateStr) { return new Date(dateStr + "T00:00:00").getDay(); }
+  function fmtDate(s) { if (!s) return ""; var d = new Date(s + "T00:00:00"); return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }); }
+  function fmtTimeFromMinutes(mins) { var h = Math.floor(mins / 60); var m = mins % 60; var ap = h >= 12 ? "PM" : "AM"; var h12 = h % 12; if (h12 === 0) h12 = 12; return h12 + ":" + pad(m) + " " + ap; }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function uid(prefix) { return prefix + Math.random().toString(36).slice(2, 8); }
+  function nowStamp() { return new Date().toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function instructorName(id) { var i = INSTRUCTORS.filter(function (x) { return x.id === id; })[0]; return i ? i.name : id; }
+
+  function defaultData() {
+    return {
+      selectedInstructor: INSTRUCTORS[0].id,
+      selectedDay: dateStrFromOffset(1),
+      bookings: [
+        { id: "bk1", instructor: INSTRUCTORS[0].id, date: dateStrFromOffset(1), startMin: OPEN_HOUR * 60 + 60, student: "Sample Student A", bookedAt: "2 days ago",
+          confirmSent: true, reminderSent: false, reminderDue: dateStrFromOffset(0) },
+        { id: "bk2", instructor: INSTRUCTORS[1].id, date: dateStrFromOffset(2), startMin: OPEN_HOUR * 60 + 240, student: "Sample Student B", bookedAt: "5 hours ago",
+          confirmSent: true, reminderSent: false, reminderDue: dateStrFromOffset(1) }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function upcomingDays() {
+    var out = [];
+    for (var i = 0; i < DAYS_AHEAD; i++) {
+      var ds = dateStrFromOffset(i);
+      out.push({ date: ds, closed: CLOSED_WEEKDAYS.indexOf(weekdayOf(ds)) !== -1 });
+    }
+    return out;
+  }
+
+  function slotsForDay() {
+    var out = [];
+    for (var m = OPEN_HOUR * 60; m < CLOSE_HOUR * 60; m += SLOT_MINUTES) out.push(m);
+    return out;
+  }
+
+  function isTaken(instructor, date, startMin) {
+    return data.bookings.some(function (b) { return b.instructor === instructor && b.date === date && b.startMin === startMin; });
+  }
+
+  function renderInstrRow() {
+    var root = document.getElementById("instr-row");
+    root.innerHTML = INSTRUCTORS.map(function (i) {
+      return '<button type="button" class="bst-instr' + (i.id === data.selectedInstructor ? " active" : "") + '" data-id="' + i.id + '">' + escapeHtml(i.name) + '<span class="lang">' + escapeHtml(i.lang) + '</span></button>';
+    }).join("");
+    Array.prototype.forEach.call(root.querySelectorAll(".bst-instr"), function (btn) {
+      btn.addEventListener("click", function () { data.selectedInstructor = btn.getAttribute("data-id"); renderInstrRow(); renderSlots(); });
+    });
+  }
+
+  function renderDayRow() {
+    var root = document.getElementById("day-row");
+    var days = upcomingDays();
+    root.innerHTML = days.map(function (d) {
+      return '<button type="button" class="bst-day' + (d.date === data.selectedDay ? " active" : "") + '" data-date="' + d.date + '"' + (d.closed ? " disabled" : "") + ">" + fmtDate(d.date) + (d.closed ? " (closed)" : "") + "</button>";
+    }).join("");
+    Array.prototype.forEach.call(root.querySelectorAll(".bst-day:not(:disabled)"), function (btn) {
+      btn.addEventListener("click", function () { data.selectedDay = btn.getAttribute("data-date"); renderDayRow(); renderSlots(); });
+    });
+  }
+
+  function renderSlots() {
+    var root = document.getElementById("slot-grid");
+    var slots = slotsForDay();
+    root.innerHTML = slots.map(function (m) {
+      var taken = isTaken(data.selectedInstructor, data.selectedDay, m);
+      return '<button type="button" class="bst-slot' + (taken ? " taken" : "") + '"' + (taken ? " disabled" : "") + ' data-min="' + m + '">' + fmtTimeFromMinutes(m) + "</button>";
+    }).join("");
+    Array.prototype.forEach.call(root.querySelectorAll(".bst-slot:not(.taken)"), function (btn) {
+      btn.addEventListener("click", function () {
+        var name = prompt("Student name for this booking:");
+        if (!name) return;
+        var startMin = parseInt(btn.getAttribute("data-min"), 10);
+        data.bookings.push({
+          id: uid("bk"), instructor: data.selectedInstructor, date: data.selectedDay, startMin: startMin,
+          student: name, bookedAt: nowStamp(), confirmSent: true, reminderSent: false, reminderDue: data.selectedDay
+        });
+        save(); renderSlots(); renderOwnerBookings(); renderReminders();
+        alert("Booked with " + instructorName(data.selectedInstructor) + " on " + fmtDate(data.selectedDay) + " at " + fmtTimeFromMinutes(startMin) + ". A confirmation was sent automatically, and a reminder is queued for the day before.");
+      });
+    });
+  }
+
+  function renderOwnerBookings() {
+    var root = document.getElementById("bookings-owner");
+    var sorted = data.bookings.slice().sort(function (a, b) { return (a.date + a.startMin).toString().localeCompare((b.date + b.startMin).toString()); });
+    if (!sorted.length) { root.innerHTML = '<p class="bst-empty">No bookings yet.</p>'; return; }
+    var rows = sorted.map(function (b) {
+      return "<tr><td>" + escapeHtml(b.student) + "</td><td>" + escapeHtml(instructorName(b.instructor)) + "</td><td>" + fmtDate(b.date) + "</td><td>" + fmtTimeFromMinutes(b.startMin) + "</td><td>" + escapeHtml(b.bookedAt) + "</td></tr>";
+    }).join("");
+    root.innerHTML = '<table class="bst-table"><thead><tr><th>Student</th><th>Instructor</th><th>Date</th><th>Time</th><th>Booked</th></tr></thead><tbody>' + rows + "</tbody></table>";
+  }
+
+  function renderReminders() {
+    var root = document.getElementById("reminders-root");
+    var sorted = data.bookings.slice().sort(function (a, b) { return (a.date + a.startMin).toString().localeCompare((b.date + b.startMin).toString()); });
+    if (!sorted.length) { root.innerHTML = '<p class="bst-empty">No bookings yet, so nothing queued.</p>'; return; }
+    var html = "";
+    sorted.forEach(function (b) {
+      html += '<div class="bst-card"><div class="bst-card-head"><div><div class="bst-card-title">' + escapeHtml(b.student) + " &middot; " + escapeHtml(instructorName(b.instructor)) + '</div><div class="bst-card-meta">' + fmtDate(b.date) + " at " + fmtTimeFromMinutes(b.startMin) + '</div></div></div>';
+      html += '<div class="bst-badges">';
+      html += b.confirmSent ? '<span class="bst-badge ok">Confirmation sent automatically</span>' : '<span class="bst-badge hot">Confirmation not sent</span>';
+      html += b.reminderSent ? '<span class="bst-badge ok">Reminder sent</span>' : '<span class="bst-badge watch">Reminder queued for ' + fmtDate(b.reminderDue) + '</span>';
+      html += '</div>';
+      html += '<div class="bst-row">';
+      if (!b.reminderSent) html += '<button class="bst-btn-sm" onclick="__bst.sendReminder(\'' + b.id + '\')">Simulate sending the reminder now</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+  }
+
+  window.__bst = {
+    sendReminder: function (id) {
+      var b = data.bookings.filter(function (x) { return x.id === id; })[0];
+      if (!b) return;
+      b.reminderSent = true;
+      save(); renderReminders();
+    }
+  };
+
+  document.getElementById("owner-toggle-1").addEventListener("click", function () {
+    var el = document.getElementById("bookings-owner");
+    var showing = el.style.display !== "none";
+    el.style.display = showing ? "none" : "block";
+    this.textContent = showing ? "Show dispatcher view (all bookings)" : "Hide dispatcher view";
+    if (!showing) renderOwnerBookings();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the calendar and reminder queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderInstrRow(); renderDayRow(); renderSlots(); renderOwnerBookings(); renderReminders();
+  });
+
+  renderInstrRow();
+  renderDayRow();
+  renderSlots();
+  renderReminders();
+})();
+</script>
+</body>
+</html>
