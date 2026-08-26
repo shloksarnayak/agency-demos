@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Order status lookup: working example for Apostille &amp; Legalisation Services</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .lookup-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+  input[type="text"]:focus { outline: none; border-color: var(--brand); }
+  .samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.8rem; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.35rem 0.85rem; cursor: pointer; }
+  .sample-chip:hover { opacity: 0.85; }
+
+  .result { border-top: 1px solid var(--rule); padding-top: 1.3rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .result-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
+  .result-head h3 { margin: 0; font-size: 1.1rem; font-family: var(--serif); }
+  .result-meta { font-size: 0.85rem; color: var(--muted); }
+
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.6rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+  .stage-btn { font: inherit; font-size: 0.78rem; color: var(--brand); background: none; border: 1px solid var(--brand); border-radius: 999px; padding: 0.25rem 0.7rem; cursor: pointer; margin-top: 0.4rem; }
+  .stage-btn:hover { background: var(--brand-soft); }
+
+  .error-box { font-size: 0.92rem; color: var(--muted); font-style: italic; }
+
+  .email-preview { border: 1px solid var(--rule-soft); border-radius: var(--radius-sm); background: var(--surface-2); padding: 1rem 1.1rem; margin-top: 0.6rem; font-size: 0.88rem; }
+  .email-preview .ep-head { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 0.5rem; }
+  .email-preview .ep-subject { font-weight: 650; margin-bottom: 0.4rem; }
+  .email-preview .ep-body { color: var(--ink-2); line-height: 1.55; white-space: pre-line; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Order &amp; job status lookup</a> / Apostille &amp; Legalisation Services</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Apostille &amp; Legalisation Services</span>
+  <h1 class="fx-h1">A page where a document order can be checked, instead of chased</h1>
+  <p class="fx-lede">Your Trustpilot page has recent reviews describing exactly the problem this solves: customers unable to get an update on where their document was mid-process, chasing status by phone and email during time-sensitive orders, including visa-deadline cases. This is what a self-serve status page plus automatic stage emails would look like, sitting on top of the order reference you'd already give each customer.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the reviews describing "no update," repeated chasing calls/emails, and a translation order left unconfirmed past its stated turnaround are genuine, publicly visible Trustpilot reviews for apostille-services.co.uk, checked directly today.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the three sample orders, reference numbers, document types, dates and the FCO/embassy stage names below are invented for this demo. A real build connects to whatever system your team already uses to log orders (spreadsheet, inbox, or order form), not this sample data.</p>
+  </div>
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Enter an order reference</div>
+      <div class="lookup-row" style="margin-top:0.6rem;">
+        <input type="text" id="ticket-input" placeholder="e.g. APL-2216">
+        <button class="fx-btn" id="lookup-btn">Check status</button>
+      </div>
+      <div class="samples" style="margin-top:0.8rem;">
+        <span style="font-size:0.82rem; color:var(--muted);">Try a sample:</span>
+        <button class="sample-chip" data-sample="APL-2216">APL-2216</button>
+        <button class="sample-chip" data-sample="APL-2201">APL-2201</button>
+        <button class="sample-chip" data-sample="APL-2233">APL-2233</button>
+      </div>
+    </div>
+    <div id="result-root"></div>
+  </div>
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Only the three sample references above return anything.</b> This demo isn't connected to your real order records, it can't look up an actual customer's document. A real version would need a link to wherever your team currently logs orders (Illustrative stage names below, not copied from your internal process).</div>
+      <div class="lim"><b>The reviews are real, the fix is a reasonable response, not a guarantee.</b> Your public reviews show a repeating pattern of customers unable to get a status update without chasing. A self-service lookup plus automatic stage emails addresses that specific pattern. It doesn't speed up the FCO or an embassy, it means a customer isn't left wondering whether anyone is working on their document.</div>
+      <div class="lim"><b>The five stages shown (received, ID/documents checked, sent for legalisation, apostilled/stamped, dispatched) are a typical apostille order flow, not your internal process.</b> Worth a short conversation before this gets built for real, especially since document type (apostille vs. embassy legalisation vs. translation) changes the steps.</div>
+      <div class="lim"><b>"Check status" is the only action here.</b> It doesn't let a customer amend an order, upload a document, or message your team. Keeping the first version narrow is deliberate, those can be added once the lookup itself is proven useful.</div>
+      <div class="lim"><b>The email preview below (click "Preview email" on any stage) shows a sample of the automatic email a customer would get at that stage.</b> No email is actually sent by this demo, it's a static preview of the copy and trigger point only.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Apostille &amp; Legalisation Services Ltd.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Apostille &amp; Legalisation Services. Trustpilot review pattern verified directly today. Order reference data is a labeled, illustrative sample, not connected to any real order records.</p>
+</footer>
+
+<script>
+(function () {
+  var STAGE_NAMES = ["Order received", "Documents verified", "Sent for legalisation", "Apostille/legalisation complete", "Dispatched"];
+
+  var EMAIL_SUBJECTS = [
+    "We've received your order {{ref}}",
+    "Your documents have been checked and verified",
+    "Your document has been sent to the FCO / embassy",
+    "Your apostille / legalisation is complete",
+    "Your documents are on their way — tracking inside"
+  ];
+
+  var EMAIL_BODIES = [
+    "Hi {{name}},\n\nThanks for your order ({{ref}}, {{doc}}). We've logged it and it's queued for document verification. We'll email you again as soon as that step is done.\n\n— Apostille & Legalisation Services",
+    "Hi {{name}},\n\nYour documents for {{ref}} have passed our verification check and are ready to be sent for legalisation. No action needed from you.\n\n— Apostille & Legalisation Services",
+    "Hi {{name}},\n\nYour document for {{ref}} has been submitted to the FCO / relevant embassy for legalisation. This stage typically takes the longest — we'll notify you the moment it's back.\n\n— Apostille & Legalisation Services",
+    "Hi {{name}},\n\nGood news — the apostille / legalisation for {{ref}} is complete. Your document is being prepared for return.\n\n— Apostille & Legalisation Services",
+    "Hi {{name}},\n\nYour order {{ref}} has been dispatched. Tracking number: {{tracking}} (Illustrative). You should receive it within the timeframe shown by the courier.\n\n— Apostille & Legalisation Services"
+  ];
+
+  var ORDERS = {
+    "APL-2216": { name: "R. Whitfield", doc: "Birth certificate — apostille", stage: 1, tracking: null,
+      times: ["Aug 20, 9:14 AM", null, null, null, null] },
+    "APL-2201": { name: "M. Odei", doc: "Degree certificate — embassy legalisation (UAE)", stage: 3, tracking: null,
+      times: ["Aug 17, 11:02 AM", "Aug 17, 3:40 PM", "Aug 18, 10:20 AM", "Aug 21, 9:05 AM", null] },
+    "APL-2233": { name: "S. Karim", doc: "Marriage certificate — apostille", stage: 4, tracking: "RM-UK-77213640",
+      times: ["Aug 22, 8:55 AM", "Aug 22, 1:15 PM", "Aug 23, 9:30 AM", "Aug 25, 10:45 AM", "Aug 26, 8:20 AM"] }
+  };
+
+  var resultRoot = document.getElementById("result-root");
+  var ticketInput = document.getElementById("ticket-input");
+
+  function normalize(v) { return (v || "").trim().toUpperCase(); }
+
+  function lookup() {
+    var key = normalize(ticketInput.value);
+    if (!key) {
+      resultRoot.innerHTML = '<p class="error-box">Enter an order reference above, or try one of the samples.</p>';
+      return;
+    }
+    var order = ORDERS[key];
+    if (!order) {
+      resultRoot.innerHTML = '<p class="error-box">No sample order matches "' + escapeHtml(ticketInput.value) + '". Try one of the three samples above, this demo only has data for those.</p>';
+      return;
+    }
+    renderOrder(key, order);
+  }
+
+  function fill(tpl, order, ref) {
+    return tpl
+      .replace(/{{ref}}/g, ref)
+      .replace(/{{name}}/g, order.name)
+      .replace(/{{doc}}/g, order.doc)
+      .replace(/{{tracking}}/g, order.tracking || "assigned at dispatch");
+  }
+
+  function renderOrder(key, order) {
+    var html = '<div class="result">';
+    html += '<div class="result-head"><h3>' + key + '</h3><span class="result-meta">' + escapeHtml(order.doc) + ' &middot; ' + escapeHtml(order.name) + '</span></div>';
+    html += '<div class="stages">';
+    STAGE_NAMES.forEach(function (name, i) {
+      var cls = i < order.stage ? 'done' : (i === order.stage ? 'active' : 'pending');
+      var time = order.times[i];
+      var reached = i <= order.stage;
+      html += '<div class="stage">';
+      html += '<div class="stage-dot ' + cls + '"></div>';
+      html += '<div><div class="stage-label' + (cls === 'pending' ? ' pending-text' : '') + '">' + name + (i === 4 && order.tracking ? ' &middot; tracking ' + order.tracking + ' (Illustrative)' : '') + '</div>';
+      html += '<div class="stage-time">' + (time ? time : (cls === 'active' ? 'In progress' : 'Not started')) + '</div>';
+      if (reached) {
+        html += '<button class="stage-btn" data-stage="' + i + '" data-ref="' + key + '">Preview email</button>';
+        html += '<div class="email-preview" id="ep-' + key + '-' + i + '" style="display:none;"></div>';
+      }
+      html += '</div></div>';
+    });
+    html += '</div></div>';
+    resultRoot.innerHTML = html;
+
+    Array.prototype.forEach.call(resultRoot.querySelectorAll(".stage-btn"), function (b) {
+      b.addEventListener("click", function () {
+        var i = parseInt(b.dataset.stage, 10);
+        var ref = b.dataset.ref;
+        var box = document.getElementById("ep-" + ref + "-" + i);
+        if (box.style.display === "block") { box.style.display = "none"; return; }
+        var subject = fill(EMAIL_SUBJECTS[i], order, ref);
+        var body = fill(EMAIL_BODIES[i], order, ref);
+        box.innerHTML = '<div class="ep-head">Sample automatic email &middot; Illustrative, not actually sent</div>'
+          + '<div class="ep-subject">' + escapeHtml(subject) + '</div>'
+          + '<div class="ep-body">' + escapeHtml(body) + '</div>';
+        box.style.display = "block";
+      });
+    });
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", lookup);
+  ticketInput.addEventListener("keydown", function (e) { if (e.key === "Enter") lookup(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".sample-chip"), function (b) {
+    b.addEventListener("click", function () { ticketInput.value = b.dataset.sample; lookup(); });
+  });
+
+  resultRoot.innerHTML = '<p class="error-box">Enter an order reference above, or try one of the samples.</p>';
+})();
+</script>
+</body>
+</html>
