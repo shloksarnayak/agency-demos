@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Maintenance triage, working example for Bottom Line Property Management</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .sec { display: flex; flex-direction: column; gap: 1.4rem; }
+  .sec-head { display: flex; flex-direction: column; gap: 0.55rem; }
+  .why { font-size: 0.87rem; color: var(--muted); line-height: 1.6; max-width: 82ch; border-left: 2px solid var(--rule); padding-left: 0.9rem; }
+  .why b { color: var(--ink-2); font-weight: 620; }
+
+  .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .stat { background: var(--surface); padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.25rem; }
+  .stat-n { font-family: var(--serif); font-size: 1.7rem; font-variant-numeric: tabular-nums; line-height: 1; }
+  .stat-l { font-size: 0.78rem; color: var(--muted); line-height: 1.35; }
+
+  .queue { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.85rem; }
+  .tk { position: relative; text-align: left; font: inherit; color: var(--ink); background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--shadow-inset), var(--shadow-sm); padding: 1rem 1.15rem 1rem 1.3rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; transition: transform 0.15s ease; }
+  .tk:hover { transform: translateY(-2px); }
+  .tk::before { content: ""; position: absolute; inset: 0.6rem auto 0.6rem 0; width: 3px; border-radius: 3px; background: var(--sv); }
+  .tk[aria-selected="true"] { box-shadow: var(--shadow-inset), 0 0 0 1.5px var(--brand), var(--shadow-md); }
+  .tk-top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+  .tk-id { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+  .tk-age { font-family: var(--mono); font-size: 0.72rem; color: var(--sv); font-weight: 620; white-space: nowrap; }
+  .tk-cat { font-size: 0.87rem; line-height: 1.35; font-weight: 570; }
+  .tk-flag { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); }
+  .tk-sev { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sv); }
+
+  .panel { display: none; flex-direction: column; gap: 1.5rem; }
+  .panel.on { display: flex; }
+  .routing { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  .badge { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.34rem 0.7rem; border-radius: 999px; white-space: nowrap; }
+  .badge.hold { color: var(--warn); background: var(--warn-bg); }
+  .badge.human { color: var(--hot); background: var(--hot-bg); }
+  .badge.auto { color: var(--good); background: var(--good-bg); }
+  .badge.rule { color: var(--muted); background: var(--surface-2); }
+
+  .cols { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+  @media (min-width: 860px) { .cols { grid-template-columns: 1.05fr 1fr; } }
+
+  .card { background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--shadow-inset), var(--shadow-sm); display: flex; flex-direction: column; overflow: hidden; }
+  .card-h { padding: 0.75rem 1.1rem; border-bottom: 1px solid var(--rule-soft); background: var(--surface-2); display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
+  .card-h .who { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .card-b { padding: 1.15rem; display: flex; flex-direction: column; gap: 0.85rem; }
+  .inbound { font-family: var(--serif); font-size: 0.97rem; line-height: 1.66; color: var(--ink-2); }
+  .inbound p { max-width: none; }
+  .inbound .subj { font-family: var(--sans); font-size: 0.85rem; font-weight: 640; color: var(--ink); margin-bottom: 0.2rem; }
+
+  .fields { display: flex; flex-direction: column; gap: 0; }
+  .fld { padding: 0.55rem 0; border-bottom: 1px dashed var(--rule-soft); }
+  .fld:last-child { border-bottom: 0; padding-bottom: 0; }
+  .fld:first-child { padding-top: 0; }
+  .fld dt { font-family: var(--mono); font-size: 0.63rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+  .fld dd { margin: 0; font-family: var(--mono); font-size: 0.79rem; line-height: 1.5; color: var(--ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+  .reply { white-space: pre-wrap; font-size: 0.93rem; line-height: 1.68; color: var(--ink-2); }
+  .ph { font-family: var(--mono); font-size: 0.85em; color: var(--brand); background: var(--brand-soft); border-bottom: 1px dotted var(--brand); padding: 0.05em 0.25em; border-radius: 2px; }
+
+  .rules { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .rl { background: var(--surface); padding: 1.2rem; display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
+  @media (min-width: 780px) { .rl { grid-template-columns: 2.2rem 1fr; column-gap: 0.9rem; } }
+  .rl-n { font-family: var(--serif); font-size: 0.95rem; color: var(--brand); font-weight: 600; padding-top: 0.12rem; }
+  .rl-body { display: flex; flex-direction: column; gap: 0.5rem; }
+  .rl-line { font-size: 0.9rem; line-height: 1.58; max-width: 80ch; }
+  .rl-line .tag { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 0.12rem; }
+  .rl-why { font-size: 0.85rem; color: var(--muted); line-height: 1.6; max-width: 80ch; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 82ch; }
+  .lim b { color: var(--ink); font-weight: 620; }
+
+  .form-wrap { background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: var(--shadow-inset), var(--shadow-sm); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 1rem; }
+  .form-row { display: flex; flex-direction: column; gap: 0.35rem; }
+  .form-row label { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .form-row input, .form-row select, .form-row textarea { font: inherit; font-size: 0.92rem; padding: 0.55rem 0.7rem; border-radius: 6px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); }
+  .form-row textarea { min-height: 4.5rem; resize: vertical; }
+  .form-grid { display: grid; grid-template-columns: 1fr; gap: 0.9rem; }
+  @media (min-width: 700px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+  .btn { align-self: flex-start; font: inherit; font-size: 0.85rem; font-weight: 620; padding: 0.6rem 1.2rem; border-radius: 999px; border: none; background: var(--brand); color: var(--surface); cursor: pointer; }
+  .btn:hover { opacity: 0.92; }
+  .out { display: none; flex-direction: column; gap: 0.9rem; }
+  .out.on { display: flex; }
+  .out-badge { display: inline-flex; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Support-ticket triage</a> / Bottom Line Property Management</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Bottom Line Property Management</span>
+  <h1 class="fx-h1">Catching the repeat truck roll before it starts</h1>
+  <p class="fx-lede">A BBB complaint (filed 01/30/2026) describes a water leak where multiple repair technicians were dispatched before anyone identified it was actually coming from the unit above. Separately, Indeed reviews from your own maintenance staff describe the department as "very disorganized," with upset tenants showing up in person over requests. The site promises calls get answered, so the gap isn't response speed, it's how little detail is captured before a technician gets sent out. Below is what a structured intake step could look like, feeding straight into your existing PropertyWare portal.</p>
+  <p class="fx-lede" style="font-size:0.95rem; margin-top:0.6rem;">Prepared by Shlok Sarnayak for the Bottom Line Property Management team. Nothing here is connected to your live systems or PropertyWare account.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice" style="flex-direction:column; align-items:flex-start; gap:0.6rem;">
+    <p><strong>The three tickets in the queue below are illustrative, invented sample requests, not real tenant data.</strong> The first is modeled on the pattern described in the January 2026 BBB complaint, a leak dispatched to repair workers repeatedly before its source was identified, not a copy of that complaint. The unit numbers, tenant names, and technician names are mine, invented so no real tenant appears here.</p>
+    <p>Anything in <span class="ph">[square brackets]</span> is a number or a decision I refused to invent.</p>
+  </div>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="fx-h2" style="margin-bottom:0;">Try the intake step yourself</h2>
+      <p class="why">This is what a tenant fills out before a ticket is ever logged. Fill it in and submit to see how it gets triaged below. (Illustrative — nothing here is saved anywhere but this browser tab.)</p>
+    </div>
+    <form class="form-wrap" id="intake-form">
+      <div class="form-grid">
+        <div class="form-row">
+          <label for="f-unit">Unit / address</label>
+          <input id="f-unit" type="text" placeholder="e.g. 2214 Selwyn Ave, Unit 3B" required>
+        </div>
+        <div class="form-row">
+          <label for="f-urgency">How urgent is this?</label>
+          <select id="f-urgency">
+            <option value="emergency">Active water, gas, or no heat/AC in extreme weather</option>
+            <option value="urgent">Getting worse, needs attention this week</option>
+            <option value="routine">Not urgent, whenever it's convenient</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="f-symptom">What's happening (be specific: where, when it started, what you've noticed)</label>
+        <textarea id="f-symptom" placeholder="e.g. Water stain spreading on the bedroom ceiling, first noticed it Tuesday, seems worse after it rains" required></textarea>
+      </div>
+      <div class="form-row">
+        <label for="f-prior">Has this been reported before?</label>
+        <select id="f-prior">
+          <option value="no">No, first time reporting this</option>
+          <option value="once">Yes, once, someone already came out</option>
+          <option value="repeat">Yes, more than once, still not fixed</option>
+        </select>
+      </div>
+      <button type="submit" class="btn">Submit request</button>
+    </form>
+    <div class="card out" id="live-out">
+      <div class="card-h"><h3>What the system pulled out</h3><span class="who">Extracted, live from your answers</span></div>
+      <div class="card-b">
+        <div class="routing"><span class="badge" id="live-badge"></span></div>
+        <dl class="fields" id="live-fields"></dl>
+        <p class="why" id="live-why"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="fx-h2" style="margin-bottom:0;">The queue this morning</h2>
+      <p class="why">Sample requests, sorted by how likely each is to turn into a repeat dispatch or a tenant showing up at the office, not by arrival time.</p>
+    </div>
+
+    <div class="strip">
+      <div class="stat"><span class="stat-n" style="color:var(--hot)">1</span><span class="stat-l">Needs a person's judgment before dispatch, held for review</span></div>
+      <div class="stat"><span class="stat-n" style="color:var(--warn)">1</span><span class="stat-l">Routes automatically, but flagged as a repeat visit</span></div>
+      <div class="stat"><span class="stat-n" style="color:var(--good)">1</span><span class="stat-l">Clear symptom and location, safe to route straight to a trade</span></div>
+    </div>
+
+    <div class="queue" role="tablist" aria-label="Sample tickets">
+      <button class="tk" role="tab" aria-selected="true" aria-controls="p1" id="t1" style="--sv:var(--hot)">
+        <span class="tk-top"><span class="tk-id">BLPM-4471</span><span class="tk-age">3rd dispatch</span></span>
+        <span class="tk-cat">Ceiling leak, source unconfirmed</span>
+        <span class="tk-flag">2 techs already sent, unresolved</span>
+        <span class="tk-sev">High, held for review</span>
+      </button>
+      <button class="tk" role="tab" aria-selected="false" aria-controls="p2" id="t2" style="--sv:var(--warn)">
+        <span class="tk-top"><span class="tk-id">BLPM-4488</span><span class="tk-age">2nd contact</span></span>
+        <span class="tk-cat">Garbage disposal not resetting</span>
+        <span class="tk-flag">Tenant tried the reset button already</span>
+        <span class="tk-sev">Medium, routed and flagged</span>
+      </button>
+      <button class="tk" role="tab" aria-selected="false" aria-controls="p3" id="t3" style="--sv:var(--good)">
+        <span class="tk-top"><span class="tk-id">BLPM-4502</span><span class="tk-age">1st contact</span></span>
+        <span class="tk-cat">Bathroom faucet drips constantly</span>
+        <span class="tk-flag">Clear symptom, clear location</span>
+        <span class="tk-sev">Low, routed automatically</span>
+      </button>
+    </div>
+
+    <div class="panel on" id="p1" role="tabpanel" aria-labelledby="t1">
+      <div class="routing">
+        <span class="badge hold">Held, needs a person before dispatch</span>
+        <span class="badge rule">Rule 1 fired</span>
+        <span class="badge rule">Rule 2 fired</span>
+      </div>
+      <div class="cols">
+        <div class="card">
+          <div class="card-h"><h3>What arrived</h3><span class="who">Tenant</span></div>
+          <div class="card-b">
+            <div class="inbound">
+              <div class="subj">Ceiling still leaking after two visits</div>
+              <p>This is the third time I'm reporting <span class="ph">[BLPM-4471]</span>, unit <span class="ph">[3B]</span>. Two different repair guys already came out and neither one fixed it, the ceiling is still staining and now it's spreading toward the closet. I don't know if it's my unit or the one upstairs.</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>What the system pulled out</h3><span class="who">Extracted</span></div>
+          <div class="card-b">
+            <dl class="fields">
+              <div class="fld"><dt>Unit / location</dt><dd>[3B], ceiling, spreading toward closet</dd></div>
+              <div class="fld"><dt>Symptom</dt><dd>Water staining, worsening, source not visually confirmed</dd></div>
+              <div class="fld"><dt>Prior dispatches</dt><dd>2 technicians, neither resolved it</dd></div>
+              <div class="fld"><dt>Decision required</dt><dd>Yes, whether the source is this unit's plumbing or the unit above needs someone to check both before a third technician is sent</dd></div>
+              <div class="fld"><dt>Escalation risk</dt><dd>Third repeat visit, tenant already noting confusion over which unit is at fault</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Drafted note, waiting for a person to route</h3><span class="who">Office voice</span></div>
+        <div class="card-b">
+          <div class="reply">Hi <span class="ph">[tenant name]</span>,
+
+Two visits without a fix on the same leak is on us, thank you for flagging it a third time.
+
+Before I send anyone else out, I'm having <span class="ph">[maintenance lead]</span> check whether this is coming from your unit or <span class="ph">[unit above, e.g. 4B]</span>, so we send the right trade the first time instead of guessing again. You'll hear back by <span class="ph">[follow-up date]</span>.
+
+<span class="ph">[office rep]</span>
+Bottom Line Property Management</div>
+        </div>
+      </div>
+      <p class="why"><b>Why this doesn't get auto-routed to a trade.</b> Two prior dispatches already failed on this same ticket, that's exactly the pattern from the January 2026 BBB complaint, technicians sent out repeatedly before the source was identified. The system's job here is to stop the pattern by holding the ticket for a person to check both units before a third truck roll, not to guess which trade to send.</p>
+    </div>
+
+    <div class="panel" id="p2" role="tabpanel" aria-labelledby="t2">
+      <div class="routing">
+        <span class="badge auto">Routed automatically</span>
+        <span class="badge rule">Rule 3 fired</span>
+        <span class="badge rule">Repeat-contact flag</span>
+      </div>
+      <div class="cols">
+        <div class="card">
+          <div class="card-h"><h3>What arrived</h3><span class="who">Tenant</span></div>
+          <div class="card-b">
+            <div class="inbound">
+              <div class="subj">Disposal still won't reset</div>
+              <p>My garbage disposal in <span class="ph">[BLPM-4488]</span>, unit <span class="ph">[7A]</span> kitchen, still won't turn on. I already tried the red reset button underneath like the last note said, it didn't help.</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>What the system pulled out</h3><span class="who">Extracted</span></div>
+          <div class="card-b">
+            <dl class="fields">
+              <div class="fld"><dt>Unit / location</dt><dd>[7A], kitchen, garbage disposal</dd></div>
+              <div class="fld"><dt>Symptom</dt><dd>Will not power on</dd></div>
+              <div class="fld"><dt>Tenant already tried</dt><dd>Manual reset button, no effect</dd></div>
+              <div class="fld"><dt>Decision required</dt><dd>No, appliance trade dispatch is the standard next step once a reset fails</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Routed to trade, PropertyWare ticket opened</h3><span class="who">Auto-routed</span></div>
+        <div class="card-b">
+          <div class="reply">Hi <span class="ph">[tenant name]</span>,
+
+Since the reset button didn't fix it, this needs a look in person. I've opened <span class="ph">[BLPM-4488]</span> in PropertyWare and routed it to <span class="ph">[appliance trade]</span> directly, no need to re-describe it when they arrive, they'll see the reset attempt already noted.
+
+Bottom Line Property Management</div>
+        </div>
+      </div>
+      <p class="why"><b>Why this one still routes on its own.</b> A single symptom, a single confirmed unit, and one failed troubleshooting step already ruled out is enough detail to send the right trade the first time. The system logs that the tenant already tried the reset step so the technician doesn't repeat it.</p>
+    </div>
+
+    <div class="panel" id="p3" role="tabpanel" aria-labelledby="t3">
+      <div class="routing">
+        <span class="badge auto">Routed automatically</span>
+        <span class="badge rule">Rule 3 fired</span>
+      </div>
+      <div class="cols">
+        <div class="card">
+          <div class="card-h"><h3>What arrived</h3><span class="who">Tenant</span></div>
+          <div class="card-b">
+            <div class="inbound">
+              <div class="subj">Faucet won't stop dripping</div>
+              <p>The bathroom faucet in <span class="ph">[BLPM-4502]</span>, unit <span class="ph">[12C]</span> keeps dripping even when it's fully off. Not urgent, just wanted it on the list.</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3>What the system pulled out</h3><span class="who">Extracted</span></div>
+          <div class="card-b">
+            <dl class="fields">
+              <div class="fld"><dt>Unit / location</dt><dd>[12C], bathroom faucet</dd></div>
+              <div class="fld"><dt>Symptom</dt><dd>Constant drip, does not stop when off</dd></div>
+              <div class="fld"><dt>Urgency</dt><dd>Tenant-flagged as non-urgent</dd></div>
+              <div class="fld"><dt>Decision required</dt><dd>No, clear single-fixture symptom, standard plumbing dispatch</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Routed to trade, PropertyWare ticket opened</h3><span class="who">Auto-routed</span></div>
+        <div class="card-b">
+          <div class="reply">Hi <span class="ph">[tenant name]</span>,
+
+Got it, <span class="ph">[BLPM-4502]</span> is logged in PropertyWare and routed to <span class="ph">[plumbing trade]</span> as a standard, non-urgent repair. You'll get a scheduling text directly from them.
+
+Bottom Line Property Management</div>
+        </div>
+      </div>
+      <p class="why"><b>Why this is the easy case.</b> One fixture, one clear symptom, one location, nothing ambiguous. This is the shape of request that's cheapest to get right, and the one where a missing detail is least likely, which is exactly why it's safe to route without a person re-reading it first.</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="fx-h2" style="margin-bottom:0;">The rules underneath</h2>
+      <p class="why">These are the part worth arguing with.</p>
+    </div>
+    <div class="rules">
+      <div class="rl">
+        <div class="rl-n">01</div>
+        <div class="rl-body">
+          <div class="rl-line"><span class="tag">When</span>A ticket has already had one prior dispatch that didn't resolve it, especially anything involving water, shared walls, or a floor/unit above or below.</div>
+          <div class="rl-line"><span class="tag">Then</span>It's held for a person to check adjacent units or systems before a third technician is sent, and the queue label counts the dispatch number so nobody has to reread the history to know.</div>
+          <div class="rl-why">The January 2026 BBB complaint describes exactly this: repeated technician visits before anyone checked whether the source was a different unit entirely. Counting prior dispatches is what catches that before it becomes a third failed visit, or a complaint.</div>
+        </div>
+      </div>
+      <div class="rl">
+        <div class="rl-n">02</div>
+        <div class="rl-body">
+          <div class="rl-line"><span class="tag">When</span>The intake form is missing a clear location, a clear symptom, or urgency isn't answered.</div>
+          <div class="rl-line"><span class="tag">Then</span>The system asks one follow-up question before a ticket is created at all, rather than logging a vague ticket and letting a technician discover the gap on-site.</div>
+          <div class="rl-why">Indeed reviews from your own maintenance staff describe the department as disorganized, with tenants showing up in person. A ticket that's missing the unit number or the actual symptom is the raw material for that disorganization; catching it at intake is cheaper than catching it on a truck.</div>
+        </div>
+      </div>
+      <div class="rl">
+        <div class="rl-n">03</div>
+        <div class="rl-body">
+          <div class="rl-line"><span class="tag">When</span>A request has one clear symptom, one clear unit and fixture, and no prior failed dispatch attached.</div>
+          <div class="rl-line"><span class="tag">Then</span>The system opens the PropertyWare ticket and routes it to the matching trade immediately, no person needs to re-triage it.</div>
+          <div class="rl-why">Most requests are this simple. Automating the clean cases is what frees a person's attention for the repeat leak and the missing-detail ticket, the two shapes of request that actually generate complaints.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <h2 class="fx-h2" style="margin-bottom:0;">What this demo can't do</h2>
+      <p class="why">The parts a proposal would normally leave out.</p>
+    </div>
+    <div class="limits">
+      <div class="lim"><b>The PropertyWare integration is the product.</b> A real version needs write access to PropertyWare to actually open a ticket and read access to see whether a unit has an open or recently-closed ticket already. Without that connection, this collapses into a nicer-looking form.</div>
+      <div class="lim"><b>This is built around one specific, documented gap.</b> One BBB complaint and a handful of Indeed reviews are the evidence, not a claim that most maintenance requests go wrong. Most presumably get handled fine; this targets the pattern where they don't.</div>
+      <div class="lim"><b>Which trades exist, how they're dispatched, and your actual escalation thresholds are your call.</b> The "when" conditions above are a starting guess, worth a short conversation before this gets built for real.</div>
+      <div class="lim"><b>This only structures and routes, it never decides whether a leak is this unit's responsibility or the one above's.</b> That determination still needs someone to physically check. The system's job is making sure that check happens before the third technician, not after.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Bottom Line Property Management.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Bottom Line Property Management. The January 2026 BBB complaint and the Indeed maintenance-staff reviews referenced above were verified directly today. Ticket data on this page is a labeled sample modeled on that pattern, not connected to your real tenants or your PropertyWare account.</p>
+</footer>
+<script>
+  (function () {
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.tk'));
+    var panels = tabs.map(function (t) {
+      return document.getElementById(t.getAttribute('aria-controls'));
+    });
+    function select(i) {
+      tabs.forEach(function (t, n) { t.setAttribute('aria-selected', n === i ? 'true' : 'false'); });
+      panels.forEach(function (p, n) { p.classList.toggle('on', n === i); });
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () { select(i); });
+      t.addEventListener('keydown', function (e) {
+        var next = null;
+        if (e.key === 'ArrowRight') next = (i + 1) % tabs.length;
+        if (e.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+        if (next !== null) { e.preventDefault(); select(next); tabs[next].focus(); }
+      });
+    });
+  })();
+
+  (function () {
+    var form = document.getElementById('intake-form');
+    var out = document.getElementById('live-out');
+    var badge = document.getElementById('live-badge');
+    var fields = document.getElementById('live-fields');
+    var why = document.getElementById('live-why');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var unit = document.getElementById('f-unit').value.trim();
+      var urgency = document.getElementById('f-urgency').value;
+      var symptom = document.getElementById('f-symptom').value.trim();
+      var prior = document.getElementById('f-prior').value;
+
+      var isRepeat = prior === 'repeat';
+      var isEmergency = urgency === 'emergency';
+      var missingDetail = unit.length < 4 || symptom.length < 8;
+
+      var routeLabel, routeClass, whyText;
+      if (isRepeat) {
+        routeLabel = 'Held, needs a person before another dispatch';
+        routeClass = 'badge hold';
+        whyText = 'This has already been reported more than once without resolution. Rule 1: repeat, unresolved tickets are held so a person checks what earlier visits missed before a technician gets sent a third time.';
+      } else if (missingDetail) {
+        routeLabel = 'Held, needs one more detail before a ticket opens';
+        routeClass = 'badge hold';
+        whyText = 'Rule 2: the location or the symptom description is too short to route confidently. A real build would ask one follow-up question here rather than create a vague ticket.';
+      } else if (isEmergency) {
+        routeLabel = 'Routed immediately, flagged emergency';
+        routeClass = 'badge human';
+        whyText = 'Active water, gas, or extreme-weather HVAC failures route immediately but are flagged for a person to confirm dispatch, since these carry real safety and property-damage risk.';
+      } else {
+        routeLabel = 'Routed automatically, PropertyWare ticket opened';
+        routeClass = 'badge auto';
+        whyText = 'Rule 3: a clear location, a clear symptom, and no repeat-visit history is enough to route straight to the matching trade without a person re-triaging it.';
+      }
+
+      badge.textContent = routeLabel;
+      badge.className = routeClass;
+      why.textContent = whyText;
+      fields.innerHTML =
+        '<div class="fld"><dt>Unit / location</dt><dd>' + (unit || '(not provided)') + '</dd></div>' +
+        '<div class="fld"><dt>Symptom</dt><dd>' + (symptom || '(not provided)') + '</dd></div>' +
+        '<div class="fld"><dt>Urgency</dt><dd>' + document.getElementById('f-urgency').selectedOptions[0].textContent + '</dd></div>' +
+        '<div class="fld"><dt>Prior reports</dt><dd>' + document.getElementById('f-prior').selectedOptions[0].textContent + '</dd></div>';
+      out.classList.add('on');
+      out.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  })();
+</script>
+</body>
+</html>
