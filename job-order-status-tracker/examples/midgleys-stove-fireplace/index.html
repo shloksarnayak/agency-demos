@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Job / order status tracker: working example for Midgleys Stove &amp; Fireplace Center</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .jot-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .jot-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .jot-tab.active { background: var(--ink); color: var(--surface); }
+  .jot-view { display: none; }
+  .jot-view.active { display: block; }
+  .jot-cols { display: grid; grid-template-columns: 1fr 1.25fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .jot-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .threshold-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .threshold-row input { width: 4.5rem; }
+  .job-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .job-title { font-weight: 660; }
+  .job-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.attention { color: var(--hot); background: var(--hot-bg); }
+  .badge.ontrack { color: var(--brand); background: var(--brand-soft); }
+  .badge.done { color: var(--good); background: var(--good-bg); }
+  .badge.unpaid { color: var(--warn); background: var(--warn-bg); }
+  .job-summary { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; }
+  .job-flag { font-size: 0.84rem; color: var(--hot); margin-top: 0.35rem; font-weight: 650; }
+  .job-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .log { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.8rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); margin-right: 0.4rem; }
+  .log-entry.ping { color: var(--brand); }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 460px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.2rem; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.5rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+  .team-note { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .team-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+  .team-chip { font-family: var(--mono); font-size: 0.68rem; padding: 0.3rem 0.65rem; border: 2px solid var(--ink); border-radius: 999px; background: #fff; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Job / order status tracker</a> / Midgleys Stove &amp; Fireplace Center</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built around Midgleys' own published facts</span>
+  <h1 class="fx-h1">A paid fireplace install shouldn't sit unscheduled until a customer files a complaint</h1>
+  <p class="fx-lede">Right now, a customer who orders and pays for a fireplace, stove or insert install has one option to check status: call the shop and ask. There is a "Service Request" form on midgleys.com, but it gives no confirmation ID and no status check, and a public BBB complaint on file (filed 01/30/2026) shows exactly this gap in practice: a customer paid in full on October 16, faced repeated scheduling delays, installation was finally attempted December 3, and completion was still pending 02/06/26 with the delay only surfaced after the customer complained. Below is a working tool sized to close that specific gap: every paid job gets a ticket that moves through Received, Scheduled, Installation in progress and Completed, a simulated status email fires on each change, and any paid job stalled past a set number of days is flagged before it becomes a complaint.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> Customer names, job details and dates on this page are sample data, illustrative only, not Midgleys' real customer or job records. One sample job below is deliberately shaped to mirror the timeline pattern described in the public BBB complaint (paid, then stalled for months before installation) to make the "needs attention" flag concrete, not because it reflects a real Midgleys customer.</p></div>
+
+  <div class="jot-tabs">
+    <button class="jot-tab active" data-view="office" type="button">Team view</button>
+    <button class="jot-tab" data-view="customer" type="button">Customer status check</button>
+  </div>
+
+  <section class="jot-view active" id="view-office">
+    <div class="team-row">
+      <span class="team-chip">Roger Oberg &middot; GM</span>
+      <span class="team-chip">Deanne</span>
+      <span class="team-chip">Farren</span>
+      <span class="team-chip">Dai Hogan &middot; Scheduler</span>
+    </div>
+    <div class="threshold-row">
+      <label for="threshold-input" style="font-size:0.82rem;font-weight:700;">Flag a paid job as needing attention after</label>
+      <input type="number" id="threshold-input" min="1" value="14">
+      <span style="font-size:0.82rem;color:var(--ink-2);">days with no stage change</span>
+    </div>
+    <div class="jot-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new job</h2>
+        <form id="add-form" class="form-grid">
+          <div class="field span2"><label for="f-customer">Customer name</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
+          <div class="field span2"><label for="f-item">Job description</label><input type="text" id="f-item" placeholder="e.g. Gas insert install, sample unit"></div>
+          <div class="field"><label for="f-paid">Paid in full?</label><select id="f-paid"><option value="yes">Yes</option><option value="no">Not yet</option></select></div>
+          <div class="field"><label for="f-stage">Starting stage</label><select id="f-stage"></select></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
+        </form>
+        <p class="team-note">Roger, Deanne, Farren and Dai all see this same queue at once, no separate login or handoff needed.</p>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Shared job queue, flagged jobs first</h2>
+        <div id="queue-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="jot-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check the status of a paid order</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Order / ticket number</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. MID-1001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try MID-1001, MID-1002, MID-1003 or MID-1004 from the team view's sample queue. Replaces calling the shop to ask "where is my install."</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The order number is whatever Midgleys already hands out.</b> A real build reads from the existing paid-order or invoice number instead of inventing a new one for the customer to remember.</div>
+      <div class="lim"><b>The status email here is a log entry, not a real send.</b> A real build wires this to Midgleys' existing email so the ping actually reaches the customer the moment a stage changes.</div>
+      <div class="lim"><b>This does not replace Dai's scheduling judgment.</b> It only makes the paid-but-not-yet-scheduled and paid-but-stalled cases visible to the whole team automatically, instead of surfacing only when a customer calls or a complaint is filed.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Midgleys Stove &amp; Fireplace Center.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job and customer data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "jot_midgleys_v1";
+
+  var STAGES = [
+    { key: "received", label: "Received" },
+    { key: "scheduled", label: "Scheduled" },
+    { key: "in_progress", label: "Installation in progress" },
+    { key: "completed", label: "Completed" }
+  ];
+  var STAGE_INDEX = {}; STAGES.forEach(function (s, i) { STAGE_INDEX[s.key] = i; });
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function daysFromNow(d) { return Date.now() + d * 86400000; }
+  function daysAgo(ts) { return (Date.now() - ts) / 86400000; }
+  function fmtDuration(days) {
+    if (days < 1) return "under a day";
+    return Math.round(days) + (Math.round(days) === 1 ? " day" : " days");
+  }
+  function pingText(stageLabel) { return "Status email sent to customer: your job is now " + stageLabel + "."; }
+
+  function defaultData() {
+    return {
+      seq: 1004,
+      jobs: [
+        {
+          id: "MID-1001", ref: "MID-1001", customer: "Sample Customer A", item: "Gas fireplace insert install", paid: true,
+          stageIdx: 0, enteredStageAt: daysFromNow(-19),
+          history: [{ stage: "received", at: daysFromNow(-19) }],
+          notes: [{ at: daysFromNow(-19), text: pingText("Received"), ping: true }]
+        },
+        {
+          id: "MID-1002", ref: "MID-1002", customer: "Sample Customer B", item: "Wood stove install + chimney liner", paid: true,
+          stageIdx: 1, enteredStageAt: daysFromNow(-4),
+          history: [{ stage: "received", at: daysFromNow(-11) }, { stage: "scheduled", at: daysFromNow(-4) }],
+          notes: [{ at: daysFromNow(-11), text: pingText("Received"), ping: true }, { at: daysFromNow(-4), text: pingText("Scheduled"), ping: true }]
+        },
+        {
+          id: "MID-1003", ref: "MID-1003", customer: "Sample Customer C (illustrative, BBB-complaint pattern)", item: "Pellet stove install, full custom surround", paid: true,
+          stageIdx: 1, enteredStageAt: daysFromNow(-58),
+          history: [{ stage: "received", at: daysFromNow(-70) }, { stage: "scheduled", at: daysFromNow(-58) }],
+          notes: [{ at: daysFromNow(-70), text: pingText("Received"), ping: true }, { at: daysFromNow(-58), text: pingText("Scheduled"), ping: true }, { at: daysFromNow(-2), text: "Internal note: this shape mirrors the public BBB complaint pattern, paid then no stage change for weeks. This is exactly the case the \"needs attention\" flag catches automatically.", ping: false }]
+        },
+        {
+          id: "MID-1004", ref: "MID-1004", customer: "Sample Customer D", item: "Freestanding wood stove install", paid: true,
+          stageIdx: 3, enteredStageAt: daysFromNow(-1),
+          history: [{ stage: "received", at: daysFromNow(-26) }, { stage: "scheduled", at: daysFromNow(-18) }, { stage: "in_progress", at: daysFromNow(-3) }, { stage: "completed", at: daysFromNow(-1) }],
+          notes: [{ at: daysFromNow(-1), text: pingText("Completed"), ping: true }]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function getThreshold() {
+    var v = parseInt(document.getElementById("threshold-input").value, 10);
+    return isNaN(v) || v < 1 ? 14 : v;
+  }
+
+  function statusInfo(j, threshold) {
+    if (j.stageIdx >= STAGES.length - 1) return { cls: "done", label: "Complete", flag: null };
+    var stuckDays = daysAgo(j.enteredStageAt);
+    if (j.paid && stuckDays > threshold) {
+      var reason = j.stageIdx === 0
+        ? "Paid but not yet scheduled, " + fmtDuration(stuckDays) + " since payment."
+        : "Paid but stalled in \"" + STAGES[j.stageIdx].label + "\", " + fmtDuration(stuckDays) + " with no stage change.";
+      return { cls: "attention", label: "Needs attention", flag: reason };
+    }
+    return { cls: "ontrack", label: "On track", flag: null };
+  }
+
+  function populateStageSelect() {
+    var sel = document.getElementById("f-stage");
+    sel.innerHTML = STAGES.slice(0, -1).map(function (s) { return '<option value="' + s.key + '">' + escapeHtml(s.label) + "</option>"; }).join("");
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var threshold = getThreshold();
+    var open = data.jobs.filter(function (j) { return j.stageIdx < STAGES.length - 1; }).slice();
+    open.sort(function (a, b) {
+      var fa = statusInfo(a, threshold).flag ? 0 : 1;
+      var fb = statusInfo(b, threshold).flag ? 0 : 1;
+      if (fa !== fb) return fa - fb;
+      return daysAgo(b.enteredStageAt) - daysAgo(a.enteredStageAt);
+    });
+    var done = data.jobs.filter(function (j) { return j.stageIdx >= STAGES.length - 1; })
+      .slice().sort(function (a, b) { return b.enteredStageAt - a.enteredStageAt; });
+    var html = "";
+    if (!open.length) html += '<p class="empty">Nothing open. Every job is caught up.</p>';
+    open.forEach(function (j) { html += renderCard(j, threshold); });
+    if (done.length) {
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently completed</h3>';
+      done.slice(0, 5).forEach(function (j) { html += renderCard(j, threshold); });
+    }
+    root.innerHTML = html;
+  }
+
+  function renderCard(j, threshold) {
+    var st = statusInfo(j, threshold);
+    var idx = data.jobs.indexOf(j);
+    var stageLabel = STAGES[j.stageIdx].label;
+    var html = '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(j.customer) + " &middot; " + j.ref + '</div><div class="job-meta">' + escapeHtml(j.item) + "</div></div><span>";
+    if (!j.paid) html += '<span class="badge unpaid">Not yet paid</span> ';
+    html += '<span class="badge ' + st.cls + '">' + st.label + "</span></span></div>";
+    html += '<div class="job-summary">Stage: ' + stageLabel + " (" + fmtDuration(daysAgo(j.enteredStageAt)) + " in this stage)</div>";
+    if (st.flag) html += '<div class="job-flag">&#9888; ' + escapeHtml(st.flag) + "</div>";
+    if (j.notes.length) {
+      html += '<div class="log">';
+      j.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry' + (n.ping ? " ping" : "") + '"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+      html += "</div>";
+    }
+    if (j.stageIdx < STAGES.length - 1) {
+      var nextLabel = STAGES[j.stageIdx + 1].label;
+      html += '<div class="note-row" style="display:flex;gap:0.4rem;margin-top:0.6rem;"><input type="text" id="note-' + idx + '" placeholder="Add an internal note" style="flex:1;font:inherit;font-size:0.8rem;padding:0.4rem 0.6rem;border:1px solid var(--rule);border-radius:var(--radius-sm);"><button class="fx-btn-ghost" onclick="__jot.addNote(' + idx + ')">Add</button></div>';
+      html += '<div class="job-actions"><button class="fx-btn-ghost" onclick="__jot.advance(' + idx + ')">Advance to ' + escapeHtml(nextLabel) + '</button></div>';
+    }
+    html += "</div>";
+    return html;
+  }
+
+  window.__jot = {
+    addNote: function (idx) {
+      var input = document.getElementById("note-" + idx);
+      var text = input.value.trim();
+      if (!text) return;
+      data.jobs[idx].notes.push({ at: Date.now(), text: text, ping: false });
+      save(); renderQueue();
+    },
+    advance: function (idx) {
+      var j = data.jobs[idx];
+      j.stageIdx += 1;
+      j.enteredStageAt = Date.now();
+      var label = STAGES[j.stageIdx].label;
+      j.history.push({ stage: STAGES[j.stageIdx].key, at: Date.now() });
+      j.notes.push({ at: Date.now(), text: pingText(label), ping: true });
+      save(); renderQueue();
+    }
+  };
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("f-customer").value.trim();
+    var item = document.getElementById("f-item").value.trim();
+    var paid = document.getElementById("f-paid").value === "yes";
+    var stageKey = document.getElementById("f-stage").value;
+    if (!customer || !item) { alert("Fill in the customer name and job description."); return; }
+    data.seq += 1;
+    var ref = "MID-" + data.seq;
+    var now = Date.now();
+    var stageIdx = STAGE_INDEX[stageKey];
+    data.jobs.push({ id: ref, ref: ref, customer: customer, item: item, paid: paid, stageIdx: stageIdx, enteredStageAt: now, history: [{ stage: stageKey, at: now }], notes: [{ at: now, text: pingText(STAGES[stageIdx].label), ping: true }] });
+    save(); renderQueue();
+    document.getElementById("add-form").reset();
+    populateStageSelect();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue();
+  });
+
+  document.getElementById("threshold-input").addEventListener("input", renderQueue);
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var j = data.jobs.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
+    if (!j) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No record found for that order number. Please contact us directly.</p></div>'; return; }
+    var html = '<div class="lookup-result"><h3>' + escapeHtml(j.item) + '</h3>';
+    STAGES.forEach(function (s, i) {
+      var cls = i < j.stageIdx ? "done" : (i === j.stageIdx ? "active" : "pending");
+      var histEntry = j.history.filter(function (h) { return h.stage === s.key; })[0];
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === "pending" ? " pending-text" : "") + '">' + s.label + '</div><div class="stage-time">' + (histEntry ? fmtDate(histEntry.at) : (cls === "active" ? "In progress" : "Not started")) + "</div></div></div>";
+    });
+    html += "</div>";
+    root.innerHTML = html;
+  });
+
+  document.querySelectorAll(".jot-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".jot-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".jot-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  populateStageSelect();
+  renderQueue();
+})();
+</script>
+</body>
+</html>
