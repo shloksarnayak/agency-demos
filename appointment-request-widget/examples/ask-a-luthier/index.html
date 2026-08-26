@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Appointment request widget: working example for Ask a Luthier</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .field { display: flex; flex-direction: column; gap: 0.5rem; }
+  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .choice { font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.6rem 0.95rem; cursor: pointer; font-size: 0.92rem; }
+  .choice:hover { border-color: var(--brand); }
+  .choice.sel { border-color: var(--brand); background: var(--brand-soft); color: var(--ink); font-weight: 620; box-shadow: 0 0 0 1px var(--brand) inset; }
+  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; max-width: 26rem; }
+  input[type="text"]:focus { outline: none; border-color: var(--brand); }
+  .hours-table { border-collapse: collapse; font-size: 0.88rem; }
+  .hours-table td { padding: 0.25rem 0.9rem 0.25rem 0; color: var(--ink-2); }
+  .hours-table td.day { color: var(--muted); font-family: var(--mono); font-size: 0.78rem; }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.8rem; }
+  .confirm h3 { margin: 0; font-size: 1.05rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+  .confirm dl { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; }
+  .confirm dt { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .confirm dd { margin: 0 0 0.5rem; font-size: 0.94rem; color: var(--ink); }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+
+  .split { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+  @media (min-width: 760px) { .split { grid-template-columns: 1fr 1fr; } }
+  .site-note { border-radius: var(--radius-md); background: var(--surface-2); border: 1px solid var(--rule); padding: 1.1rem 1.3rem; font-size: 0.9rem; color: var(--ink-2); line-height: 1.6; }
+  .site-note code { font-family: var(--mono); font-size: 0.82rem; color: var(--brand); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Appointment request widget</a> / Ask a Luthier</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Ask a Luthier</span>
+  <h1 class="fx-h1">Giving the repair shop a front door of its own</h1>
+  <p class="fx-lede">Right now, alferdpackerband.com mentions that Steve is a luthier, but there's no link from there to ask-a-luthier.com, and ask-a-luthier.com itself has a Contact link with no request form behind it &mdash; just phone or email tag. Someone who lands on the band site looking for a repair, or reaches the luthier site after hours, has no way to leave a request. This form is that missing piece.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the repair categories below (neck resets, truss rod work, fret jobs, bridge and saddle replacement, finish work) are drawn from the questions Steve has answered on ask-a-luthier.com's own Q&amp;A archive, and the instrument types match what he covers there &mdash; guitars, mandolins, violins, cellos, and basses. <strong>What's illustrative:</strong> the site doesn't list hours, a shop address, or turnaround times anywhere, so those below are placeholder values marked "Illustrative" &mdash; a real build would use whatever Steve actually runs on.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card" id="form-root"></div>
+    <div class="site-note">
+      <p style="margin-top:0;"><strong>The gap this closes</strong></p>
+      <p>The band's own site, <code>alferdpackerband.com</code>, names Steve as a luthier but sends nobody anywhere. His shop site, <code>ask-a-luthier.com</code>, has a Contact link in the nav with no way to actually request anything behind it. Two real people looking for the same thing &mdash; a bandmate's fan curious about the repair work, and a musician searching for a luthier &mdash; both hit a dead end today. Linking the two sites and dropping this form where "Contact" currently sits fixes both at once, without changing how Steve actually works.</p>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before this goes live</h2>
+    <div class="limits">
+      <div class="lim"><b>This is a request form, not a booking calendar.</b> It doesn't know which days Steve is actually free, because it isn't connected to a real schedule. Someone picks a rough preference and it gets sent to him, same as a phone call or email today, just captured from both sites instead of neither.</div>
+      <div class="lim"><b>Hours, turnaround, and shop location are placeholders.</b> Illustrative only, since neither alferdpackerband.com nor ask-a-luthier.com lists them anywhere public. A real build swaps these for whatever Steve actually runs on &mdash; even "call to check" is fine, it just needs to be there.</div>
+      <div class="lim"><b>Nothing here actually sends anything.</b> A real version would email or text Steve the moment someone submits it. This demo just shows what that submission would look like.</div>
+      <div class="lim"><b>The fix is linking two existing sites, not replacing either.</b> The band site keeps being the band site. This form slots into the Contact page on ask-a-luthier.com, and a single line on alferdpackerband.com points there.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Steve Mason. Repair categories and instrument types verified against ask-a-luthier.com's own Q&amp;A archive today. Hours, turnaround, and location are illustrative placeholders, not connected to any real schedule.</p>
+</footer>
+
+<script>
+(function () {
+  var SERVICES = [
+    "Neck reset", "Truss rod adjustment", "Fret job / fret leveling",
+    "Bridge or saddle replacement", "Finish repair or touch-up", "General setup / intonation"
+  ];
+
+  var INSTRUMENTS = ["Guitar", "Mandolin", "Violin", "Cello", "Bass"];
+
+  var HOURS = [
+    ["Tuesday", "10:00 AM to 5:00 PM (Illustrative)"],
+    ["Wednesday", "10:00 AM to 5:00 PM (Illustrative)"],
+    ["Thursday", "10:00 AM to 5:00 PM (Illustrative)"],
+    ["Friday", "10:00 AM to 3:00 PM (Illustrative)"],
+    ["Saturday", "By appointment (Illustrative)"]
+  ];
+
+  var DAY_PREFS = HOURS.map(function (h) { return h[0]; });
+  var TIME_PREFS = ["Morning", "Early afternoon", "Late afternoon"];
+
+  var state = { instrument: null, service: null, day: null, time: null, name: "", contact: "", submitted: false };
+  var root = document.getElementById("form-root");
+
+  function canSubmit() {
+    return state.instrument && state.service && state.day && state.time && state.name.trim() && state.contact.trim();
+  }
+
+  function render() {
+    if (state.submitted) { renderConfirm(); return; }
+
+    var html = '';
+    html += '<div class="field"><div class="field-label">Instrument</div><div class="choices">';
+    INSTRUMENTS.forEach(function (i) {
+      html += '<button class="choice' + (state.instrument === i ? ' sel' : '') + '" data-instrument="' + i + '">' + i + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field"><div class="field-label">What does it need?</div><div class="choices">';
+    SERVICES.forEach(function (s) {
+      html += '<button class="choice' + (state.service === s ? ' sel' : '') + '" data-service="' + s + '">' + s + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field"><div class="field-label">Preferred day</div><div class="choices">';
+    DAY_PREFS.forEach(function (d) {
+      html += '<button class="choice' + (state.day === d ? ' sel' : '') + '" data-day="' + d + '">' + d + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field"><div class="field-label">Preferred time of day</div><div class="choices">';
+    TIME_PREFS.forEach(function (t) {
+      html += '<button class="choice' + (state.time === t ? ' sel' : '') + '" data-time="' + t + '">' + t + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field"><div class="field-label">Your name</div><input type="text" id="name-input" value="' + state.name.replace(/"/g, '&quot;') + '" placeholder="First and last name"></div>';
+    html += '<div class="field"><div class="field-label">Phone or email</div><input type="text" id="contact-input" value="' + state.contact.replace(/"/g, '&quot;') + '" placeholder="How should Steve reach you?"></div>';
+
+    html += '<div class="field"><div class="field-label">Shop hours, for reference (Illustrative)</div><table class="hours-table"><tbody>';
+    HOURS.forEach(function (h) { html += '<tr><td class="day">' + h[0] + '</td><td>' + h[1] + '</td></tr>'; });
+    html += '</tbody></table></div>';
+
+    html += '<button class="fx-btn" id="submit-btn" style="margin-top:0.3rem;"' + (canSubmit() ? '' : ' disabled') + '>Request this repair</button>';
+
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll('[data-instrument]'), function (b) {
+      b.addEventListener('click', function () { state.instrument = b.dataset.instrument; render(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-service]'), function (b) {
+      b.addEventListener('click', function () { state.service = b.dataset.service; render(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-day]'), function (b) {
+      b.addEventListener('click', function () { state.day = b.dataset.day; render(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-time]'), function (b) {
+      b.addEventListener('click', function () { state.time = b.dataset.time; render(); });
+    });
+
+    var nameInput = document.getElementById('name-input');
+    var contactInput = document.getElementById('contact-input');
+    nameInput.addEventListener('input', function () { state.name = nameInput.value; syncSubmitState(); });
+    contactInput.addEventListener('input', function () { state.contact = contactInput.value; syncSubmitState(); });
+
+    var submitBtn = document.getElementById('submit-btn');
+    submitBtn.addEventListener('click', function () {
+      if (!canSubmit()) return;
+      state.submitted = true;
+      render();
+    });
+  }
+
+  function syncSubmitState() {
+    var btn = document.getElementById('submit-btn');
+    if (btn) btn.disabled = !canSubmit();
+  }
+
+  function renderConfirm() {
+    var html = '<div class="confirm">';
+    html += '<h3>Request captured, this is what Steve would receive</h3>';
+    html += '<dl>';
+    html += '<dt>Instrument</dt><dd>' + state.instrument + '</dd>';
+    html += '<dt>Service</dt><dd>' + state.service + '</dd>';
+    html += '<dt>Preferred day</dt><dd>' + state.day + '</dd>';
+    html += '<dt>Preferred time</dt><dd>' + state.time + '</dd>';
+    html += '<dt>Name</dt><dd>' + escapeHtml(state.name) + '</dd>';
+    html += '<dt>Contact</dt><dd>' + escapeHtml(state.contact) + '</dd>';
+    html += '</dl>';
+    html += '<p style="font-size:0.88rem; color:var(--ink-2);">A real version emails or texts this to Steve the moment it\'s submitted, and he confirms the actual drop-off time back to the customer &mdash; same as a phone call today, just captured from either site, any hour.</p>';
+    html += '<button class="fx-btn-ghost" id="reset-btn" style="align-self:flex-start;">Start over</button>';
+    html += '</div>';
+    root.innerHTML = html;
+    document.getElementById('reset-btn').addEventListener('click', function () {
+      state = { instrument: null, service: null, day: null, time: null, name: "", contact: "", submitted: false };
+      render();
+    });
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
