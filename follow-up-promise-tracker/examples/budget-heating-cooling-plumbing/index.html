@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Follow-up promise tracker template</title>
-<link rel="stylesheet" href="../assets/theme.css">
+<title>Follow-up promise tracker: working example for Budget Heating, Cooling &amp; Plumbing</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
 <style>
   .fpt-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
   .fpt-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
@@ -49,22 +49,31 @@
   .limits { display: flex; flex-direction: column; gap: 1.1rem; }
   .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
   .lim b { color: var(--ink); font-weight: 640; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
 </style>
 </head>
 <body>
 <nav class="fx-nav">
   <div class="fx-nav-row">
-    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
-    <span class="fx-crumb"><a href="../index.html">Templates</a> / Follow-up promise tracker</span>
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Follow-up promise tracker</a> / Budget Heating, Cooling &amp; Plumbing</span>
   </div>
 </nav>
 <header class="fx-hero">
-  <span class="fx-kicker">Template, not built for a specific business</span>
-  <h1 class="fx-h1">Every "someone will call you back" promise, visible until it's kept</h1>
-  <p class="fx-lede">A crew tells a customer someone will come out, or the office says a damage report is being looked into, and then it lives only in one person's memory or a sticky note. When that person is busy the promise quietly slips, the customer calls back annoyed, and it looks like the business does not follow through even when the actual work is good. This page shows one small, working tool that fixes that: an internal queue that surfaces every open promise sorted by how overdue it is, and a customer-facing status page so a customer can check where things stand without calling the office first.</p>
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">Every appointment request stays visible until the confirmation call actually happens</h1>
+  <p class="fx-lede">A BBB complaint from October 2025 describes a customer requesting an appointment that never got booked, because a system error with the company's virtual assistant blocked the confirmation call and same-day service was no longer available by the time anyone noticed. A separate complaint from September 2024 describes a service that was never completed despite repeated callback requests, and one from June 2024 describes rescheduling delays during a heat wave. Budget already runs on HouseCallPro, so this is not a "need another scheduler" problem, it is a "the confirmation and reminder step does not reliably close the loop when call volume spikes" problem. This example shows a small tool that sits next to HouseCallPro: it holds every request open, with a due-by clock, until someone marks it confirmed, and gives a customer a way to check their own status without calling in.</p>
+  <div class="fact-strip">
+    <span class="fact">Budget Heating, Cooling &amp; Plumbing</span>
+    <span class="fact">Saint Peters, MO, family-owned since 2009</span>
+    <span class="fact">HVAC &amp; plumbing, residential &amp; light commercial</span>
+  </div>
 </header>
 <main class="fx-main">
-  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the office view is what staff actually use to log and close out promises, and the reference code on the customer view is whatever the office already hands out (a work order number, a claim number), not a new system to adopt.</p></div>
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Budget Heating, Cooling &amp; Plumbing.</strong> All customer names, requests, and notes inside the tool below are fictional and clearly for illustration only. The business description and complaint pattern referenced here are drawn from the company's own published site and from its public BBB complaint file.</p></div>
+
+  <p style="color:var(--ink-2); font-size:0.92rem; max-width:74ch;">The BBB complaint pattern here is narrow and specific, not a sign of a business in trouble. Budget's own site and Facebook page show a strong overall reputation, and the company is currently hiring a Customer Experience Specialist to help with calls and scheduling. That hire raises rather than lowers the odds that the gap is a follow-through step, not overall capacity: a request comes in through the online form, the phone, or the virtual assistant, and the confirmation call or text back to the customer is the one step with no backstop today. When that step is missed, whether from a tech glitch or a busy afternoon, the request just goes quiet until the customer calls back frustrated <em>(illustrative figures below, not real request volume)</em>.</p>
 
   <div class="fpt-tabs">
     <button class="fpt-tab active" data-view="office" type="button">Office view</button>
@@ -74,12 +83,12 @@
   <section class="fpt-view active" id="view-office">
     <div class="fpt-cols">
       <div>
-        <h2 class="fx-h2" style="margin-top:0;">Log a new promise</h2>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new request</h2>
         <form id="add-form" class="form-grid">
           <div class="field span2"><label for="f-customer">Customer / job label</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
-          <div class="field span2"><label for="f-type">Promise type</label><select id="f-type"></select></div>
-          <div class="field span2"><label for="f-summary">What was promised (customer-facing wording)</label><textarea id="f-summary" placeholder="e.g. Office will call back by Thursday with a decision on the gate repair."></textarea></div>
-          <div class="field span2"><label for="f-due">Due by</label><input type="datetime-local" id="f-due"></div>
+          <div class="field span2"><label for="f-type">Follow-up type</label><select id="f-type"></select></div>
+          <div class="field span2"><label for="f-summary">What was requested / promised (customer-facing wording)</label><textarea id="f-summary" placeholder="e.g. Customer requested a same-day AC repair appointment through the website form."></textarea></div>
+          <div class="field span2"><label for="f-due">Confirm by</label><input type="datetime-local" id="f-due"></div>
           <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
         </form>
       </div>
@@ -92,36 +101,37 @@
   </section>
 
   <section class="fpt-view" id="view-customer">
-    <h2 class="fx-h2" style="margin-top:0;">Check the status of a promise</h2>
+    <h2 class="fx-h2" style="margin-top:0;">Check the status of your request</h2>
     <div class="lookup-box">
       <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code</label>
-      <input type="text" id="lookup-ref" placeholder="e.g. FPT-1001">
+      <input type="text" id="lookup-ref" placeholder="e.g. BHC-1001">
       <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
       <div id="lookup-root"></div>
     </div>
-    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try FPT-1001, FPT-1002, FPT-1003 or FPT-1004 from the office view's sample queue.</p>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try BHC-1001, BHC-1002, BHC-1003 or BHC-1004 from the office view's sample queue.</p>
   </section>
 
   <section>
     <h2 class="fx-h2">How this gets built for real</h2>
     <div class="limits">
-      <div class="lim"><b>The reference code is whatever the office already uses.</b> A real build reads from an existing work-order or claim number instead of inventing a new one for the customer to remember.</div>
-      <div class="lim"><b>Overdue math here is a simple timer.</b> A real build can page or text the person responsible once something crosses overdue, instead of relying on someone opening this page.</div>
-      <div class="lim"><b>The customer view shows only customer-safe wording.</b> Internal notes stay in the office view; nothing typed there is exposed on the lookup page.</div>
-      <div class="lim"><b>See it built for real businesses: <a href="examples/barberton-tree-service/">Barberton Tree Service</a>, <a href="examples/arrow-auto-glass/">Arrow Auto Glass</a>, <a href="examples/fabian-oil/">Fabian Oil</a>, <a href="examples/4us-moving/">4US Moving</a> and <a href="examples/budget-heating-cooling-plumbing/">Budget Heating, Cooling &amp; Plumbing</a>.</b></div>
+      <div class="lim"><b>The reference code can come straight from HouseCallPro.</b> A real build reads the job or request ID Budget's system already assigns, instead of asking a customer to remember a new code.</div>
+      <div class="lim"><b>This does not replace HouseCallPro or the virtual assistant.</b> It sits next to them and tracks one specific thing: has this request been confirmed with the customer, and if not, how overdue is that confirmation.</div>
+      <div class="lim"><b>The overdue clock is the actual fix for the BBB pattern.</b> The October 2025 complaint happened because a blocked confirmation call had no backstop. A real build can text or page the on-call scheduler the moment a request crosses overdue, so a same-day window never quietly closes unnoticed.</div>
+      <div class="lim"><b>The customer view shows only customer-safe wording.</b> Internal notes typed in the office view never appear on the lookup page.</div>
+      <div class="lim"><b>Back to the general template: <a href="../../">Follow-up promise tracker</a>.</b></div>
     </div>
   </section>
 </main>
-<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional promise and customer data on this page, not connected to any live system.</p></footer>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Budget Heating, Cooling &amp; Plumbing.</strong></p><p>Prepared by Shlok Sarnayak for Daniel LaGarce, Owner. Fictional request and customer data on this page, not connected to any live system or to HouseCallPro.</p></footer>
 <script>
 (function () {
   "use strict";
-  var STORE_KEY = "fpt_template_generic_v1";
+  var STORE_KEY = "fpt_budget_heating_v1";
 
   var TYPES = [
-    { key: "damage", label: "Property damage claim" },
-    { key: "arrival", label: "Arrival window notice" },
-    { key: "callback", label: "Callback / site-visit promise" }
+    { key: "confirm", label: "New request, needs confirmation call" },
+    { key: "reminder", label: "Reminder before scheduled visit" },
+    { key: "reschedule", label: "Reschedule follow-up" }
   ];
   var TYPE_LABEL = {}; TYPES.forEach(function (t) { TYPE_LABEL[t.key] = t.label; });
 
@@ -134,28 +144,28 @@
       seq: 1004,
       promises: [
         {
-          id: "FPT-1001", ref: "FPT-1001", customer: "Sample Customer A", type: "damage",
-          summary: "Office will call back by Thursday with a decision on the fence gate repair.",
-          openedAt: hoursFromNow(-52), dueAt: hoursFromNow(-4), status: "open",
-          notes: [{ at: hoursFromNow(-50), text: "Photos received from crew lead, forwarded to estimator." }]
+          id: "BHC-1001", ref: "BHC-1001", customer: "Sample Customer A", type: "confirm",
+          summary: "Requested a same-day AC repair through the website form. Virtual assistant logged the request but the confirmation call never went out.",
+          openedAt: hoursFromNow(-9), dueAt: hoursFromNow(-3), status: "open",
+          notes: [{ at: hoursFromNow(-8), text: "Request visible in HouseCallPro queue, no confirmation call logged yet." }]
         },
         {
-          id: "FPT-1002", ref: "FPT-1002", customer: "Sample Customer B", type: "arrival",
-          summary: "Crew arrival window for tomorrow: 8am to 11am.",
-          openedAt: hoursFromNow(-6), dueAt: hoursFromNow(2), status: "open",
+          id: "BHC-1002", ref: "BHC-1002", customer: "Sample Customer B", type: "reminder",
+          summary: "Tomorrow's furnace tune-up: reminder call or text due the evening before the visit.",
+          openedAt: hoursFromNow(-2), dueAt: hoursFromNow(14), status: "open",
           notes: []
         },
         {
-          id: "FPT-1003", ref: "FPT-1003", customer: "Sample Customer C", type: "callback",
-          summary: "Someone will come out to re-look at the tree near the driveway.",
-          openedAt: hoursFromNow(-20), dueAt: hoursFromNow(28), status: "open",
-          notes: [{ at: hoursFromNow(-18), text: "Left message for scheduling, awaiting a slot." }]
+          id: "BHC-1003", ref: "BHC-1003", customer: "Sample Customer C", type: "reschedule",
+          summary: "Original visit pushed during last week's heat wave, customer is waiting on a new confirmed window.",
+          openedAt: hoursFromNow(-30), dueAt: hoursFromNow(6), status: "open",
+          notes: [{ at: hoursFromNow(-27), text: "Left a message offering the next two open slots, awaiting a reply." }]
         },
         {
-          id: "FPT-1004", ref: "FPT-1004", customer: "Sample Customer D", type: "damage",
-          summary: "Damage report reviewed and closed, repair scheduled.",
-          openedAt: hoursFromNow(-96), dueAt: hoursFromNow(-72), status: "resolved", resolvedAt: hoursFromNow(-70),
-          notes: [{ at: hoursFromNow(-70), text: "Repair crew booked for next week, customer notified by phone." }]
+          id: "BHC-1004", ref: "BHC-1004", customer: "Sample Customer D", type: "confirm",
+          summary: "Water heater install request confirmed by phone, appointment locked in.",
+          openedAt: hoursFromNow(-48), dueAt: hoursFromNow(-30), status: "resolved", resolvedAt: hoursFromNow(-29),
+          notes: [{ at: hoursFromNow(-29), text: "Confirmed for Thursday 9am window, customer notified by text." }]
         }
       ]
     };
@@ -169,7 +179,7 @@
   function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
 
   function statusInfo(p) {
-    if (p.status === "resolved") return { cls: "resolved", label: "Resolved" };
+    if (p.status === "resolved") return { cls: "resolved", label: "Confirmed" };
     var now = Date.now();
     if (p.dueAt < now) return { cls: "overdue", label: "Overdue" };
     if (p.dueAt - now < 12 * 3600000) return { cls: "soon", label: "Due soon" };
@@ -186,10 +196,10 @@
     var open = data.promises.filter(function (p) { return p.status === "open"; }).slice().sort(function (a, b) { return a.dueAt - b.dueAt; });
     var resolved = data.promises.filter(function (p) { return p.status === "resolved"; }).slice().sort(function (a, b) { return b.resolvedAt - a.resolvedAt; });
     var html = "";
-    if (!open.length) html += '<p class="empty">Nothing open. Every promise is caught up.</p>';
+    if (!open.length) html += '<p class="empty">Nothing open. Every request is confirmed.</p>';
     open.forEach(function (p) { html += renderCard(p); });
     if (resolved.length) {
-      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently resolved</h3>';
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently confirmed</h3>';
       resolved.slice(0, 5).forEach(function (p) { html += renderCard(p); });
     }
     root.innerHTML = html;
@@ -207,7 +217,7 @@
     }
     if (p.status === "open") {
       html += '<div class="note-row"><input type="text" id="note-' + idx + '" placeholder="Add an internal note"><button class="fx-btn-ghost" onclick="__fpt.addNote(' + idx + ')">Add</button></div>';
-      html += '<div class="promise-actions"><button class="fx-btn-ghost" onclick="__fpt.resolve(' + idx + ')">Mark resolved</button></div>';
+      html += '<div class="promise-actions"><button class="fx-btn-ghost" onclick="__fpt.resolve(' + idx + ')">Mark confirmed</button></div>';
     }
     html += "</div>";
     return html;
@@ -234,9 +244,9 @@
     var type = document.getElementById("f-type").value;
     var summary = document.getElementById("f-summary").value.trim();
     var dueRaw = document.getElementById("f-due").value;
-    if (!customer || !summary || !dueRaw) { alert("Fill in the customer, promise wording, and due date."); return; }
+    if (!customer || !summary || !dueRaw) { alert("Fill in the customer, request wording, and due date."); return; }
     data.seq += 1;
-    var ref = "FPT-" + data.seq;
+    var ref = "BHC-" + data.seq;
     data.promises.push({ id: ref, ref: ref, customer: customer, type: type, summary: summary, openedAt: Date.now(), dueAt: new Date(dueRaw).getTime(), status: "open", notes: [] });
     save(); renderQueue();
     document.getElementById("add-form").reset();
@@ -255,7 +265,7 @@
     var p = data.promises.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
     if (!p) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No open or recent record found for that reference code. Please call the office directly.</p></div>'; return; }
     var st = statusInfo(p);
-    root.innerHTML = '<div class="lookup-result"><h3>' + TYPE_LABEL[p.type] + '</h3><div class="lr-status"><span class="badge ' + st.cls + '">' + st.label + '</span></div><div class="lr-detail">' + escapeHtml(p.summary) + '<br><br>Opened ' + fmtDate(p.openedAt) + (p.status === "resolved" ? ", resolved " + fmtDate(p.resolvedAt) : ", expected by " + fmtDate(p.dueAt)) + "</div></div>";
+    root.innerHTML = '<div class="lookup-result"><h3>' + TYPE_LABEL[p.type] + '</h3><div class="lr-status"><span class="badge ' + st.cls + '">' + st.label + '</span></div><div class="lr-detail">' + escapeHtml(p.summary) + '<br><br>Opened ' + fmtDate(p.openedAt) + (p.status === "resolved" ? ", confirmed " + fmtDate(p.resolvedAt) : ", expected by " + fmtDate(p.dueAt)) + "</div></div>";
   });
 
   document.querySelectorAll(".fpt-tab").forEach(function (btn) {
