@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Appointment request widget: working example for Big Head Wines</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .field { display: flex; flex-direction: column; gap: 0.5rem; }
+  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .choice { font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.6rem 0.95rem; cursor: pointer; font-size: 0.92rem; text-align: left; }
+  .choice:hover { border-color: var(--brand); }
+  .choice.sel { border-color: var(--brand); background: var(--brand-soft); color: var(--ink); font-weight: 620; box-shadow: 0 0 0 1px var(--brand) inset; }
+  .choice small { display: block; font-size: 0.78rem; color: var(--muted); font-weight: 400; margin-top: 0.15rem; }
+  input[type="text"], input[type="number"], textarea { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; max-width: 26rem; }
+  textarea { max-width: 100%; min-height: 4.5rem; resize: vertical; }
+  input[type="text"]:focus, input[type="number"]:focus, textarea:focus { outline: none; border-color: var(--brand); }
+  .menu-table { border-collapse: collapse; font-size: 0.88rem; width: 100%; max-width: 34rem; }
+  .menu-table td { padding: 0.4rem 0.9rem 0.4rem 0; color: var(--ink-2); vertical-align: top; }
+  .menu-table td.name { color: var(--ink); }
+  .menu-table td.price { color: var(--muted); font-family: var(--mono); font-size: 0.8rem; white-space: nowrap; }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.8rem; }
+  .confirm h3 { margin: 0; font-size: 1.05rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+  .confirm dl { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; }
+  .confirm dt { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .confirm dd { margin: 0 0 0.5rem; font-size: 0.94rem; color: var(--ink); }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+
+  .illustrative-tag { display: inline-block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--brand); background: var(--brand-soft); border-radius: 999px; padding: 0.15rem 0.55rem; margin-left: 0.4rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Appointment request widget</a> / Big Head Wines</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Big Head Wines</span>
+  <h1 class="fx-h1">A place to land the booking your $30 flight already has, and your $175 tasting doesn't</h1>
+  <p class="fx-lede">Your Standard Tasting books itself instantly through Tock. The Bigger Tasting, the Biggest Tasting, the Lipinski Family Wines Portfolio, and private events or weddings all route back to a phone call or an email that someone has to catch and answer by hand. This form gives those requests the same instant, structured landing spot Tock gives the $30 flight, so a booking never depends on someone being free to pick up.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the four experiences below, their prices, group sizes and descriptions are copied from your own site today. What this isn't: a live booking calendar showing real open slots, since that would need your actual reservation system connected, which this demo doesn't have access to. It's a structured request form. Same as phone or email today, someone still confirms the actual date.</p>
+  </div>
+  <div class="fx-card" id="form-root"></div>
+  <section>
+    <h2 class="fx-h2">The four experiences this form covers</h2>
+    <table class="menu-table">
+      <tbody>
+        <tr><td class="name">The Bigger Tasting</td><td>45-minute seated tasting, 6 wines, groups of 5+</td><td class="price">$30/person</td></tr>
+        <tr><td class="name">The Biggest Tasting</td><td>2-hour blind tasting, 12 wines, guided by a Senior Tasting Associate</td><td class="price">$110/person<br>$90 members</td></tr>
+        <tr><td class="name">Lipinski Family Wines Portfolio</td><td>1.5&ndash;2 hour tasting, all 7 Lipinski wines with charcuterie</td><td class="price">$175/person<br>$150 members</td></tr>
+        <tr><td class="name">Private event or wedding</td><td>Custom, booked with Vintage Hotels today</td><td class="price">Inquiry only</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>This is a request form, not a booking calendar.</b> It doesn't know which dates are actually open, because it isn't connected to your real reservation book or your Vintage Hotels arrangement for events. A visitor picks the experience, group size and a preferred date, and it reaches you the same way a phone call or email would, just captured the moment they decide instead of whenever the call gets answered.</div>
+      <div class="lim"><b>Nothing here actually sends anything.</b> A real version would email or text the tasting room the moment someone submits, with the experience, headcount and date preference already written down instead of relayed secondhand off a voicemail. This demo just shows what that submission would look like.</div>
+      <div class="lim"><b>Missed-call text-back is a separate, paired idea, not built into this page.<span class="illustrative-tag">Illustrative</span></b> The idea from the original note was this form plus an automatic text reply when a call to the tasting room goes unanswered during open hours, pointing the caller straight to this form instead of leaving a message that "does not confirm" a booking. That's a phone-system integration and isn't something a static page can demonstrate, shown below as a mockup only.</div>
+      <div class="lim"><b>Experience names, prices, group sizes and descriptions are copied from your own site today.</b> If any of them change, this needs a one-line update to match, it won't drift out of sync on its own.</div>
+    </div>
+  </section>
+  <section>
+    <h2 class="fx-h2">Missed-call text-back <span class="illustrative-tag">Illustrative mockup, not a live phone integration</span></h2>
+    <p style="font-size:0.92rem; color:var(--ink-2); max-width:70ch;">This is what a caller would receive if a call to the tasting room during open hours wasn't picked up. All names, times and message text below are sample data.</p>
+    <div class="fx-card" id="text-demo-root" style="margin-top:0.8rem;"></div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Big Head Wines.</strong></p>
+  <p>Prepared by Shlok Sarnayak. Tasting menu, pricing and hours verified against bigheadwines.ca today. Not connected to your Tock account, phone system, or real reservation book. Andrzej Lipinski is publicly identified as founder and winemaker; no other staff name is listed on the site.</p>
+</footer>
+
+<script>
+(function () {
+  var EXPERIENCES = [
+    { name: "The Bigger Tasting", detail: "$30/person, groups of 5+" },
+    { name: "The Biggest Tasting", detail: "$110/person ($90 members), 2-hour blind tasting" },
+    { name: "Lipinski Family Wines Portfolio", detail: "$175/person ($150 members), 1.5–2 hours" },
+    { name: "Private event or wedding", detail: "Custom, currently via Vintage Hotels" }
+  ];
+
+  var GROUP_SIZES = ["5–8 guests", "9–15 guests", "16–30 guests", "30+ guests"];
+  var TIME_PREFS = ["Weekday afternoon", "Weekend afternoon", "Weekend, Saturday patio hours", "Evening / after close"];
+
+  var state = { experience: null, groupSize: null, timePref: null, date: "", name: "", contact: "", notes: "", submitted: false };
+  var root = document.getElementById("form-root");
+
+  function canSubmit() {
+    return state.experience && state.groupSize && state.timePref && state.date.trim() && state.name.trim() && state.contact.trim();
+  }
+
+  function render() {
+    if (state.submitted) { renderConfirm(); return; }
+
+    var html = '';
+    html += '<div class="field"><div class="field-label">Which experience?</div><div class="choices">';
+    EXPERIENCES.forEach(function (e) {
+      html += '<button class="choice' + (state.experience === e.name ? ' sel' : '') + '" data-exp="' + e.name + '">' + e.name + '<small>' + e.detail + '</small></button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field" style="margin-top:1.1rem;"><div class="field-label">Group size</div><div class="choices">';
+    GROUP_SIZES.forEach(function (g) {
+      html += '<button class="choice' + (state.groupSize === g ? ' sel' : '') + '" data-group="' + g + '">' + g + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field" style="margin-top:1.1rem;"><div class="field-label">Preferred timing</div><div class="choices">';
+    TIME_PREFS.forEach(function (t) {
+      html += '<button class="choice' + (state.timePref === t ? ' sel' : '') + '" data-time="' + t + '">' + t + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field" style="margin-top:1.1rem;"><div class="field-label">Preferred date</div><input type="text" id="date-input" value="' + state.date.replace(/"/g, '&quot;') + '" placeholder="e.g. September 20, or a range"></div>';
+    html += '<div class="field" style="margin-top:1.1rem;"><div class="field-label">Your name</div><input type="text" id="name-input" value="' + state.name.replace(/"/g, '&quot;') + '" placeholder="First and last name"></div>';
+    html += '<div class="field" style="margin-top:1.1rem;"><div class="field-label">Phone or email</div><input type="text" id="contact-input" value="' + state.contact.replace(/"/g, '&quot;') + '" placeholder="How should we reach you?"></div>';
+    html += '<div class="field" style="margin-top:1.1rem;"><div class="field-label">Notes (occasion, dietary, wedding details)</div><textarea id="notes-input" placeholder="Optional">' + escapeHtml(state.notes) + '</textarea></div>';
+
+    html += '<button class="fx-btn" id="submit-btn" style="margin-top:1rem;"' + (canSubmit() ? '' : ' disabled') + '>Request this booking</button>';
+
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll('[data-exp]'), function (b) {
+      b.addEventListener('click', function () { state.experience = b.dataset.exp; render(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-group]'), function (b) {
+      b.addEventListener('click', function () { state.groupSize = b.dataset.group; render(); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-time]'), function (b) {
+      b.addEventListener('click', function () { state.timePref = b.dataset.time; render(); });
+    });
+
+    var dateInput = document.getElementById('date-input');
+    var nameInput = document.getElementById('name-input');
+    var contactInput = document.getElementById('contact-input');
+    var notesInput = document.getElementById('notes-input');
+    dateInput.addEventListener('input', function () { state.date = dateInput.value; syncSubmitState(); });
+    nameInput.addEventListener('input', function () { state.name = nameInput.value; syncSubmitState(); });
+    contactInput.addEventListener('input', function () { state.contact = contactInput.value; syncSubmitState(); });
+    notesInput.addEventListener('input', function () { state.notes = notesInput.value; });
+
+    var submitBtn = document.getElementById('submit-btn');
+    submitBtn.addEventListener('click', function () {
+      if (!canSubmit()) return;
+      state.submitted = true;
+      render();
+    });
+  }
+
+  function syncSubmitState() {
+    var btn = document.getElementById('submit-btn');
+    if (btn) btn.disabled = !canSubmit();
+  }
+
+  function renderConfirm() {
+    var html = '<div class="confirm">';
+    html += '<h3>Request captured, this is what Big Head Wines would receive</h3>';
+    html += '<dl>';
+    html += '<dt>Experience</dt><dd>' + state.experience + '</dd>';
+    html += '<dt>Group size</dt><dd>' + state.groupSize + '</dd>';
+    html += '<dt>Preferred timing</dt><dd>' + state.timePref + '</dd>';
+    html += '<dt>Preferred date</dt><dd>' + escapeHtml(state.date) + '</dd>';
+    html += '<dt>Name</dt><dd>' + escapeHtml(state.name) + '</dd>';
+    html += '<dt>Contact</dt><dd>' + escapeHtml(state.contact) + '</dd>';
+    if (state.notes.trim()) { html += '<dt>Notes</dt><dd>' + escapeHtml(state.notes) + '</dd>'; }
+    html += '</dl>';
+    html += '<p style="font-size:0.88rem; color:var(--ink-2);">A real version emails or texts this to the tasting room the moment it\'s submitted, and confirms the actual date back to the guest once it\'s checked against the real reservation book, the same handoff a phone call gets today, just captured instantly instead of waiting on a callback.</p>';
+    html += '<button class="fx-btn-ghost" id="reset-btn" style="align-self:flex-start;">Start over</button>';
+    html += '</div>';
+    root.innerHTML = html;
+    document.getElementById('reset-btn').addEventListener('click', function () {
+      state = { experience: null, groupSize: null, timePref: null, date: "", name: "", contact: "", notes: "", submitted: false };
+      render();
+    });
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  render();
+})();
+</script>
+
+<script>
+(function () {
+  var textRoot = document.getElementById('text-demo-root');
+  var state = { sent: false };
+
+  function render() {
+    var html = '';
+    html += '<div class="field-label" style="margin-bottom:0.7rem;">Sample scenario: a call to (905) 468-4321 goes unanswered on a Saturday at 2:14pm</div>';
+    html += '<button class="fx-btn" id="sim-btn"' + (state.sent ? ' disabled' : '') + '>' + (state.sent ? 'Text sent' : 'Simulate the missed call') + '</button>';
+    if (state.sent) {
+      html += '<div class="confirm" style="margin-top:1rem; max-width:26rem;">';
+      html += '<h3>Auto text-back, illustrative content only</h3>';
+      html += '<p style="margin:0; font-size:0.92rem; color:var(--ink);">"Hi, this is Big Head Wines &mdash; sorry we missed your call! Tap here to send your group size and preferred date and we\'ll confirm shortly: [request-form link]"</p>';
+      html += '</div>';
+    }
+    textRoot.innerHTML = html;
+    var btn = document.getElementById('sim-btn');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        state.sent = true;
+        render();
+      });
+    }
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
