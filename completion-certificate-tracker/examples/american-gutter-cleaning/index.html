@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>American Gutter Cleaning &amp; Installations, proof-of-service tracker (working example)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input[type="text"], .field input[type="date"], .field input[type="file"], .field select {
+    font: inherit; font-size: 0.95rem; padding: 0.65rem 0.8rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .check-row { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.88rem; }
+  .check-row input { margin-top: 0.2rem; }
+  .samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.7rem; }
+  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.78rem; }
+  .discrepancy { padding: 0.9rem 1rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--warn-bg); color: #4f4716; font-size: 0.87rem; box-shadow: 3px 3px 0 var(--ink); }
+  .cert { border: 2px dashed var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: #fff; font-family: var(--mono); font-size: 0.85rem; line-height: 1.7; }
+  .cert h4 { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.6rem; }
+  .cert .line { display: flex; justify-content: space-between; gap: 1rem; border-bottom: 1px dotted var(--rule-soft); padding: 0.25rem 0; }
+  .cert-photo { margin-top: 0.8rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); overflow: hidden; max-width: 260px; }
+  .cert-photo img { display: block; width: 100%; height: auto; }
+  .photo-placeholder { width: 100%; height: 130px; display: flex; align-items: center; justify-content: center; background: repeating-linear-gradient(45deg, #eef1e8, #eef1e8 10px, #e2e6d9 10px, #e2e6d9 20px); color: var(--muted); font-family: var(--mono); font-size: 0.72rem; text-align: center; padding: 0.5rem; }
+  .job-table { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .job-row { background: var(--surface); padding: 0.85rem 1rem; display: grid; grid-template-columns: 1.4fr 1fr auto auto; gap: 0.8rem; align-items: center; font-size: 0.87rem; }
+  .job-meta { color: var(--muted); font-size: 0.76rem; }
+  .badge { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.28rem 0.6rem; border-radius: 999px; white-space: nowrap; }
+  .badge.ok { color: var(--good); background: var(--good-bg); }
+  .badge.flag { color: var(--hot); background: var(--hot-bg); }
+  .followup-list { display: flex; flex-direction: column; gap: 0.6rem; }
+  .followup-item { border: 2px solid var(--ink); border-radius: var(--radius-sm); padding: 0.8rem 1rem; background: #fff7cf; box-shadow: 3px 3px 0 var(--ink); display: flex; justify-content: space-between; gap: 1rem; align-items: center; flex-wrap: wrap; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.9rem; }
+  .fact-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; }
+  .fact-pill { font-family: var(--mono); font-size: 0.72rem; }
+  .audit-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.7rem 1rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--surface); box-shadow: 3px 3px 0 var(--ink); font-size: 0.87rem; }
+  .audit-row + .audit-row { margin-top: 0.6rem; }
+  @media print {
+    body * { visibility: hidden; }
+    #cert-print, #cert-print * { visibility: visible; }
+    #cert-print { position: absolute; left: 0; top: 0; width: 100%; }
+  }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Job completion certificate</a> / American Gutter Cleaning &amp; Installations</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for American Gutter Cleaning &amp; Installations</span>
+  <h1 class="fx-h1">A photo and timestamp for every visit, tied to the invoice</h1>
+  <p class="fx-lede">Two BBB complaints filed in December 2023 point at the same gap: customers billed for a gutter cleaning with no way to confirm the visit actually happened, one of which led to $3,000 in water damage before it was caught. The company's own BBB response noted it couldn't produce service records to settle the dispute either way. This working example shows the fix: a technician can't mark a job complete and send it to invoicing without a photo and an automatic timestamp attached, and any job missing one stays flagged as a visible, open follow-up instead of quietly becoming a "you never came" dispute months later.</p>
+  <div class="fact-row" aria-label="Verified facts about American Gutter Cleaning and Installations">
+    <span class="fx-pill fact-pill">Family-owned since 1990 (36 years)</span>
+    <span class="fx-pill fact-pill">BBB accredited since 2005</span>
+    <span class="fx-pill fact-pill">MA Home Improvement Contractor #128336</span>
+    <span class="fx-pill fact-pill">15-person crew</span>
+    <span class="fx-pill fact-pill">150+ communities across Greater New England</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything interactive below uses fictional sample jobs and client names.</strong> The company facts in the strip above (founding year, BBB accreditation, contractor registration number, crew size, service area) are sourced from American Gutter's own website and BBB profile. No real American Gutter customer data, job records, or proprietary information is used anywhere on this page.</p></div>
+
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.5rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Log a completed job</div>
+      <div class="samples">
+        <span style="font-size:0.82rem; color:var(--muted);">Try a sample:</span>
+        <button class="fx-btn-ghost sample-chip" data-sample="clean">Standard visit (photo attached)</button>
+        <button class="fx-btn-ghost sample-chip" data-sample="missing">No photo taken (flags a dispute risk)</button>
+      </div>
+      <form id="job-form" class="form-grid" style="margin-top:1rem;">
+        <div class="field"><label for="f-client">Customer name / property address</label><input type="text" id="f-client" required></div>
+        <div class="field"><label for="f-date">Service date</label><input type="date" id="f-date" required></div>
+        <div class="field">
+          <label for="f-service">Service type</label>
+          <select id="f-service" required>
+            <option value="">Select&hellip;</option>
+            <option value="Gutter cleaning">Gutter cleaning</option>
+            <option value="Gutter cap installation">Gutter cap installation</option>
+            <option value="Gutter screen installation">Gutter screen installation</option>
+          </select>
+        </div>
+        <div class="field"><label for="f-tech">Technician / crew lead</label><input type="text" id="f-tech" required></div>
+        <div class="field span2"><label for="f-photo">Completion photo (before invoicing can proceed)</label><input type="file" id="f-photo" accept="image/*" capture="environment"></div>
+        <div id="discrepancy-box"></div>
+        <div class="field span2 check-row"><input type="checkbox" id="f-followup"><label for="f-followup">Flag this job for a manual follow-up / customer callback</label></div>
+        <div class="field span2" style="flex-direction:row; gap:0.6rem;"><button type="submit" class="fx-btn">Complete job &amp; generate proof-of-service record</button></div>
+      </form>
+    </div>
+    <div id="cert-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">Open follow-ups</h2>
+    <p style="color:var(--ink-2); font-size:0.92rem; margin-top:-0.6rem;">This is the piece that was missing when the December 2023 BBB complaints went unresolved: a job with no photo on file stays visibly open here, held from invoicing, until someone attaches proof or resolves it directly with the customer.</p>
+    <div id="followup-root" style="margin-top:1rem;"></div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">Job log</h2>
+    <div id="joblog-root"></div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">Service-listing accuracy check</h2>
+    <p style="color:var(--ink-2); font-size:0.92rem; margin-top:-0.6rem;">A quick audit of the public site, run as part of this build:</p>
+    <div style="margin-top:1rem;">
+      <div class="audit-row"><span>Gutter cleaning, gutter caps, gutter screens</span><span class="badge ok">Live, matches site copy</span></div>
+      <div class="audit-row"><span>24/7 online booking (offered by regional competitor Gutter Cowboy)</span><span class="badge flag">Not available on americangutter.net, phone/email only</span></div>
+    </div>
+    <p style="color:var(--muted); font-size:0.82rem; margin-top:0.8rem;">americangutter.net currently routes every booking through a phone call or an email to mail@americangutter.net during business hours. A production build could pair this proof-of-service log with a lightweight self-serve scheduling form, so the gap against competitors offering 24/7 booking closes at the same time as the records gap.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>Plugs into the existing crew workflow.</b> Technicians already finish a job and move to the next stop; this adds one required photo step on their phone before the job can be marked complete, it doesn't replace how the crew works today.</div>
+      <div class="lim"><b>The record becomes the answer to a dispute, not a guess.</b> Instead of a BBB response saying records can't be produced either way, a timestamped photo tied to the invoice settles it in either direction, for the customer or for the company.</div>
+      <div class="lim"><b>Back to the generic template: <a href="../../index.html">job completion certificate &amp; follow-up tracker</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by American Gutter Cleaning and Installation, Inc.</strong></p><p>Prepared by Shlok Sarnayak. Company facts (founding year, BBB accreditation, contractor registration, crew size, service area) are sourced from American Gutter's own website and BBB listing. All job records, customer names, and photos on this page are fictional samples, not real American Gutter data.</p></footer>
+<script>
+(function () {
+  var STORE_KEY = "cct-demo-joblog-american-gutter";
+  var form = document.getElementById("job-form");
+  var discBox = document.getElementById("discrepancy-box");
+  var certRoot = document.getElementById("cert-root");
+  var followupRoot = document.getElementById("followup-root");
+  var joblogRoot = document.getElementById("joblog-root");
+  var photoInput = document.getElementById("f-photo");
+  var ackNoPhoto = false;
+  var pendingPhotoDataUrl = null;
+
+  var SEED = [
+    { id: "POS-1001", client: "142 Maple St, Andover MA", date: "2026-08-11", service: "Gutter cleaning", tech: "D. Souza", hasPhoto: true, signoff: "", flagged: false, reason: "", loggedAt: Date.now() - 9 * 86400000 },
+    { id: "POS-1002", client: "27 Birchwood Ln, Nashua NH", date: "2026-08-15", service: "Gutter cleaning", tech: "R. Costa", hasPhoto: false, flagged: true, reason: "No completion photo on file, invoicing held pending proof of visit", loggedAt: Date.now() - 5 * 86400000 },
+    { id: "POS-1003", client: "8 Fernwood Ct, Worcester MA", date: "2026-08-19", service: "Gutter cap installation", tech: "D. Souza", hasPhoto: true, flagged: false, reason: "", loggedAt: Date.now() - 1 * 86400000 }
+  ];
+
+  function loadJobs() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (!raw) { saveJobs(SEED); return SEED.slice(); }
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) && parsed.length ? parsed : SEED.slice();
+    } catch (e) { return SEED.slice(); }
+  }
+  function saveJobs(jobs) { localStorage.setItem(STORE_KEY, JSON.stringify(jobs)); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function checkPhoto() {
+    ackNoPhoto = false;
+    pendingPhotoDataUrl = null;
+    discBox.innerHTML = "";
+    if (!photoInput.files || !photoInput.files.length) { return; }
+    var file = photoInput.files[0];
+    var reader = new FileReader();
+    reader.onload = function (ev) { pendingPhotoDataUrl = ev.target.result; };
+    reader.readAsDataURL(file);
+  }
+  photoInput.addEventListener("change", function () {
+    if (!photoInput.files || !photoInput.files.length) {
+      discBox.innerHTML = '<div class="discrepancy field span2"><strong>No completion photo attached.</strong> Without one, this job cannot be confirmed as visited if the customer later disputes it. <label style="display:flex; gap:0.5rem; margin-top:0.5rem; align-items:flex-start;"><input type="checkbox" id="f-ack">I understand this job will be flagged and held from invoicing until a photo is added</label></div>';
+      var ackBox = document.getElementById("f-ack");
+      ackBox.addEventListener("change", function () { ackNoPhoto = ackBox.checked; });
+    } else {
+      checkPhoto();
+    }
+  });
+
+  function renderCert(job) {
+    var photoHtml = job.photoDataUrl
+      ? '<div class="cert-photo"><img src="' + job.photoDataUrl + '" alt="Completion photo"></div>'
+      : (job.hasPhoto ? '<div class="cert-photo"><div class="photo-placeholder">Sample photo on file<br>(illustrative, not shown)</div></div>' : '<div class="cert-photo"><div class="photo-placeholder">No photo on file</div></div>');
+    var html = '<div id="cert-print" class="cert">' +
+      '<h4>Proof-of-Service Record, American Gutter Cleaning &amp; Installations</h4>' +
+      '<div class="line"><span>Record ID</span><span>' + job.id + '</span></div>' +
+      '<div class="line"><span>Customer / address</span><span>' + escapeHtml(job.client) + '</span></div>' +
+      '<div class="line"><span>Service date</span><span>' + job.date + '</span></div>' +
+      '<div class="line"><span>Service type</span><span>' + escapeHtml(job.service) + '</span></div>' +
+      '<div class="line"><span>Technician</span><span>' + escapeHtml(job.tech) + '</span></div>' +
+      '<div class="line"><span>Timestamp captured</span><span>' + new Date(job.loggedAt).toLocaleString() + '</span></div>' +
+      '<div class="line"><span>Invoice status</span><span>' + (job.flagged ? "Held, pending proof" : "Cleared for invoicing") + '</span></div>' +
+      photoHtml +
+      '<p style="margin-top:0.9rem; color:var(--muted); font-size:0.78rem;">In production, this would be generated and attached to the invoice automatically the moment a technician marks the job complete on their phone, instead of relying on memory if a dispute comes up weeks later.</p>' +
+      '</div><button class="fx-btn-ghost" style="margin-top:0.8rem;" onclick="window.print()">Print / save as PDF</button>';
+    certRoot.innerHTML = html;
+  }
+
+  function renderFollowups(jobs) {
+    var open = jobs.filter(function (j) { return j.flagged; });
+    if (!open.length) { followupRoot.innerHTML = '<p class="empty">No open follow-ups.</p>'; return; }
+    var html = '<div class="followup-list">';
+    open.forEach(function (j) {
+      var days = Math.max(0, Math.round((Date.now() - j.loggedAt) / 86400000));
+      html += '<div class="followup-item"><div><b>' + escapeHtml(j.client) + '</b><div class="job-meta">' + escapeHtml(j.reason) + ' &middot; open ' + days + ' day' + (days === 1 ? '' : 's') + '</div></div><button class="fx-btn-ghost" data-resolve="' + j.id + '">Mark resolved</button></div>';
+    });
+    html += '</div>';
+    followupRoot.innerHTML = html;
+    Array.prototype.forEach.call(followupRoot.querySelectorAll("[data-resolve]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var jobs = loadJobs();
+        jobs.forEach(function (j) { if (j.id === btn.getAttribute("data-resolve")) j.flagged = false; });
+        saveJobs(jobs);
+        renderAll();
+      });
+    });
+  }
+
+  function renderJoblog(jobs) {
+    if (!jobs.length) { joblogRoot.innerHTML = '<p class="empty">No jobs logged yet.</p>'; return; }
+    var html = '<div class="job-table">';
+    jobs.slice().reverse().forEach(function (j) {
+      html += '<div class="job-row"><div><b>' + escapeHtml(j.client) + '</b><div class="job-meta">' + j.date + ' &middot; ' + escapeHtml(j.service) + '</div></div><div class="job-meta">' + escapeHtml(j.tech || "") + '</div><span class="badge ' + (j.flagged ? "flag" : "ok") + '">' + (j.flagged ? "Follow-up open" : "Photo on file") + '</span><span class="job-meta">' + j.id + '</span></div>';
+    });
+    html += '</div>';
+    joblogRoot.innerHTML = html;
+  }
+
+  function renderAll() {
+    var jobs = loadJobs();
+    renderFollowups(jobs);
+    renderJoblog(jobs);
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var noPhoto = !photoInput.files || !photoInput.files.length;
+    if (noPhoto && !ackNoPhoto) {
+      var box = discBox.querySelector(".discrepancy");
+      if (box) box.style.outline = "3px solid var(--hot)";
+      return;
+    }
+    var finish = function (photoDataUrl) {
+      var jobs = loadJobs();
+      var id = "POS-" + (1000 + jobs.length + 1);
+      var flagged = document.getElementById("f-followup").checked || noPhoto;
+      var job = {
+        id: id,
+        client: document.getElementById("f-client").value,
+        date: document.getElementById("f-date").value,
+        service: document.getElementById("f-service").value,
+        tech: document.getElementById("f-tech").value,
+        hasPhoto: !noPhoto,
+        photoDataUrl: photoDataUrl || null,
+        flagged: flagged,
+        reason: noPhoto ? "No completion photo on file, invoicing held pending proof of visit" : "Manually flagged for callback",
+        loggedAt: Date.now()
+      };
+      jobs.push(job);
+      saveJobs(jobs);
+      renderCert(job);
+      renderAll();
+      form.reset();
+      discBox.innerHTML = "";
+      pendingPhotoDataUrl = null;
+    };
+    if (!noPhoto && pendingPhotoDataUrl) {
+      finish(pendingPhotoDataUrl);
+    } else if (!noPhoto) {
+      var file = photoInput.files[0];
+      var reader = new FileReader();
+      reader.onload = function (ev) { finish(ev.target.result); };
+      reader.readAsDataURL(file);
+    } else {
+      finish(null);
+    }
+  });
+
+  document.querySelectorAll(".sample-chip").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var kind = btn.getAttribute("data-sample");
+      document.getElementById("f-client").value = kind === "missing" ? "19 Pinehurst Rd, Lowell MA" : "56 Concord Ave, Chelmsford MA";
+      document.getElementById("f-date").value = new Date().toISOString().slice(0, 10);
+      document.getElementById("f-service").value = "Gutter cleaning";
+      document.getElementById("f-tech").value = kind === "missing" ? "R. Costa" : "D. Souza";
+      photoInput.value = "";
+      pendingPhotoDataUrl = null;
+      if (kind === "missing") {
+        discBox.innerHTML = '<div class="discrepancy field span2"><strong>No completion photo attached.</strong> Without one, this job cannot be confirmed as visited if the customer later disputes it. <label style="display:flex; gap:0.5rem; margin-top:0.5rem; align-items:flex-start;"><input type="checkbox" id="f-ack">I understand this job will be flagged and held from invoicing until a photo is added</label></div>';
+        var ackBox = document.getElementById("f-ack");
+        ackBox.addEventListener("change", function () { ackNoPhoto = ackBox.checked; });
+      } else {
+        discBox.innerHTML = "";
+      }
+    });
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
