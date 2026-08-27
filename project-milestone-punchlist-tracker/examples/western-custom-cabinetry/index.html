@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Project milestone &amp; punch-list tracker: working example for Western Custom Cabinetry</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .pmp-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .pmp-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .pmp-tab.active { background: var(--ink); color: var(--surface); }
+  .pmp-view { display: none; }
+  .pmp-view.active { display: block; }
+  .pmp-cols { display: grid; grid-template-columns: 1fr 1.3fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .pmp-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .team-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
+  .team-chip { font-size: 0.76rem; font-weight: 700; padding: 0.32rem 0.7rem; border: 1.5px solid var(--rule); border-radius: 999px; background: var(--surface); color: var(--ink-2); }
+  .threshold-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .threshold-row input { width: 4.5rem; }
+  .job-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .job-title { font-weight: 660; }
+  .job-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.attention { color: var(--hot); background: var(--hot-bg); }
+  .badge.ontrack { color: var(--brand); background: var(--brand-soft); }
+  .badge.done { color: var(--good); background: var(--good-bg); }
+  .badge.punch { color: var(--warn); background: var(--warn-bg); }
+  .job-summary { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; }
+  .job-flag { font-size: 0.84rem; color: var(--hot); margin-top: 0.35rem; font-weight: 650; }
+  .job-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .log { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.8rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); margin-right: 0.4rem; }
+  .log-entry.ping { color: var(--brand); }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 480px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.2rem; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.5rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+  .team-note { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .punch-box { margin-top: 0.8rem; padding-top: 0.7rem; border-top: 1px dashed var(--rule-soft); }
+  .punch-box h4 { margin: 0 0 0.5rem; font-size: 0.82rem; font-weight: 750; color: var(--ink-2); }
+  .punch-item { display: flex; justify-content: space-between; gap: 0.6rem; align-items: baseline; padding: 0.35rem 0; font-size: 0.85rem; border-bottom: 1px solid var(--rule-soft); }
+  .punch-item:last-child { border-bottom: none; }
+  .punch-item-text { flex: 1; }
+  .punch-item-meta { font-size: 0.72rem; color: var(--muted); }
+  .punch-badge { font-family: var(--mono); font-size: 0.6rem; text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 999px; font-weight: 750; white-space: nowrap; }
+  .punch-badge.open { color: var(--hot); background: var(--hot-bg); }
+  .punch-badge.closed { color: var(--good); background: var(--good-bg); }
+  .punch-form-row { display: flex; gap: 0.4rem; margin-top: 0.5rem; }
+  .punch-form-row input { flex: 1; font: inherit; font-size: 0.8rem; padding: 0.4rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .punch-resolution { font-size: 0.78rem; color: var(--ink-2); font-style: italic; margin-top: 0.15rem; }
+  .customer-punch-list { margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--rule-soft); }
+  .customer-punch-list h4 { margin: 0 0 0.5rem; font-size: 0.92rem; font-family: var(--serif); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Project milestone &amp; punch-list tracker</a> / Western Custom Cabinetry</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built around Western Custom Cabinetry's own published facts</span>
+  <h1 class="fx-h1">A $50,000 custom cabinetry order shouldn't be tracked by memory and email</h1>
+  <p class="fx-lede">Western Custom Cabinetry's own site (westerncustomcabinetry.com) has one path in for any project: a "Schedule Consultation" contact form. After that, everything, measuring, ordering, production, shipping, delivery, install and punch-list, is coordinated by phone and email, with no client-facing way to see where a project actually stands. A public BBB complaint on file (filed 10/24/2025) shows exactly this gap in practice: the owner personally coordinating a remeasure and reshipment by hand over email, with no structured record of what was open or closed. Below is a working tool sized to close that gap: every order gets a shared milestone ticket the whole team can see, punch-list items are logged individually and stay open until someone closes them with a note, and the client can check both without a phone call.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> Customer names, order details and dates on this page are sample data, illustrative only, not Western Custom Cabinetry's real client or job records. One sample order below is deliberately shaped to mirror the pattern described in the public BBB complaint (a remeasure needed, punch-list items open for an extended stretch) to make the tool concrete, not because it reflects a real Western customer.</p></div>
+
+  <div class="pmp-tabs">
+    <button class="pmp-tab active" data-view="office" type="button">Team view</button>
+    <button class="pmp-tab" data-view="customer" type="button">Client status check</button>
+  </div>
+
+  <section class="pmp-view active" id="view-office">
+    <div class="team-row">
+      <span class="team-chip">Jeff Friesz &middot; Owner</span>
+      <span class="team-chip">Melissa Kehayes &middot; Senior Designer</span>
+      <span class="team-chip">Betsy Brown &middot; Designer</span>
+      <span class="team-chip">Krista &middot; Designer</span>
+      <span class="team-chip">Sabrina Beard &middot; Designer</span>
+    </div>
+    <div class="threshold-row">
+      <label for="threshold-input" style="font-size:0.82rem;font-weight:700;">Flag an order or open punch item as needing attention after</label>
+      <input type="number" id="threshold-input" min="1" value="14">
+      <span style="font-size:0.82rem;color:var(--ink-2);">days with no change</span>
+    </div>
+    <div class="pmp-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new order</h2>
+        <form id="add-form" class="form-grid">
+          <div class="field span2"><label for="f-customer">Customer name</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
+          <div class="field span2"><label for="f-item">Order description</label><input type="text" id="f-item" placeholder="e.g. Kitchen cabinetry package"></div>
+          <div class="field"><label for="f-stage">Starting stage</label><select id="f-stage"></select></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
+        </form>
+        <p class="team-note">Jeff, Melissa, Betsy, Krista and Sabrina all see this same queue at once, no separate login or handoff needed.</p>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Shared order queue, flagged first</h2>
+        <div id="queue-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pmp-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check the status of an order</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Order reference number</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. WCC-1001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try WCC-1001, WCC-1002, WCC-1003 or WCC-1004 from the team view's sample queue. Replaces calling the shop to ask "where is my project."</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The order number is whatever Western already uses.</b> A real build reads from the existing project or contract number instead of inventing a new one for the client to remember.</div>
+      <div class="lim"><b>Punch-list items here are logged by staff on the spot.</b> A real build can also let the client flag a punch-list item themselves after the install walkthrough, still landing in the same shared, closeable list, instead of an email that can get lost for months.</div>
+      <div class="lim"><b>This does not replace the design team's judgment.</b> It only makes a stalled measure, a delayed shipment, or an open punch-list item visible to the whole team automatically, instead of surfacing only when a client calls to ask.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Western Custom Cabinetry, LLC.</strong></p><p>Prepared by Shlok Sarnayak. Fictional order and customer data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "pmp_western_custom_cabinetry_v1";
+  var REF_PREFIX = "WCC-";
+
+  var STAGES = [
+    { key: "measured", label: "Measured" },
+    { key: "ordered", label: "Ordered" },
+    { key: "in_production", label: "In production" },
+    { key: "shipped", label: "Shipped" },
+    { key: "delivered", label: "Delivered" },
+    { key: "installed", label: "Installed" }
+  ];
+  var STAGE_INDEX = {}; STAGES.forEach(function (s, i) { STAGE_INDEX[s.key] = i; });
+  var LAST_STAGE = STAGES.length - 1;
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function daysFromNow(d) { return Date.now() + d * 86400000; }
+  function daysAgo(ts) { return (Date.now() - ts) / 86400000; }
+  function fmtDuration(days) {
+    if (days < 1) return "under a day";
+    return Math.round(days) + (Math.round(days) === 1 ? " day" : " days");
+  }
+  function pingText(stageLabel) { return "Status update logged for client: order is now " + stageLabel + "."; }
+
+  function defaultData() {
+    return {
+      seq: 1004,
+      jobs: [
+        {
+          id: REF_PREFIX + "1001", ref: REF_PREFIX + "1001", customer: "Sample Customer A", item: "Kitchen cabinetry package, remeasure requested",
+          stageIdx: 0, enteredStageAt: daysFromNow(-19), complete: false,
+          history: [{ stage: "measured", at: daysFromNow(-19) }],
+          notes: [{ at: daysFromNow(-19), text: pingText("Measured"), ping: true }],
+          punch: []
+        },
+        {
+          id: REF_PREFIX + "1002", ref: REF_PREFIX + "1002", customer: "Sample Customer B", item: "Bath vanity, custom Amish-built",
+          stageIdx: 2, enteredStageAt: daysFromNow(-4), complete: false,
+          history: [{ stage: "measured", at: daysFromNow(-25) }, { stage: "ordered", at: daysFromNow(-18) }, { stage: "in_production", at: daysFromNow(-4) }],
+          notes: [{ at: daysFromNow(-4), text: pingText("In production"), ping: true }],
+          punch: []
+        },
+        {
+          id: REF_PREFIX + "1003", ref: REF_PREFIX + "1003", customer: "Sample Customer C", item: "Whole-kitchen design-build cabinetry",
+          stageIdx: LAST_STAGE, enteredStageAt: daysFromNow(-45), complete: false,
+          history: [{ stage: "measured", at: daysFromNow(-140) }, { stage: "ordered", at: daysFromNow(-120) }, { stage: "in_production", at: daysFromNow(-95) }, { stage: "shipped", at: daysFromNow(-55) }, { stage: "delivered", at: daysFromNow(-48) }, { stage: "installed", at: daysFromNow(-45) }],
+          notes: [{ at: daysFromNow(-45), text: pingText("Installed"), ping: true }],
+          punch: [
+            { id: 1, text: "Cabinet door remeasure needed, hinge side reversed on two uppers", openedAt: daysFromNow(-44), closedAt: null, resolution: null },
+            { id: 2, text: "Reshipped filler panel not yet received from supplier", openedAt: daysFromNow(-30), closedAt: null, resolution: null },
+            { id: 3, text: "Scuffed panel, island end cap", openedAt: daysFromNow(-44), closedAt: daysFromNow(-16), resolution: "Panel refinished on site, customer signed off." }
+          ]
+        },
+        {
+          id: REF_PREFIX + "1004", ref: REF_PREFIX + "1004", customer: "Sample Customer D", item: "Laundry and mudroom built-ins",
+          stageIdx: LAST_STAGE, enteredStageAt: daysFromNow(-38), complete: true,
+          history: [{ stage: "measured", at: daysFromNow(-70) }, { stage: "ordered", at: daysFromNow(-60) }, { stage: "in_production", at: daysFromNow(-50) }, { stage: "shipped", at: daysFromNow(-40) }, { stage: "delivered", at: daysFromNow(-39) }, { stage: "installed", at: daysFromNow(-38) }],
+          notes: [{ at: daysFromNow(-38), text: pingText("Installed"), ping: true }, { at: daysFromNow(-31), text: "All punch-list items closed. Project marked complete.", ping: true }],
+          punch: [
+            { id: 1, text: "Touch-up stain, one drawer front", openedAt: daysFromNow(-37), closedAt: daysFromNow(-31), resolution: "Touched up on follow-up visit, customer confirmed." }
+          ]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function getThreshold() {
+    var v = parseInt(document.getElementById("threshold-input").value, 10);
+    return isNaN(v) || v < 1 ? 14 : v;
+  }
+
+  function openPunchItems(j) { return j.punch.filter(function (p) { return !p.closedAt; }); }
+
+  function statusInfo(j, threshold) {
+    if (j.complete) return { cls: "done", label: "Complete", flag: null };
+    var open = openPunchItems(j);
+    if (j.stageIdx >= LAST_STAGE) {
+      var oldOpen = open.filter(function (p) { return daysAgo(p.openedAt) > threshold; });
+      if (oldOpen.length) return { cls: "attention", label: "Needs attention", flag: oldOpen.length + " open punch-list item" + (oldOpen.length === 1 ? "" : "s") + " past " + threshold + " days." };
+      if (open.length) return { cls: "punch", label: "Punch-list open", flag: null };
+      return { cls: "ontrack", label: "Ready to close out", flag: null };
+    }
+    var stuckDays = daysAgo(j.enteredStageAt);
+    if (stuckDays > threshold) {
+      var reason = "Stalled in \"" + STAGES[j.stageIdx].label + "\", " + fmtDuration(stuckDays) + " with no stage change.";
+      return { cls: "attention", label: "Needs attention", flag: reason };
+    }
+    return { cls: "ontrack", label: "On track", flag: null };
+  }
+
+  function populateStageSelect() {
+    var sel = document.getElementById("f-stage");
+    sel.innerHTML = STAGES.map(function (s) { return '<option value="' + s.key + '">' + escapeHtml(s.label) + "</option>"; }).join("");
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var threshold = getThreshold();
+    var open = data.jobs.filter(function (j) { return !j.complete; }).slice();
+    open.sort(function (a, b) {
+      var fa = statusInfo(a, threshold).flag ? 0 : 1;
+      var fb = statusInfo(b, threshold).flag ? 0 : 1;
+      if (fa !== fb) return fa - fb;
+      return daysAgo(b.enteredStageAt) - daysAgo(a.enteredStageAt);
+    });
+    var done = data.jobs.filter(function (j) { return j.complete; })
+      .slice().sort(function (a, b) { return b.enteredStageAt - a.enteredStageAt; });
+    var html = "";
+    if (!open.length) html += '<p class="empty">Nothing open. Every order is caught up.</p>';
+    open.forEach(function (j) { html += renderCard(j, threshold); });
+    if (done.length) {
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently completed</h3>';
+      done.slice(0, 5).forEach(function (j) { html += renderCard(j, threshold); });
+    }
+    root.innerHTML = html;
+  }
+
+  function renderPunchList(j, idx, threshold) {
+    var html = '<div class="punch-box"><h4>Punch-list</h4>';
+    if (!j.punch.length) {
+      html += '<p class="empty" style="margin:0 0 0.4rem;">No punch-list items logged yet.</p>';
+    } else {
+      j.punch.forEach(function (p) {
+        var isOpen = !p.closedAt;
+        html += '<div class="punch-item"><div class="punch-item-text">' + escapeHtml(p.text) + '<div class="punch-item-meta">Opened ' + fmtDate(p.openedAt) + (p.closedAt ? " &middot; Closed " + fmtDate(p.closedAt) : "") + '</div>';
+        if (p.resolution) html += '<div class="punch-resolution">' + escapeHtml(p.resolution) + '</div>';
+        html += '</div><div>';
+        html += '<span class="punch-badge ' + (isOpen ? "open" : "closed") + '">' + (isOpen ? "Open" : "Closed") + '</span>';
+        if (isOpen) html += '<div style="margin-top:0.3rem;"><button class="fx-btn-ghost" style="padding:0.3rem 0.6rem;font-size:0.72rem;" onclick="__pmp.closePunch(' + idx + ',' + p.id + ')">Close</button></div>';
+        html += '</div></div>';
+      });
+    }
+    if (j.stageIdx >= LAST_STAGE) {
+      html += '<div class="punch-form-row"><input type="text" id="punch-input-' + idx + '" placeholder="Describe a punch-list item"><button class="fx-btn-ghost" onclick="__pmp.addPunch(' + idx + ')">Log item</button></div>';
+      if (!j.complete && !openPunchItems(j).length && j.punch.length) {
+        html += '<div style="margin-top:0.6rem;"><button class="fx-btn-ghost" onclick="__pmp.markComplete(' + idx + ')">Mark project complete</button></div>';
+      }
+    }
+    html += "</div>";
+    return html;
+  }
+
+  function renderCard(j, threshold) {
+    var st = statusInfo(j, threshold);
+    var idx = data.jobs.indexOf(j);
+    var stageLabel = STAGES[j.stageIdx].label;
+    var html = '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(j.customer) + " &middot; " + j.ref + '</div><div class="job-meta">' + escapeHtml(j.item) + "</div></div><span>";
+    html += '<span class="badge ' + st.cls + '">' + st.label + "</span></span></div>";
+    html += '<div class="job-summary">Stage: ' + stageLabel + (j.stageIdx < LAST_STAGE ? " (" + fmtDuration(daysAgo(j.enteredStageAt)) + " in this stage)" : "") + "</div>";
+    if (st.flag) html += '<div class="job-flag">&#9888; ' + escapeHtml(st.flag) + "</div>";
+    if (j.notes.length) {
+      html += '<div class="log">';
+      j.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry' + (n.ping ? " ping" : "") + '"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+      html += "</div>";
+    }
+    if (j.stageIdx < LAST_STAGE) {
+      var nextLabel = STAGES[j.stageIdx + 1].label;
+      html += '<div class="job-actions"><button class="fx-btn-ghost" onclick="__pmp.advance(' + idx + ')">Advance to ' + escapeHtml(nextLabel) + '</button></div>';
+    }
+    html += renderPunchList(j, idx, threshold);
+    html += "</div>";
+    return html;
+  }
+
+  window.__pmp = {
+    advance: function (idx) {
+      var j = data.jobs[idx];
+      j.stageIdx += 1;
+      j.enteredStageAt = Date.now();
+      var label = STAGES[j.stageIdx].label;
+      j.history.push({ stage: STAGES[j.stageIdx].key, at: Date.now() });
+      j.notes.push({ at: Date.now(), text: pingText(label), ping: true });
+      save(); renderQueue();
+    },
+    addPunch: function (idx) {
+      var input = document.getElementById("punch-input-" + idx);
+      var text = input.value.trim();
+      if (!text) return;
+      var j = data.jobs[idx];
+      var nextId = j.punch.reduce(function (m, p) { return Math.max(m, p.id); }, 0) + 1;
+      j.punch.push({ id: nextId, text: text, openedAt: Date.now(), closedAt: null, resolution: null });
+      save(); renderQueue();
+    },
+    closePunch: function (idx, punchId) {
+      var res = prompt("Resolution note for this punch-list item:");
+      if (res === null) return;
+      var j = data.jobs[idx];
+      var p = j.punch.filter(function (x) { return x.id === punchId; })[0];
+      if (!p) return;
+      p.closedAt = Date.now();
+      p.resolution = res.trim() || "Resolved.";
+      save(); renderQueue();
+    },
+    markComplete: function (idx) {
+      var j = data.jobs[idx];
+      j.complete = true;
+      j.notes.push({ at: Date.now(), text: "All punch-list items closed. Project marked complete.", ping: true });
+      save(); renderQueue();
+    }
+  };
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("f-customer").value.trim();
+    var item = document.getElementById("f-item").value.trim();
+    var stageKey = document.getElementById("f-stage").value;
+    if (!customer || !item) { alert("Fill in the customer name and order description."); return; }
+    data.seq += 1;
+    var ref = REF_PREFIX + data.seq;
+    var now = Date.now();
+    var stageIdx = STAGE_INDEX[stageKey];
+    data.jobs.push({ id: ref, ref: ref, customer: customer, item: item, stageIdx: stageIdx, enteredStageAt: now, complete: false, history: [{ stage: stageKey, at: now }], notes: [{ at: now, text: pingText(STAGES[stageIdx].label), ping: true }], punch: [] });
+    save(); renderQueue();
+    document.getElementById("add-form").reset();
+    populateStageSelect();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue();
+  });
+
+  document.getElementById("threshold-input").addEventListener("input", renderQueue);
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var j = data.jobs.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
+    if (!j) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No record found for that order number. Please contact us directly.</p></div>'; return; }
+    var html = '<div class="lookup-result"><h3>' + escapeHtml(j.item) + '</h3>';
+    STAGES.forEach(function (s, i) {
+      var cls = i < j.stageIdx ? "done" : (i === j.stageIdx ? "active" : "pending");
+      var histEntry = j.history.filter(function (h) { return h.stage === s.key; })[0];
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === "pending" ? " pending-text" : "") + '">' + s.label + '</div><div class="stage-time">' + (histEntry ? fmtDate(histEntry.at) : (cls === "active" ? "In progress" : "Not started")) + "</div></div></div>";
+    });
+    if (j.stageIdx >= LAST_STAGE) {
+      html += '<div class="customer-punch-list"><h4>Punch-list items</h4>';
+      if (!j.punch.length) {
+        html += '<p class="empty">No punch-list items on this order.</p>';
+      } else {
+        j.punch.forEach(function (p) {
+          var isOpen = !p.closedAt;
+          html += '<div class="punch-item"><div class="punch-item-text">' + escapeHtml(p.text) + '<div class="punch-item-meta">Opened ' + fmtDate(p.openedAt) + (p.closedAt ? " &middot; Closed " + fmtDate(p.closedAt) : "") + '</div>';
+          if (p.resolution) html += '<div class="punch-resolution">' + escapeHtml(p.resolution) + '</div>';
+          html += '</div><span class="punch-badge ' + (isOpen ? "open" : "closed") + '">' + (isOpen ? "Open" : "Closed") + '</span></div>';
+        });
+      }
+      html += "</div>";
+      if (j.complete) html += '<p style="margin-top:1rem;color:var(--good);font-weight:650;font-size:0.88rem;">Project complete.</p>';
+    }
+    html += "</div>";
+    root.innerHTML = html;
+  });
+
+  document.querySelectorAll(".pmp-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".pmp-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".pmp-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  populateStageSelect();
+  renderQueue();
+})();
+</script>
+</body>
+</html>
