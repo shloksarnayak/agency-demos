@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>CFS Fire Protection, multi-system inspection compliance board (work sample)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .fact { font-family: var(--mono); font-size: 0.74rem; padding: 0.45rem 0.75rem; border: 1.5px solid var(--ink); border-radius: 999px; background: var(--surface-2); box-shadow: 2px 2px 0 var(--ink); }
+  .intake-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+  .intake-grid label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.82rem; font-weight: 700; color: var(--ink-2); }
+  .intake-grid input, .intake-grid select { width: 100%; padding: 0.65rem 0.8rem; }
+  .intake-full { grid-column: 1 / -1; }
+  @media (max-width: 640px) { .intake-grid { grid-template-columns: 1fr; } }
+  .account { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); margin-bottom: 1rem; }
+  .account:last-child { margin-bottom: 0; }
+  .account-head { background: var(--surface-2); padding: 0.7rem 1.1rem; font-weight: 700; font-size: 0.86rem; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; }
+  .account-head-note { font-weight: 400; font-size: 0.72rem; color: var(--muted); font-family: var(--mono); }
+  .row { background: var(--surface); padding: 0.95rem 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr auto auto; gap: 1rem; align-items: center; }
+  .row-name { font-weight: 700; }
+  .row-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .row-due { font-family: var(--mono); font-size: 0.82rem; }
+  .status { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.3rem 0.65rem; border-radius: 999px; white-space: nowrap; text-align: center; }
+  .status.ok { color: var(--good); background: var(--good-bg); }
+  .status.soon { color: var(--warn); background: var(--warn-bg); }
+  .status.late { color: var(--hot); background: var(--hot-bg); }
+  .remind-btn { font: 700 0.72rem/1 var(--sans); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 2px solid var(--ink); background: var(--aqua); cursor: pointer; box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
+  .remind-btn:hover { transform: translateY(-1px); }
+  .remind-btn.sent { background: var(--surface-2); cursor: default; }
+  .remind-note { font-size: 0.68rem; color: var(--muted); margin-top: 0.2rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  @media (max-width: 700px) { .row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Compliance scheduler</a> / CFS Fire Protection</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Built as a work sample for CFS Fire Protection, not a live system</span>
+  <h1 class="fx-h1">One client site, four fire systems, four different NFPA due dates</h1>
+  <p class="fx-lede">CFS Fire Protection inspects extinguishers, kitchen suppression systems, sprinkler systems, and hydrants for restaurants, gas stations, apartment complexes, and hotels across Northern California, entirely by phone and email today. Each system type has its own NFPA-mandated interval, and a client site can have several of them running at once. This page shows what a due-date board that tracks every system per site, not just one blended reminder, could look like, using fictional sample accounts.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by CFS Fire Protection, Inc.</strong> The account names, addresses, and inspection history below are fictional. Nothing on this page sends a real email or text, "send reminder" only logs a simulated timestamp in your own browser.</p></div>
+
+  <section class="fx-card" style="display:flex; flex-direction:column; gap:1rem;">
+    <div class="fact-strip">
+      <span class="fact">Orangevale, CA · 19 years (BBB file opened 5/1/2007)</span>
+      <span class="fact">Licensed contractor #936532</span>
+      <span class="fact">30+ Northern California cities served</span>
+      <span class="fact">Current intake: phone (866) 584-3473 &amp; email only</span>
+    </div>
+    <p style="margin:0; font-size:0.85rem; color:var(--muted);">Facts above are drawn directly from cfsfireprotection.com's own published copy and its BBB profile, nothing here is invented about the business itself.</p>
+  </section>
+
+  <section class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Client site compliance board (fictional sample accounts)</div>
+      <p style="margin:0.5rem 0 0; font-size:0.85rem; color:var(--ink-2);">Each site can carry more than one system. Every system keeps its own last-inspection date, its own NFPA interval, and its own due date, one going overdue never masks another on the same site.</p>
+      <div id="board-root" style="margin-top:0.9rem;"></div>
+    </div>
+  </section>
+
+  <section class="fx-card" style="display:flex; flex-direction:column; gap:1.1rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">New site / system record</div>
+      <p style="margin:0.5rem 0 0; font-size:0.88rem; color:var(--ink-2);">Fills the role of the phone call or email CFS gets today. Type an existing site name to add a second system to that same site, or a new name to start one. The NFPA interval and next due date are computed automatically from the system type, not typed in by hand.</p>
+    </div>
+    <form id="intake-form" class="intake-grid">
+      <label>Site / account name<input type="text" id="f-account" list="account-list" placeholder="e.g. Example Quick-Service Restaurant" required>
+        <datalist id="account-list"></datalist>
+      </label>
+      <label>System type
+        <select id="f-system">
+          <option value="extinguisher" selected>Fire extinguisher (NFPA 10, annual)</option>
+          <option value="kitchen_suppression">Kitchen fire suppression (NFPA 96, semi-annual)</option>
+          <option value="sprinkler">Fire sprinkler system (NFPA 25, annual)</option>
+          <option value="hydrant">Fire hydrant (NFPA 25, annual)</option>
+        </select>
+      </label>
+      <label class="intake-full">Site address<input type="text" id="f-address" placeholder="e.g. 1400 Example Ave, Sacramento, CA (fictional)" required></label>
+      <label>Last inspection date<input type="date" id="f-lastdate" required></label>
+      <label>Contact email<input type="email" id="f-email" placeholder="name@example.com" required></label>
+      <div class="intake-full" style="display:flex; gap:0.7rem; align-items:center; flex-wrap:wrap;">
+        <button type="submit" class="fx-btn">Add system to schedule</button>
+        <span id="intake-msg" style="font-size:0.85rem; color:var(--muted);"></span>
+      </div>
+    </form>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">Why this, specifically, for CFS Fire Protection</h2>
+    <div class="limits">
+      <div class="lim"><b>Matches the researched offer, not a generic reminder.</b> CFS's own client testimonials describe staff tracking each site's inspection due dates by memory and calling ahead of expiration (ARCO AM/PM: "They come in on a schedule so we don't have to worry about Passing our Annual Fire Extinguisher Inspections"). That process works today, this board is what it looks like once it doesn't have to live in one person's head, across every system type a site actually carries, not just extinguishers.</div>
+      <div class="lim"><b>One site, several systems, several clocks.</b> A single client (a restaurant, say) can need extinguisher, kitchen suppression, and sprinkler inspections on three different schedules. The "Sample Quick-Service Restaurant" row below models that shape, one site name, three systems, three independently tracked due dates, none of them hidden behind whichever one is checked most often.</div>
+      <div class="lim"><b>No visible complaint here, and that's stated plainly.</b> Every review found for CFS across BBB, Yelp, Birdeye, and Facebook is positive, several specifically praise the current manual reminder process. This isn't pitched as fixing something broken, it's what lets a well-liked manual process keep working as the client list CFS's own site describes (30+ Northern California cities) keeps growing.</div>
+      <div class="lim"><b>Larger competitors already run this digitally.</b> Cintas runs a full online "Fire Extinguisher Service &amp; Inspections" presence, and Performance Systems Integrated invites customers to set up an inspection program online. Smaller independent NorCal shops mostly don't, so this isn't about matching every competitor, it's about CFS not falling behind the largest ones as it scales.</div>
+      <div class="lim"><b>Back to the generic pattern: <a href="../../">recurring service compliance scheduler template</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by CFS Fire Protection, Inc.</strong></p><p>Prepared by Shlok Sarnayak. Fictional account data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  var STORE_KEY = "fx-compliance-demo-cfsfireprotection";
+  var SYSTEM_TYPES = {
+    extinguisher: { months: 12, label: "Fire extinguisher", code: "NFPA 10, annual" },
+    kitchen_suppression: { months: 6, label: "Kitchen fire suppression", code: "NFPA 96, semi-annual" },
+    sprinkler: { months: 12, label: "Sprinkler system", code: "NFPA 25, annual" },
+    hydrant: { months: 12, label: "Fire hydrant", code: "NFPA 25, annual" }
+  };
+  var SEED_ACCOUNTS = [
+    {
+      id: "seed-acc-1",
+      name: "Sample Quick-Service Restaurant, Citrus Heights (fictional)",
+      systems: [
+        { id: "seed-1a", type: "extinguisher", lastInspected: daysAgo(300) },
+        { id: "seed-1b", type: "kitchen_suppression", lastInspected: daysAgo(150) },
+        { id: "seed-1c", type: "sprinkler", lastInspected: daysAgo(340) }
+      ]
+    },
+    {
+      id: "seed-acc-2",
+      name: "Example Fuel & Convenience Stop, Rosemont (fictional)",
+      systems: [
+        { id: "seed-2a", type: "extinguisher", lastInspected: daysAgo(370) }
+      ]
+    },
+    {
+      id: "seed-acc-3",
+      name: "Sample Extended-Stay Hotel, Roseville (fictional)",
+      systems: [
+        { id: "seed-3a", type: "extinguisher", lastInspected: daysAgo(60) },
+        { id: "seed-3b", type: "sprinkler", lastInspected: daysAgo(200) },
+        { id: "seed-3c", type: "hydrant", lastInspected: daysAgo(355) }
+      ]
+    }
+  ];
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); }
+  function addMonths(iso, months) { var d = new Date(iso + "T00:00:00"); d.setMonth(d.getMonth() + months); return d; }
+  function fmt(d) { return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
+  function loadExtra() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); } catch (e) { return []; } }
+  function saveExtra(list) { try { localStorage.setItem(STORE_KEY, JSON.stringify(list)); } catch (e) {} }
+  function loadReminders() { try { return JSON.parse(localStorage.getItem(STORE_KEY + "-reminders") || "{}"); } catch (e) { return {}; } }
+  function saveReminders(obj) { try { localStorage.setItem(STORE_KEY + "-reminders", JSON.stringify(obj)); } catch (e) {} }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function allAccounts() {
+    var extra = loadExtra();
+    var byName = {};
+    var order = [];
+    SEED_ACCOUNTS.forEach(function (a) { byName[a.name.toLowerCase()] = { id: a.id, name: a.name, systems: a.systems.slice() }; order.push(a.name.toLowerCase()); });
+    extra.forEach(function (s) {
+      var key = s.accountName.toLowerCase();
+      if (!byName[key]) { byName[key] = { id: "acc-" + key.replace(/[^a-z0-9]+/g, "-"), name: s.accountName, systems: [] }; order.push(key); }
+      byName[key].systems.push({ id: s.id, type: s.type, lastInspected: s.lastInspected, address: s.address, email: s.email });
+    });
+    return order.map(function (k) { return byName[k]; });
+  }
+
+  function render() {
+    var accounts = allAccounts();
+    var reminders = loadReminders();
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var html = "";
+    accounts.forEach(function (acc) {
+      html += '<div class="account">';
+      html += '<div class="account-head"><span>' + escapeHtml(acc.name) + '</span><span class="account-head-note">' + acc.systems.length + ' system' + (acc.systems.length === 1 ? "" : "s") + ' tracked on this site</span></div>';
+      acc.systems.forEach(function (s) {
+        var sys = SYSTEM_TYPES[s.type];
+        var due = addMonths(s.lastInspected, sys.months);
+        var days = Math.round((due - today) / 86400000);
+        var cls = "ok", label = "Compliant";
+        if (days < 0) { cls = "late"; label = "Overdue"; }
+        else if (days <= 30) { cls = "soon"; label = "Due soon"; }
+        var sentAt = reminders[s.id];
+        html += '<div class="row">' +
+          '<div><div class="row-name">' + sys.label + '</div><div class="row-sub">' + sys.code + (s.address ? ' · ' + escapeHtml(s.address) : '') + '</div></div>' +
+          '<div class="row-due">Next due: ' + fmt(due) + '</div>' +
+          '<div class="status ' + cls + '">' + label + '</div>' +
+          '<div><button class="remind-btn' + (sentAt ? ' sent' : '') + '" data-id="' + s.id + '">' + (sentAt ? "Reminder sent ✓" : "Send reminder") + '</button>' +
+          (sentAt ? '<div class="remind-note">' + sentAt + ' (simulated)</div>' : '<div class="remind-note">simulated, no message sent</div>') +
+          '</div></div>';
+      });
+      html += '</div>';
+    });
+    document.getElementById("board-root").innerHTML = html;
+    var list = document.getElementById("account-list");
+    list.innerHTML = accounts.map(function (a) { return '<option value="' + escapeHtml(a.name) + '">'; }).join("");
+    Array.prototype.forEach.call(document.querySelectorAll(".remind-btn"), function (b) {
+      b.addEventListener("click", function () {
+        if (b.classList.contains("sent")) return;
+        var reminders2 = loadReminders();
+        reminders2[b.dataset.id] = new Date().toLocaleString();
+        saveReminders(reminders2);
+        render();
+      });
+    });
+  }
+
+  document.getElementById("intake-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var accountName = document.getElementById("f-account").value.trim();
+    var type = document.getElementById("f-system").value;
+    var address = document.getElementById("f-address").value.trim();
+    var lastdate = document.getElementById("f-lastdate").value || new Date().toISOString().slice(0, 10);
+    var email = document.getElementById("f-email").value.trim();
+    if (!accountName || !address || !email) return;
+    var extra = loadExtra();
+    extra.push({ id: "custom-" + Date.now(), accountName: accountName, type: type, address: address + " (added via form, fictional)", lastInspected: lastdate, email: email });
+    saveExtra(extra);
+    var sys = SYSTEM_TYPES[type];
+    var due = addMonths(lastdate, sys.months);
+    document.getElementById("intake-msg").textContent = "Added to " + accountName + ". Next due date computed: " + fmt(due) + " (" + sys.code + ").";
+    document.getElementById("intake-form").reset();
+    document.getElementById("f-system").value = "extinguisher";
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
