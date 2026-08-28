@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Overhead Hoist &amp; Crane Specialists, inspection compliance board (work sample)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .fact { font-family: var(--mono); font-size: 0.74rem; padding: 0.45rem 0.75rem; border: 1.5px solid var(--ink); border-radius: 999px; background: var(--surface-2); box-shadow: 2px 2px 0 var(--ink); }
+  .intake-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+  .intake-grid label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.82rem; font-weight: 700; color: var(--ink-2); }
+  .intake-grid input, .intake-grid select { width: 100%; padding: 0.65rem 0.8rem; }
+  .intake-full { grid-column: 1 / -1; }
+  @media (max-width: 640px) { .intake-grid { grid-template-columns: 1fr; } }
+  .account { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); margin-bottom: 1rem; }
+  .account:last-child { margin-bottom: 0; }
+  .account-head { background: var(--surface-2); padding: 0.7rem 1.1rem; font-weight: 700; font-size: 0.86rem; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; }
+  .account-head-note { font-weight: 400; font-size: 0.72rem; color: var(--muted); font-family: var(--mono); }
+  .row { background: var(--surface); padding: 0.95rem 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr auto auto; gap: 1rem; align-items: center; }
+  .row-name { font-weight: 700; }
+  .row-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+  .row-due { font-family: var(--mono); font-size: 0.82rem; }
+  .status { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.3rem 0.65rem; border-radius: 999px; white-space: nowrap; text-align: center; }
+  .status.ok { color: var(--good); background: var(--good-bg); }
+  .status.soon { color: var(--warn); background: var(--warn-bg); }
+  .status.late { color: var(--hot); background: var(--hot-bg); }
+  .remind-btn { font: 700 0.72rem/1 var(--sans); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 2px solid var(--ink); background: var(--aqua); cursor: pointer; box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
+  .remind-btn:hover { transform: translateY(-1px); }
+  .remind-btn.sent { background: var(--surface-2); cursor: default; }
+  .remind-note { font-size: 0.68rem; color: var(--muted); margin-top: 0.2rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  @media (max-width: 700px) { .row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Compliance scheduler</a> / Overhead Hoist &amp; Crane Specialists</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Built as a work sample for Overhead Hoist &amp; Crane Specialists, Inc. (OHCSI), not a live system</span>
+  <h1 class="fx-h1">One industrial client, several cranes and hoists, several inspection clocks</h1>
+  <p class="fx-lede">OHCSI sells, installs, load-tests, and inspects bridge, gantry, monorail, jib, and workstation cranes plus overhead hoists for industrial, energy, and construction clients, entirely by phone, generic contact form, and email today. A single client site can run several pieces of equipment at once, each due for its next OSHA/ASME periodic inspection on its own schedule. This page shows what a due-date board that tracks every piece of equipment per site, not one blended reminder, could look like, using fictional sample accounts.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Overhead Hoist &amp; Crane Specialists, Inc.</strong> The account names, addresses, and inspection history below are fictional. Nothing on this page sends a real email or text, "send reminder" only logs a simulated timestamp in your own browser.</p></div>
+
+  <section class="fx-card" style="display:flex; flex-direction:column; gap:1rem;">
+    <div class="fact-strip">
+      <span class="fact">Cokato, MN · founded 10/22/2002 (23+ years)</span>
+      <span class="fact">BBB Accredited since 8/10/2023 · A+ rating, zero complaints on file</span>
+      <span class="fact">Inspections governed under OSHA 1910.179(j)(3) &amp; the ASME B30 series, per ohcsi.com</span>
+      <span class="fact">Current intake: phone &amp; generic contact form only</span>
+    </div>
+    <p style="margin:0; font-size:0.85rem; color:var(--muted);">Facts above are drawn directly from ohcsi.com's own published copy and its BBB profile, nothing here is invented about the business itself. Inspection-frequency tiers below (normal/heavy/severe service) reflect OSHA 1910.179(j)(3)'s own published service-classification system, not a number OHCSI's site states itself.</p>
+  </section>
+
+  <section class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Client site compliance board (fictional sample accounts)</div>
+      <p style="margin:0.5rem 0 0; font-size:0.85rem; color:var(--ink-2);">Each site can carry more than one piece of equipment. Every piece keeps its own last-inspection date, its own service classification, and its own computed due date, one going overdue never masks another on the same site.</p>
+      <div id="board-root" style="margin-top:0.9rem;"></div>
+    </div>
+  </section>
+
+  <section class="fx-card" style="display:flex; flex-direction:column; gap:1.1rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">New site / equipment record</div>
+      <p style="margin:0.5rem 0 0; font-size:0.88rem; color:var(--ink-2);">Fills the role of the phone call or contact-form message OHCSI gets today. Type an existing site name to add a second piece of equipment to that same site, or a new name to start one. The inspection interval and next due date are computed automatically from the equipment type and service classification, not typed in by hand.</p>
+    </div>
+    <form id="intake-form" class="intake-grid">
+      <label>Site / account name<input type="text" id="f-account" list="account-list" placeholder="e.g. Example Fabrication Plant" required>
+        <datalist id="account-list"></datalist>
+      </label>
+      <label>Equipment type
+        <select id="f-equip">
+          <option value="bridge" selected>Bridge crane</option>
+          <option value="gantry">Gantry crane</option>
+          <option value="monorail">Monorail crane / hoist system</option>
+          <option value="jib">Jib crane</option>
+          <option value="workstation">Workstation crane</option>
+          <option value="hoist">Overhead hoist</option>
+        </select>
+      </label>
+      <label>Service classification
+        <select id="f-class">
+          <option value="normal" selected>Normal service (annual)</option>
+          <option value="heavy">Heavy service (semi-annual)</option>
+          <option value="severe">Severe service (quarterly)</option>
+        </select>
+      </label>
+      <label>Last inspection date<input type="date" id="f-lastdate" required></label>
+      <label class="intake-full">Site address<input type="text" id="f-address" placeholder="e.g. 100 Example Industrial Pkwy, Cokato, MN (fictional)" required></label>
+      <label>Contact email<input type="email" id="f-email" placeholder="name@example.com" required></label>
+      <div class="intake-full" style="display:flex; gap:0.7rem; align-items:center; flex-wrap:wrap;">
+        <button type="submit" class="fx-btn">Add equipment to schedule</button>
+        <span id="intake-msg" style="font-size:0.85rem; color:var(--muted);"></span>
+      </div>
+    </form>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">Why this, specifically, for OHCSI</h2>
+    <div class="limits">
+      <div class="lim"><b>Matches a current, first-party pain signal.</b> OHCSI's own employment page currently lists an active Service Manager opening whose stated responsibilities include "assist with scheduling service work, including annual crane inspections and emergency repairs," alongside hiring at least three more technicians. That's a present-tense admission that scheduling load is a live operational strain, not an inferred gap. This board is the tool that supports whoever takes that scheduling role, it doesn't replace them.</div>
+      <div class="lim"><b>One site, several cranes and hoists, several clocks.</b> An industrial client can run a bridge crane, a jib crane, and an overhead hoist on three different inspection classifications at once. The sample accounts below model that shape, one site, multiple equipment records, each with its own independently tracked due date, none hidden behind whichever one gets checked most often.</div>
+      <div class="lim"><b>Extends what OHCSI already produces.</b> OHCSI's own site already promises "Easy to Read and Understand Inspection Reports" to clients. A client-facing due-date view of that same report history is a natural next step from work the company already does internally, not a new service line.</div>
+      <div class="lim"><b>No visible complaint here, and that's stated plainly.</b> OHCSI is BBB Accredited with an A+ rating and zero complaints on file. This isn't pitched as fixing something broken, it's what lets a well-run shop keep pace with the growth its own hiring posting describes, three years shy of a quarter-century in business.</div>
+      <div class="lim"><b>Larger competitors already run this digitally.</b> Konecranes operates "yourkonecranes.com," an online customer portal marketed as giving clients "crane maintenance information online any time," including service history and inspection records, exactly the kind of self-service layer OHCSI's own site has none of today.</div>
+      <div class="lim"><b>Back to the generic pattern: <a href="../../">recurring service compliance scheduler template</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Overhead Hoist &amp; Crane Specialists, Inc.</strong></p><p>Prepared by Shlok Sarnayak. Fictional account data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  var STORE_KEY = "fx-compliance-demo-ohcsi";
+  var EQUIP_TYPES = {
+    bridge: { label: "Bridge crane" },
+    gantry: { label: "Gantry crane" },
+    monorail: { label: "Monorail crane / hoist system" },
+    jib: { label: "Jib crane" },
+    workstation: { label: "Workstation crane" },
+    hoist: { label: "Overhead hoist" }
+  };
+  var SERVICE_CLASS = {
+    normal: { months: 12, label: "Normal service", code: "OSHA 1910.179(j)(3), annual periodic inspection" },
+    heavy: { months: 6, label: "Heavy service", code: "OSHA 1910.179(j)(3), semi-annual periodic inspection" },
+    severe: { months: 3, label: "Severe service", code: "OSHA 1910.179(j)(3), quarterly periodic inspection" }
+  };
+  var SEED_ACCOUNTS = [
+    {
+      id: "seed-acc-1",
+      name: "Sample Cogeneration Energy Plant, Site 1 (fictional)",
+      equipment: [
+        { id: "seed-1a", type: "bridge", cls: "heavy", lastInspected: daysAgo(200) },
+        { id: "seed-1b", type: "hoist", cls: "normal", lastInspected: daysAgo(100) }
+      ]
+    },
+    {
+      id: "seed-acc-2",
+      name: "Sample Structural Steel Fabricator (fictional)",
+      equipment: [
+        { id: "seed-2a", type: "gantry", cls: "severe", lastInspected: daysAgo(85) },
+        { id: "seed-2b", type: "jib", cls: "normal", lastInspected: daysAgo(340) }
+      ]
+    },
+    {
+      id: "seed-acc-3",
+      name: "Sample Engineering & Construction Yard (fictional)",
+      equipment: [
+        { id: "seed-3a", type: "monorail", cls: "normal", lastInspected: daysAgo(400) },
+        { id: "seed-3b", type: "workstation", cls: "heavy", lastInspected: daysAgo(150) }
+      ]
+    }
+  ];
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); }
+  function addMonths(iso, months) { var d = new Date(iso + "T00:00:00"); d.setMonth(d.getMonth() + months); return d; }
+  function fmt(d) { return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
+  function loadExtra() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); } catch (e) { return []; } }
+  function saveExtra(list) { try { localStorage.setItem(STORE_KEY, JSON.stringify(list)); } catch (e) {} }
+  function loadReminders() { try { return JSON.parse(localStorage.getItem(STORE_KEY + "-reminders") || "{}"); } catch (e) { return {}; } }
+  function saveReminders(obj) { try { localStorage.setItem(STORE_KEY + "-reminders", JSON.stringify(obj)); } catch (e) {} }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function allAccounts() {
+    var extra = loadExtra();
+    var byName = {};
+    var order = [];
+    SEED_ACCOUNTS.forEach(function (a) { byName[a.name.toLowerCase()] = { id: a.id, name: a.name, equipment: a.equipment.slice() }; order.push(a.name.toLowerCase()); });
+    extra.forEach(function (s) {
+      var key = s.accountName.toLowerCase();
+      if (!byName[key]) { byName[key] = { id: "acc-" + key.replace(/[^a-z0-9]+/g, "-"), name: s.accountName, equipment: [] }; order.push(key); }
+      byName[key].equipment.push({ id: s.id, type: s.type, cls: s.cls, lastInspected: s.lastInspected, address: s.address, email: s.email });
+    });
+    return order.map(function (k) { return byName[k]; });
+  }
+
+  function render() {
+    var accounts = allAccounts();
+    var reminders = loadReminders();
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var html = "";
+    accounts.forEach(function (acc) {
+      html += '<div class="account">';
+      html += '<div class="account-head"><span>' + escapeHtml(acc.name) + '</span><span class="account-head-note">' + acc.equipment.length + ' item' + (acc.equipment.length === 1 ? "" : "s") + ' tracked on this site</span></div>';
+      acc.equipment.forEach(function (s) {
+        var eq = EQUIP_TYPES[s.type];
+        var sc = SERVICE_CLASS[s.cls];
+        var due = addMonths(s.lastInspected, sc.months);
+        var days = Math.round((due - today) / 86400000);
+        var cls = "ok", label = "Compliant";
+        if (days < 0) { cls = "late"; label = "Overdue"; }
+        else if (days <= 30) { cls = "soon"; label = "Due soon"; }
+        var sentAt = reminders[s.id];
+        html += '<div class="row">' +
+          '<div><div class="row-name">' + eq.label + '</div><div class="row-sub">' + sc.label + ' &middot; ' + sc.code + (s.address ? ' &middot; ' + escapeHtml(s.address) : '') + '</div></div>' +
+          '<div class="row-due">Next due: ' + fmt(due) + '</div>' +
+          '<div class="status ' + cls + '">' + label + '</div>' +
+          '<div><button class="remind-btn' + (sentAt ? ' sent' : '') + '" data-id="' + s.id + '">' + (sentAt ? "Reminder sent ✓" : "Send reminder") + '</button>' +
+          (sentAt ? '<div class="remind-note">' + sentAt + ' (simulated)</div>' : '<div class="remind-note">simulated, no message sent</div>') +
+          '</div></div>';
+      });
+      html += '</div>';
+    });
+    document.getElementById("board-root").innerHTML = html;
+    var list = document.getElementById("account-list");
+    list.innerHTML = accounts.map(function (a) { return '<option value="' + escapeHtml(a.name) + '">'; }).join("");
+    Array.prototype.forEach.call(document.querySelectorAll(".remind-btn"), function (b) {
+      b.addEventListener("click", function () {
+        if (b.classList.contains("sent")) return;
+        var reminders2 = loadReminders();
+        reminders2[b.dataset.id] = new Date().toLocaleString();
+        saveReminders(reminders2);
+        render();
+      });
+    });
+  }
+
+  document.getElementById("intake-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var accountName = document.getElementById("f-account").value.trim();
+    var type = document.getElementById("f-equip").value;
+    var svcClass = document.getElementById("f-class").value;
+    var address = document.getElementById("f-address").value.trim();
+    var lastdate = document.getElementById("f-lastdate").value || new Date().toISOString().slice(0, 10);
+    var email = document.getElementById("f-email").value.trim();
+    if (!accountName || !address || !email) return;
+    var extra = loadExtra();
+    extra.push({ id: "custom-" + Date.now(), accountName: accountName, type: type, cls: svcClass, address: address + " (added via form, fictional)", lastInspected: lastdate, email: email });
+    saveExtra(extra);
+    var sc = SERVICE_CLASS[svcClass];
+    var due = addMonths(lastdate, sc.months);
+    document.getElementById("intake-msg").textContent = "Added to " + accountName + ". Next due date computed: " + fmt(due) + " (" + sc.code + ").";
+    document.getElementById("intake-form").reset();
+    document.getElementById("f-equip").value = "bridge";
+    document.getElementById("f-class").value = "normal";
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
