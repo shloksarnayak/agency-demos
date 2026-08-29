@@ -467,3 +467,33 @@ commit+push after each.
     scenario logic. PASS-WITH-CONCERN verdict, no changes needed, noted
     here for transparency since it was a closer trust-judgment call than
     most builds.
+
+**Skipped, not built: RV Doctor, Inc.** (rvdoctoronline.com, Fort Myers,
+FL). The 2026-08-11 prospecting draft cited one BBB complaint (a $2,774
+awning deposit, no work by April 2025) and treated this as a fixable
+"no proactive status update" gap. This session independently pulled
+BBB's full complaints page directly (not just the summary) and found
+five formal complaints from Aug 2024-Apr 2025, not one: the awning
+deposit case; a roof repair that took over a year and a half with a
+second leak-repair taking 9 months and a mattress missing at pickup; a
+generator/tire job where the company claimed completion, confirmed a
+pickup date, then reversed course one week later and the bill jumped
+from an initial ~$350 tire charge to $7,000+; a $175.22 refund promised
+repeatedly ("get the check ready") but never processed; and a
+two-year-old hurricane-damage insurance claim with "almost impossible"
+contact. Several are marked "Customer Rejected" or "Unresolved" even
+after a business response. Two unprompted customer reviews on the same
+BBB profile read "Scammers!" and "DO NOT EVER USE THIS BUSINESS."
+Confirmed the phone number (239) 277-1238 on this BBB profile matches
+rvdoctoronline.com's own site before concluding this is the same
+business despite a different listed address. This is a real pattern of
+deposits and insurance payments taken with work not completed for
+months to years, refunds promised and not delivered, and prices
+changing after a job was already claimed finished, the same category
+as the Cleveland Water and Fire / Not Your Basic Locksmith precedent,
+not a fixable ops gap. Do not build a demo for this business. Worth
+flagging: this is the second time this session a prospecting draft's
+single-complaint citation undersold a much larger BBB pattern once the
+full complaints page (not just the profile summary) was pulled
+directly, worth doing for every lead going forward, not just spot
+checks.
