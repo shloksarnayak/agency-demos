@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Well &amp; field-service request tracker template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .wst-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .wst-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .wst-tab.active { background: var(--ink); color: var(--surface); }
+  .wst-view { display: none; }
+  .wst-view.active { display: block; }
+  .wst-cols { display: grid; grid-template-columns: 1fr 1.3fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .wst-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .threshold-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .threshold-row input { width: 4.5rem; }
+  .type-filters { display: flex; gap: 0.4rem; margin-bottom: 0.9rem; flex-wrap: wrap; }
+  .type-filter { font: inherit; font-size: 0.76rem; font-weight: 700; padding: 0.4rem 0.75rem; border: 2px solid var(--ink); border-radius: 999px; background: #fff; color: var(--ink); cursor: pointer; }
+  .type-filter.active { background: var(--brand); color: #fff; }
+  .req-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .req-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .req-title { font-weight: 660; }
+  .req-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.attention { color: var(--hot); background: var(--hot-bg); }
+  .badge.ontrack { color: var(--brand); background: var(--brand-soft); }
+  .badge.done { color: var(--good); background: var(--good-bg); }
+  .badge.type-drilling { color: var(--ink); background: var(--aqua); }
+  .badge.type-inspection { color: var(--ink); background: var(--yellow); }
+  .badge.type-abandonment { color: var(--ink); background: var(--violet); color: #fff; }
+  .badge.type-pump_repair { color: var(--ink); background: var(--pink); }
+  .badge.type-emergency { color: #fff; background: var(--coral); }
+  .req-summary { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; }
+  .req-flag { font-size: 0.84rem; color: var(--hot); margin-top: 0.35rem; font-weight: 650; }
+  .req-inbox { font-size: 0.78rem; color: var(--muted); margin-top: 0.35rem; }
+  .req-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .log { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.8rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); margin-right: 0.4rem; }
+  .log-entry.ping { color: var(--brand); }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 460px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.2rem; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.5rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+  .team-note { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Well &amp; field-service request tracker</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Five job types, one phone line, no shared queue</h1>
+  <p class="fx-lede">Many field-service businesses (drilling, well and pump service, HVAC, septic, and similar trades) take every job type through the same phone call, callback form, or walk-in, with no shared visibility once the call ends. This page shows one small, working alternative: every request, of any type, gets a reference number the moment it comes in, the customer can check its own status without calling back, and the crew sees one shared queue across every job type instead of relying entirely on memory and phone tag, with anything sitting too long flagged automatically.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the job types and stages match how that business actually works each one, and the office view reads from whatever already tracks requests.</p></div>
+
+  <div class="wst-tabs">
+    <button class="wst-tab active" data-view="office" type="button">Team view</button>
+    <button class="wst-tab" data-view="customer" type="button">Customer status check</button>
+  </div>
+
+  <section class="wst-view active" id="view-office">
+    <div class="threshold-row">
+      <label for="threshold-input" style="font-size:0.82rem;font-weight:700;">Flag a request as needing attention after</label>
+      <input type="number" id="threshold-input" min="1" value="3">
+      <span style="font-size:0.82rem;color:var(--ink-2);">days with no stage change</span>
+    </div>
+    <div class="wst-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new request</h2>
+        <form id="add-form" class="form-grid">
+          <div class="field span2"><label for="f-customer">Customer name</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
+          <div class="field"><label for="f-type">Job type</label><select id="f-type"></select></div>
+          <div class="field"><label for="f-assigned">Assigned to</label><input type="text" id="f-assigned" placeholder="e.g. Sample Crew Member"></div>
+          <div class="field span2"><label for="f-item">Request details</label><input type="text" id="f-item" placeholder="e.g. sample job description"></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
+        </form>
+        <p class="team-note">A real deployment shows this same queue to whoever is covering the desk or the truck that day, instead of splitting jobs across memory and phone messages.</p>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Shared request queue, flagged first</h2>
+        <div class="type-filters" id="type-filters"></div>
+        <div id="queue-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wst-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check the status of a request</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference number</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. REQ-7001">
+      <label for="lookup-name" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);margin-top:0.6rem;display:block;">Last name / company name on the request</label>
+      <input type="text" id="lookup-name" placeholder="e.g. Sample">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try REQ-7001 through REQ-7006 from the team view's sample queue, with the matching sample name.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The reference number is generated the moment a request comes in.</b> A real build hands it to the customer immediately by phone, text, or email, whichever the business already uses.</div>
+      <div class="lim"><b>The stage set is different per job type here, and that stays configurable.</b> A drilling job, an inspection, and an emergency call do not move through the same steps, and a real build matches how the business actually runs each one.</div>
+      <div class="lim"><b>The status ping here is a log entry, not a real send.</b> A real build wires this to the business's existing phone, text, or email system so the update actually goes out.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional request and customer data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "wst_template_generic_v1";
+
+  var TYPES = {
+    drilling: { label: "Well drilling", stages: [
+      { key: "requested", label: "Requested" },
+      { key: "site_survey", label: "Site survey scheduled" },
+      { key: "drilling", label: "Drilling in progress" },
+      { key: "completed", label: "Well completed" }
+    ] },
+    inspection: { label: "Well inspection", stages: [
+      { key: "requested", label: "Requested" },
+      { key: "scheduled", label: "Inspection scheduled" },
+      { key: "inspected", label: "Inspection completed" },
+      { key: "report_sent", label: "Report sent" }
+    ] },
+    abandonment: { label: "Well abandonment", stages: [
+      { key: "requested", label: "Requested" },
+      { key: "permit_filed", label: "Permit filed" },
+      { key: "scheduled", label: "Abandonment scheduled" },
+      { key: "completed", label: "Abandonment completed" }
+    ] },
+    pump_repair: { label: "Pump repair / service", stages: [
+      { key: "requested", label: "Requested" },
+      { key: "diagnosed", label: "Diagnosed" },
+      { key: "parts_ordered", label: "Parts ordered" },
+      { key: "repaired", label: "Repair completed" }
+    ] },
+    emergency: { label: "Emergency service", stages: [
+      { key: "requested", label: "Requested" },
+      { key: "dispatched", label: "Crew dispatched" },
+      { key: "on_site", label: "On site" },
+      { key: "resolved", label: "Resolved" }
+    ] }
+  };
+  var TYPE_KEYS = Object.keys(TYPES);
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function daysFromNow(d) { return Date.now() + d * 86400000; }
+  function daysAgo(ts) { return (Date.now() - ts) / 86400000; }
+  function fmtDuration(days) {
+    if (days < 1) return "under a day";
+    return Math.round(days) + (Math.round(days) === 1 ? " day" : " days");
+  }
+  function pingText(stageLabel) { return "Status update sent to customer: your request is now " + stageLabel + "."; }
+  function stagesFor(type) { return TYPES[type].stages; }
+  function lastNameOf(fullName) { var parts = fullName.trim().split(/\s+/); return parts[parts.length - 1]; }
+
+  function defaultData() {
+    return {
+      seq: 7006,
+      requests: [
+        {
+          ref: "REQ-7001", type: "drilling", customer: "Sample Customer A", item: "Sample new well, single-family residence", assigned: "Sample Crew Member",
+          stageIdx: 1, enteredStageAt: daysFromNow(-2),
+          history: [{ stage: "requested", at: daysFromNow(-6) }, { stage: "site_survey", at: daysFromNow(-2) }],
+          notes: [{ at: daysFromNow(-6), text: pingText("Requested"), ping: true }, { at: daysFromNow(-2), text: pingText("Site survey scheduled"), ping: true }]
+        },
+        {
+          ref: "REQ-7002", type: "inspection", customer: "Sample Customer B", item: "Sample pre-purchase well inspection", assigned: "Sample Crew Member",
+          stageIdx: 0, enteredStageAt: daysFromNow(-4),
+          history: [{ stage: "requested", at: daysFromNow(-4) }],
+          notes: [{ at: daysFromNow(-4), text: pingText("Requested"), ping: true }]
+        },
+        {
+          ref: "REQ-7003", type: "abandonment", customer: "Sample Customer C", item: "Sample old well abandonment", assigned: "Sample Crew Member",
+          stageIdx: 2, enteredStageAt: daysFromNow(-1),
+          history: [{ stage: "requested", at: daysFromNow(-8) }, { stage: "permit_filed", at: daysFromNow(-5) }, { stage: "scheduled", at: daysFromNow(-1) }],
+          notes: [{ at: daysFromNow(-5), text: pingText("Permit filed"), ping: true }, { at: daysFromNow(-1), text: pingText("Abandonment scheduled"), ping: true }]
+        },
+        {
+          ref: "REQ-7004", type: "pump_repair", customer: "Sample Customer D", item: "Sample submersible pump not priming", assigned: "Sample Crew Member",
+          stageIdx: 3, enteredStageAt: daysFromNow(-1),
+          history: [{ stage: "requested", at: daysFromNow(-5) }, { stage: "diagnosed", at: daysFromNow(-4) }, { stage: "parts_ordered", at: daysFromNow(-3) }, { stage: "repaired", at: daysFromNow(-1) }],
+          notes: [{ at: daysFromNow(-1), text: pingText("Repair completed"), ping: true }]
+        },
+        {
+          ref: "REQ-7005", type: "emergency", customer: "Sample Customer E", item: "Sample no-water emergency call", assigned: "Sample Crew Member",
+          stageIdx: 1, enteredStageAt: daysFromNow(-6),
+          history: [{ stage: "requested", at: daysFromNow(-6) }, { stage: "dispatched", at: daysFromNow(-6) }],
+          notes: [{ at: daysFromNow(-6), text: pingText("Crew dispatched"), ping: true }]
+        },
+        {
+          ref: "REQ-7006", type: "drilling", customer: "Sample Customer F", item: "Sample new well, irrigation use", assigned: "Sample Crew Member",
+          stageIdx: 3, enteredStageAt: daysFromNow(-2),
+          history: [{ stage: "requested", at: daysFromNow(-30) }, { stage: "site_survey", at: daysFromNow(-27) }, { stage: "drilling", at: daysFromNow(-20) }, { stage: "completed", at: daysFromNow(-2) }],
+          notes: [{ at: daysFromNow(-2), text: pingText("Well completed"), ping: true }]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  var typeFilter = "all";
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function getThreshold() {
+    var v = parseInt(document.getElementById("threshold-input").value, 10);
+    return isNaN(v) || v < 1 ? 3 : v;
+  }
+
+  function statusInfo(r, threshold) {
+    var stages = stagesFor(r.type);
+    if (r.stageIdx >= stages.length - 1) return { cls: "done", label: "Complete", flag: null };
+    var stuckDays = daysAgo(r.enteredStageAt);
+    if (stuckDays > threshold) {
+      var reason = "Stalled in \"" + stages[r.stageIdx].label + "\", " + fmtDuration(stuckDays) + " with no stage change.";
+      return { cls: "attention", label: "Needs attention", flag: reason };
+    }
+    return { cls: "ontrack", label: "On track", flag: null };
+  }
+
+  function populateTypeSelect() {
+    var sel = document.getElementById("f-type");
+    sel.innerHTML = TYPE_KEYS.map(function (k) { return '<option value="' + k + '">' + escapeHtml(TYPES[k].label) + "</option>"; }).join("");
+  }
+
+  function renderTypeFilters() {
+    var root = document.getElementById("type-filters");
+    var opts = [{ key: "all", label: "All" }].concat(TYPE_KEYS.map(function (k) { return { key: k, label: TYPES[k].label }; }));
+    root.innerHTML = opts.map(function (o) {
+      return '<button type="button" class="type-filter' + (typeFilter === o.key ? " active" : "") + '" data-type="' + o.key + '">' + escapeHtml(o.label) + "</button>";
+    }).join("");
+    root.querySelectorAll(".type-filter").forEach(function (btn) {
+      btn.addEventListener("click", function () { typeFilter = btn.dataset.type; renderTypeFilters(); renderQueue(); });
+    });
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var threshold = getThreshold();
+    var all = typeFilter === "all" ? data.requests.slice() : data.requests.filter(function (r) { return r.type === typeFilter; });
+    var open = all.filter(function (r) { return r.stageIdx < stagesFor(r.type).length - 1; });
+    open.sort(function (a, b) {
+      var fa = statusInfo(a, threshold).flag ? 0 : 1;
+      var fb = statusInfo(b, threshold).flag ? 0 : 1;
+      if (fa !== fb) return fa - fb;
+      return daysAgo(b.enteredStageAt) - daysAgo(a.enteredStageAt);
+    });
+    var done = all.filter(function (r) { return r.stageIdx >= stagesFor(r.type).length - 1; })
+      .slice().sort(function (a, b) { return b.enteredStageAt - a.enteredStageAt; });
+    var html = "";
+    if (!open.length) html += '<p class="empty">Nothing open in this view.</p>';
+    open.forEach(function (r) { html += renderCard(r, threshold); });
+    if (done.length) {
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently completed</h3>';
+      done.slice(0, 5).forEach(function (r) { html += renderCard(r, threshold); });
+    }
+    root.innerHTML = html;
+  }
+
+  function renderCard(r, threshold) {
+    var st = statusInfo(r, threshold);
+    var idx = data.requests.indexOf(r);
+    var stages = stagesFor(r.type);
+    var stageLabel = stages[r.stageIdx].label;
+    var html = '<div class="req-card"><div class="req-head"><div><div class="req-title">' + escapeHtml(r.customer) + " &middot; " + r.ref + '</div><div class="req-meta">' + escapeHtml(r.item) + "</div></div><span>";
+    html += '<span class="badge type-' + r.type + '">' + escapeHtml(TYPES[r.type].label) + '</span> <span class="badge ' + st.cls + '">' + st.label + "</span></span></div>";
+    html += '<div class="req-summary">Stage: ' + stageLabel + " (" + fmtDuration(daysAgo(r.enteredStageAt)) + " in this stage)</div>";
+    html += '<div class="req-inbox">Assigned to: ' + escapeHtml(r.assigned) + "</div>";
+    if (st.flag) html += '<div class="req-flag">&#9888; ' + escapeHtml(st.flag) + "</div>";
+    if (r.notes.length) {
+      html += '<div class="log">';
+      r.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry' + (n.ping ? " ping" : "") + '"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+      html += "</div>";
+    }
+    if (r.stageIdx < stages.length - 1) {
+      var nextLabel = stages[r.stageIdx + 1].label;
+      html += '<div class="req-actions"><button class="fx-btn-ghost" onclick="__wst.advance(' + idx + ')">Advance to ' + escapeHtml(nextLabel) + '</button></div>';
+    }
+    html += "</div>";
+    return html;
+  }
+
+  window.__wst = {
+    advance: function (idx) {
+      var r = data.requests[idx];
+      var stages = stagesFor(r.type);
+      r.stageIdx += 1;
+      r.enteredStageAt = Date.now();
+      var label = stages[r.stageIdx].label;
+      r.history.push({ stage: stages[r.stageIdx].key, at: Date.now() });
+      r.notes.push({ at: Date.now(), text: pingText(label), ping: true });
+      save(); renderQueue();
+    }
+  };
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("f-customer").value.trim();
+    var type = document.getElementById("f-type").value;
+    var assigned = document.getElementById("f-assigned").value.trim() || "Unassigned";
+    var item = document.getElementById("f-item").value.trim();
+    if (!customer || !item) { alert("Fill in the customer name and request details."); return; }
+    data.seq += 1;
+    var ref = "REQ-" + data.seq;
+    var now = Date.now();
+    var firstStage = stagesFor(type)[0];
+    data.requests.push({ ref: ref, type: type, customer: customer, item: item, assigned: assigned, stageIdx: 0, enteredStageAt: now, history: [{ stage: firstStage.key, at: now }], notes: [{ at: now, text: pingText(firstStage.label), ping: true }] });
+    save(); renderQueue();
+    document.getElementById("add-form").reset();
+    populateTypeSelect();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue();
+  });
+
+  document.getElementById("threshold-input").addEventListener("input", renderQueue);
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var name = document.getElementById("lookup-name").value.trim().toLowerCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref || !name) { root.innerHTML = '<div class="lookup-result"><p class="not-found">Enter both the reference number and the name on the request.</p></div>'; return; }
+    var r = data.requests.filter(function (x) { return x.ref.toUpperCase() === ref && lastNameOf(x.customer).toLowerCase() === name; })[0];
+    if (!r) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No matching record found. Please contact us directly.</p></div>'; return; }
+    var stages = stagesFor(r.type);
+    var html = '<div class="lookup-result"><h3>' + escapeHtml(TYPES[r.type].label) + ": " + escapeHtml(r.item) + '</h3>';
+    stages.forEach(function (s, i) {
+      var cls = i < r.stageIdx ? "done" : (i === r.stageIdx ? "active" : "pending");
+      var histEntry = r.history.filter(function (h) { return h.stage === s.key; })[0];
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === "pending" ? " pending-text" : "") + '">' + s.label + '</div><div class="stage-time">' + (histEntry ? fmtDate(histEntry.at) : (cls === "active" ? "In progress" : "Not started")) + "</div></div></div>";
+    });
+    html += "</div>";
+    root.innerHTML = html;
+  });
+
+  document.querySelectorAll(".wst-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".wst-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".wst-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  populateTypeSelect();
+  renderTypeFilters();
+  renderQueue();
+})();
+</script>
+</body>
+</html>
