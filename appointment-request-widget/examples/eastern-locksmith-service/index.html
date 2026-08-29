@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Appointment request widget: working example for Eastern Locksmith Service</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .aas-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .aas-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .aas-tab.active { background: var(--ink); color: var(--surface); }
+  .aas-view { display: none; }
+  .aas-view.active { display: block; }
+
+  .field { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.1rem; }
+  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .choice { font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.6rem 0.95rem; cursor: pointer; font-size: 0.92rem; }
+  .choice:hover { border-color: var(--brand); }
+  .choice.sel { border-color: var(--brand); background: var(--brand-soft); color: var(--ink); font-weight: 620; box-shadow: 0 0 0 1px var(--brand) inset; }
+  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; max-width: 26rem; }
+  input[type="text"]:focus { outline: none; border-color: var(--brand); }
+
+  .call-banner { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.2rem 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  .call-banner .cb-num { font-family: var(--mono); font-size: 1.05rem; font-weight: 700; }
+  .call-banner .cb-meta { font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem; }
+  .call-ring { display: inline-block; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--hot); margin-right: 0.4rem; animation: aas-pulse 1s infinite; }
+  @keyframes aas-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+  .texting { margin-top: 1.4rem; border: 2px solid var(--ink); border-radius: var(--radius-md); background: var(--surface); box-shadow: var(--shadow-sm); padding: 1.2rem 1.3rem; }
+  .bubble { max-width: 30rem; padding: 0.7rem 0.95rem; border-radius: 14px; font-size: 0.92rem; line-height: 1.5; margin-bottom: 0.7rem; }
+  .bubble.out { background: var(--brand); color: var(--brand-ink); margin-right: auto; border-bottom-left-radius: 3px; }
+  .bubble.in { background: var(--surface-2); color: var(--ink); margin-left: auto; border-bottom-right-radius: 3px; text-align: right; }
+  .bubble-tag { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0.5rem 0 0.2rem; }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.3rem 1.4rem; display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1.2rem; }
+  .confirm.urgent { background: var(--hot-bg); }
+  .confirm h3 { margin: 0; font-size: 1.05rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+  .confirm.urgent h3 { color: var(--hot); }
+  .confirm dl { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; }
+  .confirm dt { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .confirm dd { margin: 0 0 0.5rem; font-size: 0.94rem; color: var(--ink); }
+
+  .stat-strip { display: flex; flex-wrap: wrap; gap: 0.9rem; margin-bottom: 1.3rem; }
+  .stat { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 0.85rem 1.1rem; background: var(--surface); box-shadow: var(--shadow-sm); min-width: 11rem; }
+  .stat .n { font-family: var(--serif); font-size: 1.5rem; font-weight: 700; }
+  .stat .l { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .stat .tag { font-family: var(--mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--faint); }
+
+  .lead-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .lead-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .lead-title { font-weight: 660; }
+  .lead-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .lead-detail { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; line-height: 1.55; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.new { color: var(--brand); background: var(--brand-soft); }
+  .badge.dispatch { color: var(--hot); background: var(--hot-bg); }
+  .badge.scheduled { color: var(--good); background: var(--good-bg); }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Appointment request widget</a> / Eastern Locksmith Service</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Eastern Locksmith Service Inc.</span>
+  <h1 class="fx-h1">The same phone line answers a true lockout and a routine key copy, before anyone knows which one it is</h1>
+  <p class="fx-lede">Your drive-thru window already splits jobs into two lanes: quick key copies and pickups that don't need a store visit, versus everything else. But every inbound call, a locked-out emergency at 9pm or a routine fob-programming question at 10am, funnels through the same single phone line with no way to tell them apart until someone answers. This is a working example of a triage step in front of that line: two taps sort a request into "get a tech moving now" or "book the drive-thru window," before it ever waits on hold.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the drive-thru window, the (919) 778-6600 line, the 8am-9pm hours, and the after-5:30pm mobile emergency service are copied from easternlocksmithservices.com and its /contact-us/ page today. <strong>What's simulated:</strong> no call or text actually routes anywhere in this demo, and the "Illustrative" figures and sample requests below are invented to show the shape of the data, not real customers or real jobs.</p>
+  </div>
+
+  <div class="aas-tabs">
+    <button class="aas-tab active" data-view="call">Simulate an inbound request</button>
+    <button class="aas-tab" data-view="inbox">Front-desk queue</button>
+  </div>
+
+  <div class="aas-view active" id="view-call">
+    <div class="fx-card">
+      <div class="call-banner">
+        <div>
+          <div class="cb-num"><span class="call-ring"></span>Incoming: (919) 555-0148</div>
+          <div class="cb-meta">Before this triage step, this call would just ring the front desk like any other, no way to know yet if it's urgent</div>
+        </div>
+        <button class="fx-btn" id="miss-btn">Answer with the triage line</button>
+      </div>
+
+      <div class="texting" id="texting-root" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div class="aas-view" id="view-inbox">
+    <div class="stat-strip">
+      <div class="stat"><span class="tag">Illustrative</span><div class="n">2</div><div class="l">requests triaged this week</div></div>
+      <div class="stat"><span class="tag">Illustrative</span><div class="n">1</div><div class="l">sent straight to dispatch</div></div>
+      <div class="stat"><span class="tag">Illustrative</span><div class="n">1</div><div class="l">booked at the drive-thru window instead</div></div>
+    </div>
+    <div id="inbox-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before this touches a real phone line</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here actually rings a phone or sends a text.</b> A real version sits in front of your existing (919) 778-6600 line, either as an IVR prompt or a text-back after a missed ring, so the two-question sort happens automatically instead of on this page.</div>
+      <div class="lim"><b>It doesn't replace a person answering the phone.</b> It just labels the call before someone picks up, so a true lockout doesn't wait behind a routine fob question, or the other way around.</div>
+      <div class="lim"><b>Hours and the drive-thru window are copied from easternlocksmithservices.com today.</b> Regular hours 8am-9pm, drive-thru Mon-Fri 8am-5:30pm, mobile emergency service after that and on weekends, if any of that changes this needs a one-line update to match.</div>
+      <div class="lim"><b>The front-desk queue here is a static illustration.</b> A real version would land wherever the desk already looks, a shared inbox or a simple board, not a separate tool to remember to check.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Eastern Locksmith Service Inc.</strong></p>
+  <p>Prepared by Shlok Sarnayak. Hours, drive-thru window, and phone number checked against easternlocksmithservices.com. Not connected to your phone system or a real text messaging line.</p>
+</footer>
+
+<script>
+(function () {
+  var REQUESTS = [
+    { label: "Locked out right now (home, car, or business)", urgent: true },
+    { label: "Key copy or fob programming, not locked out", urgent: false },
+    { label: "Lock repair or replacement, not an emergency", urgent: false },
+    { label: "Security camera or safe question", urgent: false }
+  ];
+
+  var callState = { step: "ring", request: null, urgent: null, name: "", location: "", submitted: false, phone: "(919) 555-0148" };
+  var texRoot = document.getElementById("texting-root");
+  var missBtn = document.getElementById("miss-btn");
+
+  var STORAGE_KEY = "els-demo-leads";
+  var SAMPLE_LEADS = [
+    { name: "R. Boykin", phone: "(919) 555-0119", request: "Key copy or fob programming, not locked out", location: "2010 Honda Accord, drive-thru window", urgent: false, status: "scheduled", ts: "Mon, 10:14 AM" },
+    { name: "T. Ivey", phone: "(919) 555-0176", request: "Locked out right now (home, car, or business)", location: "House, Smithfield, front door", urgent: true, status: "dispatch", ts: "Wed, 8:52 PM" }
+  ];
+
+  function loadLeads() {
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return SAMPLE_LEADS.slice();
+  }
+  function saveLeads(leads) {
+    try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(leads)); } catch (e) {}
+  }
+  var leads = loadLeads();
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".aas-tab"), function (tab) {
+    tab.addEventListener("click", function () {
+      Array.prototype.forEach.call(document.querySelectorAll(".aas-tab"), function (t) { t.classList.remove("active"); });
+      Array.prototype.forEach.call(document.querySelectorAll(".aas-view"), function (v) { v.classList.remove("active"); });
+      tab.classList.add("active");
+      document.getElementById("view-" + tab.dataset.view).classList.add("active");
+      if (tab.dataset.view === "inbox") renderInbox();
+    });
+  });
+
+  missBtn.addEventListener("click", function () {
+    missBtn.disabled = true;
+    missBtn.textContent = "Triage started";
+    texRoot.style.display = "block";
+    renderTexting();
+  });
+
+  function renderTexting() {
+    var html = "";
+    html += '<div class="bubble-tag">Eastern Locksmith Service (triage line)</div>';
+    html += '<div class="bubble out">Thanks for calling Eastern Locksmith Service. What do you need today?</div>';
+
+    if (!callState.request) {
+      html += '<div class="field"><div class="field-label">Reply as the caller: what do you need?</div><div class="choices">';
+      REQUESTS.forEach(function (r) { html += '<button class="choice" data-request="' + escapeHtml(r.label) + '" data-urgent="' + r.urgent + '">' + r.label + '</button>'; });
+      html += '</div></div>';
+      texRoot.innerHTML = html;
+      bindRequestButtons();
+      return;
+    }
+
+    html += '<div class="bubble in">' + escapeHtml(callState.request) + '</div>';
+    html += '<div class="bubble-tag">Eastern Locksmith Service (triage line)</div>';
+    if (callState.urgent) {
+      html += '<div class="bubble out">Got it, that\'s urgent. What\'s your name and where are you locked out?</div>';
+    } else {
+      html += '<div class="bubble out">Got it, no rush. What\'s your name, and is this for the drive-thru window or a site visit?</div>';
+    }
+
+    if (!callState.submitted) {
+      html += '<div class="field"><div class="field-label">Your name</div><input type="text" id="name-input" value="' + callState.name.replace(/"/g, "&quot;") + '" placeholder="First and last name"></div>';
+      html += '<div class="field"><div class="field-label">' + (callState.urgent ? "Location (address or where you're locked out)" : "Vehicle, door, or job details") + '</div><input type="text" id="location-input" value="' + callState.location.replace(/"/g, "&quot;") + '" placeholder="' + (callState.urgent ? "e.g. front door, 2214 Wayne Memorial Dr" : "e.g. 2015 Ford F-150 key fob") + '"></div>';
+      html += '<button class="fx-btn" id="submit-btn" style="margin-top:1.1rem;"' + (canSubmit() ? '' : ' disabled') + '>Send reply</button>';
+      texRoot.innerHTML = html;
+      bindReplyControls();
+      return;
+    }
+
+    if (callState.urgent) {
+      html += '<div class="bubble in">' + escapeHtml(callState.name) + ' &middot; ' + escapeHtml(callState.location) + '</div>';
+      html += '<div class="bubble-tag">Eastern Locksmith Service (triage line)</div>';
+      html += '<div class="bubble out">A tech is being notified now. Someone will call you back to confirm timing.</div>';
+      html += '<div class="confirm urgent"><h3>Sent straight to dispatch, no wait behind routine calls</h3><dl>';
+    } else {
+      html += '<div class="bubble in">' + escapeHtml(callState.name) + ' &middot; ' + escapeHtml(callState.location) + '</div>';
+      html += '<div class="bubble-tag">Eastern Locksmith Service (triage line)</div>';
+      html += '<div class="bubble out">Thanks! We\'ll get you booked at the drive-thru window or a callback to confirm timing.</div>';
+      html += '<div class="confirm"><h3>Booked as routine, no need to compete with an active lockout</h3><dl>';
+    }
+    html += '<dt>Request</dt><dd>' + escapeHtml(callState.request) + '</dd>';
+    html += '<dt>Name</dt><dd>' + escapeHtml(callState.name) + '</dd>';
+    html += '<dt>Details</dt><dd>' + escapeHtml(callState.location) + '</dd>';
+    html += '</dl><button class="fx-btn-ghost" id="view-inbox-btn">See it in the front-desk queue</button> <button class="fx-btn-ghost" id="reset-call-btn">Simulate another call</button></div>';
+    texRoot.innerHTML = html;
+    document.getElementById("reset-call-btn").addEventListener("click", resetCall);
+    document.getElementById("view-inbox-btn").addEventListener("click", function () {
+      document.querySelector('.aas-tab[data-view="inbox"]').click();
+    });
+  }
+
+  function bindRequestButtons() {
+    Array.prototype.forEach.call(texRoot.querySelectorAll("[data-request]"), function (b) {
+      b.addEventListener("click", function () {
+        callState.request = b.dataset.request;
+        callState.urgent = b.dataset.urgent === "true";
+        renderTexting();
+      });
+    });
+  }
+
+  function canSubmit() { return callState.name.trim() && callState.location.trim(); }
+
+  function bindReplyControls() {
+    var nameInput = document.getElementById("name-input");
+    var locationInput = document.getElementById("location-input");
+    nameInput.addEventListener("input", function () { callState.name = nameInput.value; syncSubmit(); });
+    locationInput.addEventListener("input", function () { callState.location = locationInput.value; syncSubmit(); });
+    var submitBtn = document.getElementById("submit-btn");
+    if (submitBtn) submitBtn.addEventListener("click", function () {
+      if (!canSubmit()) return;
+      callState.submitted = true;
+      leads.unshift({
+        name: callState.name, phone: callState.phone, request: callState.request,
+        location: callState.location, urgent: callState.urgent,
+        status: callState.urgent ? "dispatch" : "scheduled", ts: "Just now", isNew: true
+      });
+      saveLeads(leads);
+      renderTexting();
+    });
+  }
+
+  function syncSubmit() {
+    var b = document.getElementById("submit-btn");
+    if (b) b.disabled = !canSubmit();
+  }
+
+  function resetCall() {
+    callState = { step: "ring", request: null, urgent: null, name: "", location: "", submitted: false, phone: "(919) 555-" + (100 + Math.floor(Math.random() * 900)) };
+    missBtn.disabled = false;
+    missBtn.textContent = "Answer with the triage line";
+    texRoot.style.display = "none";
+    texRoot.innerHTML = "";
+    document.querySelector(".call-banner .cb-num").innerHTML = '<span class="call-ring"></span>Incoming: ' + callState.phone;
+  }
+
+  function renderInbox() {
+    var root = document.getElementById("inbox-root");
+    if (!leads.length) { root.innerHTML = '<p class="lead-detail">No requests right now.</p>'; return; }
+    var html = "";
+    leads.forEach(function (l) {
+      var badgeClass = l.status === "dispatch" ? "dispatch" : "scheduled";
+      var badgeText = l.status === "dispatch" ? "Sent to dispatch" : "Scheduled, routine";
+      html += '<div class="lead-card">';
+      html += '<div class="lead-head"><span class="lead-title">' + escapeHtml(l.name) + (l.isNew ? ' <span class="badge new">New</span>' : '') + '</span><span class="badge ' + badgeClass + '">' + badgeText + '</span></div>';
+      html += '<div class="lead-meta">' + escapeHtml(l.ts) + ' &middot; ' + escapeHtml(l.phone) + '</div>';
+      html += '<div class="lead-detail"><b>' + escapeHtml(l.request) + '</b><br>' + escapeHtml(l.location) + '</div>';
+      html += '</div>';
+    });
+    root.innerHTML = html;
+  }
+
+  renderInbox();
+})();
+</script>
+</body>
+</html>
