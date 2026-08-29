@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Instant quote calculator: working example for Greenwich Locksmiths</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .field { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.1rem; }
+  .field-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .choices { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .choice { font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.6rem 0.95rem; cursor: pointer; font-size: 0.92rem; }
+  .choice:hover { border-color: var(--brand); }
+  .choice.sel { border-color: var(--brand); background: var(--brand-soft); color: var(--ink); font-weight: 620; box-shadow: 0 0 0 1px var(--brand) inset; }
+  .btn { font: inherit; font-size: 0.9rem; font-weight: 610; color: var(--surface); background: var(--brand); border: none; border-radius: var(--radius-sm); padding: 0.65rem 1.1rem; cursor: pointer; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn.ghost { background: transparent; color: var(--brand); border: 1px solid var(--brand); }
+
+  .quote-out { border-top: 1px solid var(--rule); padding-top: 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; margin-top: 1.1rem; }
+  .quote-line { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.94rem; color: var(--ink-2); }
+  .quote-line b { color: var(--ink); font-weight: 600; }
+  .quote-total { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.4rem; font-weight: 660; border-top: 1px dashed var(--rule); padding-top: 0.9rem; font-family: var(--serif); }
+  .quote-total .amt { color: var(--brand); }
+  .quote-sub { font-size: 0.82rem; color: var(--muted); }
+  .placeholder { font-size: 0.92rem; color: var(--muted); font-style: italic; }
+  .illus { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--brand); border: 1px solid var(--brand); border-radius: 999px; padding: 0.12rem 0.55rem; margin-left: 0.5rem; }
+
+  .eta-shell { max-width: 30rem; border: 1px solid var(--rule); border-radius: var(--radius-md); overflow: hidden; background: var(--surface-2); }
+  .eta-head { background: var(--surface); border-bottom: 1px solid var(--rule); padding: 0.7rem 1rem; font-size: 0.85rem; color: var(--ink-2); display: flex; justify-content: space-between; }
+  .eta-thread { padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem; min-height: 6rem; }
+  .bubble { max-width: 82%; padding: 0.55rem 0.8rem; border-radius: 1rem; font-size: 0.9rem; line-height: 1.45; }
+  .bubble.in { align-self: flex-start; background: var(--surface); border: 1px solid var(--rule); color: var(--ink); border-bottom-left-radius: 0.25rem; }
+  .bubble.out { align-self: flex-end; background: var(--brand); color: var(--surface); border-bottom-right-radius: 0.25rem; }
+  .bubble .ts { display: block; font-size: 0.68rem; opacity: 0.7; margin-top: 0.25rem; }
+  .eta-controls { padding: 0.9rem 1rem; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 0.6rem; }
+  .eta-scenario-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Instant quote calculator</a> / Greenwich Locksmiths</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Greenwich Locksmiths</span>
+  <h1 class="fx-h1">A price and an arrival window before the technician is already at the door</h1>
+  <p class="fx-lede">Two BBB complaints on file describe the price or the technician's willingness to do the job only becoming clear once someone had already arrived and started, once a job-type estimate and an "on my way" window are visible upfront, in writing, before dispatch, there's a lot less room for that kind of surprise on either side. This is a working example of that: pick a job type, see a starting estimate, then see what an automatic arrival-window text looks like.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the four service categories, the phone number, and the "free estimates" / "transparent pricing" language are from greenwichlocksmiths.com today. <strong>What's simulated and marked "Illustrative":</strong> every dollar figure below, since the site doesn't publish a rate table, plus the arrival-window text thread, which doesn't send anywhere in this demo.</p>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">1. Starting estimate by job type</h2>
+    <div class="fx-card">
+      <div class="field">
+        <div class="field-label">What's the job?</div>
+        <div class="choices" id="job-choices">
+          <button class="choice" data-job="lockout">Emergency lockout</button>
+          <button class="choice" data-job="rekey">Rekey / lock change</button>
+          <button class="choice" data-job="install">New lock or access-control install</button>
+          <button class="choice" data-job="intercom">Intercom / buzzer repair</button>
+        </div>
+      </div>
+      <div class="field" id="afterhours-field" style="display:none;">
+        <div class="field-label">Time of day</div>
+        <div class="choices">
+          <button class="choice" data-hours="business">Business hours (Mon-Fri, 8:30am-6pm)</button>
+          <button class="choice" data-hours="after">Nights / weekends</button>
+        </div>
+      </div>
+      <div class="quote-out" id="quote-out"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">2. What an arrival-window text looks like</h2>
+    <p class="fx-lede" style="font-size:0.95rem;">A simulation, not a live SMS integration, there's no phone number behind it. It shows the mechanism: once a technician is dispatched, the customer gets a specific window and a heads-up if it slips, instead of finding out only when someone shows up.</p>
+    <div class="fx-card">
+      <div class="eta-shell">
+        <div class="eta-head"><span>212-645-2858</span><span id="eta-clock">Tue 2:10 PM</span></div>
+        <div class="eta-thread" id="eta-thread">
+          <p class="placeholder" style="padding: 0 0.2rem;">Pick a scenario below to run it.</p>
+        </div>
+        <div class="eta-controls">
+          <div class="field-label">Run a scenario</div>
+          <div class="eta-scenario-row">
+            <button class="choice" data-eta-scenario="on-time">Technician on schedule</button>
+            <button class="choice" data-eta-scenario="delayed">Technician running behind</button>
+          </div>
+          <button class="btn ghost" id="eta-reset-btn">Reset thread</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before this goes live</h2>
+    <div class="limits">
+      <div class="lim"><b>The dollar figures are placeholders.</b> Greenwich Locksmiths' own site advertises "affordable rates" and "free estimates" but doesn't publish a rate table, so every price here is marked "Illustrative" and needs your real numbers by job type before this replaces a phone quote.</div>
+      <div class="lim"><b>This doesn't decide what a job actually needs.</b> A lockout can turn into a lock change once someone's on-site, or a rekey can turn out simpler than expected. The point isn't to lock in a final price sight unseen, it's to give a starting number and a range so nobody's first time hearing a figure is after the work's already started.</div>
+      <div class="lim"><b>The arrival-window text is a scripted simulation, not a working phone number.</b> Standing this up for real means a provider like Twilio wired to whatever dispatch tool your technicians already use, so the window updates automatically instead of needing someone to send it by hand.</div>
+      <div class="lim"><b>This calculates and demonstrates, it doesn't book anything.</b> No calendar, no payment, no confirmation email. The honest next step after "here's your estimate" is still your existing quote and dispatch process, this just puts a number and a window in front of the customer earlier.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Greenwich Locksmiths.</strong></p>
+  <p>Prepared by Shlok Sarnayak. Service categories, phone number, and "free estimates" language checked against greenwichlocksmiths.com. Prices marked Illustrative are placeholders, not Greenwich Locksmiths' real rates. Not connected to any live booking, payment, or phone system.</p>
+</footer>
+
+<script>
+(function () {
+  var PRICING = {
+    lockout: { base: 95, label: "Emergency lockout" },
+    rekey: { base: 120, label: "Rekey / lock change" },
+    install: { base: 250, label: "New lock or access-control install" },
+    intercom: { base: 150, label: "Intercom / buzzer repair" }
+  };
+  var AFTER_HOURS_SURCHARGE = 60;
+
+  var state = { job: null, hours: null };
+  var jobChoices = document.getElementById('job-choices');
+  var afterHoursField = document.getElementById('afterhours-field');
+  var quoteOut = document.getElementById('quote-out');
+
+  function money(n) { return "$" + n; }
+
+  Array.prototype.forEach.call(jobChoices.querySelectorAll('[data-job]'), function (b) {
+    b.addEventListener('click', function () {
+      state.job = b.getAttribute('data-job');
+      Array.prototype.forEach.call(jobChoices.querySelectorAll('[data-job]'), function (x) { x.classList.toggle('sel', x === b); });
+      afterHoursField.style.display = '';
+      renderQuote();
+    });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-hours]'), function (b) {
+    b.addEventListener('click', function () {
+      state.hours = b.getAttribute('data-hours');
+      Array.prototype.forEach.call(document.querySelectorAll('[data-hours]'), function (x) { x.classList.toggle('sel', x === b); });
+      renderQuote();
+    });
+  });
+
+  function renderQuote() {
+    if (!state.job) {
+      quoteOut.innerHTML = '<p class="placeholder">Pick a job type to see a starting estimate.</p>';
+      return;
+    }
+    var job = PRICING[state.job];
+    var html = '';
+    html += '<div class="quote-line"><span>' + job.label + '<span class="illus">Illustrative</span></span><b>' + money(job.base) + '</b></div>';
+    var total = job.base;
+    if (state.hours === 'after') {
+      html += '<div class="quote-line"><span>Nights / weekends surcharge<span class="illus">Illustrative</span></span><b>+' + money(AFTER_HOURS_SURCHARGE) + '</b></div>';
+      total += AFTER_HOURS_SURCHARGE;
+    } else if (!state.hours) {
+      quoteOut.innerHTML = html + '<p class="quote-sub">Pick a time of day to see the full estimate.</p>';
+      return;
+    }
+    html += '<div class="quote-total"><span>Starting estimate</span><span class="amt">' + money(total) + '</span></div>';
+    html += '<p class="quote-sub">Illustrative placeholder pricing, not Greenwich Locksmiths\' real rates. The actual price is confirmed once a technician sees the lock, door, or system in person, the point here is that a number exists before anyone shows up, not that it\'s final.</p>';
+    quoteOut.innerHTML = html;
+  }
+
+  var thread = document.getElementById('eta-thread');
+  var clock = document.getElementById('eta-clock');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-eta-scenario]'), function (b) {
+    b.addEventListener('click', function () { runScenario(b.getAttribute('data-eta-scenario')); });
+  });
+  document.getElementById('eta-reset-btn').addEventListener('click', function () {
+    thread.innerHTML = '<p class="placeholder" style="padding: 0 0.2rem;">Pick a scenario below to run it.</p>';
+  });
+
+  function bubble(who, text, ts) {
+    return '<div class="bubble ' + who + '">' + text + '<span class="ts">' + ts + '</span></div>';
+  }
+
+  function runScenario(kind) {
+    thread.innerHTML = '';
+    var delayed = kind === 'delayed';
+    clock.textContent = 'Tue 2:10 PM';
+    var msgs = [];
+    msgs.push({ who: 'out', text: 'Greenwich Locksmiths: your technician is dispatched for the intercom repair. Estimated arrival 2:30-2:45 PM.', ts: '2:10 PM' });
+    if (delayed) {
+      msgs.push({ who: 'out', text: 'Update: running about 20 minutes behind on the prior job. New window: 2:55-3:05 PM. Sorry for the wait.', ts: '2:32 PM' });
+      msgs.push({ who: 'in', text: 'Thanks for the heads up', ts: '2:33 PM' });
+    } else {
+      msgs.push({ who: 'out', text: 'Technician is on the way, arriving in the original window.', ts: '2:28 PM' });
+      msgs.push({ who: 'in', text: 'Sounds good, see you soon', ts: '2:29 PM' });
+    }
+    var i = 0;
+    function step() {
+      if (i >= msgs.length) return;
+      var m = msgs[i];
+      thread.insertAdjacentHTML('beforeend', bubble(m.who, m.text, m.ts));
+      thread.scrollTop = thread.scrollHeight;
+      i++;
+      setTimeout(step, 550);
+    }
+    step();
+  }
+
+  renderQuote();
+})();
+</script>
+</body>
+</html>
