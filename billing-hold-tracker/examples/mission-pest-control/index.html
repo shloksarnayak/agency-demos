@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Equipment pickup-to-billing-hold tracker template</title>
-<link rel="stylesheet" href="../assets/theme.css">
+<title>Mission Pest Control, billing-hold tracker example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
 <style>
   .bht-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
   .bht-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
@@ -28,9 +28,9 @@
   .event-title { font-weight: 660; }
   .event-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
   .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
-  .badge.pickup { color: var(--hot); background: var(--hot-bg); }
-  .badge.return { color: var(--warn); background: var(--warn-bg); }
-  .badge.delivery { color: var(--brand); background: var(--brand-soft); }
+  .badge.visit { color: var(--brand); background: var(--brand-soft); }
+  .badge.cancel { color: var(--warn); background: var(--warn-bg); }
+  .badge.email { color: var(--hot); background: var(--hot-bg); }
   .badge.hold { color: var(--hot); background: var(--hot-bg); }
   .badge.cleared { color: var(--good); background: var(--good-bg); }
   .event-notes { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; }
@@ -46,39 +46,49 @@
   .limits { display: flex; flex-direction: column; gap: 1.1rem; }
   .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
   .lim b { color: var(--ink); font-weight: 640; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
 </style>
 </head>
 <body>
 <nav class="fx-nav">
   <div class="fx-nav-row">
-    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
-    <span class="fx-crumb"><a href="../index.html">Templates</a> / Equipment pickup-to-billing-hold tracker</span>
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Billing-hold tracker</a> / Mission Pest Control</span>
   </div>
 </nav>
 <header class="fx-hero">
-  <span class="fx-kicker">Template, not built for a specific business</span>
-  <h1 class="fx-h1">The moment equipment leaves a patient's home, billing should already know.</h1>
-  <p class="fx-lede">A warehouse or delivery team picks up or takes back a piece of equipment, but that fact lives in one person's head or a paper ticket, not in the billing system. Weeks or months later the customer is still being charged, calls to dispute it, and the office cannot find any record the pickup ever happened. This page shows a small, working tool that closes that gap: a place for field staff to log every pickup, return, or delivery the moment it happens, which automatically raises a billing hold on that patient and equipment pairing until someone in billing clears it, plus a search so billing can instantly answer "do we have a record of that" instead of guessing.</p>
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">Mission Pest Control: the moment a cancellation email lands, billing should see it too</h1>
+  <p class="fx-lede">Mission Pest Control's own public BBB complaint file shows the same shape repeated across several separate cases spanning late 2023 through late 2025: a customer emails or calls to cancel, the request is acknowledged in writing or logged with an account manager, and the account is billed again the following month anyway. This example shows a small tool that gives every cancellation request a timestamped receipt the moment it comes in, and automatically raises a billing hold until someone confirms the account is actually closed.</p>
+  <div class="fact-strip">
+    <span class="fact">Mission Pest Control</span>
+    <span class="fact">San Diego, CA, serving 6 SoCal cities</span>
+    <span class="fact">Locally owned, 12+ years</span>
+    <span class="fact">Runs FieldRoutes (mission.pestportals.com)</span>
+  </div>
 </header>
 <main class="fx-main">
-  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the field-log view is what warehouse or delivery staff actually use on a phone or tablet at the point of pickup, and the billing-hold logic connects to whatever billing system already runs the recurring charges, it does not replace that system.</p></div>
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Mission Pest Control.</strong> All customer names, service records, and event data inside the tool below are fictional and clearly for illustration only. The business description is drawn from the company's own published site (missionpestcontrol.com). The complaint pattern referenced here is drawn from Mission Pest Control's public BBB complaint file.</p></div>
+
+  <p style="color:var(--ink-2); font-size:0.92rem; max-width:74ch;">Of the complaints published on Mission Pest Control's BBB profile, several independently describe the same mechanism: a cancellation request goes in by email or phone, an account manager acknowledges it or promises to process it, and the card gets charged again the following billing cycle regardless. Dated examples include a customer cancelled by email in October 2025 whose card was still charged the next month; a customer who cancelled in December 2024 but kept being billed until May 2025 despite repeated promises from an account manager; and a customer who cancelled in September 2023 and was still being charged four months later, with calls to the account manager going to voicemail. Mission already runs a FieldRoutes customer portal (confirmed live at mission.pestportals.com), so the account infrastructure exists, what's missing is a receipt that a cancellation request was actually received and a hold that stops the next charge until someone confirms it. This tool is scoped narrowly to that acknowledgment gap, not the phone-based retention conversation itself, which may be a deliberate save step this pitch isn't targeting.</p>
 
   <div class="bht-tabs">
-    <button class="bht-tab active" data-view="field" type="button">Field log</button>
+    <button class="bht-tab active" data-view="field" type="button">Front office log</button>
     <button class="bht-tab" data-view="billing" type="button">Billing desk</button>
   </div>
 
   <section class="bht-view active" id="view-field">
     <div class="bht-cols">
       <div>
-        <h2 class="fx-h2" style="margin-top:0;">Log a pickup, return, or delivery</h2>
+        <h2 class="fx-h2" style="margin-top:0;">Log a cancellation request or completed visit</h2>
         <form id="add-form" class="form-grid">
-          <div class="field span2"><label for="f-patient">Patient / account label</label><input type="text" id="f-patient" placeholder="e.g. Sample Patient A"></div>
-          <div class="field"><label for="f-equip">Equipment</label><select id="f-equip"></select></div>
-          <div class="field"><label for="f-tag">Serial / asset tag (optional)</label><input type="text" id="f-tag" placeholder="e.g. SN-44219"></div>
+          <div class="field span2"><label for="f-patient">Customer / account label</label><input type="text" id="f-patient" placeholder="e.g. Sample Customer A"></div>
+          <div class="field"><label for="f-equip">Service plan</label><select id="f-equip"></select></div>
+          <div class="field"><label for="f-tag">Account ID (optional)</label><input type="text" id="f-tag" placeholder="e.g. ACCT-8821"></div>
           <div class="field span2"><label for="f-type">Event type</label><select id="f-type"></select></div>
-          <div class="field span2"><label for="f-notes">Notes</label><textarea id="f-notes" placeholder="e.g. Picked up from patient's home, family signed release."></textarea></div>
-          <div class="field span2 field-check"><input type="checkbox" id="f-notify" checked><label for="f-notify" style="font-weight:400;">Send the patient a confirmation by text or email once logged (simulated)</label></div>
+          <div class="field span2"><label for="f-notes">Notes</label><textarea id="f-notes" placeholder="e.g. Customer emailed customercare@ requesting cancellation, no phone call made."></textarea></div>
+          <div class="field span2 field-check"><input type="checkbox" id="f-notify" checked><label for="f-notify" style="font-weight:400;">Send the customer a confirmation receipt by email once logged (simulated)</label></div>
           <div class="field span2"><button type="submit" class="fx-btn-ghost">Log event</button></div>
         </form>
       </div>
@@ -92,48 +102,49 @@
 
   <section class="bht-view" id="view-billing">
     <h2 class="fx-h2" style="margin-top:0;">Active billing holds</h2>
-    <p style="color:var(--ink-2); font-size:0.9rem; max-width:70ch;">Every logged pickup or return automatically raises a hold here, stopping the recurring charge from being taken for granted until someone in billing has actually looked at it.</p>
+    <p style="color:var(--ink-2); font-size:0.9rem; max-width:70ch;">Every logged cancellation request automatically raises a hold here, exactly the step missing in the BBB complaints above: nothing in the current process stops the next charge until a person notices and manually intervenes.</p>
     <div id="holds-root"></div>
 
     <h2 class="fx-h2" style="margin-top:2rem;">Search the event log</h2>
     <div class="lookup-box">
-      <label for="lookup-name" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Patient / account name</label>
-      <input type="text" id="lookup-name" placeholder="e.g. Sample Patient A">
+      <label for="lookup-name" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Customer / account name</label>
+      <input type="text" id="lookup-name" placeholder="e.g. Sample Customer A">
       <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Search history</button></div>
       <div id="lookup-root" class="lookup-result"></div>
     </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try Sample Customer A, Sample Customer B or Sample Customer C from the field log's sample events. This search directly answers the "we cancelled but kept getting charged" pattern: the receipt exists the moment the request is logged, instead of depending on a callback that a BBB complaint says never came.</p>
   </section>
 
   <section>
     <h2 class="fx-h2">How this gets built for real</h2>
     <div class="limits">
-      <div class="lim"><b>This is a bridge, not a replacement.</b> It sits between field operations and whatever billing platform already runs recurring charges, and only needs to push one signal: stop billing this patient for this equipment until cleared.</div>
-      <div class="lim"><b>The field-log form is the whole point.</b> It has to be fast enough that a driver or warehouse worker actually fills it out at the truck or the door, a barcode or serial scan can replace most of the typing in a real build.</div>
-      <div class="lim"><b>Clearing a hold is a deliberate billing action, not automatic.</b> The tool raises the flag, a person in billing still decides when the account is actually settled.</div>
-      <div class="lim"><b>See it built for real businesses: <a href="examples/medcare-equipment/">MedCare Equipment</a>, <a href="examples/prime-pest-control/">Prime Pest Control</a> or <a href="examples/mission-pest-control/">Mission Pest Control</a>.</b></div>
+      <div class="lim"><b>This bridges the front office to FieldRoutes, it doesn't replace it.</b> Mission already runs FieldRoutes for scheduling and account management; a real build would push one signal, a cancellation request was received, into the existing portal so billing sees it the same day.</div>
+      <div class="lim"><b>The receipt is the whole point, not the retention step.</b> This deliberately stays out of the phone-based save conversation an account manager may run, it only guarantees a written cancellation request gets an instant, logged acknowledgment.</div>
+      <div class="lim"><b>Clearing a hold stays a deliberate billing decision.</b> The tool raises the flag the instant a cancellation is logged; a person in billing still confirms and clears it, the same way the BBB complaints were ultimately resolved by a person, months later than they should have been.</div>
+      <div class="lim"><b>Back to the general template: <a href="../../">Equipment pickup-to-billing-hold tracker</a>.</b></div>
     </div>
   </section>
 </main>
-<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional patient and equipment data on this page, not connected to any live system.</p></footer>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Mission Pest Control.</strong></p><p>Prepared by Shlok Sarnayak. Fictional customer and event data on this page, not connected to any live system.</p></footer>
 <script>
 (function () {
   "use strict";
-  var STORE_KEY = "bht_template_generic_v1";
+  var STORE_KEY = "bht_mission_pest_control_v1";
 
   var EQUIP = [
-    { key: "cpap", label: "CPAP / BiPAP machine" },
-    { key: "oxygen", label: "Oxygen concentrator" },
-    { key: "hospitalbed", label: "Hospital bed" },
-    { key: "cpm", label: "CPM machine" },
-    { key: "mobility", label: "Wheelchair / mobility equipment" },
-    { key: "other", label: "Other equipment" }
+    { key: "quarterly", label: "Quarterly pest control plan" },
+    { key: "termite", label: "Termite protection plan" },
+    { key: "rodent", label: "Rodent exclusion plan" },
+    { key: "mosquito", label: "Mosquito treatment plan" },
+    { key: "insulation", label: "Insulation service" },
+    { key: "other", label: "Other service" }
   ];
   var EQUIP_LABEL = {}; EQUIP.forEach(function (e) { EQUIP_LABEL[e.key] = e.label; });
 
   var TYPES = [
-    { key: "delivery", label: "Delivery" },
-    { key: "pickup", label: "Pickup (equipment retrieved)" },
-    { key: "return", label: "Return (patient returned equipment)" }
+    { key: "visit", label: "Visit completed" },
+    { key: "cancel", label: "Cancellation requested (email or phone)" },
+    { key: "billed", label: "Recurring charge attempted" }
   ];
   var TYPE_LABEL = {}; TYPES.forEach(function (t) { TYPE_LABEL[t.key] = t.label; });
 
@@ -149,21 +160,21 @@
   function defaultData() {
     var events = [
       {
-        ref: "BHT-1001", patient: "Sample Patient A", equip: "hospitalbed", tag: "SN-77104",
-        type: "pickup", loggedAt: hoursFromNow(-70), notes: "Bed picked up, family signed release at the door.", notify: true
+        ref: "MPC-1001", patient: "Sample Customer A", equip: "quarterly", tag: "ACCT-8821",
+        type: "cancel", loggedAt: hoursFromNow(-96), notes: "Customer emailed customercare@ requesting cancellation of both service addresses.", notify: true
       },
       {
-        ref: "BHT-1002", patient: "Sample Patient B", equip: "cpap", tag: "SN-31220",
-        type: "return", loggedAt: hoursFromNow(-30), notes: "Mask and machine returned by mail, matched against original order.", notify: true
+        ref: "MPC-1002", patient: "Sample Customer B", equip: "rodent", tag: "ACCT-4410",
+        type: "cancel", loggedAt: hoursFromNow(-48), notes: "Customer called and spoke with an account manager, cancellation promised.", notify: true
       },
       {
-        ref: "BHT-1003", patient: "Sample Patient C", equip: "cpm", tag: "SN-90042",
-        type: "delivery", loggedAt: hoursFromNow(-8), notes: "Delivered post-op, 30-day rental agreement signed.", notify: false
+        ref: "MPC-1003", patient: "Sample Customer C", equip: "termite", tag: "ACCT-2207",
+        type: "visit", loggedAt: hoursFromNow(-6), notes: "Full treatment completed, customer signed off at the door.", notify: true
       }
     ];
     var holds = [
-      { id: "H-1", ref: "BHT-1001", patient: "Sample Patient A", equip: "hospitalbed", createdAt: hoursFromNow(-70), status: "active" },
-      { id: "H-2", ref: "BHT-1002", patient: "Sample Patient B", equip: "cpap", createdAt: hoursFromNow(-30), status: "active" }
+      { id: "H-1", ref: "MPC-1001", patient: "Sample Customer A", equip: "quarterly", createdAt: hoursFromNow(-96), status: "active" },
+      { id: "H-2", ref: "MPC-1002", patient: "Sample Customer B", equip: "rodent", createdAt: hoursFromNow(-48), status: "active" }
     ];
     return { seq: 1003, holdSeq: 2, events: events, holds: holds };
   }
@@ -189,8 +200,8 @@
       html += '<div class="event-card"><div class="event-head"><div><div class="event-title">' + escapeHtml(ev.patient) + " &middot; " + ev.ref + '</div><div class="event-meta">' + EQUIP_LABEL[ev.equip] + (ev.tag ? " &middot; " + escapeHtml(ev.tag) : "") + " &middot; " + fmtDate(ev.loggedAt) + '</div></div><span class="badge ' + ev.type + '">' + TYPE_LABEL[ev.type] + "</span></div>";
       if (ev.notes) html += '<div class="event-notes">' + escapeHtml(ev.notes) + "</div>";
       html += '<div class="event-flags">';
-      if (ev.type === "pickup" || ev.type === "return") html += '<span class="badge hold">Billing hold raised</span>';
-      if (ev.notify) html += '<span class="badge cleared" style="color:var(--brand);background:var(--brand-soft);">Patient notified (simulated)</span>';
+      if (ev.type === "cancel") html += '<span class="badge hold">Billing hold raised</span>';
+      if (ev.notify) html += '<span class="badge cleared" style="color:var(--brand);background:var(--brand-soft);">Customer notified (simulated)</span>';
       html += "</div></div>";
     });
     root.innerHTML = html;
@@ -233,11 +244,11 @@
     var type = document.getElementById("f-type").value;
     var notes = document.getElementById("f-notes").value.trim();
     var notify = document.getElementById("f-notify").checked;
-    if (!patient) { alert("Enter a patient or account label."); return; }
+    if (!patient) { alert("Enter a customer or account label."); return; }
     data.seq += 1;
-    var ref = "BHT-" + data.seq;
+    var ref = "MPC-" + data.seq;
     data.events.push({ ref: ref, patient: patient, equip: equip, tag: tag, type: type, loggedAt: Date.now(), notes: notes, notify: notify });
-    if (type === "pickup" || type === "return") {
+    if (type === "cancel") {
       data.holdSeq += 1;
       data.holds.push({ id: "H-" + data.holdSeq, ref: ref, patient: patient, equip: equip, createdAt: Date.now(), status: "active" });
     }
