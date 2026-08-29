@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Follow-up promise tracker template</title>
-<link rel="stylesheet" href="../assets/theme.css">
+<title>The London Removal Company, follow-up promise tracker example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
 <style>
   .fpt-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
   .fpt-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
@@ -49,26 +49,36 @@
   .limits { display: flex; flex-direction: column; gap: 1.1rem; }
   .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
   .lim b { color: var(--ink); font-weight: 640; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
 </style>
 </head>
 <body>
 <nav class="fx-nav">
   <div class="fx-nav-row">
-    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
-    <span class="fx-crumb"><a href="../index.html">Templates</a> / Follow-up promise tracker</span>
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Follow-up promise tracker</a> / The London Removal Company</span>
   </div>
 </nav>
 <header class="fx-hero">
-  <span class="fx-kicker">Template, not built for a specific business</span>
-  <h1 class="fx-h1">Every "someone will call you back" promise, visible until it's kept</h1>
-  <p class="fx-lede">A crew tells a customer someone will come out, or the office says a damage report is being looked into, and then it lives only in one person's memory or a sticky note. When that person is busy the promise quietly slips, the customer calls back annoyed, and it looks like the business does not follow through even when the actual work is good. This page shows one small, working tool that fixes that: an internal queue that surfaces every open promise sorted by how overdue it is, and a customer-facing status page so a customer can check where things stand without calling the office first.</p>
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">The London Removal Company: a place for every post-move claim to live until someone actually answers it</h1>
+  <p class="fx-lede">Reviews of The London Removal Company describe the same shape more than once: something is damaged or goes missing during a move, the company says it will be sorted through insurance or a callback, and then repeated calls and emails go unanswered. One reviewer put it directly: "despite repeated calls and emails, no one ever followed up." This example shows a small tool that gives every post-move claim or open enquiry a due date, an automatic overdue flag, and a place a customer or a rep can check without having to re-explain the whole thing from scratch.</p>
+  <div class="fact-strip">
+    <span class="fact">The London Removal Company</span>
+    <span class="fact">South London / Bromley area</span>
+    <span class="fact">Family-run, in business since 2000</span>
+    <span class="fact">Domestic, office &amp; international removals, storage</span>
+  </div>
 </header>
 <main class="fx-main">
-  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the office view is what staff actually use to log and close out promises, and the reference code on the customer view is whatever the office already hands out (a work order number, a claim number), not a new system to adopt.</p></div>
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by The London Removal Company.</strong> All customer names, tickets, and promises inside the tool below are fictional and clearly for illustration only. The business description is drawn from the company's own published site (thelondonremovalcompany.co.uk). The complaint pattern referenced here is drawn from customer reviews found via web search; Trustpilot itself blocks direct automated access, so this is based on review text as it appears in search results, not a direct Trustpilot fetch.</p></div>
+
+  <p style="color:var(--ink-2); font-size:0.92rem; max-width:74ch;">The pattern shows up across more than one review: a customer reports an item damaged or an item missing after a move, is told it will be handled through insurance or a follow-up call, and then hears nothing further despite repeated attempts to reach the company. One review describes the move itself going well but the post-move claim being ignored entirely; a separate review describes a garden table damaged and an item forgotten, with no response to any subsequent emails, texts, or calls. The company's own site runs on WordPress with a bespoke quote tool for new enquiries, but shows no ticketing system, claims tracker, or customer portal for anything after a booking is made, consistent with what these reviews describe.</p>
 
   <div class="fpt-tabs">
     <button class="fpt-tab active" data-view="office" type="button">Office view</button>
-    <button class="fpt-tab" data-view="customer" type="button">Customer status check</button>
+    <button class="fpt-tab" data-view="customer" type="button">Status lookup</button>
   </div>
 
   <section class="fpt-view active" id="view-office">
@@ -78,7 +88,7 @@
         <form id="add-form" class="form-grid">
           <div class="field span2"><label for="f-customer">Customer / job label</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
           <div class="field span2"><label for="f-type">Promise type</label><select id="f-type"></select></div>
-          <div class="field span2"><label for="f-summary">What was promised (customer-facing wording)</label><textarea id="f-summary" placeholder="e.g. Office will call back by Thursday with a decision on the gate repair."></textarea></div>
+          <div class="field span2"><label for="f-summary">What was promised (customer-facing wording)</label><textarea id="f-summary" placeholder="e.g. Office will call back with an update on the insurance claim for the damaged wardrobe."></textarea></div>
           <div class="field span2"><label for="f-due">Due by</label><input type="datetime-local" id="f-due"></div>
           <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
         </form>
@@ -93,35 +103,37 @@
 
   <section class="fpt-view" id="view-customer">
     <h2 class="fx-h2" style="margin-top:0;">Check the status of a promise</h2>
+    <p style="color:var(--ink-2); font-size:0.88rem; max-width:60ch; margin-top:-0.4rem;">The same lookup a customer-care rep uses on an incoming call to answer "is there actually a record of my claim," or that a customer could use directly, by the reference number already given out.</p>
     <div class="lookup-box">
       <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code</label>
-      <input type="text" id="lookup-ref" placeholder="e.g. FPT-1001">
+      <input type="text" id="lookup-ref" placeholder="e.g. TLR-1001">
       <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
       <div id="lookup-root"></div>
     </div>
-    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try FPT-1001, FPT-1002, FPT-1003 or FPT-1004 from the office view's sample queue.</p>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try TLR-1001, TLR-1002, TLR-1003 or TLR-1004 from the office view's sample queue.</p>
   </section>
 
   <section>
     <h2 class="fx-h2">How this gets built for real</h2>
     <div class="limits">
-      <div class="lim"><b>The reference code is whatever the office already uses.</b> A real build reads from an existing work-order or claim number instead of inventing a new one for the customer to remember.</div>
-      <div class="lim"><b>Overdue math here is a simple timer.</b> A real build can page or text the person responsible once something crosses overdue, instead of relying on someone opening this page.</div>
-      <div class="lim"><b>The customer view shows only customer-safe wording.</b> Internal notes stay in the office view; nothing typed there is exposed on the lookup page.</div>
-      <div class="lim"><b>See it built for real businesses: <a href="examples/barberton-tree-service/">Barberton Tree Service</a>, <a href="examples/arrow-auto-glass/">Arrow Auto Glass</a>, <a href="examples/fabian-oil/">Fabian Oil</a>, <a href="examples/4us-moving/">4US Moving</a>, <a href="examples/budget-heating-cooling-plumbing/">Budget Heating, Cooling &amp; Plumbing</a> and <a href="examples/the-london-removal-company/">The London Removal Company</a>.</b></div>
+      <div class="lim"><b>This sits beside the existing quote tool, not instead of it.</b> A real build tracks what happens after a booking or a claim is opened, it does not replace how new enquiries or quotes get submitted.</div>
+      <div class="lim"><b>The reference code is whatever the office already writes down.</b> A real build reads from an existing job or claim number instead of inventing a new one, so nothing has to be re-keyed.</div>
+      <div class="lim"><b>The status lookup shows only customer-safe wording.</b> Internal notes typed in the office view stay in the office view, so a rep can check a claim without exposing internal handling notes to the customer.</div>
+      <div class="lim"><b>Back to the general template: <a href="../../">Follow-up promise tracker</a>.</b></div>
     </div>
   </section>
 </main>
-<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional promise and customer data on this page, not connected to any live system.</p></footer>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by The London Removal Company.</strong></p><p>Prepared by Shlok Sarnayak. Fictional promise and customer data on this page, not connected to any live system.</p></footer>
 <script>
 (function () {
   "use strict";
-  var STORE_KEY = "fpt_template_generic_v1";
+  var STORE_KEY = "fpt_the_london_removal_company_v1";
 
   var TYPES = [
-    { key: "damage", label: "Property damage claim" },
-    { key: "arrival", label: "Arrival window notice" },
-    { key: "callback", label: "Callback / site-visit promise" }
+    { key: "claim", label: "Damage / missing item claim callback" },
+    { key: "quote", label: "Quote follow-up" },
+    { key: "booking", label: "Booking confirmation callback" },
+    { key: "insurance", label: "Insurance claim update" }
   ];
   var TYPE_LABEL = {}; TYPES.forEach(function (t) { TYPE_LABEL[t.key] = t.label; });
 
@@ -134,28 +146,28 @@
       seq: 1004,
       promises: [
         {
-          id: "FPT-1001", ref: "FPT-1001", customer: "Sample Customer A", type: "damage",
-          summary: "Office will call back by Thursday with a decision on the fence gate repair.",
-          openedAt: hoursFromNow(-52), dueAt: hoursFromNow(-4), status: "open",
-          notes: [{ at: hoursFromNow(-50), text: "Photos received from crew lead, forwarded to estimator." }]
+          id: "TLR-1001", ref: "TLR-1001", customer: "Sample Customer A", type: "claim",
+          summary: "Office will call back about the damaged wardrobe reported after the move.",
+          openedAt: hoursFromNow(-240), dueAt: hoursFromNow(-96), status: "open",
+          notes: [{ at: hoursFromNow(-230), text: "Customer emailed photos of the damage, no reply logged since." }]
         },
         {
-          id: "FPT-1002", ref: "FPT-1002", customer: "Sample Customer B", type: "arrival",
-          summary: "Crew arrival window for tomorrow: 8am to 11am.",
-          openedAt: hoursFromNow(-6), dueAt: hoursFromNow(2), status: "open",
+          id: "TLR-1002", ref: "TLR-1002", customer: "Sample Customer B", type: "insurance",
+          summary: "Office will update the customer on the insurance claim for a missing box of kitchenware.",
+          openedAt: hoursFromNow(-120), dueAt: hoursFromNow(-6), status: "open",
           notes: []
         },
         {
-          id: "FPT-1003", ref: "FPT-1003", customer: "Sample Customer C", type: "callback",
-          summary: "Someone will come out to re-look at the tree near the driveway.",
-          openedAt: hoursFromNow(-20), dueAt: hoursFromNow(28), status: "open",
-          notes: [{ at: hoursFromNow(-18), text: "Left message for scheduling, awaiting a slot." }]
+          id: "TLR-1003", ref: "TLR-1003", customer: "Sample Customer C", type: "quote",
+          summary: "Office will send a written quote for a two-bedroom flat move next month.",
+          openedAt: hoursFromNow(-20), dueAt: hoursFromNow(6), status: "open",
+          notes: [{ at: hoursFromNow(-18), text: "Survey completed by phone, quote being drafted." }]
         },
         {
-          id: "FPT-1004", ref: "FPT-1004", customer: "Sample Customer D", type: "damage",
-          summary: "Damage report reviewed and closed, repair scheduled.",
-          openedAt: hoursFromNow(-96), dueAt: hoursFromNow(-72), status: "resolved", resolvedAt: hoursFromNow(-70),
-          notes: [{ at: hoursFromNow(-70), text: "Repair crew booked for next week, customer notified by phone." }]
+          id: "TLR-1004", ref: "TLR-1004", customer: "Sample Customer D", type: "booking",
+          summary: "Office confirmed the moving date and crew size in writing.",
+          openedAt: hoursFromNow(-70), dueAt: hoursFromNow(-48), status: "resolved", resolvedAt: hoursFromNow(-46),
+          notes: [{ at: hoursFromNow(-46), text: "Confirmation email sent, customer replied to confirm receipt." }]
         }
       ]
     };
@@ -236,7 +248,7 @@
     var dueRaw = document.getElementById("f-due").value;
     if (!customer || !summary || !dueRaw) { alert("Fill in the customer, promise wording, and due date."); return; }
     data.seq += 1;
-    var ref = "FPT-" + data.seq;
+    var ref = "TLR-" + data.seq;
     data.promises.push({ id: ref, ref: ref, customer: customer, type: type, summary: summary, openedAt: Date.now(), dueAt: new Date(dueRaw).getTime(), status: "open", notes: [] });
     save(); renderQueue();
     document.getElementById("add-form").reset();
