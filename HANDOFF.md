@@ -448,3 +448,22 @@ commit+push after each.
    confirmed every factual claim, checked meta/disclaimer/em-dash
    requirements, and traced the JS triage logic branch by branch, found
    no problems.
+
+10. **Greenwich Locksmiths** (greenwichlocksmiths.com, West Village, NYC,
+    legal entity Greenwich Village Locksmiths Inc, since 1980) —
+    `instant-quote-calculator/examples/greenwich-locksmiths/`. Two BBB
+    complaints (Oct 2023: technician demanded $600 and refused a job;
+    Oct 2024: $273 charged for a brief intercom visit with no real
+    investigation) both describe price or willingness-to-do-the-job
+    only becoming clear after a technician had already arrived. Built a
+    starting-estimate-by-job-type calculator plus an arrival-window text
+    simulation, framed narrowly around the price/timing-certainty gap
+    both complaints share, deliberately not editorializing about the
+    rudeness/D-rating angle. Independent review verified the live site's
+    services/phone/pricing language and both BBB complaints' dates and
+    dollar amounts directly against BBB's complaints page, judged this a
+    service-quality pattern (not fraud/coercion/elder-targeting) so a
+    legitimate subject for a demo, and confirmed the JS pricing and
+    scenario logic. PASS-WITH-CONCERN verdict, no changes needed, noted
+    here for transparency since it was a closer trust-judgment call than
+    most builds.
