@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Elevator Repair Service, Inc., building compliance and service board (work sample)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .fact { font-family: var(--mono); font-size: 0.74rem; padding: 0.45rem 0.75rem; border: 1.5px solid var(--ink); border-radius: 999px; background: var(--surface-2); box-shadow: 2px 2px 0 var(--ink); }
+  .ers-tabs { display: flex; gap: 0.5rem; margin: 1.2rem 0; flex-wrap: wrap; }
+  .ers-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .ers-tab.active { background: var(--ink); color: var(--surface); }
+  .ers-view { display: none; }
+  .ers-view.active { display: block; }
+  .intake-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+  .intake-grid label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.82rem; font-weight: 700; color: var(--ink-2); }
+  .intake-grid input, .intake-grid select { width: 100%; padding: 0.65rem 0.8rem; }
+  .intake-full { grid-column: 1 / -1; }
+  @media (max-width: 640px) { .intake-grid { grid-template-columns: 1fr; } }
+  .account { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); margin-bottom: 1rem; }
+  .account:last-child { margin-bottom: 0; }
+  .account-head { background: var(--surface-2); padding: 0.7rem 1.1rem; font-weight: 700; font-size: 0.86rem; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; }
+  .account-head-note { font-weight: 400; font-size: 0.72rem; color: var(--muted); font-family: var(--mono); }
+  .unit { background: var(--surface); padding: 0.95rem 1.1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+  .unit-name { font-weight: 700; }
+  .unit-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.1rem; }
+  .clock-row { display: grid; grid-template-columns: 1fr auto auto; gap: 0.8rem; align-items: center; }
+  .clock-label { font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+  .clock-due { font-family: var(--mono); font-size: 0.82rem; }
+  .status { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.3rem 0.65rem; border-radius: 999px; white-space: nowrap; text-align: center; }
+  .status.ok { color: var(--good); background: var(--good-bg); }
+  .status.soon { color: var(--warn); background: var(--warn-bg); }
+  .status.late { color: var(--hot); background: var(--hot-bg); }
+  .log-btn { font: 700 0.72rem/1 var(--sans); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 2px solid var(--ink); background: var(--aqua); cursor: pointer; box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
+  .log-btn:hover { transform: translateY(-1px); }
+  @media (max-width: 760px) { .clock-row { grid-template-columns: 1fr; } }
+
+  .wst-cols { display: grid; grid-template-columns: 1fr 1.3fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .wst-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea { font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: #fff; color: var(--ink); }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .threshold-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .threshold-row input { width: 4.5rem; }
+  .type-filters { display: flex; gap: 0.4rem; margin-bottom: 0.9rem; flex-wrap: wrap; }
+  .type-filter { font: inherit; font-size: 0.76rem; font-weight: 700; padding: 0.4rem 0.75rem; border: 2px solid var(--ink); border-radius: 999px; background: #fff; color: var(--ink); cursor: pointer; }
+  .type-filter.active { background: var(--brand); color: #fff; }
+  .req-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .req-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .req-title { font-weight: 660; }
+  .req-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.attention { color: var(--hot); background: var(--hot-bg); }
+  .badge.ontrack { color: var(--brand); background: var(--brand-soft); }
+  .badge.done { color: var(--good); background: var(--good-bg); }
+  .badge.type-pm { color: var(--ink); background: var(--aqua); }
+  .badge.type-inspection { color: var(--ink); background: var(--yellow); }
+  .badge.type-emergency { color: #fff; background: var(--coral); }
+  .badge.type-modernization { color: var(--ink); background: var(--violet); }
+  .req-summary { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; }
+  .req-flag { font-size: 0.84rem; color: var(--hot); margin-top: 0.35rem; font-weight: 650; }
+  .req-inbox { font-size: 0.78rem; color: var(--muted); margin-top: 0.35rem; }
+  .req-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 460px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.2rem; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.5rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Compliance scheduler</a> / Elevator Repair Service, Inc.</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Built as a work sample for Elevator Repair Service, Inc. (ERS), not a live system</span>
+  <h1 class="fx-h1">One building, several units, several clocks, plus a phone that never stops</h1>
+  <p class="fx-lede">ERS maintains, inspects, modernizes, and installs commercial and industrial elevators, escalators, moving walkways, material lifts, and rack-and-pinion units across Houston, all through a phone line, a generic "Request Service" contact form, and email today, with the company's own site setting the expectation of a callback "within 24 hours." A single client building can carry several pieces of equipment at once, each on its own preventative-maintenance clock and its own separately-tracked state inspection clock, while emergency calls, repairs, and modernization jobs all still need to be routed somewhere. This page shows what a per-building due-date board plus a shared service queue, with a self-service status check for building managers, could look like, using fictional sample accounts.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Elevator Repair Service, Inc.</strong> The building names, equipment records, and job tickets below are fictional. Nothing on this page sends a real email, text, or dispatch, every action here only updates the record in your own browser.</p></div>
+
+  <section class="fx-card" style="display:flex; flex-direction:column; gap:1rem;">
+    <div class="fact-strip">
+      <span class="fact">Houston, TX &middot; founded 1984 (41 years) &middot; family-owned &amp; woman-owned</span>
+      <span class="fact">Texas HUB &amp; WBE certified (Women's Business Enterprise National Council)</span>
+      <span class="fact">President: Sandra Stafford</span>
+      <span class="fact">Current intake: phone &amp; generic "Request Service" contact form only, 24-hour response commitment</span>
+    </div>
+    <p style="margin:0; font-size:0.85rem; color:var(--muted);">Facts above are drawn directly from elevatorsrus.com's own published copy and its BBB profile, nothing here is invented about the business itself. The preventative-maintenance and inspection intervals below are illustrative and configurable, a real build uses whatever schedule ERS's own service contracts and the applicable state inspection requirement actually set, not a number invented here.</p>
+  </section>
+
+  <div class="ers-tabs">
+    <button class="ers-tab active" data-view="compliance" type="button">Building compliance board</button>
+    <button class="ers-tab" data-view="queue" type="button">Service queue</button>
+  </div>
+
+  <section class="ers-view active" id="view-compliance">
+    <section class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+      <div>
+        <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Client building compliance board (fictional sample accounts)</div>
+        <p style="margin:0.5rem 0 0; font-size:0.85rem; color:var(--ink-2);">Each building can carry more than one piece of equipment, and each piece keeps two independent clocks: its next preventative-maintenance visit and its next state-mandated inspection. One clock going overdue never masks the other, and logging a completed visit or inspection updates that unit's own record immediately.</p>
+        <div id="board-root" style="margin-top:0.9rem;"></div>
+      </div>
+    </section>
+
+    <section class="fx-card" style="display:flex; flex-direction:column; gap:1.1rem;">
+      <div>
+        <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">New building / equipment record</div>
+        <p style="margin:0.5rem 0 0; font-size:0.88rem; color:var(--ink-2);">Fills the role of the phone call or contact-form message ERS gets today. Type an existing building name to add a second unit to that same building, or a new name to start one. Both due dates are computed automatically, not typed in by hand.</p>
+      </div>
+      <form id="intake-form" class="intake-grid">
+        <label>Building / account name<input type="text" id="f-account" list="account-list" placeholder="e.g. Example Office Tower" required>
+          <datalist id="account-list"></datalist>
+        </label>
+        <label>Equipment type
+          <select id="f-equip">
+            <option value="traction" selected>Traction elevator</option>
+            <option value="hydraulic">Hydraulic elevator</option>
+            <option value="escalator">Escalator</option>
+            <option value="walkway">Moving walkway</option>
+            <option value="lift">Material lift</option>
+            <option value="rackpinion">Rack-and-pinion unit</option>
+          </select>
+        </label>
+        <label>Preventative-maintenance interval
+          <select id="f-pm">
+            <option value="1">Monthly</option>
+            <option value="3" selected>Quarterly</option>
+            <option value="6">Semi-annual</option>
+          </select>
+        </label>
+        <label>Last PM visit date<input type="date" id="f-lastpm" required></label>
+        <label>Last state inspection date<input type="date" id="f-lastinsp" required></label>
+        <label class="intake-full">Contact email<input type="email" id="f-email" placeholder="name@example.com" required></label>
+        <div class="intake-full" style="display:flex; gap:0.7rem; align-items:center; flex-wrap:wrap;">
+          <button type="submit" class="fx-btn">Add unit to schedule</button>
+          <span id="intake-msg" style="font-size:0.85rem; color:var(--muted);"></span>
+        </div>
+      </form>
+    </section>
+  </section>
+
+  <section class="ers-view" id="view-queue">
+    <div class="threshold-row">
+      <label for="threshold-input" style="font-size:0.82rem;font-weight:700;">Flag a ticket as needing attention after</label>
+      <input type="number" id="threshold-input" min="1" value="2">
+      <span style="font-size:0.82rem;color:var(--ink-2);">days with no stage change</span>
+    </div>
+    <div class="wst-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new ticket</h2>
+        <form id="add-form" class="form-grid">
+          <div class="field span2"><label for="f-building">Building</label><input type="text" id="f-building" list="queue-account-list" placeholder="e.g. Example Office Tower"><datalist id="queue-account-list"></datalist></div>
+          <div class="field"><label for="f-type">Job type</label><select id="f-type"></select></div>
+          <div class="field"><label for="f-assigned">Assigned to</label><input type="text" id="f-assigned" placeholder="e.g. Sample Technician"></div>
+          <div class="field span2"><label for="f-item">Ticket details</label><input type="text" id="f-item" placeholder="e.g. sample job description"></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
+        </form>
+        <p style="font-size:0.78rem; color:var(--muted); margin-top:0.4rem;">A real deployment shows this same queue to whoever is covering the office phone or the dispatch board that day, instead of splitting jobs across memory, sticky notes, and phone messages.</p>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Shared service queue, flagged first</h2>
+        <div class="type-filters" id="type-filters"></div>
+        <div id="queue-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+
+    <div style="margin-top:2rem;">
+      <h2 class="fx-h2" style="margin-top:0;">Building manager status check</h2>
+      <p style="font-size:0.88rem; color:var(--ink-2); max-width:70ch;">Replaces waiting up to 24 hours for a callback: a building manager can check a ticket's status themselves, any time.</p>
+      <div class="lookup-box">
+        <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference number</label>
+        <input type="text" id="lookup-ref" placeholder="e.g. ERS-1001">
+        <label for="lookup-building" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);margin-top:0.6rem;display:block;">Building name on the ticket</label>
+        <input type="text" id="lookup-building" placeholder="e.g. Example Office Tower">
+        <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+        <div id="lookup-root"></div>
+      </div>
+      <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try ERS-1001 through ERS-1005 from the sample queue, with the matching sample building name.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">Why this, specifically, for ERS</h2>
+    <div class="limits">
+      <div class="lim"><b>Matches the pain in ERS's own words.</b> ERS's own site routes every preventative-maintenance visit, emergency repair, state inspection, and modernization or installation request through the same phone call, the same generic "Request Service" contact form, or email, and sets the expectation of a callback "within 24 hours." A building manager with an urgent question today has no way to check status without waiting on that callback.</div>
+      <div class="lim"><b>One building, several units, several clocks.</b> A single client building can run a traction elevator, an escalator, and a material lift on three different preventative-maintenance schedules, each also carrying its own separate state inspection clock. The sample accounts below model that shape, one building, multiple equipment records, each with two independently tracked due dates, neither hidden behind the other.</div>
+      <div class="lim"><b>Covers all five job types ERS lists, not only inspections.</b> The service queue tracks preventative-maintenance visits, state-mandated inspections, emergency repairs, and modernization or installation jobs in one shared view instead of relying entirely on phone calls and a generic form, with anything sitting too long in a stage flagged automatically.</div>
+      <div class="lim"><b>Same class of tool already proven in this pipeline for adjacent licensed/inspection-driven trades:</b> a compliance-schedule board for CFS Fire Protection and Overhead Hoist &amp; Crane Specialists, and a shared job-ticket queue for other field-service trades. This example combines both pieces because ERS's own pain, as described on its own site, spans both a recurring compliance schedule and a shared job queue at once.</div>
+      <div class="lim"><b>Back to the generic pattern: <a href="../../">recurring service compliance scheduler template</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Elevator Repair Service, Inc.</strong></p><p>Prepared by Shlok Sarnayak. Fictional account and ticket data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------- Building compliance board ---------------- */
+  var CB_STORE_KEY = "fx-compliance-demo-ers-elevator";
+  var EQUIP_TYPES = {
+    traction: { label: "Traction elevator" },
+    hydraulic: { label: "Hydraulic elevator" },
+    escalator: { label: "Escalator" },
+    walkway: { label: "Moving walkway" },
+    lift: { label: "Material lift" },
+    rackpinion: { label: "Rack-and-pinion unit" }
+  };
+  var INSPECTION_MONTHS = 12;
+  var SEED_ACCOUNTS = [
+    {
+      id: "seed-acc-1",
+      name: "Sample Downtown Office Tower (fictional)",
+      equipment: [
+        { id: "seed-1a", type: "traction", pmMonths: 3, lastPM: daysAgo(70), lastInspection: daysAgo(300) },
+        { id: "seed-1b", type: "traction", pmMonths: 3, lastPM: daysAgo(20), lastInspection: daysAgo(40) }
+      ]
+    },
+    {
+      id: "seed-acc-2",
+      name: "Sample Medical Office Building (fictional)",
+      equipment: [
+        { id: "seed-2a", type: "hydraulic", pmMonths: 3, lastPM: daysAgo(95), lastInspection: daysAgo(360) },
+        { id: "seed-2b", type: "lift", pmMonths: 6, lastPM: daysAgo(150), lastInspection: daysAgo(200) }
+      ]
+    },
+    {
+      id: "seed-acc-3",
+      name: "Sample Retail Plaza (fictional)",
+      equipment: [
+        { id: "seed-3a", type: "escalator", pmMonths: 1, lastPM: daysAgo(45), lastInspection: daysAgo(100) },
+        { id: "seed-3b", type: "walkway", pmMonths: 1, lastPM: daysAgo(10), lastInspection: daysAgo(370) }
+      ]
+    }
+  ];
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); }
+  function addMonths(iso, months) { var d = new Date(iso + "T00:00:00"); d.setMonth(d.getMonth() + months); return d; }
+  function fmt(d) { return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
+  function loadExtra() { try { return JSON.parse(localStorage.getItem(CB_STORE_KEY) || "[]"); } catch (e) { return []; } }
+  function saveExtra(list) { try { localStorage.setItem(CB_STORE_KEY, JSON.stringify(list)); } catch (e) {} }
+  function loadOverrides() { try { return JSON.parse(localStorage.getItem(CB_STORE_KEY + "-overrides") || "{}"); } catch (e) { return {}; } }
+  function saveOverrides(obj) { try { localStorage.setItem(CB_STORE_KEY + "-overrides", JSON.stringify(obj)); } catch (e) {} }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function allAccounts() {
+    var extra = loadExtra();
+    var byName = {};
+    var order = [];
+    SEED_ACCOUNTS.forEach(function (a) { byName[a.name.toLowerCase()] = { id: a.id, name: a.name, equipment: a.equipment.slice() }; order.push(a.name.toLowerCase()); });
+    extra.forEach(function (s) {
+      var key = s.accountName.toLowerCase();
+      if (!byName[key]) { byName[key] = { id: "acc-" + key.replace(/[^a-z0-9]+/g, "-"), name: s.accountName, equipment: [] }; order.push(key); }
+      byName[key].equipment.push({ id: s.id, type: s.type, pmMonths: s.pmMonths, lastPM: s.lastPM, lastInspection: s.lastInspection, email: s.email });
+    });
+    return order.map(function (k) { return byName[k]; });
+  }
+
+  function clockStatus(dueDate, soonDays) {
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var days = Math.round((dueDate - today) / 86400000);
+    if (days < 0) return { cls: "late", label: "Overdue" };
+    if (days <= soonDays) return { cls: "soon", label: "Due soon" };
+    return { cls: "ok", label: "Compliant" };
+  }
+
+  function renderBoard() {
+    var accounts = allAccounts();
+    var overrides = loadOverrides();
+    var html = "";
+    accounts.forEach(function (acc) {
+      html += '<div class="account">';
+      html += '<div class="account-head"><span>' + escapeHtml(acc.name) + '</span><span class="account-head-note">' + acc.equipment.length + ' unit' + (acc.equipment.length === 1 ? "" : "s") + ' tracked at this building</span></div>';
+      acc.equipment.forEach(function (u) {
+        var eq = EQUIP_TYPES[u.type];
+        var ov = overrides[u.id] || {};
+        var lastPM = ov.lastPM || u.lastPM;
+        var lastInspection = ov.lastInspection || u.lastInspection;
+        var pmDue = addMonths(lastPM, u.pmMonths);
+        var inspDue = addMonths(lastInspection, INSPECTION_MONTHS);
+        var pmSt = clockStatus(pmDue, 7);
+        var inspSt = clockStatus(inspDue, 30);
+        html += '<div class="unit">';
+        html += '<div><div class="unit-name">' + eq.label + '</div><div class="unit-sub">PM interval: every ' + u.pmMonths + ' month' + (u.pmMonths === 1 ? "" : "s") + (u.email ? ' &middot; ' + escapeHtml(u.email) : '') + '</div></div>';
+        html += '<div class="clock-row"><div><div class="clock-label">Next PM visit</div><div class="clock-due">' + fmt(pmDue) + '</div></div><div class="status ' + pmSt.cls + '">' + pmSt.label + '</div><button class="log-btn" data-unit="' + u.id + '" data-field="lastPM">Log PM visit today</button></div>';
+        html += '<div class="clock-row"><div><div class="clock-label">Next state inspection</div><div class="clock-due">' + fmt(inspDue) + '</div></div><div class="status ' + inspSt.cls + '">' + inspSt.label + '</div><button class="log-btn" data-unit="' + u.id + '" data-field="lastInspection">Log inspection today</button></div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+    document.getElementById("board-root").innerHTML = html;
+    var names = accounts.map(function (a) { return a.name; });
+    document.getElementById("account-list").innerHTML = names.map(function (n) { return '<option value="' + escapeHtml(n) + '">'; }).join("");
+    document.getElementById("queue-account-list").innerHTML = names.map(function (n) { return '<option value="' + escapeHtml(n) + '">'; }).join("");
+    Array.prototype.forEach.call(document.querySelectorAll(".log-btn"), function (b) {
+      b.addEventListener("click", function () {
+        var overrides2 = loadOverrides();
+        var id = b.dataset.unit, field = b.dataset.field;
+        overrides2[id] = overrides2[id] || {};
+        overrides2[id][field] = new Date().toISOString().slice(0, 10);
+        saveOverrides(overrides2);
+        renderBoard();
+      });
+    });
+  }
+
+  document.getElementById("intake-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var accountName = document.getElementById("f-account").value.trim();
+    var type = document.getElementById("f-equip").value;
+    var pmMonths = parseInt(document.getElementById("f-pm").value, 10);
+    var lastpm = document.getElementById("f-lastpm").value;
+    var lastinsp = document.getElementById("f-lastinsp").value;
+    var email = document.getElementById("f-email").value.trim();
+    if (!accountName || !lastpm || !lastinsp || !email) return;
+    var extra = loadExtra();
+    extra.push({ id: "custom-" + Date.now(), accountName: accountName, type: type, pmMonths: pmMonths, lastPM: lastpm, lastInspection: lastinsp, email: email });
+    saveExtra(extra);
+    var pmDue = addMonths(lastpm, pmMonths);
+    var inspDue = addMonths(lastinsp, INSPECTION_MONTHS);
+    document.getElementById("intake-msg").textContent = "Added to " + accountName + ". Next PM due: " + fmt(pmDue) + ". Next inspection due: " + fmt(inspDue) + ".";
+    document.getElementById("intake-form").reset();
+    document.getElementById("f-pm").value = "3";
+    renderBoard();
+  });
+
+  /* ---------------- Service queue ---------------- */
+  var Q_STORE_KEY = "fx-ers-queue-v1";
+  var TYPES = {
+    pm: { label: "Preventative maintenance visit", stages: [
+      { key: "scheduled", label: "Scheduled" },
+      { key: "on_site", label: "Technician on site" },
+      { key: "report_filed", label: "Report filed" }
+    ] },
+    inspection: { label: "State-mandated inspection", stages: [
+      { key: "scheduled", label: "Scheduled" },
+      { key: "on_site", label: "Inspector on site" },
+      { key: "certificate", label: "Certificate issued" }
+    ] },
+    emergency: { label: "Emergency repair (24/7)", stages: [
+      { key: "dispatched", label: "Dispatched" },
+      { key: "on_site", label: "Technician on site" },
+      { key: "resolved", label: "Resolved" }
+    ] },
+    modernization: { label: "Modernization / installation", stages: [
+      { key: "scope", label: "Scope confirmed" },
+      { key: "parts", label: "Parts ordered" },
+      { key: "in_progress", label: "Work in progress" },
+      { key: "completed", label: "Completed" }
+    ] }
+  };
+  var TYPE_KEYS = Object.keys(TYPES);
+  var typeFilter = "all";
+
+  function fmtDateTime(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function daysFromNow(d) { return Date.now() + d * 86400000; }
+  function daysAgoTs(ts) { return (Date.now() - ts) / 86400000; }
+  function fmtDuration(days) { if (days < 1) return "under a day"; return Math.round(days) + (Math.round(days) === 1 ? " day" : " days"); }
+  function pingText(stageLabel) { return "Status update logged: this ticket is now " + stageLabel + "."; }
+  function stagesFor(type) { return TYPES[type].stages; }
+
+  function defaultQueueData() {
+    return {
+      seq: 1005,
+      requests: [
+        {
+          ref: "ERS-1001", type: "emergency", building: "Sample Downtown Office Tower (fictional)", item: "Sample no-run call, elevator 2",
+          assigned: "Sample Technician A", stageIdx: 1, enteredStageAt: daysFromNow(-1),
+          history: [{ stage: "dispatched", at: daysFromNow(-1) }, { stage: "on_site", at: daysFromNow(-1) }],
+          notes: [{ at: daysFromNow(-1), text: pingText("Technician on site"), ping: true }]
+        },
+        {
+          ref: "ERS-1002", type: "pm", building: "Sample Medical Office Building (fictional)", item: "Sample quarterly PM visit, hydraulic elevator",
+          assigned: "Sample Technician B", stageIdx: 0, enteredStageAt: daysFromNow(-4),
+          history: [{ stage: "scheduled", at: daysFromNow(-4) }],
+          notes: [{ at: daysFromNow(-4), text: pingText("Scheduled"), ping: true }]
+        },
+        {
+          ref: "ERS-1003", type: "inspection", building: "Sample Downtown Office Tower (fictional)", item: "Sample annual inspection, elevator 1",
+          assigned: "Sample Inspector", stageIdx: 0, enteredStageAt: daysFromNow(-6),
+          history: [{ stage: "scheduled", at: daysFromNow(-6) }],
+          notes: [{ at: daysFromNow(-6), text: pingText("Scheduled"), ping: true }]
+        },
+        {
+          ref: "ERS-1004", type: "modernization", building: "Sample Retail Plaza (fictional)", item: "Sample escalator step-chain modernization",
+          assigned: "Sample Project Lead", stageIdx: 1, enteredStageAt: daysFromNow(-3),
+          history: [{ stage: "scope", at: daysFromNow(-10) }, { stage: "parts", at: daysFromNow(-3) }],
+          notes: [{ at: daysFromNow(-3), text: pingText("Parts ordered"), ping: true }]
+        },
+        {
+          ref: "ERS-1005", type: "pm", building: "Sample Retail Plaza (fictional)", item: "Sample monthly PM visit, moving walkway",
+          assigned: "Sample Technician B", stageIdx: 2, enteredStageAt: daysFromNow(-2),
+          history: [{ stage: "scheduled", at: daysFromNow(-9) }, { stage: "on_site", at: daysFromNow(-7) }, { stage: "report_filed", at: daysFromNow(-2) }],
+          notes: [{ at: daysFromNow(-2), text: pingText("Report filed"), ping: true }]
+        }
+      ]
+    };
+  }
+
+  var qdata = loadQueue();
+  function loadQueue() { try { var raw = localStorage.getItem(Q_STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {} return defaultQueueData(); }
+  function saveQueue() { try { localStorage.setItem(Q_STORE_KEY, JSON.stringify(qdata)); } catch (e) {} }
+
+  function getThreshold() {
+    var v = parseInt(document.getElementById("threshold-input").value, 10);
+    return isNaN(v) || v < 1 ? 2 : v;
+  }
+
+  function statusInfo(r, threshold) {
+    var stages = stagesFor(r.type);
+    if (r.stageIdx >= stages.length - 1) return { cls: "done", label: "Complete", flag: null };
+    var stuckDays = daysAgoTs(r.enteredStageAt);
+    if (stuckDays > threshold) {
+      var reason = "Stalled in \"" + stages[r.stageIdx].label + "\", " + fmtDuration(stuckDays) + " with no stage change.";
+      return { cls: "attention", label: "Needs attention", flag: reason };
+    }
+    return { cls: "ontrack", label: "On track", flag: null };
+  }
+
+  function populateTypeSelect() {
+    var sel = document.getElementById("f-type");
+    sel.innerHTML = TYPE_KEYS.map(function (k) { return '<option value="' + k + '">' + escapeHtml(TYPES[k].label) + "</option>"; }).join("");
+  }
+
+  function renderTypeFilters() {
+    var root = document.getElementById("type-filters");
+    var opts = [{ key: "all", label: "All" }].concat(TYPE_KEYS.map(function (k) { return { key: k, label: TYPES[k].label }; }));
+    root.innerHTML = opts.map(function (o) {
+      return '<button type="button" class="type-filter' + (typeFilter === o.key ? " active" : "") + '" data-type="' + o.key + '">' + escapeHtml(o.label) + "</button>";
+    }).join("");
+    root.querySelectorAll(".type-filter").forEach(function (btn) {
+      btn.addEventListener("click", function () { typeFilter = btn.dataset.type; renderTypeFilters(); renderQueue(); });
+    });
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var threshold = getThreshold();
+    var all = typeFilter === "all" ? qdata.requests.slice() : qdata.requests.filter(function (r) { return r.type === typeFilter; });
+    var open = all.filter(function (r) { return r.stageIdx < stagesFor(r.type).length - 1; });
+    open.sort(function (a, b) {
+      var fa = statusInfo(a, threshold).flag ? 0 : 1;
+      var fb = statusInfo(b, threshold).flag ? 0 : 1;
+      if (fa !== fb) return fa - fb;
+      return daysAgoTs(b.enteredStageAt) - daysAgoTs(a.enteredStageAt);
+    });
+    var done = all.filter(function (r) { return r.stageIdx >= stagesFor(r.type).length - 1; })
+      .slice().sort(function (a, b) { return b.enteredStageAt - a.enteredStageAt; });
+    var html = "";
+    if (!open.length) html += '<p class="empty">Nothing open in this view.</p>';
+    open.forEach(function (r) { html += renderCard(r, threshold); });
+    if (done.length) {
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently completed</h3>';
+      done.slice(0, 5).forEach(function (r) { html += renderCard(r, threshold); });
+    }
+    root.innerHTML = html;
+  }
+
+  function renderCard(r, threshold) {
+    var st = statusInfo(r, threshold);
+    var idx = qdata.requests.indexOf(r);
+    var stages = stagesFor(r.type);
+    var stageLabel = stages[r.stageIdx].label;
+    var html = '<div class="req-card"><div class="req-head"><div><div class="req-title">' + escapeHtml(r.building) + " &middot; " + r.ref + '</div><div class="req-meta">' + escapeHtml(r.item) + "</div></div><span>";
+    html += '<span class="badge type-' + r.type + '">' + escapeHtml(TYPES[r.type].label) + '</span> <span class="badge ' + st.cls + '">' + st.label + "</span></span></div>";
+    html += '<div class="req-summary">Stage: ' + stageLabel + " (" + fmtDuration(daysAgoTs(r.enteredStageAt)) + " in this stage)</div>";
+    html += '<div class="req-inbox">Assigned to: ' + escapeHtml(r.assigned || "Unassigned") + "</div>";
+    if (st.flag) html += '<div class="req-flag">&#9888; ' + escapeHtml(st.flag) + "</div>";
+    if (r.notes.length) {
+      html += '<div class="log" style="margin-top:0.7rem; padding-top:0.7rem; border-top:1px solid var(--rule-soft);">';
+      r.notes.slice().reverse().forEach(function (n) { html += '<div style="font-size:0.8rem; color:var(--ink-2); padding:0.18rem 0;"><span style="font-family:var(--mono); font-size:0.62rem; color:var(--muted); margin-right:0.4rem;">' + fmtDateTime(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+      html += "</div>";
+    }
+    if (r.stageIdx < stages.length - 1) {
+      var nextLabel = stages[r.stageIdx + 1].label;
+      html += '<div class="req-actions"><button class="fx-btn-ghost" onclick="__ers.advance(' + idx + ')">Advance to ' + escapeHtml(nextLabel) + '</button></div>';
+    }
+    html += "</div>";
+    return html;
+  }
+
+  window.__ers = {
+    advance: function (idx) {
+      var r = qdata.requests[idx];
+      var stages = stagesFor(r.type);
+      r.stageIdx += 1;
+      r.enteredStageAt = Date.now();
+      var label = stages[r.stageIdx].label;
+      r.history.push({ stage: stages[r.stageIdx].key, at: Date.now() });
+      r.notes.push({ at: Date.now(), text: pingText(label), ping: true });
+      saveQueue(); renderQueue();
+    }
+  };
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var building = document.getElementById("f-building").value.trim();
+    var type = document.getElementById("f-type").value;
+    var assigned = document.getElementById("f-assigned").value.trim() || "Unassigned";
+    var item = document.getElementById("f-item").value.trim();
+    if (!building || !item) { alert("Fill in the building name and ticket details."); return; }
+    qdata.seq += 1;
+    var ref = "ERS-" + qdata.seq;
+    var now = Date.now();
+    var firstStage = stagesFor(type)[0];
+    qdata.requests.push({ ref: ref, type: type, building: building, item: item, assigned: assigned, stageIdx: 0, enteredStageAt: now, history: [{ stage: firstStage.key, at: now }], notes: [{ at: now, text: pingText(firstStage.label), ping: true }] });
+    saveQueue(); renderQueue();
+    document.getElementById("add-form").reset();
+    populateTypeSelect();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    qdata = defaultQueueData(); saveQueue(); renderQueue();
+  });
+
+  document.getElementById("threshold-input").addEventListener("input", renderQueue);
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var building = document.getElementById("lookup-building").value.trim().toLowerCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref || !building) { root.innerHTML = '<div class="lookup-result"><p class="not-found">Enter both the reference number and the building name on the ticket.</p></div>'; return; }
+    var r = qdata.requests.filter(function (x) { return x.ref.toUpperCase() === ref && x.building.toLowerCase().indexOf(building) === 0; })[0];
+    if (!r) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No matching record found. Please contact us directly.</p></div>'; return; }
+    var stages = stagesFor(r.type);
+    var html = '<div class="lookup-result"><h3>' + escapeHtml(TYPES[r.type].label) + ": " + escapeHtml(r.item) + '</h3>';
+    stages.forEach(function (s, i) {
+      var cls = i < r.stageIdx ? "done" : (i === r.stageIdx ? "active" : "pending");
+      var histEntry = r.history.filter(function (h) { return h.stage === s.key; })[0];
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === "pending" ? " pending-text" : "") + '">' + s.label + '</div><div class="stage-time">' + (histEntry ? fmtDateTime(histEntry.at) : (cls === "active" ? "In progress" : "Not started")) + "</div></div></div>";
+    });
+    html += "</div>";
+    root.innerHTML = html;
+  });
+
+  document.querySelectorAll(".ers-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".ers-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".ers-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderBoard();
+  populateTypeSelect();
+  renderTypeFilters();
+  renderQueue();
+})();
+</script>
+</body>
+</html>
