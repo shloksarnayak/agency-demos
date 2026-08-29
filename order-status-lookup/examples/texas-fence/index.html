@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Job status lookup: working example for Texas Fence</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .lookup-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+  input[type="text"]:focus { outline: none; border-color: var(--brand); }
+  .samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.8rem; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.35rem 0.85rem; cursor: pointer; }
+  .sample-chip:hover { opacity: 0.85; }
+
+  .result { border-top: 1px solid var(--rule); padding-top: 1.3rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .result-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
+  .result-head h3 { margin: 0; font-size: 1.1rem; font-family: var(--serif); }
+  .result-meta { font-size: 0.85rem; color: var(--muted); }
+
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.6rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-dot.flag { background: var(--hot); box-shadow: 0 0 0 4px var(--hot-bg); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+
+  .error-box { font-size: 0.92rem; color: var(--muted); font-style: italic; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Order &amp; job status lookup</a> / Texas Fence</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Texas Fence</span>
+  <h1 class="fx-h1">A job status that flags an unresolved issue before it needs a BBB complaint to get seen</h1>
+  <p class="fx-lede">A BBB complaint from July 2024 describes a customer sending in 15 photos of a concrete-installation issue and getting no follow-up until the complaint reached your General Manager directly. A separate platform, BestPickReports, independently describes the same structural gap a year apart: "the job coordinator did not communicate with us at all." Your quote form already runs on ProDBX, confirmed directly on your site today, here's what a milestone status page layered on top of that could look like.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> your "Free Online Estimate" page runs a ProDBX-powered lead-capture form, confirmed directly in the page source today, but there's no customer-facing status page or issue-tracking view once a job is underway. A July 2024 BBB complaint and separate 2025-era BestPickReports reviews independently describe the same failure mode a year apart: an unresolved issue not reaching anyone until it's escalated hard.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What I'd be straight with you about:</strong> that BBB complaint is over a year old and was resolved once it reached your GM, and your recent reviews (late 2025 into 2026) are five-star with specific praise for communication. This isn't a live fire, it's a recurring structural pattern worth protecting your review average against, not proof anything is currently broken. A status page wouldn't have prevented the original concrete issue, it just means a customer's follow-up doesn't have to escalate all the way to a BBB complaint before someone with authority sees it.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the two sample job references below aren't real customers. They show what typing a reference into a working version of this page would return, using stages a fence installation project typically moves through, including a flagged stage for an open issue. A real build would connect to whatever your team already uses to track a job.</p>
+  </div>
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Enter a job reference</div>
+      <div class="lookup-row" style="margin-top:0.6rem;">
+        <input type="text" id="ticket-input" placeholder="e.g. TXF-3312">
+        <button class="fx-btn" id="lookup-btn">Check status</button>
+      </div>
+      <div class="samples" style="margin-top:0.8rem;">
+        <span style="font-size:0.82rem; color:var(--muted);">Try a sample:</span>
+        <button class="sample-chip" data-sample="TXF-3312">TXF-3312</button>
+        <button class="sample-chip" data-sample="TXF-3298">TXF-3298</button>
+      </div>
+    </div>
+    <div id="result-root"></div>
+  </div>
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Only the two sample job references above return anything.</b> This isn't connected to your real jobs, so it can't look up an actual customer's project. A real version would need a link to whatever your team already tracks a job in, likely alongside the existing ProDBX lead capture.</div>
+      <div class="lim"><b>The stages shown (quote submitted, install scheduled, install complete, follow-up review) are a typical fence-install flow, not copied from your internal process.</b> Worth a short conversation about how your PMs actually phase a job before this gets built for real.</div>
+      <div class="lim"><b>The flagged stage is the whole point.</b> It doesn't resolve an issue by itself, it just means an unresolved concern shows up somewhere visible the moment it's raised, instead of only surfacing once a customer escalates to BBB.</div>
+      <div class="lim"><b>This only shows status.</b> It doesn't change how a job gets installed or how a complaint gets handled, it just means a follow-up doesn't sit silent until someone calls or files a complaint to ask.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Texas Fence. Your ProDBX-powered estimate form and the absence of a job-status tracker verified directly today. Job data is a labeled sample, not connected to your real projects.</p>
+</footer>
+<script>
+(function () {
+  var STAGE_NAMES = ["Quote submitted", "Install scheduled", "Install complete", "Follow-up review"];
+
+  var FILES = {
+    "TXF-3312": { transaction: "Wood privacy fence, 180 ft", stage: 2, times: ["Aug 4, submitted", "Aug 11, scheduled", "Aug 18, complete"], flagAt: 2, flagNote: "Customer flagged a concrete-crown issue on 3 posts, awaiting PM review." },
+    "TXF-3298": { transaction: "Iron driveway gate", stage: 3, times: ["Jul 22, submitted", "Jul 29, scheduled", "Aug 5, complete", "Aug 12, reviewed"] }
+  };
+
+  var resultRoot = document.getElementById("result-root");
+  var ticketInput = document.getElementById("ticket-input");
+
+  function normalize(v) { return (v || "").trim().toUpperCase(); }
+
+  function lookup() {
+    var key = normalize(ticketInput.value);
+    if (!key) {
+      resultRoot.innerHTML = '<p class="error-box">Enter a job reference above, or try one of the samples.</p>';
+      return;
+    }
+    var file = FILES[key];
+    if (!file) {
+      resultRoot.innerHTML = '<p class="error-box">No sample job matches "' + escapeHtml(ticketInput.value) + '". Try one of the two samples above, this demo only has data for those.</p>';
+      return;
+    }
+    renderFile(key, file);
+  }
+
+  function renderFile(key, file) {
+    var html = '<div class="result">';
+    html += '<div class="result-head"><h3>' + key + '</h3><span class="result-meta">' + file.transaction + '</span></div>';
+    html += '<div>';
+    STAGE_NAMES.forEach(function (name, i) {
+      var cls = i < file.stage ? 'done' : (i === file.stage ? 'active' : 'pending');
+      if (file.flagAt === i) cls = 'flag';
+      var time = file.times[i];
+      var label = name;
+      if (file.flagAt === i) label = name + ' &middot; open issue flagged';
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === 'pending' ? ' pending-text' : '') + '">' + label + '</div><div class="stage-time">' + (time ? time : (cls === 'active' ? 'In progress' : 'Not started')) + '</div>' + (file.flagAt === i ? '<div class="stage-time" style="color:var(--hot);">' + file.flagNote + '</div>' : '') + '</div></div>';
+    });
+    html += '</div></div>';
+    resultRoot.innerHTML = html;
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", lookup);
+  ticketInput.addEventListener("keydown", function (e) { if (e.key === "Enter") lookup(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".sample-chip"), function (b) {
+    b.addEventListener("click", function () { ticketInput.value = b.dataset.sample; lookup(); });
+  });
+
+  resultRoot.innerHTML = '<p class="error-box">Enter a job reference above, or try one of the samples.</p>';
+})();
+</script>
+</body>
+</html>
