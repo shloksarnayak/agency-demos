@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Equipment maintenance & service status tracker template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .emt-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .emt-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .emt-tab.active { background: var(--ink); color: var(--surface); }
+  .emt-view { display: none; }
+  .emt-view.active { display: block; }
+  .emt-cols { display: grid; grid-template-columns: 1fr 1.4fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .emt-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .threshold-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .threshold-row input { width: 4.5rem; }
+  .status-filters { display: flex; gap: 0.4rem; margin-bottom: 0.9rem; flex-wrap: wrap; }
+  .status-filter { font: inherit; font-size: 0.76rem; font-weight: 700; padding: 0.4rem 0.75rem; border: 2px solid var(--ink); border-radius: 999px; background: #fff; color: var(--ink); cursor: pointer; }
+  .status-filter.active { background: var(--brand); color: #fff; }
+  .unit-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .unit-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .unit-title { font-weight: 660; }
+  .unit-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.attention { color: var(--hot); background: var(--hot-bg); }
+  .badge.warn { color: var(--warn); background: var(--warn-bg); }
+  .badge.ontrack { color: var(--brand); background: var(--brand-soft); }
+  .unit-summary { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; font-weight: 620; }
+  .unit-meter { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; }
+  .unit-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .meter-input-group { display: inline-flex; gap: 0.4rem; align-items: center; }
+  .meter-input-group input { width: 6.5rem; }
+  .ticket-box { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); display: flex; gap: 0.7rem; align-items: center; flex-wrap: wrap; }
+  .ticket-label { font-size: 0.82rem; font-weight: 650; color: var(--ink-2); }
+  .ticket-box.empty-ticket { border-top: 1px dashed var(--rule-soft); }
+  .log { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.8rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); margin-right: 0.4rem; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 460px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.2rem; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .lookup-status { font-size: 0.92rem; font-weight: 650; margin: 0.5rem 0; }
+  .lookup-contact { font-size: 0.84rem; color: var(--hot); font-weight: 620; }
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.5rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+  .team-note { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Equipment maintenance &amp; service status tracker</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">Every unit tracked against its own maintenance interval, not memory</h1>
+  <p class="fx-lede">Many dealers and rental/service businesses that sell or maintain equipment (tractors, mowers, compressors, pumps, and similar machinery) track required maintenance and break-in intervals informally, if at all, with no shared reminder system and no way for a customer to check status without calling in. This page shows one small, working alternative: every sold or serviced unit is tracked against its own hours- or calendar-based maintenance interval, gets flagged automatically before it's overdue, and a customer can check a unit's status and any open service ticket on their own.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the interval types and thresholds match how that business actually schedules maintenance, and the team board reads from whatever already tracks sold and serviced units.</p></div>
+
+  <div class="emt-tabs">
+    <button class="emt-tab active" data-view="office" type="button">Team view</button>
+    <button class="emt-tab" data-view="customer" type="button">Customer status check</button>
+  </div>
+
+  <section class="emt-view active" id="view-office">
+    <div class="threshold-row">
+      <label for="threshold-input" style="font-size:0.82rem;font-weight:700;">Flag a unit as due soon within</label>
+      <input type="number" id="threshold-input" min="1" max="90" value="15">
+      <span style="font-size:0.82rem;color:var(--ink-2);">% of its interval remaining</span>
+    </div>
+    <div class="emt-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Add equipment to tracking</h2>
+        <form id="add-form" class="form-grid">
+          <div class="field span2"><label for="f-customer">Customer / company name</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
+          <div class="field span2"><label for="f-equipment">Equipment</label><input type="text" id="f-equipment" placeholder="e.g. sample equipment description"></div>
+          <div class="field"><label for="f-kind">Interval type</label>
+            <select id="f-kind">
+              <option value="hours">Hours-based (meter reading)</option>
+              <option value="calendar">Calendar-based (seasonal/annual)</option>
+            </select>
+          </div>
+          <div class="field"><label for="f-amount">Interval amount (<span id="f-amount-unit">hours</span>)</label><input type="number" id="f-amount" min="1" placeholder="e.g. 100"></div>
+          <div class="field span2"><label for="f-label">Interval description</label><input type="text" id="f-label" placeholder="e.g. 100-hour break-in service"></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to tracking</button></div>
+        </form>
+        <p class="team-note">A real deployment shows this same board to whoever is covering service or parts that day, instead of relying on memory or a customer noticing something is off.</p>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Fleet maintenance board, flagged first</h2>
+        <div class="status-filters" id="status-filters"></div>
+        <div id="fleet-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="emt-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check a unit's maintenance and service status</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Unit reference number</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. EQP-4001">
+      <label for="lookup-name" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);margin-top:0.6rem;display:block;">Last name / company name on the unit</label>
+      <input type="text" id="lookup-name" placeholder="e.g. Sample">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try EQP-4001 through EQP-4006 from the team view's sample board, with the matching sample name.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The meter reading here is entered by hand.</b> A real build pulls it from telematics where the manufacturer supports it, or from a simple entry at every service-desk visit.</div>
+      <div class="lim"><b>The warning buffer is one shared percentage here.</b> A real build sets it per equipment type, since different machinery has different break-in and service tolerances.</div>
+      <div class="lim"><b>The service ticket update here is a log entry, not a real send.</b> A real build wires it to the business's existing phone, text, or email system so the customer actually hears about each update instead of calling in to ask.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional equipment and customer data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "emt_template_generic_v1";
+
+  var TICKET_STAGES = [
+    { key: "requested", label: "Reported" },
+    { key: "diagnosed", label: "Diagnosed" },
+    { key: "parts_ordered", label: "Parts ordered" },
+    { key: "repaired", label: "Repair completed" }
+  ];
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function daysFromNow(d) { return Date.now() + d * 86400000; }
+  function fmtDurationDays(days) {
+    var abs = Math.abs(days);
+    if (abs < 1) return "under a day";
+    return Math.round(abs) + (Math.round(abs) === 1 ? " day" : " days");
+  }
+  function fmtHours(h) {
+    var abs = Math.abs(h);
+    if (abs < 1) return "under an hour";
+    return Math.round(abs) + (Math.round(abs) === 1 ? " hour" : " hours");
+  }
+  function lastNameOf(fullName) { var parts = fullName.trim().split(/\s+/); return parts[parts.length - 1]; }
+
+  function defaultData() {
+    return {
+      seq: 4006,
+      units: [
+        {
+          ref: "EQP-4001", customer: "Sample Customer A", equipment: "Sample compact excavator",
+          kind: "hours", intervalLabel: "100-hour break-in service", intervalHours: 100, lastServiceHours: 0, meterHours: 104,
+          history: [
+            { at: daysFromNow(-60), text: "Delivered new. Meter at 0 hours." },
+            { at: daysFromNow(-3), text: "Meter reading updated to 104 hours." }
+          ],
+          ticket: {
+            stageIdx: 1,
+            history: [{ stage: "requested", at: daysFromNow(-3) }, { stage: "diagnosed", at: daysFromNow(-1) }],
+            notes: [
+              { at: daysFromNow(-3), text: "Reported: unusual noise after break-in interval passed.", ping: true },
+              { at: daysFromNow(-1), text: "Diagnosed: component requires replacement under warranty.", ping: true }
+            ]
+          }
+        },
+        {
+          ref: "EQP-4002", customer: "Sample Customer B", equipment: "Sample new utility tractor",
+          kind: "hours", intervalLabel: "50-hour first service", intervalHours: 50, lastServiceHours: 0, meterHours: 44,
+          history: [
+            { at: daysFromNow(-20), text: "Delivered new. Meter at 0 hours." },
+            { at: daysFromNow(-1), text: "Meter reading updated to 44 hours." }
+          ],
+          ticket: {
+            stageIdx: 2,
+            history: [{ stage: "requested", at: daysFromNow(-18) }, { stage: "diagnosed", at: daysFromNow(-14) }, { stage: "parts_ordered", at: daysFromNow(-9) }],
+            notes: [
+              { at: daysFromNow(-18), text: "Reported: hydraulic lift intermittently unresponsive.", ping: true },
+              { at: daysFromNow(-14), text: "Diagnosed: hydraulic control valve needs replacement.", ping: true },
+              { at: daysFromNow(-9), text: "Parts ordered from distributor.", ping: true }
+            ]
+          }
+        },
+        {
+          ref: "EQP-4003", customer: "Sample Customer C", equipment: "Sample skid-steer, annual safety/service inspection",
+          kind: "calendar", intervalLabel: "annual service inspection", intervalDays: 365, lastServiceAt: daysFromNow(-380),
+          history: [{ at: daysFromNow(-380), text: "Annual inspection completed." }],
+          ticket: null
+        },
+        {
+          ref: "EQP-4004", customer: "Sample Customer D", equipment: "Sample mower, blade & deck service",
+          kind: "hours", intervalLabel: "25-hour blade & deck service", intervalHours: 25, lastServiceHours: 20, meterHours: 24,
+          history: [
+            { at: daysFromNow(-10), text: "Serviced at 20 hours." },
+            { at: daysFromNow(-1), text: "Meter reading updated to 24 hours." }
+          ],
+          ticket: null
+        },
+        {
+          ref: "EQP-4005", customer: "Sample Customer E", equipment: "Sample equipment fleet, seasonal service",
+          kind: "calendar", intervalLabel: "seasonal service (every 180 days)", intervalDays: 180, lastServiceAt: daysFromNow(-155),
+          history: [{ at: daysFromNow(-155), text: "Seasonal service completed." }],
+          ticket: null
+        },
+        {
+          ref: "EQP-4006", customer: "Sample Customer F", equipment: "Sample utility tractor, routine service",
+          kind: "hours", intervalLabel: "100-hour service interval", intervalHours: 100, lastServiceHours: 100, meterHours: 102,
+          history: [
+            { at: daysFromNow(-2), text: "Serviced at 100 hours, meter reset." },
+            { at: daysFromNow(-2), text: "Meter reading updated to 102 hours." }
+          ],
+          ticket: {
+            stageIdx: 3,
+            history: [{ stage: "requested", at: daysFromNow(-6) }, { stage: "diagnosed", at: daysFromNow(-5) }, { stage: "parts_ordered", at: daysFromNow(-4) }, { stage: "repaired", at: daysFromNow(-2) }],
+            notes: [{ at: daysFromNow(-2), text: "Repair completed: replaced hydraulic hose.", ping: true }]
+          }
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  var statusFilter = "all";
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function getWarnPct() {
+    var v = parseFloat(document.getElementById("threshold-input").value);
+    return isNaN(v) || v <= 0 ? 15 : v;
+  }
+
+  function remainingFor(u) {
+    if (u.kind === "hours") {
+      var used = u.meterHours - u.lastServiceHours;
+      return { remaining: u.intervalHours - used, total: u.intervalHours };
+    }
+    var dueAt = u.lastServiceAt + u.intervalDays * 86400000;
+    return { remaining: (dueAt - Date.now()) / 86400000, total: u.intervalDays };
+  }
+
+  function statusInfo(u, warnPct) {
+    var rf = remainingFor(u);
+    var remaining = rf.remaining, total = rf.total;
+    var fmt = u.kind === "hours" ? fmtHours : fmtDurationDays;
+    if (remaining <= 0) {
+      return { cls: "attention", label: "Overdue", detail: "Overdue by " + fmt(remaining) + " for its " + u.intervalLabel + "." };
+    }
+    var ratio = remaining / total;
+    if (ratio <= warnPct / 100) {
+      return { cls: "warn", label: "Due soon", detail: fmt(remaining) + " remaining before its " + u.intervalLabel + "." };
+    }
+    return { cls: "ontrack", label: "On track", detail: fmt(remaining) + " remaining before its " + u.intervalLabel + "." };
+  }
+
+  function ticketDone(u) { return !!u.ticket && u.ticket.stageIdx >= TICKET_STAGES.length - 1; }
+
+  function renderStatusFilters() {
+    var root = document.getElementById("status-filters");
+    var opts = [
+      { key: "all", label: "All" },
+      { key: "attention", label: "Overdue" },
+      { key: "warn", label: "Due soon" },
+      { key: "ontrack", label: "On track" }
+    ];
+    root.innerHTML = opts.map(function (o) {
+      return '<button type="button" class="status-filter' + (statusFilter === o.key ? " active" : "") + '" data-filter="' + o.key + '">' + escapeHtml(o.label) + "</button>";
+    }).join("");
+    root.querySelectorAll(".status-filter").forEach(function (btn) {
+      btn.addEventListener("click", function () { statusFilter = btn.dataset.filter; renderStatusFilters(); renderFleet(); });
+    });
+  }
+
+  function renderFleet() {
+    var root = document.getElementById("fleet-root");
+    var warnPct = getWarnPct();
+    var rankOf = { attention: 0, warn: 1, ontrack: 2 };
+    var all = data.units.slice();
+    var withStatus = all.map(function (u) { return { u: u, st: statusInfo(u, warnPct) }; });
+    if (statusFilter !== "all") withStatus = withStatus.filter(function (x) { return x.st.cls === statusFilter; });
+    withStatus.sort(function (a, b) {
+      var ra = rankOf[a.st.cls], rb = rankOf[b.st.cls];
+      if (ra !== rb) return ra - rb;
+      return remainingFor(a.u).remaining - remainingFor(b.u).remaining;
+    });
+    var html = "";
+    if (!withStatus.length) html += '<p class="empty">Nothing in this view.</p>';
+    withStatus.forEach(function (x) { html += renderCard(x.u, x.st); });
+    root.innerHTML = html;
+  }
+
+  function renderCard(u, st) {
+    var idx = data.units.indexOf(u);
+    var html = '<div class="unit-card"><div class="unit-head"><div><div class="unit-title">' + escapeHtml(u.customer) + " &middot; " + u.ref + '</div><div class="unit-meta">' + escapeHtml(u.equipment) + "</div></div><span class=\"badge " + st.cls + "\">" + st.label + "</span></div>";
+    html += '<div class="unit-summary">' + escapeHtml(st.detail) + "</div>";
+    if (u.kind === "hours") {
+      html += '<div class="unit-meter">Meter: ' + Math.round(u.meterHours) + " hrs &middot; last serviced at " + Math.round(u.lastServiceHours) + " hrs &middot; interval " + u.intervalHours + " hrs</div>";
+    } else {
+      html += '<div class="unit-meter">Last serviced: ' + fmtDate(u.lastServiceAt) + " &middot; interval " + u.intervalDays + " days</div>";
+    }
+    html += '<div class="unit-actions">';
+    if (u.kind === "hours") {
+      html += '<span class="meter-input-group"><input type="number" min="0" step="1" id="meter-' + idx + '" placeholder="new meter hrs"><button class="fx-btn-ghost" type="button" onclick="__emt.updateMeter(' + idx + ')">Update meter</button></span>';
+    }
+    html += '<button class="fx-btn-ghost" type="button" onclick="__emt.completeMaintenance(' + idx + ')">Mark maintenance completed</button>';
+    html += "</div>";
+
+    if (u.ticket) {
+      var stageLabel = TICKET_STAGES[u.ticket.stageIdx].label;
+      var done = ticketDone(u);
+      html += '<div class="ticket-box"><span class="ticket-label">Service ticket &middot; ' + (done ? "Closed: " : "Stage: ") + stageLabel + "</span>";
+      if (!done) {
+        var nextLabel = TICKET_STAGES[u.ticket.stageIdx + 1].label;
+        html += '<button class="fx-btn-ghost" type="button" onclick="__emt.advanceTicket(' + idx + ')">Advance to ' + escapeHtml(nextLabel) + "</button>";
+      }
+      html += "</div>";
+    } else {
+      html += '<div class="ticket-box empty-ticket"><button class="fx-btn-ghost" type="button" onclick="__emt.openTicket(' + idx + ')">Log a service ticket for this unit</button></div>';
+    }
+
+    if (u.history.length) {
+      html += '<div class="log">';
+      u.history.slice().reverse().slice(0, 4).forEach(function (h) { html += '<div class="log-entry"><span class="tag">' + fmtDate(h.at) + "</span>" + escapeHtml(h.text) + "</div>"; });
+      html += "</div>";
+    }
+    html += "</div>";
+    return html;
+  }
+
+  window.__emt = {
+    updateMeter: function (idx) {
+      var u = data.units[idx];
+      var input = document.getElementById("meter-" + idx);
+      var v = parseFloat(input ? input.value : "");
+      if (isNaN(v) || v < 0) { alert("Enter a valid meter reading."); return; }
+      u.meterHours = v;
+      u.history.push({ at: Date.now(), text: "Meter reading updated to " + Math.round(v) + " hours." });
+      save(); renderFleet();
+    },
+    completeMaintenance: function (idx) {
+      var u = data.units[idx];
+      if (u.kind === "hours") { u.lastServiceHours = u.meterHours; }
+      else { u.lastServiceAt = Date.now(); }
+      u.history.push({ at: Date.now(), text: "Maintenance completed; reminder reset." });
+      save(); renderFleet();
+    },
+    openTicket: function (idx) {
+      var u = data.units[idx];
+      var now = Date.now();
+      u.ticket = {
+        stageIdx: 0,
+        history: [{ stage: TICKET_STAGES[0].key, at: now }],
+        notes: [{ at: now, text: "Service ticket opened: " + TICKET_STAGES[0].label + ".", ping: true }]
+      };
+      save(); renderFleet();
+    },
+    advanceTicket: function (idx) {
+      var u = data.units[idx];
+      u.ticket.stageIdx += 1;
+      var label = TICKET_STAGES[u.ticket.stageIdx].label;
+      u.ticket.history.push({ stage: TICKET_STAGES[u.ticket.stageIdx].key, at: Date.now() });
+      u.ticket.notes.push({ at: Date.now(), text: "Service ticket updated: now " + label + ".", ping: true });
+      save(); renderFleet();
+    }
+  };
+
+  document.getElementById("f-kind").addEventListener("change", function () {
+    document.getElementById("f-amount-unit").textContent = this.value === "hours" ? "hours" : "days";
+  });
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("f-customer").value.trim();
+    var equipment = document.getElementById("f-equipment").value.trim();
+    var kind = document.getElementById("f-kind").value;
+    var amount = parseFloat(document.getElementById("f-amount").value);
+    var label = document.getElementById("f-label").value.trim();
+    if (!customer || !equipment || !label || isNaN(amount) || amount <= 0) { alert("Fill in the customer, equipment, interval description, and a valid interval amount."); return; }
+    data.seq += 1;
+    var ref = "EQP-" + data.seq;
+    var now = Date.now();
+    var unit = { ref: ref, customer: customer, equipment: equipment, kind: kind, intervalLabel: label, ticket: null, history: [{ at: now, text: "Added to tracking." }] };
+    if (kind === "hours") { unit.intervalHours = amount; unit.meterHours = 0; unit.lastServiceHours = 0; }
+    else { unit.intervalDays = amount; unit.lastServiceAt = now; }
+    data.units.push(unit);
+    save(); renderFleet();
+    this.reset();
+    document.getElementById("f-amount-unit").textContent = "hours";
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the board back to the original sample data?")) return;
+    data = defaultData(); save(); renderFleet();
+  });
+
+  document.getElementById("threshold-input").addEventListener("input", renderFleet);
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var name = document.getElementById("lookup-name").value.trim().toLowerCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref || !name) { root.innerHTML = '<div class="lookup-result"><p class="not-found">Enter both the reference number and the name on the unit.</p></div>'; return; }
+    var u = data.units.filter(function (x) { return x.ref.toUpperCase() === ref && lastNameOf(x.customer).toLowerCase() === name; })[0];
+    if (!u) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No matching record found. Please contact us directly.</p></div>'; return; }
+    var st = statusInfo(u, getWarnPct());
+    var html = '<div class="lookup-result"><h3>' + escapeHtml(u.equipment) + "</h3>";
+    html += '<p class="lookup-status">' + escapeHtml(st.detail) + "</p>";
+    if (st.cls === "attention") html += '<p class="lookup-contact">Please contact us to schedule this service.</p>';
+    if (u.ticket) {
+      html += "<h3>Service ticket</h3>";
+      TICKET_STAGES.forEach(function (s, i) {
+        var cls = i < u.ticket.stageIdx ? "done" : (i === u.ticket.stageIdx ? "active" : "pending");
+        var histEntry = u.ticket.history.filter(function (h) { return h.stage === s.key; })[0];
+        html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === "pending" ? " pending-text" : "") + '">' + s.label + '</div><div class="stage-time">' + (histEntry ? fmtDate(histEntry.at) : (cls === "active" ? "In progress" : "Not started")) + "</div></div></div>";
+      });
+    }
+    html += "</div>";
+    root.innerHTML = html;
+  });
+
+  document.querySelectorAll(".emt-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".emt-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".emt-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderStatusFilters();
+  renderFleet();
+})();
+</script>
+</body>
+</html>
