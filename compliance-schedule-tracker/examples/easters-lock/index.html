@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Easter's Lock &amp; Security Systems, Inc., fire door compliance and service board (work sample)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .fact { font-family: var(--mono); font-size: 0.74rem; padding: 0.45rem 0.75rem; border: 1.5px solid var(--ink); border-radius: 999px; background: var(--surface-2); box-shadow: 2px 2px 0 var(--ink); }
+  .el-tabs { display: flex; gap: 0.5rem; margin: 1.2rem 0; flex-wrap: wrap; }
+  .el-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .el-tab.active { background: var(--ink); color: var(--surface); }
+  .el-view { display: none; }
+  .el-view.active { display: block; }
+  .intake-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+  .intake-grid label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.82rem; font-weight: 700; color: var(--ink-2); }
+  .intake-grid input, .intake-grid select { width: 100%; padding: 0.65rem 0.8rem; }
+  .intake-full { grid-column: 1 / -1; }
+  @media (max-width: 640px) { .intake-grid { grid-template-columns: 1fr; } }
+  .account { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); margin-bottom: 1rem; }
+  .account:last-child { margin-bottom: 0; }
+  .account-head { background: var(--surface-2); padding: 0.7rem 1.1rem; font-weight: 700; font-size: 0.86rem; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; }
+  .account-head-note { font-weight: 400; font-size: 0.72rem; color: var(--muted); font-family: var(--mono); }
+  .unit { background: var(--surface); padding: 0.95rem 1.1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+  .unit-name { font-weight: 700; }
+  .unit-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.1rem; }
+  .clock-row { display: grid; grid-template-columns: 1fr auto auto; gap: 0.8rem; align-items: center; }
+  .clock-label { font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+  .clock-due { font-family: var(--mono); font-size: 0.82rem; }
+  .status { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.3rem 0.65rem; border-radius: 999px; white-space: nowrap; text-align: center; }
+  .status.ok { color: var(--good); background: var(--good-bg); }
+  .status.soon { color: var(--warn); background: var(--warn-bg); }
+  .status.late { color: var(--hot); background: var(--hot-bg); }
+  .log-btn { font: 700 0.72rem/1 var(--sans); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 2px solid var(--ink); background: var(--aqua); cursor: pointer; box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
+  .log-btn:hover { transform: translateY(-1px); }
+  @media (max-width: 760px) { .clock-row { grid-template-columns: 1fr; } }
+
+  .wst-cols { display: grid; grid-template-columns: 1fr 1.3fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .wst-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea { font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: #fff; color: var(--ink); }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .threshold-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .threshold-row input { width: 4.5rem; }
+  .type-filters { display: flex; gap: 0.4rem; margin-bottom: 0.9rem; flex-wrap: wrap; }
+  .type-filter { font: inherit; font-size: 0.76rem; font-weight: 700; padding: 0.4rem 0.75rem; border: 2px solid var(--ink); border-radius: 999px; background: #fff; color: var(--ink); cursor: pointer; }
+  .type-filter.active { background: var(--brand); color: #fff; }
+  .req-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .req-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .req-title { font-weight: 660; }
+  .req-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.attention { color: var(--hot); background: var(--hot-bg); }
+  .badge.ontrack { color: var(--brand); background: var(--brand-soft); }
+  .badge.done { color: var(--good); background: var(--good-bg); }
+  .badge.type-locksmith { color: var(--ink); background: var(--aqua); }
+  .badge.type-access_control { color: var(--ink); background: var(--yellow); }
+  .badge.type-intrusion_video { color: #fff; background: var(--coral); }
+  .badge.type-fire_door_repair { color: var(--ink); background: var(--violet); }
+  .badge.type-government { color: var(--ink); background: var(--good-bg); }
+  .req-summary { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; }
+  .req-flag { font-size: 0.84rem; color: var(--hot); margin-top: 0.35rem; font-weight: 650; }
+  .req-inbox { font-size: 0.78rem; color: var(--muted); margin-top: 0.35rem; }
+  .req-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 460px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.2rem; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.5rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Compliance scheduler</a> / Easter's Lock &amp; Security Systems, Inc.</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Built as a work sample for Easter's Lock &amp; Security Systems, Inc., not a live system</span>
+  <h1 class="fx-h1">One dispatch inbox for five service lines, and a fire door clock nobody is watching</h1>
+  <p class="fx-lede">Easter's Lock runs commercial and residential locksmith work, access control installs, intrusion detection and video surveillance, safe and vault work, and NFPA-80-mandated annual fire door inspections across more than thirty field technicians, all through a phone line and a single generic "Get a Quote" form today, with both on-site "Schedule Now" buttons routing to that same form. A client with several fire doors under annual inspection has no way to see when the next one is due, and a client waiting on any of the other service lines has no way to check status without calling back. This page shows what a per-client fire door due-date board plus a shared service queue, with a client self-service status check, could look like, using fictional sample accounts.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Easter's Lock &amp; Security Systems, Inc.</strong> The client names, door records, and job tickets below are fictional. Nothing on this page sends a real email, text, or dispatch, every action here only updates the record in your own browser.</p></div>
+
+  <section class="fx-card" style="display:flex; flex-direction:column; gap:1rem;">
+    <div class="fact-strip">
+      <span class="fact">Parkville, MD &middot; founded 1953 (73 years) &middot; third-generation, family-owned</span>
+      <span class="fact">Maryland Locksmith License #0010</span>
+      <span class="fact">"More than thirty security technicians" (company's own claim)</span>
+      <span class="fact">Current intake: phone &amp; a single generic "Get a Quote" form, both "Schedule Now" buttons route there too</span>
+    </div>
+    <p style="margin:0; font-size:0.85rem; color:var(--muted);">Facts above are drawn directly from easterslock.com's own published copy, nothing here is invented about the business itself. The annual inspection interval below reflects NFPA 80's standard annual fire door inspection requirement; a real build uses whatever interval Easter's Lock's own inspection contracts and applicable code actually set for a given door, not a number invented here.</p>
+  </section>
+
+  <div class="el-tabs">
+    <button class="el-tab active" data-view="compliance" type="button">Fire door compliance board</button>
+    <button class="el-tab" data-view="queue" type="button">Service queue</button>
+  </div>
+
+  <section class="el-view active" id="view-compliance">
+    <section class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+      <div>
+        <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Client fire door compliance board (fictional sample accounts)</div>
+        <p style="margin:0.5rem 0 0; font-size:0.85rem; color:var(--ink-2);">Each client site can carry more than one group of fire doors (e.g. a warehouse dock and a records wing), and each group keeps its own next NFPA-80 annual inspection due date. Logging a completed inspection updates that group's record immediately, so nobody has to remember it by hand.</p>
+        <div id="board-root" style="margin-top:0.9rem;"></div>
+      </div>
+    </section>
+
+    <section class="fx-card" style="display:flex; flex-direction:column; gap:1.1rem;">
+      <div>
+        <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">New client / door group record</div>
+        <p style="margin:0.5rem 0 0; font-size:0.88rem; color:var(--ink-2);">Fills the role of the phone call or "Get a Quote" form Easter's Lock gets today. Type an existing client name to add a second door group to that same site, or a new name to start one. The next due date is computed automatically, not typed in by hand.</p>
+      </div>
+      <form id="intake-form" class="intake-grid">
+        <label>Client / site name<input type="text" id="f-account" list="account-list" placeholder="e.g. Example Distribution Center" required>
+          <datalist id="account-list"></datalist>
+        </label>
+        <label>Door group description<input type="text" id="f-group" placeholder="e.g. Warehouse dock doors" required></label>
+        <label>Number of doors in group<input type="number" id="f-doorcount" min="1" value="1" required></label>
+        <label>Last NFPA-80 inspection date<input type="date" id="f-lastinsp" required></label>
+        <label class="intake-full">Contact email<input type="email" id="f-email" placeholder="name@example.com" required></label>
+        <div class="intake-full" style="display:flex; gap:0.7rem; align-items:center; flex-wrap:wrap;">
+          <button type="submit" class="fx-btn">Add to compliance board</button>
+          <span id="intake-msg" style="font-size:0.85rem; color:var(--muted);"></span>
+        </div>
+      </form>
+    </section>
+  </section>
+
+  <section class="el-view" id="view-queue">
+    <div class="threshold-row">
+      <label for="threshold-input" style="font-size:0.82rem;font-weight:700;">Flag a ticket as needing attention after</label>
+      <input type="number" id="threshold-input" min="1" value="2">
+      <span style="font-size:0.82rem;color:var(--ink-2);">days with no stage change</span>
+    </div>
+    <div class="wst-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new ticket</h2>
+        <form id="add-form" class="form-grid">
+          <div class="field span2"><label for="f-client">Client / site</label><input type="text" id="f-client" list="queue-account-list" placeholder="e.g. Example Distribution Center"><datalist id="queue-account-list"></datalist></div>
+          <div class="field"><label for="f-type">Job type</label><select id="f-type"></select></div>
+          <div class="field"><label for="f-assigned">Assigned to</label><input type="text" id="f-assigned" placeholder="e.g. Sample Technician"></div>
+          <div class="field span2"><label for="f-item">Ticket details</label><input type="text" id="f-item" placeholder="e.g. sample job description"></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
+        </form>
+        <p style="font-size:0.78rem; color:var(--muted); margin-top:0.4rem;">A real deployment shows this same queue to whoever is covering dispatch that day, across locksmith, access control, intrusion/video, fire door repair, and government-sector jobs, instead of splitting them across memory, sticky notes, and phone messages.</p>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Shared service queue, flagged first</h2>
+        <div class="type-filters" id="type-filters"></div>
+        <div id="queue-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+
+    <div style="margin-top:2rem;">
+      <h2 class="fx-h2" style="margin-top:0;">Client status check</h2>
+      <p style="font-size:0.88rem; color:var(--ink-2); max-width:70ch;">Replaces calling in and waiting for a callback, including for the day and time a technician is actually scheduled: a client can check a ticket's status themselves, any time.</p>
+      <div class="lookup-box">
+        <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference number</label>
+        <input type="text" id="lookup-ref" placeholder="e.g. EL-1001">
+        <label for="lookup-client" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);margin-top:0.6rem;display:block;">Client / site name on the ticket</label>
+        <input type="text" id="lookup-client" placeholder="e.g. Example Distribution Center">
+        <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+        <div id="lookup-root"></div>
+      </div>
+      <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try EL-1001 through EL-1005 from the sample queue, with the matching sample client name.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">Why this, specifically, for Easter's Lock</h2>
+    <div class="limits">
+      <div class="lim"><b>Matches the pain in Easter's Lock's own site and its own reviews.</b> Every service line on easterslock.com, commercial and residential locksmith work, access control, intrusion detection, video surveillance, safe and vault work, and fire door inspection, routes through the same phone number or the same generic "Get a Quote" form, with both "Schedule Now" buttons landing on that form too. A real customer review found during research states the failure mode directly: "They did not come on the day they said they would, I called and had to reschedule, because I had to leave the house."</div>
+      <div class="lim"><b>One client, several fire door groups, one clock each.</b> A single commercial or government client can have fire doors in more than one part of a building, a warehouse dock and a records wing, say, each on its own NFPA-80 annual inspection clock. The sample accounts below model that shape: one client, multiple door groups, each with its own independently tracked due date.</div>
+      <div class="lim"><b>Covers the breadth of what Easter's Lock actually does, not just inspections.</b> The service queue tracks locksmith service calls, access control installs, intrusion and video surveillance installs, fire door repairs found during inspection, and government-sector (GSA-credentialed) projects in one shared view, with anything sitting too long in a stage flagged automatically, the same shape of problem the "didn't come the day they said" review describes.</div>
+      <div class="lim"><b>Same class of tool already proven in this pipeline for adjacent licensed, inspection-driven trades:</b> a compliance-schedule board for CFS Fire Protection and Overhead Hoist &amp; Crane Specialists, and a combined board-plus-queue for Elevator Repair Service, Inc. This example follows the same combined pattern because Easter's Lock's own pain, like ERS's, spans both a recurring compliance schedule and a shared job queue at once.</div>
+      <div class="lim"><b>Back to the generic pattern: <a href="../../">recurring service compliance scheduler template</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Easter's Lock &amp; Security Systems, Inc.</strong></p><p>Prepared by Shlok Sarnayak. Fictional account and ticket data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------- Fire door compliance board ---------------- */
+  var CB_STORE_KEY = "fx-compliance-demo-easters-lock";
+  var INSPECTION_MONTHS = 12;
+  var SEED_ACCOUNTS = [
+    {
+      id: "seed-acc-1",
+      name: "Sample Regional Distribution Center (fictional)",
+      groups: [
+        { id: "seed-1a", label: "Warehouse dock doors (4)", lastInspection: daysAgo(340) },
+        { id: "seed-1b", label: "Office wing fire doors (2)", lastInspection: daysAgo(90) }
+      ]
+    },
+    {
+      id: "seed-acc-2",
+      name: "Sample County Government Building (fictional)",
+      groups: [
+        { id: "seed-2a", label: "Records wing fire doors (6)", lastInspection: daysAgo(395) },
+        { id: "seed-2b", label: "Basement mechanical room doors (3)", lastInspection: daysAgo(60) }
+      ]
+    },
+    {
+      id: "seed-acc-3",
+      name: "Sample Assisted Living Facility (fictional)",
+      groups: [
+        { id: "seed-3a", label: "Resident wing fire doors (8)", lastInspection: daysAgo(320) }
+      ]
+    }
+  ];
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); }
+  function addMonths(iso, months) { var d = new Date(iso + "T00:00:00"); d.setMonth(d.getMonth() + months); return d; }
+  function fmt(d) { return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
+  function loadExtra() { try { return JSON.parse(localStorage.getItem(CB_STORE_KEY) || "[]"); } catch (e) { return []; } }
+  function saveExtra(list) { try { localStorage.setItem(CB_STORE_KEY, JSON.stringify(list)); } catch (e) {} }
+  function loadOverrides() { try { return JSON.parse(localStorage.getItem(CB_STORE_KEY + "-overrides") || "{}"); } catch (e) { return {}; } }
+  function saveOverrides(obj) { try { localStorage.setItem(CB_STORE_KEY + "-overrides", JSON.stringify(obj)); } catch (e) {} }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function allAccounts() {
+    var extra = loadExtra();
+    var byName = {};
+    var order = [];
+    SEED_ACCOUNTS.forEach(function (a) { byName[a.name.toLowerCase()] = { id: a.id, name: a.name, groups: a.groups.slice() }; order.push(a.name.toLowerCase()); });
+    extra.forEach(function (s) {
+      var key = s.accountName.toLowerCase();
+      if (!byName[key]) { byName[key] = { id: "acc-" + key.replace(/[^a-z0-9]+/g, "-"), name: s.accountName, groups: [] }; order.push(key); }
+      byName[key].groups.push({ id: s.id, label: s.groupLabel, lastInspection: s.lastInspection, email: s.email });
+    });
+    return order.map(function (k) { return byName[k]; });
+  }
+
+  function clockStatus(dueDate, soonDays) {
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var days = Math.round((dueDate - today) / 86400000);
+    if (days < 0) return { cls: "late", label: "Overdue" };
+    if (days <= soonDays) return { cls: "soon", label: "Due soon" };
+    return { cls: "ok", label: "Compliant" };
+  }
+
+  function renderBoard() {
+    var accounts = allAccounts();
+    var overrides = loadOverrides();
+    var html = "";
+    accounts.forEach(function (acc) {
+      html += '<div class="account">';
+      html += '<div class="account-head"><span>' + escapeHtml(acc.name) + '</span><span class="account-head-note">' + acc.groups.length + ' door group' + (acc.groups.length === 1 ? "" : "s") + ' tracked at this site</span></div>';
+      acc.groups.forEach(function (g) {
+        var ov = overrides[g.id] || {};
+        var lastInspection = ov.lastInspection || g.lastInspection;
+        var dueDate = addMonths(lastInspection, INSPECTION_MONTHS);
+        var st = clockStatus(dueDate, 30);
+        html += '<div class="unit">';
+        html += '<div><div class="unit-name">' + escapeHtml(g.label) + '</div><div class="unit-sub">NFPA-80 annual inspection' + (g.email ? ' &middot; ' + escapeHtml(g.email) : '') + '</div></div>';
+        html += '<div class="clock-row"><div><div class="clock-label">Next inspection due</div><div class="clock-due">' + fmt(dueDate) + '</div></div><div class="status ' + st.cls + '">' + st.label + '</div><button class="log-btn" data-group="' + g.id + '">Log inspection today</button></div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+    document.getElementById("board-root").innerHTML = html;
+    var names = accounts.map(function (a) { return a.name; });
+    document.getElementById("account-list").innerHTML = names.map(function (n) { return '<option value="' + escapeHtml(n) + '">'; }).join("");
+    document.getElementById("queue-account-list").innerHTML = names.map(function (n) { return '<option value="' + escapeHtml(n) + '">'; }).join("");
+    Array.prototype.forEach.call(document.querySelectorAll(".log-btn"), function (b) {
+      b.addEventListener("click", function () {
+        var overrides2 = loadOverrides();
+        var id = b.dataset.group;
+        overrides2[id] = overrides2[id] || {};
+        overrides2[id].lastInspection = new Date().toISOString().slice(0, 10);
+        saveOverrides(overrides2);
+        renderBoard();
+      });
+    });
+  }
+
+  document.getElementById("intake-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var accountName = document.getElementById("f-account").value.trim();
+    var groupLabel = document.getElementById("f-group").value.trim();
+    var doorCount = document.getElementById("f-doorcount").value;
+    var lastinsp = document.getElementById("f-lastinsp").value;
+    var email = document.getElementById("f-email").value.trim();
+    if (!accountName || !groupLabel || !lastinsp || !email) return;
+    var extra = loadExtra();
+    var fullLabel = groupLabel + " (" + doorCount + ")";
+    extra.push({ id: "custom-" + Date.now(), accountName: accountName, groupLabel: fullLabel, lastInspection: lastinsp, email: email });
+    saveExtra(extra);
+    var dueDate = addMonths(lastinsp, INSPECTION_MONTHS);
+    document.getElementById("intake-msg").textContent = "Added to " + accountName + ". Next inspection due: " + fmt(dueDate) + ".";
+    document.getElementById("intake-form").reset();
+    document.getElementById("f-doorcount").value = "1";
+    renderBoard();
+  });
+
+  /* ---------------- Service queue ---------------- */
+  var Q_STORE_KEY = "fx-easters-lock-queue-v1";
+  var TYPES = {
+    locksmith: { label: "Locksmith service call", stages: [
+      { key: "scheduled", label: "Scheduled" },
+      { key: "on_site", label: "Technician on site" },
+      { key: "completed", label: "Job completed" }
+    ] },
+    access_control: { label: "Access control install", stages: [
+      { key: "scope", label: "Scope confirmed" },
+      { key: "parts", label: "Parts ordered" },
+      { key: "installed", label: "Installed" },
+      { key: "tested", label: "Tested & handed off" }
+    ] },
+    intrusion_video: { label: "Intrusion & video surveillance", stages: [
+      { key: "scope", label: "Scope confirmed" },
+      { key: "equipment", label: "Equipment ordered" },
+      { key: "installed", label: "Installed" },
+      { key: "tested", label: "Tested & handed off" }
+    ] },
+    fire_door_repair: { label: "Fire door repair (post-inspection)", stages: [
+      { key: "reported", label: "Deficiency reported" },
+      { key: "parts", label: "Parts ordered" },
+      { key: "repaired", label: "Repaired" },
+      { key: "recertified", label: "Re-certified" }
+    ] },
+    government: { label: "Government / GSA project", stages: [
+      { key: "scope", label: "Scope confirmed" },
+      { key: "credentialing", label: "Procurement & credentialing" },
+      { key: "installed", label: "Installed" },
+      { key: "signoff", label: "Final inspection & sign-off" }
+    ] }
+  };
+  var TYPE_KEYS = Object.keys(TYPES);
+  var typeFilter = "all";
+
+  function fmtDateTime(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function daysFromNow(d) { return Date.now() + d * 86400000; }
+  function daysAgoTs(ts) { return (Date.now() - ts) / 86400000; }
+  function fmtDuration(days) { if (days < 1) return "under a day"; return Math.round(days) + (Math.round(days) === 1 ? " day" : " days"); }
+  function pingText(stageLabel) { return "Status update logged: this ticket is now " + stageLabel + "."; }
+  function stagesFor(type) { return TYPES[type].stages; }
+
+  function defaultQueueData() {
+    return {
+      seq: 1005,
+      requests: [
+        {
+          ref: "EL-1001", type: "locksmith", client: "Sample Regional Distribution Center (fictional)", item: "Sample rekey after tenant turnover, warehouse door",
+          assigned: "Sample Technician A", stageIdx: 1, enteredStageAt: daysFromNow(-4),
+          history: [{ stage: "scheduled", at: daysFromNow(-6) }, { stage: "on_site", at: daysFromNow(-4) }],
+          notes: [{ at: daysFromNow(-4), text: pingText("Technician on site"), ping: true }]
+        },
+        {
+          ref: "EL-1002", type: "access_control", client: "Sample County Government Building (fictional)", item: "Sample card-reader access control install, records wing",
+          assigned: "Sample Technician B", stageIdx: 1, enteredStageAt: daysFromNow(-1),
+          history: [{ stage: "scope", at: daysFromNow(-8) }, { stage: "parts", at: daysFromNow(-1) }],
+          notes: [{ at: daysFromNow(-1), text: pingText("Parts ordered"), ping: true }]
+        },
+        {
+          ref: "EL-1003", type: "intrusion_video", client: "Sample Assisted Living Facility (fictional)", item: "Sample intrusion detection and camera install, main entrance",
+          assigned: "Sample Technician C", stageIdx: 0, enteredStageAt: daysFromNow(-2),
+          history: [{ stage: "scope", at: daysFromNow(-2) }],
+          notes: [{ at: daysFromNow(-2), text: pingText("Scope confirmed"), ping: true }]
+        },
+        {
+          ref: "EL-1004", type: "fire_door_repair", client: "Sample Regional Distribution Center (fictional)", item: "Sample fire door closer replacement, dock door 3",
+          assigned: "Sample Technician A", stageIdx: 2, enteredStageAt: daysFromNow(-1),
+          history: [{ stage: "reported", at: daysFromNow(-9) }, { stage: "parts", at: daysFromNow(-5) }, { stage: "repaired", at: daysFromNow(-1) }],
+          notes: [{ at: daysFromNow(-1), text: pingText("Repaired"), ping: true }]
+        },
+        {
+          ref: "EL-1005", type: "government", client: "Sample County Government Building (fictional)", item: "Sample GSA-credentialed vault door upgrade",
+          assigned: "Sample Project Lead", stageIdx: 1, enteredStageAt: daysFromNow(-3),
+          history: [{ stage: "scope", at: daysFromNow(-12) }, { stage: "credentialing", at: daysFromNow(-3) }],
+          notes: [{ at: daysFromNow(-3), text: pingText("Procurement & credentialing"), ping: true }]
+        }
+      ]
+    };
+  }
+
+  var qdata = loadQueue();
+  function loadQueue() { try { var raw = localStorage.getItem(Q_STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {} return defaultQueueData(); }
+  function saveQueue() { try { localStorage.setItem(Q_STORE_KEY, JSON.stringify(qdata)); } catch (e) {} }
+
+  function getThreshold() {
+    var v = parseInt(document.getElementById("threshold-input").value, 10);
+    return isNaN(v) || v < 1 ? 2 : v;
+  }
+
+  function statusInfo(r, threshold) {
+    var stages = stagesFor(r.type);
+    if (r.stageIdx >= stages.length - 1) return { cls: "done", label: "Complete", flag: null };
+    var stuckDays = daysAgoTs(r.enteredStageAt);
+    if (stuckDays > threshold) {
+      var reason = "Stalled in \"" + stages[r.stageIdx].label + "\", " + fmtDuration(stuckDays) + " with no stage change.";
+      return { cls: "attention", label: "Needs attention", flag: reason };
+    }
+    return { cls: "ontrack", label: "On track", flag: null };
+  }
+
+  function populateTypeSelect() {
+    var sel = document.getElementById("f-type");
+    sel.innerHTML = TYPE_KEYS.map(function (k) { return '<option value="' + k + '">' + escapeHtml(TYPES[k].label) + "</option>"; }).join("");
+  }
+
+  function renderTypeFilters() {
+    var root = document.getElementById("type-filters");
+    var opts = [{ key: "all", label: "All" }].concat(TYPE_KEYS.map(function (k) { return { key: k, label: TYPES[k].label }; }));
+    root.innerHTML = opts.map(function (o) {
+      return '<button type="button" class="type-filter' + (typeFilter === o.key ? " active" : "") + '" data-type="' + o.key + '">' + escapeHtml(o.label) + "</button>";
+    }).join("");
+    root.querySelectorAll(".type-filter").forEach(function (btn) {
+      btn.addEventListener("click", function () { typeFilter = btn.dataset.type; renderTypeFilters(); renderQueue(); });
+    });
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var threshold = getThreshold();
+    var all = typeFilter === "all" ? qdata.requests.slice() : qdata.requests.filter(function (r) { return r.type === typeFilter; });
+    var open = all.filter(function (r) { return r.stageIdx < stagesFor(r.type).length - 1; });
+    open.sort(function (a, b) {
+      var fa = statusInfo(a, threshold).flag ? 0 : 1;
+      var fb = statusInfo(b, threshold).flag ? 0 : 1;
+      if (fa !== fb) return fa - fb;
+      return daysAgoTs(b.enteredStageAt) - daysAgoTs(a.enteredStageAt);
+    });
+    var done = all.filter(function (r) { return r.stageIdx >= stagesFor(r.type).length - 1; })
+      .slice().sort(function (a, b) { return b.enteredStageAt - a.enteredStageAt; });
+    var html = "";
+    if (!open.length) html += '<p class="empty">Nothing open in this view.</p>';
+    open.forEach(function (r) { html += renderCard(r, threshold); });
+    if (done.length) {
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently completed</h3>';
+      done.slice(0, 5).forEach(function (r) { html += renderCard(r, threshold); });
+    }
+    root.innerHTML = html;
+  }
+
+  function renderCard(r, threshold) {
+    var st = statusInfo(r, threshold);
+    var idx = qdata.requests.indexOf(r);
+    var stages = stagesFor(r.type);
+    var stageLabel = stages[r.stageIdx].label;
+    var html = '<div class="req-card"><div class="req-head"><div><div class="req-title">' + escapeHtml(r.client) + " &middot; " + r.ref + '</div><div class="req-meta">' + escapeHtml(r.item) + "</div></div><span>";
+    html += '<span class="badge type-' + r.type + '">' + escapeHtml(TYPES[r.type].label) + '</span> <span class="badge ' + st.cls + '">' + st.label + "</span></span></div>";
+    html += '<div class="req-summary">Stage: ' + stageLabel + " (" + fmtDuration(daysAgoTs(r.enteredStageAt)) + " in this stage)</div>";
+    html += '<div class="req-inbox">Assigned to: ' + escapeHtml(r.assigned || "Unassigned") + "</div>";
+    if (st.flag) html += '<div class="req-flag">&#9888; ' + escapeHtml(st.flag) + "</div>";
+    if (r.notes.length) {
+      html += '<div class="log" style="margin-top:0.7rem; padding-top:0.7rem; border-top:1px solid var(--rule-soft);">';
+      r.notes.slice().reverse().forEach(function (n) { html += '<div style="font-size:0.8rem; color:var(--ink-2); padding:0.18rem 0;"><span style="font-family:var(--mono); font-size:0.62rem; color:var(--muted); margin-right:0.4rem;">' + fmtDateTime(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+      html += "</div>";
+    }
+    if (r.stageIdx < stages.length - 1) {
+      var nextLabel = stages[r.stageIdx + 1].label;
+      html += '<div class="req-actions"><button class="fx-btn-ghost" onclick="__el.advance(' + idx + ')">Advance to ' + escapeHtml(nextLabel) + '</button></div>';
+    }
+    html += "</div>";
+    return html;
+  }
+
+  window.__el = {
+    advance: function (idx) {
+      var r = qdata.requests[idx];
+      var stages = stagesFor(r.type);
+      r.stageIdx += 1;
+      r.enteredStageAt = Date.now();
+      var label = stages[r.stageIdx].label;
+      r.history.push({ stage: stages[r.stageIdx].key, at: Date.now() });
+      r.notes.push({ at: Date.now(), text: pingText(label), ping: true });
+      saveQueue(); renderQueue();
+    }
+  };
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var client = document.getElementById("f-client").value.trim();
+    var type = document.getElementById("f-type").value;
+    var assigned = document.getElementById("f-assigned").value.trim() || "Unassigned";
+    var item = document.getElementById("f-item").value.trim();
+    if (!client || !item) { alert("Fill in the client name and ticket details."); return; }
+    qdata.seq += 1;
+    var ref = "EL-" + qdata.seq;
+    var now = Date.now();
+    var firstStage = stagesFor(type)[0];
+    qdata.requests.push({ ref: ref, type: type, client: client, item: item, assigned: assigned, stageIdx: 0, enteredStageAt: now, history: [{ stage: firstStage.key, at: now }], notes: [{ at: now, text: pingText(firstStage.label), ping: true }] });
+    saveQueue(); renderQueue();
+    document.getElementById("add-form").reset();
+    populateTypeSelect();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    qdata = defaultQueueData(); saveQueue(); renderQueue();
+  });
+
+  document.getElementById("threshold-input").addEventListener("input", renderQueue);
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var client = document.getElementById("lookup-client").value.trim().toLowerCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref || !client) { root.innerHTML = '<div class="lookup-result"><p class="not-found">Enter both the reference number and the client name on the ticket.</p></div>'; return; }
+    var r = qdata.requests.filter(function (x) { return x.ref.toUpperCase() === ref && x.client.toLowerCase().indexOf(client) === 0; })[0];
+    if (!r) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No matching record found. Please contact us directly.</p></div>'; return; }
+    var stages = stagesFor(r.type);
+    var html = '<div class="lookup-result"><h3>' + escapeHtml(TYPES[r.type].label) + ": " + escapeHtml(r.item) + '</h3>';
+    stages.forEach(function (s, i) {
+      var cls = i < r.stageIdx ? "done" : (i === r.stageIdx ? "active" : "pending");
+      var histEntry = r.history.filter(function (h) { return h.stage === s.key; })[0];
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === "pending" ? " pending-text" : "") + '">' + s.label + '</div><div class="stage-time">' + (histEntry ? fmtDateTime(histEntry.at) : (cls === "active" ? "In progress" : "Not started")) + "</div></div></div>";
+    });
+    html += "</div>";
+    root.innerHTML = html;
+  });
+
+  document.querySelectorAll(".el-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".el-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".el-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderBoard();
+  populateTypeSelect();
+  renderTypeFilters();
+  renderQueue();
+})();
+</script>
+</body>
+</html>
