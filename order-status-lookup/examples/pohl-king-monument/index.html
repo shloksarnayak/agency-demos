@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Job status lookup: working example for Pohl &amp; King Monument Co.</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .lookup-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  input[type="text"] { font: inherit; font-size: 0.95rem; padding: 0.7rem 0.9rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+  input[type="text"]:focus { outline: none; border-color: var(--brand); }
+  .samples { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+  .sample-chip { font: inherit; font-family: var(--mono); font-size: 0.8rem; color: var(--brand); background: var(--brand-soft); border: none; border-radius: 999px; padding: 0.35rem 0.85rem; cursor: pointer; }
+  .sample-chip:hover { opacity: 0.85; }
+
+  .result { border-top: 1px solid var(--rule); padding-top: 1.3rem; display: flex; flex-direction: column; gap: 1.1rem; }
+  .result-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
+  .result-head h3 { margin: 0; font-size: 1.1rem; font-family: var(--serif); }
+  .result-meta { font-size: 0.85rem; color: var(--muted); }
+
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.6rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+
+  .error-box { font-size: 0.92rem; color: var(--muted); font-style: italic; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Order &amp; job status lookup</a> / Pohl &amp; King Monument Co.</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Pohl &amp; King Monument Co.</span>
+  <h1 class="fx-h1">An order status a family doesn't have to call three times to hear</h1>
+  <p class="fx-lede">Your own BBB complaint record (17 complaints over the last 3 years, all answered or resolved) shows a repeated pattern: 13 describe a customer who paid for a headstone, monument, or inscription and then had no way to find out what stage the order was at, with promised callbacks that never came. One customer who paid in full in December 2024 documented "8+ calls/visits with no installation" ten months later; another wrote "calls and emails go unanswered, we've been promised a follow-up or updates but calls are never returned" about a headstone paid for 16 months earlier. Here's what an automatic status a family could check themselves might look like.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> your site, checked directly today, runs on Squarespace with no order-tracking, customer portal, or installation-status lookup of any kind. Your own BBB complaint history documents the same gap repeatedly and in the business's own words: a $600 deposit paid September 2025 for a design "promised in 2-3 weeks" with "multiple follow-up calls unreturned," a $95 death-date inscription ordered July 2024 still undone by May 2025, and a $395 death-date addition from September 2024 still undone 14 months later.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What I'd be straight with you about:</strong> 13 of 17 complaints were answered, not ignored, once they reached BBB, so this doesn't look like a business that avoids its customers, it looks like a business that only responds after someone escalates. A status page wouldn't have moved any of those orders faster, it just means a family checking in doesn't have to reach a BBB complaint, or a third unreturned call, before they hear anything. A couple of the 17 complaints are about workmanship, not status visibility, and this doesn't address those.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the two sample order references below aren't real customers. They show what typing a reference into a working version of this page would return, using stages a monument order typically moves through. A real build would connect to whatever your shop already uses to track an order, even a shared spreadsheet.</p>
+  </div>
+  <div class="fx-card" style="display:flex; flex-direction:column; gap:1.4rem;">
+    <div>
+      <div style="font-family:var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Enter an order reference</div>
+      <div class="lookup-row" style="margin-top:0.6rem;">
+        <input type="text" id="ticket-input" placeholder="e.g. PK-2214">
+        <button class="fx-btn" id="lookup-btn">Check status</button>
+      </div>
+      <div class="samples" style="margin-top:0.8rem;">
+        <span style="font-size:0.82rem; color:var(--muted);">Try a sample:</span>
+        <button class="sample-chip" data-sample="PK-2214">PK-2214</button>
+        <button class="sample-chip" data-sample="PK-2187">PK-2187</button>
+      </div>
+    </div>
+    <div id="result-root"></div>
+  </div>
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Only the two sample order references above return anything.</b> This isn't connected to your real orders, so it can't look up an actual family's headstone or monument. A real version would need a link to whatever your shop already uses to track an order through design, fabrication, and installation.</div>
+      <div class="lim"><b>The five stages shown (design approved, in fabrication, shipped to cemetery, installation scheduled, installed) are a typical monument-order flow, not copied from your internal process.</b> Worth a short conversation about how your team actually phases an order before this gets built for real.</div>
+      <div class="lim"><b>This is a status check, not a fix for an order that's already stalled.</b> The complaints describing months of silence still need a person to call those families back either way, this only covers the routine "where does our order stand" question going forward, so it doesn't sit unanswered until someone calls three times or files with BBB.</div>
+      <div class="lim"><b>This only shows status.</b> It doesn't change how fast a headstone gets fabricated or installed, it just means a family gets an automatic update instead of no answer to their calls.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Pohl &amp; King Monument Co. Your site's lack of an order-status system and your own BBB complaint history verified directly today. Order data is a labeled sample, not connected to your real orders.</p>
+</footer>
+<script>
+(function () {
+  var STAGE_NAMES = ["Design approved", "In fabrication", "Shipped to cemetery", "Installation scheduled", "Installed"];
+
+  var ORDERS = {
+    "PK-2214": { item: "Upright granite headstone, 24x12, engraved", stage: 2, times: ["Jul 28, design confirmed", "Aug 8, fabrication started", "Aug 26, shipped to cemetery", null, null] },
+    "PK-2187": { item: "Bronze memorial marker, cemetery installation", stage: 4, times: ["Jun 30, design confirmed", "Jul 9, fabrication started", "Jul 24, shipped to cemetery", "Aug 4, installation scheduled", "Aug 8, installed"] }
+  };
+
+  var resultRoot = document.getElementById("result-root");
+  var ticketInput = document.getElementById("ticket-input");
+
+  function normalize(v) { return (v || "").trim().toUpperCase(); }
+
+  function lookup() {
+    var key = normalize(ticketInput.value);
+    if (!key) {
+      resultRoot.innerHTML = '<p class="error-box">Enter an order reference above, or try one of the samples.</p>';
+      return;
+    }
+    var order = ORDERS[key];
+    if (!order) {
+      resultRoot.innerHTML = '<p class="error-box">No sample order matches "' + escapeHtml(ticketInput.value) + '". Try one of the two samples above, this demo only has data for those.</p>';
+      return;
+    }
+    renderOrder(key, order);
+  }
+
+  function renderOrder(key, order) {
+    var html = '<div class="result">';
+    html += '<div class="result-head"><h3>' + key + '</h3><span class="result-meta">' + order.item + '</span></div>';
+    html += '<div>';
+    STAGE_NAMES.forEach(function (name, i) {
+      var cls = i < order.stage ? 'done' : (i === order.stage ? 'active' : 'pending');
+      var time = order.times[i];
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === 'pending' ? ' pending-text' : '') + '">' + name + '</div><div class="stage-time">' + (time ? time : (cls === 'active' ? 'In progress' : 'Not started')) + '</div></div></div>';
+    });
+    html += '</div></div>';
+    resultRoot.innerHTML = html;
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", lookup);
+  ticketInput.addEventListener("keydown", function (e) { if (e.key === "Enter") lookup(); });
+  Array.prototype.forEach.call(document.querySelectorAll(".sample-chip"), function (b) {
+    b.addEventListener("click", function () { ticketInput.value = b.dataset.sample; lookup(); });
+  });
+
+  resultRoot.innerHTML = '<p class="error-box">Enter an order reference above, or try one of the samples.</p>';
+})();
+</script>
+</body>
+</html>
