@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>Security Fence Company: locked quote &amp; change-order guard example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .qlg-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .qlg-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input[type="text"], .field input[type="number"], .field select {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .field.checkline { flex-direction: row; align-items: center; gap: 0.5rem; }
+  .field.checkline label { font-size: 0.82rem; font-weight: 600; }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .rate-note { font-size: 0.74rem; color: var(--muted); margin-top: -0.35rem; }
+  .quote-doc { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.2rem; background: #fff; box-shadow: var(--shadow-sm); margin-top: 0.9rem; }
+  .quote-doc h4 { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.15rem; }
+  .quote-doc .sub { font-size: 0.76rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .quote-line { display: flex; justify-content: space-between; font-size: 0.88rem; color: var(--ink-2); padding: 0.3rem 0; border-bottom: 1px solid var(--rule-soft); }
+  .quote-total { display: flex; justify-content: space-between; font-weight: 750; font-size: 1.05rem; padding-top: 0.7rem; border-top: 2px solid var(--ink); margin-top: 0.4rem; }
+  .lock-note { font-size: 0.78rem; color: var(--brand); margin-top: 0.6rem; font-weight: 650; }
+  .materials-note { font-size: 0.78rem; color: var(--ink-2); margin-top: 0.35rem; }
+  .job-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .job-title { font-weight: 660; }
+  .job-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.locked { color: var(--muted); background: var(--surface-2); }
+  .badge.matched { color: var(--good); background: var(--good-bg); }
+  .badge.flagged { color: var(--hot); background: var(--hot-bg); }
+  .badge.resolved { color: var(--brand); background: var(--brand-soft); }
+  .badge.pending { color: var(--brand); background: var(--brand-soft); }
+  .variance { font-size: 0.82rem; color: var(--hot); font-weight: 700; margin-top: 0.4rem; }
+  .job-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .job-actions input[type="text"], .job-actions input[type="number"] { font: inherit; font-size: 0.85rem; padding: 0.4rem 0.55rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .reset-row { margin-top: 1.3rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .addon-row { border-top: 1px dashed var(--rule); margin-top: 0.6rem; padding-top: 0.5rem; font-size: 0.84rem; }
+  .addon-row .addon-head { display: flex; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; }
+  .addon-row .addon-reason { color: var(--ink-2); margin-top: 0.15rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Locked quote &amp; invoice-consistency guard</a> / Security Fence Company example</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Built for Security Fence Company, Braselton, GA</span>
+  <h1 class="fx-h1">A locked quote before the crew breaks ground, and an on-record yes before a design change reaches the invoice</h1>
+  <p class="fx-lede">Security Fence's own site (securityfencega.com) runs a Jobber-powered client portal plus a basic quote-request contact form, no scope-lock step before a job starts. That gap shows up directly in the business's own BBB record: one customer wrote "Contract stated a 5' fence would be installed with 1' buried and finished fence will be installed as a 4' finished fence with gates and finishes," disputing an on-site trenching change the crew leader added; a second customer, after a fence "curved upwards going left to right," said design changes for HOA drainage "weren't approved." Separately, a Birdeye reviewer wrote the company "sold us damaged, rusted, banged up gates" and refused to exchange them. This example shows a small, working fix: a scope-capturing intake that turns fence height, buried depth, gate hardware, and finish into a locked, itemized quote, plus an on-site change-order step so any deeper trenching or design adjustment becomes a timestamped, itemized ask with a reason, held for the customer's approval before it can ever land on the final invoice.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Illustrative example.</strong> The rate table, customer names, and job records below are fictional and clearly labeled as such. The quoted phrases in the job records below are drawn directly from Security Fence Company's own published BBB and Birdeye record, not invented; every dollar figure is a sample rate for demonstration.</p></div>
+
+  <div class="qlg-cols">
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Customer: get a locked quote</h2>
+      <form id="quote-form" class="form-grid">
+        <div class="field span2"><label for="f-customer">Name / address</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer, 118 Persimmon Rd, Braselton, GA"></div>
+        <div class="field"><label for="f-type">Fence type</label><select id="f-type"><option value="chainlink">Chain link</option><option value="woodPrivacy">Wood privacy</option><option value="ornamental">Ornamental (aluminum/steel)</option><option value="pvc">PVC</option><option value="livestock">Livestock / field fencing</option></select></div>
+        <div class="field"><label for="f-feet">Linear feet</label><input type="number" id="f-feet" min="10" step="5" value="100"></div>
+        <div class="field"><label for="f-height">Finished height</label><select id="f-height"><option value="4">4 ft</option><option value="5">5 ft</option><option value="6">6 ft</option></select></div>
+        <div class="field"><label for="f-depth">Post buried depth</label><select id="f-depth"><option value="standard">Standard, 12 in</option><option value="deep">Deep-set, 24 in (rocky / high-wind site)</option></select></div>
+        <div class="field"><label for="f-walk">Walk gates</label><input type="number" id="f-walk" min="0" step="1" value="1"></div>
+        <div class="field"><label for="f-drive">Drive / double gates</label><input type="number" id="f-drive" min="0" step="1" value="0"></div>
+        <div class="field checkline span2"><input type="checkbox" id="f-opener"><label for="f-opener">Automated opener (LiftMaster / Ghost Controls)</label></div>
+        <div class="field checkline span2"><input type="checkbox" id="f-materials" checked><label for="f-materials">Gate/hardware condition confirmed against photo before delivery</label></div>
+        <div class="rate-note span2">Sample rates for demonstration. A real build uses Security Fence's own per-foot and per-gate pricing, and any known ancillary fee, disclosed the same way here.</div>
+      </form>
+      <div><button id="gen-btn" class="fx-btn" type="button">Get locked quote</button></div>
+      <div id="doc-root"></div>
+
+      <h3 class="fx-h2" style="font-size:1.1rem; margin-top:1.6rem;">Sample rate table</h3>
+      <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+        <tbody id="rate-table-body"></tbody>
+      </table>
+    </div>
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Office: job desk &amp; change-order guard</h2>
+      <div id="jobs-root"></div>
+      <div class="reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">How this maps to the real gap</h2>
+    <div class="limits">
+      <div class="lim"><b>The intake form is the actual fix for the actual gap.</b> Security Fence's live quote-request form and Jobber client portal show no fence height, buried depth, or gate hardware fields before a job is booked; this replaces that with the actual inputs a real fence quote depends on, locked before the crew shows up.</div>
+      <div class="lim"><b>Sample Job A reproduces the 5'/4'/1'-buried trenching complaint.</b> Locked at a standard 12 inch buried depth, then invoiced with a deeper 24 inch trenching fee added directly with no change order ever sent, the guard flags that gap the moment the invoice is entered, instead of after the customer disputes what was actually authorized.</div>
+      <div class="lim"><b>Sample Job B reproduces the HOA drainage design-change complaint, fixed.</b> Instead of a rear-slope drainage adjustment reaching the customer for the first time as a "design change" on the bill, it sits here as a timestamped, itemized change-order request with a stated reason, waiting on the customer's own recorded approval before it can be billed at all.</div>
+      <div class="lim"><b>The materials-condition checkbox addresses the Birdeye damaged-gates complaint.</b> A Birdeye reviewer wrote the company "sold us damaged, rusted, banged up gates" with no pre-installation check. This intake step requires gate/hardware condition to be confirmed against a photo before delivery, so a damaged gate gets caught and swapped before installation day, not after the customer is stuck with it.</div>
+      <div class="lim"><b>Back to the template: <a href="../../">Locked quote &amp; invoice-consistency guard</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Security Fence Company.</strong></p><p>Prepared by Shlok Sarnayak. Fictional customer and job data on this page, not connected to any live billing system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "qlg_securityfencega_v1";
+
+  var RATES = {
+    perFt: { chainlink: 14, woodPrivacy: 28, ornamental: 34, pvc: 24, livestock: 11 },
+    heightSurchargePct: { "4": 0, "5": 0.12, "6": 0.22 },
+    deepSetPerFt: 4,
+    gateWalk: 275,
+    gateDrive: 650,
+    opener: 850
+  };
+
+  var FENCE_LABELS = {
+    chainlink: "chain link", woodPrivacy: "wood privacy", ornamental: "ornamental (aluminum/steel)",
+    pvc: "PVC", livestock: "livestock / field"
+  };
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtMoney(n) { return "$" + n.toFixed(2); }
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); d.setHours(9, 0, 0, 0); return d.getTime(); }
+  function hoursAgo(n) { var d = new Date(); d.setHours(d.getHours() - n); return d.getTime(); }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); }
+  function fmtDateTime(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+
+  function computeQuote(fenceType, feet, height, depth, walkGates, driveGates, opener) {
+    var lines = [];
+    var rate = RATES.perFt[fenceType];
+    var base = feet * rate;
+    lines.push({ desc: feet + " ft " + FENCE_LABELS[fenceType] + " fence, " + height + "' finished height (" + fmtMoney(rate) + "/ft)", amount: base });
+    var pct = RATES.heightSurchargePct[String(height)] || 0;
+    if (pct > 0) lines.push({ desc: height + "' height surcharge (" + Math.round(pct * 100) + "%)", amount: base * pct });
+    if (depth === "deep") lines.push({ desc: feet + " ft deep-set post trenching, rocky/high-wind site (disclosed up front)", amount: feet * RATES.deepSetPerFt });
+    if (walkGates > 0) lines.push({ desc: walkGates + " walk gate(s) (" + fmtMoney(RATES.gateWalk) + " each)", amount: walkGates * RATES.gateWalk });
+    if (driveGates > 0) lines.push({ desc: driveGates + " drive/double gate(s) (" + fmtMoney(RATES.gateDrive) + " each)", amount: driveGates * RATES.gateDrive });
+    if (opener) lines.push({ desc: "Automated gate opener install (LiftMaster / Ghost Controls)", amount: RATES.opener });
+    var total = lines.reduce(function (s, l) { return s + l.amount; }, 0);
+    return { lines: lines, total: total };
+  }
+
+  function makeJob(customer, fenceType, feet, height, depth, walkGates, driveGates, opener, materialsConfirmed, lockedAt) {
+    var q = computeQuote(fenceType, feet, height, depth, walkGates, driveGates, opener);
+    return {
+      id: "QT-" + Math.floor(1000 + Math.random() * 9000),
+      customer: customer,
+      fenceType: fenceType, feet: feet, height: height, depth: depth,
+      walkGates: walkGates, driveGates: driveGates, opener: opener, materialsConfirmed: materialsConfirmed,
+      lines: q.lines, total: q.total,
+      lockedAt: lockedAt,
+      addOns: [],
+      invoice: null
+    };
+  }
+
+  function approvedTotal(job) {
+    var addOnSum = job.addOns.filter(function (a) { return a.approved; })
+      .reduce(function (s, a) { return s + a.amount; }, 0);
+    return job.total + addOnSum;
+  }
+
+  function defaultData() {
+    var jA = makeJob("Sample Customer A, 118 Persimmon Rd, Braselton, GA", "chainlink", 120, "4", "standard", 1, 0, false, true, daysAgo(7));
+    jA.invoice = { amount: jA.total + 480, note: "Crew hit rock along the property line and buried posts 24 inches deep instead of the quoted 12, added directly to the invoice.", reason: "" };
+
+    var jB = makeJob("Sample Customer B, 212 Mill Creek Trail, Braselton, GA", "woodPrivacy", 90, "6", "standard", 0, 0, false, true, daysAgo(3));
+    jB.addOns.push({ id: "AO-1", desc: "HOA-required drainage step/rack design adjustment for rear slope", amount: 340, reason: "Rear property line drops about 18 inches over the run; HOA requires the fence to step down in racked panels to keep a code-compliant gap at the base for drainage, rather than following the ground in one continuous line.", requestedAt: hoursAgo(30), approved: false });
+
+    var jC = makeJob("Sample Customer C, 47 Ridgeline Ct, Braselton, GA", "ornamental", 60, "5", "standard", 0, 1, true, true, daysAgo(10));
+    jC.invoice = { amount: approvedTotal(jC), note: "", reason: "" };
+
+    return { jobs: [jA, jB, jC] };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function renderRateTable() {
+    var rows = [
+      ["Chain link fence", fmtMoney(RATES.perFt.chainlink) + " / ft"],
+      ["Wood privacy fence", fmtMoney(RATES.perFt.woodPrivacy) + " / ft"],
+      ["Ornamental (aluminum/steel) fence", fmtMoney(RATES.perFt.ornamental) + " / ft"],
+      ["PVC fence", fmtMoney(RATES.perFt.pvc) + " / ft"],
+      ["Livestock / field fencing", fmtMoney(RATES.perFt.livestock) + " / ft"],
+      ["5' height surcharge", "12%"],
+      ["6' height surcharge", "22%"],
+      ["Deep-set post trenching (rocky/high-wind)", fmtMoney(RATES.deepSetPerFt) + " / ft, always disclosed"],
+      ["Walk gate", fmtMoney(RATES.gateWalk) + " each"],
+      ["Drive / double gate", fmtMoney(RATES.gateDrive) + " each"],
+      ["Automated opener install", fmtMoney(RATES.opener) + " flat"]
+    ];
+    document.getElementById("rate-table-body").innerHTML = rows.map(function (r) {
+      return "<tr><td style='padding:0.4rem 0.5rem; border-bottom:1px solid var(--rule-soft);'>" + r[0] + "</td><td style='padding:0.4rem 0.5rem; border-bottom:1px solid var(--rule-soft); text-align:right;'>" + r[1] + "</td></tr>";
+    }).join("");
+  }
+
+  function renderQuoteDoc(job) {
+    var root = document.getElementById("doc-root");
+    var html = '<div class="quote-doc">' +
+      "<h4>Locked Quote " + job.id + "</h4>" +
+      '<div class="sub">' + escapeHtml(job.customer) + " &middot; locked " + fmtDate(job.lockedAt) + "</div>" +
+      job.lines.map(function (l) { return '<div class="quote-line"><span>' + l.desc + "</span><span>" + fmtMoney(l.amount) + "</span></div>"; }).join("") +
+      '<div class="quote-total"><span>Locked total</span><span>' + fmtMoney(job.total) + "</span></div>" +
+      '<div class="materials-note">Gate/hardware condition confirmed against photo before delivery: <b>' + (job.materialsConfirmed ? "Yes" : "Not yet confirmed") + '</b></div>' +
+      '<div class="lock-note">This number is locked at booking. Any deeper trenching or design change found on site needs the customer\'s approval before it counts toward the invoice, and any final invoice that differs will be flagged automatically on the job desk.</div>' +
+      "</div>";
+    root.innerHTML = html;
+  }
+
+  function jobStatus(job) {
+    var target = approvedTotal(job);
+    var pendingAddOns = job.addOns.some(function (a) { return !a.approved; });
+    if (!job.invoice) {
+      if (pendingAddOns) return { cls: "pending", label: "Locked, change order awaiting customer approval" };
+      return { cls: "locked", label: "Locked, not yet invoiced" };
+    }
+    if (job.invoice.amount === target) return { cls: "matched", label: "Invoice matches locked quote + approved change orders" };
+    if (job.invoice.reason) return { cls: "resolved", label: "Variance resolved, reason on record" };
+    return { cls: "flagged", label: "FLAGGED: invoice does not match" };
+  }
+
+  function renderJobs() {
+    var root = document.getElementById("jobs-root");
+    if (!data.jobs.length) { root.innerHTML = '<p class="empty">No locked quotes yet. Generate one on the left to start.</p>'; return; }
+    var html = "";
+    data.jobs.slice().sort(function (a, b) { return b.lockedAt - a.lockedAt; }).forEach(function (job) {
+      var idx = data.jobs.indexOf(job);
+      var st = jobStatus(job);
+      var target = approvedTotal(job);
+      html += '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(job.customer) + '</div><div class="job-meta">' + job.id + " &middot; locked quote " + fmtMoney(job.total) + '</div></div><span class="badge ' + st.cls + '">' + st.label + "</span></div>";
+
+      job.addOns.forEach(function (a) {
+        html += '<div class="addon-row"><div class="addon-head"><span>' + escapeHtml(a.desc) + " (" + fmtMoney(a.amount) + ")</span><span class=\"badge " + (a.approved ? "matched" : "pending") + "\">" + (a.approved ? "Customer approved" : "Awaiting customer approval") + '</span></div><div class="addon-reason">Requested ' + fmtDateTime(a.requestedAt) + ": " + escapeHtml(a.reason) + "</div></div>";
+        if (!a.approved) {
+          html += '<div class="job-actions"><button class="fx-btn-ghost" onclick="__qlg.approveAddOn(' + idx + ',\'' + a.id + '\')">Record customer approval</button></div>';
+        }
+      });
+
+      if (job.invoice && job.invoice.amount !== target) {
+        var diff = job.invoice.amount - target;
+        html += '<div class="variance">Invoice ' + fmtMoney(job.invoice.amount) + ", " + (diff > 0 ? "+" : "") + fmtMoney(diff) + " vs. locked quote + approved change orders" + (job.invoice.note ? " &middot; " + escapeHtml(job.invoice.note) : "") + "</div>";
+      }
+
+      var pendingAddOns = job.addOns.some(function (a) { return !a.approved; });
+      if (!job.invoice) {
+        html += '<div class="job-actions"><input type="text" placeholder="Change-order description" id="ao-desc-' + idx + '" style="max-width:220px;"><input type="number" placeholder="Amount $" id="ao-amt-' + idx + '" style="max-width:100px;"><input type="text" placeholder="Reason" id="ao-reason-' + idx + '" style="max-width:220px;"><button class="fx-btn-ghost" onclick="__qlg.requestAddOn(' + idx + ')">Request change order</button></div>';
+        if (!pendingAddOns) {
+          html += '<div class="job-actions"><input type="number" placeholder="Final invoice $" id="inv-amt-' + idx + '" style="max-width:130px;"><input type="text" placeholder="Note (optional)" id="inv-note-' + idx + '" style="max-width:220px;"><button class="fx-btn-ghost" onclick="__qlg.setInvoice(' + idx + ')">Enter final invoice</button></div>';
+        }
+      } else if (job.invoice.amount !== target && !job.invoice.reason) {
+        html += '<div class="job-actions"><input type="text" placeholder="Reason for the difference" id="inv-reason-' + idx + '" style="max-width:280px;"><button class="fx-btn-ghost" onclick="__qlg.setReason(' + idx + ')">Record reason &amp; resolve</button></div>';
+      } else if (job.invoice.reason) {
+        html += '<div class="job-meta" style="margin-top:0.4rem;">Reason on record: ' + escapeHtml(job.invoice.reason) + "</div>";
+      }
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  window.__qlg = {
+    requestAddOn: function (idx) {
+      var desc = document.getElementById("ao-desc-" + idx).value.trim();
+      var amt = parseFloat(document.getElementById("ao-amt-" + idx).value);
+      var reason = document.getElementById("ao-reason-" + idx).value.trim();
+      if (!desc || isNaN(amt) || !reason) { alert("Enter a description, amount, and reason for the change order."); return; }
+      data.jobs[idx].addOns.push({ id: "AO-" + Date.now(), desc: desc, amount: amt, reason: reason, requestedAt: Date.now(), approved: false });
+      save(); renderJobs();
+    },
+    approveAddOn: function (idx, addOnId) {
+      var job = data.jobs[idx];
+      var a = job.addOns.filter(function (x) { return x.id === addOnId; })[0];
+      if (a) a.approved = true;
+      save(); renderJobs();
+    },
+    setInvoice: function (idx) {
+      var amt = parseFloat(document.getElementById("inv-amt-" + idx).value);
+      if (isNaN(amt)) { alert("Enter a final invoice amount."); return; }
+      var note = document.getElementById("inv-note-" + idx).value.trim();
+      data.jobs[idx].invoice = { amount: amt, note: note, reason: "" };
+      save(); renderJobs();
+    },
+    setReason: function (idx) {
+      var reason = document.getElementById("inv-reason-" + idx).value.trim();
+      if (!reason) { alert("Enter a reason before resolving."); return; }
+      data.jobs[idx].invoice.reason = reason;
+      save(); renderJobs();
+    }
+  };
+
+  document.getElementById("gen-btn").addEventListener("click", function () {
+    var customer = document.getElementById("f-customer").value.trim() || "New customer";
+    var fenceType = document.getElementById("f-type").value;
+    var feet = parseInt(document.getElementById("f-feet").value, 10) || 0;
+    var height = document.getElementById("f-height").value;
+    var depth = document.getElementById("f-depth").value;
+    var walkGates = parseInt(document.getElementById("f-walk").value, 10) || 0;
+    var driveGates = parseInt(document.getElementById("f-drive").value, 10) || 0;
+    var opener = document.getElementById("f-opener").checked;
+    var materialsConfirmed = document.getElementById("f-materials").checked;
+    var job = makeJob(customer, fenceType, feet, height, depth, walkGates, driveGates, opener, materialsConfirmed, Date.now());
+    data.jobs.unshift(job);
+    save();
+    renderQuoteDoc(job);
+    renderJobs();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset all jobs back to the original sample data?")) return;
+    data = defaultData(); save(); renderJobs();
+    document.getElementById("doc-root").innerHTML = "";
+  });
+
+  renderRateTable();
+  renderJobs();
+})();
+</script>
+</body>
+</html>
