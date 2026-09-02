@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>T &amp; L Septic Services: locked quote &amp; invoice-consistency guard example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .qlg-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .qlg-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input[type="text"], .field input[type="number"], .field select {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .rate-note { font-size: 0.74rem; color: var(--muted); margin-top: -0.35rem; }
+  .quote-doc { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.2rem; background: #fff; box-shadow: var(--shadow-sm); margin-top: 0.9rem; }
+  .quote-doc h4 { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.15rem; }
+  .quote-doc .sub { font-size: 0.76rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .quote-line { display: flex; justify-content: space-between; font-size: 0.88rem; color: var(--ink-2); padding: 0.3rem 0; border-bottom: 1px solid var(--rule-soft); }
+  .quote-total { display: flex; justify-content: space-between; font-weight: 750; font-size: 1.05rem; padding-top: 0.7rem; border-top: 2px solid var(--ink); margin-top: 0.4rem; }
+  .lock-note { font-size: 0.78rem; color: var(--brand); margin-top: 0.6rem; font-weight: 650; }
+  .job-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .job-title { font-weight: 660; }
+  .job-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.locked { color: var(--muted); background: var(--surface-2); }
+  .badge.matched { color: var(--good); background: var(--good-bg); }
+  .badge.flagged { color: var(--hot); background: var(--hot-bg); }
+  .badge.resolved { color: var(--brand); background: var(--brand-soft); }
+  .badge.pending { color: var(--brand); background: var(--brand-soft); }
+  .variance { font-size: 0.82rem; color: var(--hot); font-weight: 700; margin-top: 0.4rem; }
+  .job-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .job-actions input[type="text"], .job-actions input[type="number"] { font: inherit; font-size: 0.85rem; padding: 0.4rem 0.55rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .reset-row { margin-top: 1.3rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .addon-row { border-top: 1px dashed var(--rule); margin-top: 0.6rem; padding-top: 0.5rem; font-size: 0.84rem; }
+  .addon-row .addon-head { display: flex; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; }
+  .addon-row .addon-reason { color: var(--ink-2); margin-top: 0.15rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Locked quote &amp; invoice-consistency guard</a> / T &amp; L Septic example</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Built for T &amp; L Septic Services, LLC, Denton, TX</span>
+  <h1 class="fx-h1">A locked quote before the truck rolls, and an on-record yes before an add-on hits the invoice</h1>
+  <p class="fx-lede">T &amp; L's own site (tlseptic.com) has only a plain "Request Information" contact form, no scope questions, no price shown anywhere in that flow. That gap shows up directly in the business's own BBB complaint record: one customer wrote "First quoted $675 flat fee then try to charge 1025 for a pump out while on site," and a second wrote "Company charged us $200 for those sprinkler heads without sending an invoice first or with any information given about the cost." This example shows a small, working fix: a scope-capturing intake that turns tank size and access difficulty into a locked, itemized quote, plus an add-on request step so any extra work found on-site becomes a timestamped, itemized ask with a reason, held for the customer's approval before it can ever land on the final invoice.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Illustrative example.</strong> The rate table, customer names, and job records below are fictional and clearly labeled as such. The $675 quoted and $1,025 invoiced amounts on Sample Job A, and the $200 sprinkler-head add-on on Sample Job B, are drawn directly from T &amp; L's own published BBB complaint record, not invented; every other number is a sample rate for demonstration.</p></div>
+
+  <div class="qlg-cols">
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Customer: get a locked quote</h2>
+      <form id="quote-form" class="form-grid">
+        <div class="field span2"><label for="f-customer">Name / address</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer, 118 Birch Ln, Denton, TX"></div>
+        <div class="field"><label for="f-service">Service</label><select id="f-service"><option value="pumpout">Tank pump-out</option><option value="repair">Aerobic system inspection / repair</option></select></div>
+        <div class="field pumpout-field"><label for="f-tank">Tank size</label><select id="f-tank"><option value="750">750 gallon</option><option value="1000">1000 gallon</option><option value="1500">1500 gallon</option></select></div>
+        <div class="field pumpout-field"><label for="f-access">Tank access</label><select id="f-access"><option value="standard">Standard, lid exposed</option><option value="buried">Buried, requires digging</option></select></div>
+        <div class="field repair-field" style="display:none;"><label for="f-hours">Estimated hours on site</label><input type="number" id="f-hours" min="0.5" step="0.5" value="2"></div>
+        <div class="rate-note span2">Sample rates for demonstration. A real build uses T &amp; L's own flat-fee and hourly pricing, and any known ancillary fee, disclosed the same way here.</div>
+      </form>
+      <div><button id="gen-btn" class="fx-btn" type="button">Get locked quote</button></div>
+      <div id="doc-root"></div>
+
+      <h3 class="fx-h2" style="font-size:1.1rem; margin-top:1.6rem;">Sample rate table</h3>
+      <table style="width:100%; border-collapse: collapse; font-size: 0.85rem;">
+        <tbody id="rate-table-body"></tbody>
+      </table>
+    </div>
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Office: job desk &amp; invoice-consistency guard</h2>
+      <div id="jobs-root"></div>
+      <div class="reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">How this maps to the real gap</h2>
+    <div class="limits">
+      <div class="lim"><b>The intake form is the actual fix for the actual gap.</b> T &amp; L's live "Request Information" form has no scope fields and shows no price at all; this replaces that with tank size, access difficulty, and estimated hours, the inputs a real pump-out or repair quote already depends on.</div>
+      <div class="lim"><b>Sample Job A reproduces the $675 / $1,025 complaint.</b> Locked at $675 for a 1500 gallon pump-out with standard access, exactly the flat fee quoted in the real complaint, then invoiced at $1,025 with no add-on ever requested or approved, the flag catches that gap the moment the invoice is entered instead of after the customer disputes it.</div>
+      <div class="lim"><b>Sample Job B reproduces the $200 sprinkler-head complaint, fixed.</b> Instead of a $200 charge appearing for the first time on the invoice, the technician's add-on request sits here as a timestamped, itemized item with a stated reason, waiting on the customer's own approval before it can be billed at all.</div>
+      <div class="lim"><b>Back to the template: <a href="../../">Locked quote &amp; invoice-consistency guard</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by T &amp; L Septic Services, LLC.</strong></p><p>Prepared by Shlok Sarnayak. Fictional customer and job data on this page, not connected to any live billing system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "qlg_tlseptic_v1";
+
+  var RATES = {
+    pumpOut: { "750": 375, "1000": 475, "1500": 675 },
+    buriedAccessFee: 150,
+    diagnosticFee: 95,
+    hourlyRate: 135
+  };
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtMoney(n) { return "$" + n.toFixed(2); }
+  function daysAgo(n) { var d = new Date(); d.setDate(d.getDate() - n); d.setHours(9, 0, 0, 0); return d.getTime(); }
+  function hoursAgo(n) { var d = new Date(); d.setHours(d.getHours() - n); return d.getTime(); }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); }
+  function fmtDateTime(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+
+  function computeQuote(service, tank, access, hours) {
+    var lines = [];
+    if (service === "repair") {
+      lines.push({ desc: "Aerobic system diagnostic visit", amount: RATES.diagnosticFee });
+      lines.push({ desc: hours + " hour" + (hours === 1 ? "" : "s") + " labor (" + fmtMoney(RATES.hourlyRate) + "/hr)", amount: hours * RATES.hourlyRate });
+    } else {
+      lines.push({ desc: tank + " gallon tank pump-out (flat fee)", amount: RATES.pumpOut[String(tank)] });
+      if (access === "buried") lines.push({ desc: "Buried tank access, digging required (disclosed up front)", amount: RATES.buriedAccessFee });
+    }
+    var total = lines.reduce(function (s, l) { return s + l.amount; }, 0);
+    return { lines: lines, total: total };
+  }
+
+  function makeJob(customer, service, tank, access, hours, lockedAt) {
+    var q = computeQuote(service, tank, access, hours);
+    return {
+      id: "QT-" + Math.floor(1000 + Math.random() * 9000),
+      customer: customer,
+      service: service, tank: tank, access: access, hours: hours,
+      lines: q.lines, total: q.total,
+      lockedAt: lockedAt,
+      addOns: [],
+      invoice: null
+    };
+  }
+
+  function approvedTotal(job) {
+    var addOnSum = job.addOns.filter(function (a) { return a.approved; })
+      .reduce(function (s, a) { return s + a.amount; }, 0);
+    return job.total + addOnSum;
+  }
+
+  function defaultData() {
+    var jA = makeJob("Sample Customer A, 118 Birch Ln", "pumpout", "1500", "standard", 0, daysAgo(6));
+    jA.invoice = { amount: 1025, note: "Additional tank access work performed on site, no add-on requested first.", reason: "" };
+
+    var jB = makeJob("Sample Customer B, 44 Elm Ct", "repair", "750", "standard", 2, daysAgo(2));
+    jB.addOns.push({ id: "AO-1", desc: "Sprinkler head reset after septic line repair", amount: 200, reason: "Two irrigation heads removed to reach the line, reset needed to restore the yard.", requestedAt: hoursAgo(20), approved: false });
+
+    var jC = makeJob("Sample Customer C, 902 Oak Ave", "pumpout", "1000", "standard", 0, daysAgo(9));
+    jC.addOns.push({ id: "AO-2", desc: "Riser install for future easier access", amount: 85, reason: "Lid was buried 14 inches down, riser keeps future pump-outs from needing to dig.", requestedAt: daysAgo(8), approved: true });
+    jC.invoice = { amount: approvedTotal(jC), note: "", reason: "" };
+
+    return { jobs: [jA, jB, jC] };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function renderRateTable() {
+    var rows = [
+      ["750 gallon tank pump-out", fmtMoney(RATES.pumpOut["750"]) + " flat"],
+      ["1000 gallon tank pump-out", fmtMoney(RATES.pumpOut["1000"]) + " flat"],
+      ["1500 gallon tank pump-out (real, from BBB record)", fmtMoney(RATES.pumpOut["1500"]) + " flat"],
+      ["Buried tank access / digging", fmtMoney(RATES.buriedAccessFee) + " flat, always shown"],
+      ["Aerobic system diagnostic visit", fmtMoney(RATES.diagnosticFee) + " flat"],
+      ["Repair labor", fmtMoney(RATES.hourlyRate) + " / hour"]
+    ];
+    document.getElementById("rate-table-body").innerHTML = rows.map(function (r) {
+      return "<tr><td style='padding:0.4rem 0.5rem; border-bottom:1px solid var(--rule-soft);'>" + r[0] + "</td><td style='padding:0.4rem 0.5rem; border-bottom:1px solid var(--rule-soft); text-align:right;'>" + r[1] + "</td></tr>";
+    }).join("");
+  }
+
+  function renderQuoteDoc(job) {
+    var root = document.getElementById("doc-root");
+    var html = '<div class="quote-doc">' +
+      "<h4>Locked Quote " + job.id + "</h4>" +
+      '<div class="sub">' + escapeHtml(job.customer) + " &middot; locked " + fmtDate(job.lockedAt) + "</div>" +
+      job.lines.map(function (l) { return '<div class="quote-line"><span>' + l.desc + "</span><span>" + fmtMoney(l.amount) + "</span></div>"; }).join("") +
+      '<div class="quote-total"><span>Locked total</span><span>' + fmtMoney(job.total) + "</span></div>" +
+      '<div class="lock-note">This number is locked at booking. Any add-on found on site needs the customer\'s approval before it counts toward the invoice, and any final invoice that differs will be flagged automatically on the job desk.</div>' +
+      "</div>";
+    root.innerHTML = html;
+  }
+
+  function jobStatus(job) {
+    var target = approvedTotal(job);
+    var pendingAddOns = job.addOns.some(function (a) { return !a.approved; });
+    if (!job.invoice) {
+      if (pendingAddOns) return { cls: "pending", label: "Locked, add-on awaiting customer approval" };
+      return { cls: "locked", label: "Locked, not yet invoiced" };
+    }
+    if (job.invoice.amount === target) return { cls: "matched", label: "Invoice matches locked quote + approved add-ons" };
+    if (job.invoice.reason) return { cls: "resolved", label: "Variance resolved, reason on record" };
+    return { cls: "flagged", label: "FLAGGED: invoice does not match" };
+  }
+
+  function renderJobs() {
+    var root = document.getElementById("jobs-root");
+    if (!data.jobs.length) { root.innerHTML = '<p class="empty">No locked quotes yet. Generate one on the left to start.</p>'; return; }
+    var html = "";
+    data.jobs.slice().sort(function (a, b) { return b.lockedAt - a.lockedAt; }).forEach(function (job) {
+      var idx = data.jobs.indexOf(job);
+      var st = jobStatus(job);
+      var target = approvedTotal(job);
+      html += '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(job.customer) + '</div><div class="job-meta">' + job.id + " &middot; locked quote " + fmtMoney(job.total) + '</div></div><span class="badge ' + st.cls + '">' + st.label + "</span></div>";
+
+      job.addOns.forEach(function (a) {
+        html += '<div class="addon-row"><div class="addon-head"><span>' + escapeHtml(a.desc) + " (" + fmtMoney(a.amount) + ")</span><span class=\"badge " + (a.approved ? "matched" : "pending") + "\">" + (a.approved ? "Customer approved" : "Awaiting customer approval") + '</span></div><div class="addon-reason">Requested ' + fmtDateTime(a.requestedAt) + ": " + escapeHtml(a.reason) + "</div></div>";
+        if (!a.approved) {
+          html += '<div class="job-actions"><button class="fx-btn-ghost" onclick="__qlg.approveAddOn(' + idx + ',\'' + a.id + '\')">Record customer approval</button></div>';
+        }
+      });
+
+      if (job.invoice && job.invoice.amount !== target) {
+        var diff = job.invoice.amount - target;
+        html += '<div class="variance">Invoice ' + fmtMoney(job.invoice.amount) + ", " + (diff > 0 ? "+" : "") + fmtMoney(diff) + " vs. locked quote + approved add-ons" + (job.invoice.note ? " &middot; " + escapeHtml(job.invoice.note) : "") + "</div>";
+      }
+
+      var pendingAddOns = job.addOns.some(function (a) { return !a.approved; });
+      if (!job.invoice) {
+        html += '<div class="job-actions"><input type="text" placeholder="Add-on description" id="ao-desc-' + idx + '" style="max-width:220px;"><input type="number" placeholder="Amount $" id="ao-amt-' + idx + '" style="max-width:100px;"><input type="text" placeholder="Reason" id="ao-reason-' + idx + '" style="max-width:220px;"><button class="fx-btn-ghost" onclick="__qlg.requestAddOn(' + idx + ')">Request add-on</button></div>';
+        if (!pendingAddOns) {
+          html += '<div class="job-actions"><input type="number" placeholder="Final invoice $" id="inv-amt-' + idx + '" style="max-width:130px;"><input type="text" placeholder="Note (optional)" id="inv-note-' + idx + '" style="max-width:220px;"><button class="fx-btn-ghost" onclick="__qlg.setInvoice(' + idx + ')">Enter final invoice</button></div>';
+        }
+      } else if (job.invoice.amount !== target && !job.invoice.reason) {
+        html += '<div class="job-actions"><input type="text" placeholder="Reason for the difference" id="inv-reason-' + idx + '" style="max-width:280px;"><button class="fx-btn-ghost" onclick="__qlg.setReason(' + idx + ')">Record reason &amp; resolve</button></div>';
+      } else if (job.invoice.reason) {
+        html += '<div class="job-meta" style="margin-top:0.4rem;">Reason on record: ' + escapeHtml(job.invoice.reason) + "</div>";
+      }
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  window.__qlg = {
+    requestAddOn: function (idx) {
+      var desc = document.getElementById("ao-desc-" + idx).value.trim();
+      var amt = parseFloat(document.getElementById("ao-amt-" + idx).value);
+      var reason = document.getElementById("ao-reason-" + idx).value.trim();
+      if (!desc || isNaN(amt) || !reason) { alert("Enter a description, amount, and reason for the add-on."); return; }
+      data.jobs[idx].addOns.push({ id: "AO-" + Date.now(), desc: desc, amount: amt, reason: reason, requestedAt: Date.now(), approved: false });
+      save(); renderJobs();
+    },
+    approveAddOn: function (idx, addOnId) {
+      var job = data.jobs[idx];
+      var a = job.addOns.filter(function (x) { return x.id === addOnId; })[0];
+      if (a) a.approved = true;
+      save(); renderJobs();
+    },
+    setInvoice: function (idx) {
+      var amt = parseFloat(document.getElementById("inv-amt-" + idx).value);
+      if (isNaN(amt)) { alert("Enter a final invoice amount."); return; }
+      var note = document.getElementById("inv-note-" + idx).value.trim();
+      data.jobs[idx].invoice = { amount: amt, note: note, reason: "" };
+      save(); renderJobs();
+    },
+    setReason: function (idx) {
+      var reason = document.getElementById("inv-reason-" + idx).value.trim();
+      if (!reason) { alert("Enter a reason before resolving."); return; }
+      data.jobs[idx].invoice.reason = reason;
+      save(); renderJobs();
+    }
+  };
+
+  document.getElementById("f-service").addEventListener("change", function () {
+    var isRepair = this.value === "repair";
+    document.querySelectorAll(".pumpout-field").forEach(function (el) { el.style.display = isRepair ? "none" : ""; });
+    document.querySelector(".repair-field").style.display = isRepair ? "" : "none";
+  });
+
+  document.getElementById("gen-btn").addEventListener("click", function () {
+    var customer = document.getElementById("f-customer").value.trim() || "New customer";
+    var service = document.getElementById("f-service").value;
+    var tank = document.getElementById("f-tank").value;
+    var access = document.getElementById("f-access").value;
+    var hours = parseFloat(document.getElementById("f-hours").value) || 0;
+    var job = makeJob(customer, service, tank, access, hours, Date.now());
+    data.jobs.unshift(job);
+    save();
+    renderQuoteDoc(job);
+    renderJobs();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset all jobs back to the original sample data?")) return;
+    data = defaultData(); save(); renderJobs();
+    document.getElementById("doc-root").innerHTML = "";
+  });
+
+  renderRateTable();
+  renderJobs();
+})();
+</script>
+</body>
+</html>
