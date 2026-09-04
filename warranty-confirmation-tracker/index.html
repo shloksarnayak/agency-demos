@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Warranty &amp; repair confirmation tracker template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .wct-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .wct-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .wct-tab.active { background: var(--ink); color: var(--surface); }
+  .wct-view { display: none; }
+  .wct-view.active { display: block; }
+  .claim-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1.1rem 1.2rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem; }
+  .claim-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .claim-title { font-weight: 660; }
+  .claim-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.blocked { color: var(--warn); background: var(--warn-bg); }
+  .badge.ok { color: var(--brand); background: var(--brand-soft); }
+  .badge.done { color: var(--good); background: var(--good-bg); }
+  .timeline { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.7rem 0; }
+  .tl-step { display: flex; align-items: center; gap: 0.35rem; font-size: 0.74rem; padding: 0.3rem 0.6rem; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+  .tl-step.done { background: var(--good-bg); color: var(--good); font-weight: 700; }
+  .tl-step.active { background: var(--brand-soft); color: var(--brand); font-weight: 700; }
+  .target-line { font-size: 0.82rem; color: var(--ink-2); margin-top: 0.4rem; }
+  .target-line b { color: var(--ink); }
+  .confirm-box { margin-top: 0.85rem; padding: 0.85rem 1rem; border-left: 4px solid var(--warn); background: var(--warn-bg); border-radius: var(--radius-sm); font-size: 0.86rem; }
+  .confirm-box.approved { border-left-color: var(--good); background: var(--good-bg); }
+  .confirm-box b { display: block; margin-bottom: 0.2rem; }
+  .log { margin-top: 0.8rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.79rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--brand); margin-right: 0.4rem; }
+  .claim-actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; flex-wrap: wrap; align-items: center; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 460px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .confirm-block { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px dashed var(--rule); }
+  .confirm-line { font-size: 0.82rem; color: var(--ink-2); display: flex; gap: 0.4rem; align-items: flex-start; }
+  .confirm-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.55rem; }
+  .confirm-row input[type="text"] { flex: 1; min-width: 160px; font: inherit; font-size: 0.85rem; padding: 0.45rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .confirm-fact { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin-top: 0.4rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Warranty &amp; repair confirmation tracker</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">A repair promise doesn't count as done until the customer says so</h1>
+  <p class="fx-lede">Install and repair businesses often promise a fix, an adjustment, or a warranty replacement on a call, then mark it resolved internally once a technician says the work is done, without ever hearing back from the customer that it actually solved the problem. To the business the file looks closed. To the customer, nothing happened and nobody followed up. This page shows one small, working tool that closes that gap: every promised fix gets a visible target date, and a claim cannot move to Resolved in the office view, only the customer's own confirmation can do that.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, it reads from whatever already logs a service call (a CRM, a shared spreadsheet, a phone intake form) and connects the target-date and confirmation prompts to the business's existing email or text system.</p></div>
+
+  <div class="wct-tabs">
+    <button class="wct-tab active" data-view="office" type="button">Office view</button>
+    <button class="wct-tab" data-view="customer" type="button">Customer status check</button>
+  </div>
+
+  <section class="wct-view active" id="view-office">
+    <h2 class="fx-h2" style="margin-top:0;">Open claims</h2>
+    <div id="queue-root"></div>
+    <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+  </section>
+
+  <section class="wct-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check your claim status</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Claim reference number</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. SMP-1001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try SMP-1001, SMP-1002, SMP-1003 or SMP-1004 from the office view's sample queue.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The reference number is whatever the business already gives a customer.</b> A real build reads from an existing work-order or claim number instead of inventing a new one to remember.</div>
+      <div class="lim"><b>The target date is set the moment a fix is promised.</b> A real build can text or email the customer that same target date automatically, instead of it living only in a call note.</div>
+      <div class="lim"><b>The office view genuinely cannot close a claim on its own.</b> Once repair work is marked complete, the claim sits blocked until the customer confirms it from their own status page, mirroring the actual promise made on the call, not just a status label staff can flip.</div>
+      <div class="lim"><b>"Confirmed" here is a typed name and a timestamp.</b> A real build can add an actual e-signature provider for a stronger record; this demo shows the workflow, not a specific vendor.</div>
+      <div class="lim"><b>See it built for a real business: <a href="examples/mooreshade4less/">MooreShade4Less</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional claim and customer data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "wct_template_generic_v1";
+
+  var STAGES = [
+    { key: "reported", label: "Reported" },
+    { key: "scheduled", label: "Scheduled" },
+    { key: "dispatched", label: "Technician dispatched" },
+    { key: "completed", label: "Repair completed" },
+    { key: "resolved", label: "Resolved" }
+  ];
+  var STAGE_INDEX = {}; STAGES.forEach(function (s, i) { STAGE_INDEX[s.key] = i; });
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function fmtTargetDate(ds) { var d = new Date(ds + "T00:00:00"); return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); }
+  function daysFromNow(d) { return Date.now() + d * 86400000; }
+  function isoDateFromNow(d) { return new Date(daysFromNow(d)).toISOString().slice(0, 10); }
+
+  function defaultData() {
+    return {
+      claims: [
+        {
+          ref: "SMP-1001", customer: "Sample Customer A", promise: "Replace defective motor on side unit",
+          stageIdx: STAGE_INDEX.reported, targetDate: isoDateFromNow(2), confirmed: false,
+          history: [ { stage: "reported", at: daysFromNow(-1) } ],
+          notes: [ { at: daysFromNow(-1), text: "Claim opened from customer call, motor replacement promised." } ]
+        },
+        {
+          ref: "SMP-1002", customer: "Sample Customer B", promise: "Adjust arm tension, unit self-retracting in wind",
+          stageIdx: STAGE_INDEX.completed, targetDate: isoDateFromNow(-1), confirmed: false,
+          history: [
+            { stage: "reported", at: daysFromNow(-9) },
+            { stage: "scheduled", at: daysFromNow(-6) },
+            { stage: "dispatched", at: daysFromNow(-2) },
+            { stage: "completed", at: daysFromNow(-1) }
+          ],
+          notes: [
+            { at: daysFromNow(-9), text: "Claim opened, arm tension adjustment promised." },
+            { at: daysFromNow(-1), text: "Technician reports adjustment complete. Claim held, awaiting customer confirmation before it can close." }
+          ]
+        },
+        {
+          ref: "SMP-1003", customer: "Sample Customer C", promise: "Send replacement wind sensor part",
+          stageIdx: STAGE_INDEX.reported, targetDate: isoDateFromNow(-3), confirmed: false,
+          history: [ { stage: "reported", at: daysFromNow(-7) } ],
+          notes: [ { at: daysFromNow(-7), text: "Claim opened, wind sensor part promised, not yet scheduled." } ]
+        },
+        {
+          ref: "SMP-1004", customer: "Sample Customer D", promise: "Reinstall shade at correct height",
+          stageIdx: STAGE_INDEX.resolved, targetDate: isoDateFromNow(-10), confirmed: true,
+          confirmedBy: "Sample Customer D", confirmedAt: daysFromNow(-6),
+          history: [
+            { stage: "reported", at: daysFromNow(-14) },
+            { stage: "scheduled", at: daysFromNow(-12) },
+            { stage: "dispatched", at: daysFromNow(-7) },
+            { stage: "completed", at: daysFromNow(-7) },
+            { stage: "resolved", at: daysFromNow(-6) }
+          ],
+          notes: [
+            { at: daysFromNow(-14), text: "Claim opened, reinstall at correct height promised." },
+            { at: daysFromNow(-7), text: "Technician reports reinstall complete. Claim held, awaiting customer confirmation before it can close." },
+            { at: daysFromNow(-6), text: "Confirmed by Sample Customer D: reinstall resolves the issue." }
+          ]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function awaitingConfirmation(c) { return c.stageIdx === STAGE_INDEX.completed && !c.confirmed; }
+
+  function renderTimeline(c) {
+    var html = '<div class="timeline">';
+    STAGES.forEach(function (s, i) {
+      var cls = i < c.stageIdx ? "done" : (i === c.stageIdx ? "active" : "");
+      html += '<span class="tl-step ' + cls + '">' + (i < c.stageIdx ? "&#10003; " : "") + escapeHtml(s.label) + "</span>";
+    });
+    html += "</div>";
+    return html;
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var html = "";
+    data.claims.forEach(function (c) { html += renderOfficeCard(c); });
+    root.innerHTML = html;
+  }
+
+  function renderOfficeCard(c) {
+    var idx = data.claims.indexOf(c);
+    var resolved = c.stageIdx >= STAGE_INDEX.resolved;
+    var html = '<div class="claim-card"><div class="claim-head"><div><div class="claim-title">' + escapeHtml(c.customer) + " &middot; " + c.ref + '</div><div class="claim-meta">' + escapeHtml(c.promise) + "</div></div>";
+    if (resolved) html += '<span class="badge done">Resolved</span>';
+    else if (awaitingConfirmation(c)) html += '<span class="badge blocked">Awaiting customer confirmation</span>';
+    else html += '<span class="badge ok">Open</span>';
+    html += "</div>";
+    html += renderTimeline(c);
+    html += '<div class="target-line"><b>Target date:</b> ' + fmtTargetDate(c.targetDate) + "</div>";
+
+    if (awaitingConfirmation(c)) {
+      html += '<div class="confirm-box"><b>Repair marked complete by staff</b>Held here until the customer confirms from their own status page. Staff cannot close this claim directly.</div>';
+    }
+    if (resolved) {
+      html += '<div class="confirm-box approved"><b>Confirmed by customer</b>Confirmed by ' + escapeHtml(c.confirmedBy) + " at " + fmtDate(c.confirmedAt) + ".</div>";
+    }
+
+    if (c.notes.length) {
+      html += '<div class="log">';
+      c.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+      html += "</div>";
+    }
+
+    html += '<div class="claim-actions">';
+    if (!resolved && !awaitingConfirmation(c)) {
+      html += '<button class="fx-btn-ghost" onclick="__wct.advance(' + idx + ')">Advance to ' + escapeHtml(STAGES[c.stageIdx + 1].label) + '</button>';
+    }
+    html += "</div>";
+    html += "</div>";
+    return html;
+  }
+
+  window.__wct = {
+    advance: function (idx) {
+      var c = data.claims[idx];
+      c.stageIdx += 1;
+      var stage = STAGES[c.stageIdx];
+      c.history.push({ stage: stage.key, at: Date.now() });
+      if (stage.key === "completed") {
+        c.notes.push({ at: Date.now(), text: "Technician reports repair complete. Claim held, awaiting customer confirmation before it can close." });
+      } else {
+        c.notes.push({ at: Date.now(), text: "Stage updated: " + stage.label + "." });
+      }
+      save(); renderQueue();
+    },
+    confirmResolved: function () {
+      var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+      var c = data.claims.filter(function (x) { return x.ref === ref; })[0];
+      if (!c || !awaitingConfirmation(c)) return;
+      var box = document.getElementById("cust-consent");
+      var name = document.getElementById("cust-signer").value.trim();
+      if (!box.checked) { alert("Check the confirmation box first."); return; }
+      if (!name) { alert("Enter your typed full name."); return; }
+      var now = Date.now();
+      c.stageIdx = STAGE_INDEX.resolved;
+      c.confirmed = true;
+      c.confirmedBy = name;
+      c.confirmedAt = now;
+      c.history.push({ stage: "resolved", at: now });
+      c.notes.push({ at: now, text: "Confirmed by " + name + ": " + c.promise.toLowerCase() + " resolves the issue." });
+      save(); renderQueue();
+      renderLookup(c);
+    }
+  };
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue();
+  });
+
+  function renderLookup(c) {
+    var root = document.getElementById("lookup-root");
+    var html = '<div style="margin-top:1.1rem;"><h3 style="font-family:var(--serif);font-size:1.15rem;margin:0 0 0.3rem;">' + escapeHtml(c.promise) + "</h3>";
+    html += renderTimeline(c);
+    html += '<div class="target-line"><b>Target date:</b> ' + fmtTargetDate(c.targetDate) + "</div>";
+    if (awaitingConfirmation(c)) {
+      html += '<div class="confirm-block"><p style="font-size:0.86rem;color:var(--ink-2);margin:0;">Our technician has reported this repair complete. Please confirm below once you agree the issue is resolved, this claim will not be closed on our end until you do.</p>' +
+        '<div class="confirm-line" style="margin-top:0.6rem;"><input type="checkbox" id="cust-consent"> <label for="cust-consent">I confirm the promised fix above has resolved the issue.</label></div>' +
+        '<div class="confirm-row"><input type="text" id="cust-signer" placeholder="Your typed full name"><button class="fx-btn-ghost" onclick="__wct.confirmResolved()">Confirm resolved</button></div></div>';
+    } else if (c.stageIdx >= STAGE_INDEX.resolved) {
+      html += '<div class="confirm-fact">Confirmed by ' + escapeHtml(c.confirmedBy) + " at " + fmtDate(c.confirmedAt) + "</div>";
+    }
+    html += '<div class="log">';
+    c.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+    html += "</div></div>";
+    root.innerHTML = html;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var c = data.claims.filter(function (x) { return x.ref === ref; })[0];
+    if (!c) { root.innerHTML = '<div style="margin-top:1rem;"><p class="not-found">No record found for that claim number. Please contact us directly.</p></div>'; return; }
+    renderLookup(c);
+  });
+
+  document.querySelectorAll(".wct-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".wct-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".wct-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderQueue();
+})();
+</script>
+</body>
+</html>
