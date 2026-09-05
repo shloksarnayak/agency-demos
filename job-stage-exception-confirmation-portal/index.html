@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Job-stage &amp; exception confirmation portal template</title>
+<link rel="stylesheet" href="../assets/theme.css">
+<style>
+  .jse-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .jse-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .jse-tab.active { background: var(--ink); color: var(--surface); }
+  .jse-view { display: none; }
+  .jse-view.active { display: block; }
+  .job-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1.1rem 1.2rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem; }
+  .job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .job-title { font-weight: 660; }
+  .job-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.blocked { color: var(--hot); background: var(--hot-bg); }
+  .badge.ok { color: var(--good); background: var(--good-bg); }
+  .badge.done { color: var(--ink); background: var(--lime); }
+  .timeline { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.7rem 0; }
+  .tl-step { display: flex; align-items: center; gap: 0.35rem; font-size: 0.74rem; padding: 0.3rem 0.6rem; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+  .tl-step.done { background: var(--good-bg); color: var(--good); font-weight: 700; }
+  .tl-step.active { background: var(--warn-bg); color: var(--warn); font-weight: 700; }
+  .ex-box { margin-top: 0.8rem; padding: 0.85rem 1rem; border-left: 4px solid var(--warn); background: var(--warn-bg); border-radius: var(--radius-sm); font-size: 0.86rem; }
+  .ex-box.approved { border-left-color: var(--good); background: var(--good-bg); }
+  .ex-box b { display: block; margin-bottom: 0.2rem; }
+  .ex-type { font-family: var(--mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); display: block; margin-bottom: 0.2rem; }
+  .log { margin-top: 0.8rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.79rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--brand); margin-right: 0.4rem; }
+  .job-actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; flex-wrap: wrap; align-items: center; }
+  .form-inline { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.6rem; align-items: center; }
+  .form-inline input, .form-inline select { font: inherit; font-size: 0.82rem; padding: 0.42rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .form-inline input[type="text"] { flex: 1; min-width: 160px; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 460px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .confirm-block { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px dashed var(--rule); }
+  .confirm-line { font-size: 0.82rem; color: var(--ink-2); display: flex; gap: 0.4rem; align-items: flex-start; }
+  .confirm-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.55rem; }
+  .confirm-row input[type="text"] { flex: 1; min-width: 160px; font: inherit; font-size: 0.85rem; padding: 0.45rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .confirm-fact { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin-top: 0.4rem; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../index.html">Templates</a> / Job-stage &amp; exception confirmation portal</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Template, not built for a specific business</span>
+  <h1 class="fx-h1">No measurement, fee, or schedule change reaches the customer after the fact</h1>
+  <p class="fx-lede">Businesses that fabricate or install a custom, high-ticket product, stone, cabinetry, custom furniture, signage, share a common failure mode: the job moves through measurement, production and install with no customer-facing status, and any deviation from the original quote, an added or oversized-item fee, a schedule slip, a mid-job scope change, surfaces only on the final invoice or in a phone dispute instead of before it happens. This page shows one small, working tool that closes both gaps: a stage timeline the customer can check anytime, and an exception gate that blocks the job from moving to its next stage until the customer explicitly reviews and confirms the change with a typed name and timestamp.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, it reads from whatever already tracks a signed quote or work order (a CRM, a spreadsheet, an intake form) and connects the notification pings to the business's existing email or text system.</p></div>
+
+  <div class="jse-tabs">
+    <button class="jse-tab active" data-view="office" type="button">Office view</button>
+    <button class="jse-tab" data-view="customer" type="button">Customer status check</button>
+  </div>
+
+  <section class="jse-view active" id="view-office">
+    <h2 class="fx-h2" style="margin-top:0;">Job queue</h2>
+    <div id="queue-root"></div>
+    <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+  </section>
+
+  <section class="jse-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check job status</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Job reference number</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. JSE-1001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try JSE-1001, JSE-1002, JSE-1003 or JSE-1004 from the office view's sample queue.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The reference number is whatever the business already gives a customer.</b> A real build reads from the signed quote or work-order number already in use, it doesn't invent a new one to remember.</div>
+      <div class="lim"><b>The notification pings here are log entries, not real sends.</b> A real build wires the "stage updated" and "exception needs your confirmation" pings to the business's existing email or SMS system so they go out the moment staff log the event.</div>
+      <div class="lim"><b>"Confirmed" here is a typed name and a timestamp.</b> A real build can add an actual e-signature provider for a stronger legal record on a fee or scope change; this demo shows the workflow, not a specific vendor.</div>
+      <div class="lim"><b>The gate blocks the next stage, not just a charge.</b> A real build can hold a card charge, a crew dispatch, or both, on top of blocking the stage advance, depending on what the business needs held.</div>
+      <div class="lim"><b>See it built for a real business:</b> <a href="examples/stone-interiors-sc/">Stone Interiors South Carolina</a>.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job and customer data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "jse_template_generic_v1";
+
+  var STAGES = [
+    { key: "measured", label: "Measured" },
+    { key: "templated_cut", label: "Templated & cut" },
+    { key: "fabrication", label: "Fabrication" },
+    { key: "installed", label: "Installed" }
+  ];
+  var STAGE_INDEX = {}; STAGES.forEach(function (s, i) { STAGE_INDEX[s.key] = i; });
+  var LAST_STAGE = STAGES.length - 1;
+
+  var EX_TYPES = { fee_change: "Fee change", schedule_change: "Schedule change", scope_change: "Scope change" };
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function daysFromNow(d) { return Date.now() + d * 86400000; }
+
+  function defaultData() {
+    return {
+      jobs: [
+        {
+          ref: "JSE-1001", customer: "Sample Customer A", desc: "Custom stone countertop package, sample job A",
+          stageIdx: STAGE_INDEX.measured,
+          history: [{ stage: "measured", at: daysFromNow(-3) }],
+          exception: { type: "fee_change", desc: "On-site measurement found the slab size falls outside the quoted price tier", impact: "+$340 oversized-item fee", status: "pending", proposedAt: daysFromNow(-1) },
+          notes: [
+            { at: daysFromNow(-3), text: "Notification sent to customer: job measured." },
+            { at: daysFromNow(-1), text: "Exception raised: oversized-item fee (+$340). Blocked pending customer confirmation, job will not move to the next stage until confirmed." }
+          ]
+        },
+        {
+          ref: "JSE-1002", customer: "Sample Customer B", desc: "Custom cabinetry package, sample job B",
+          stageIdx: STAGE_INDEX.templated_cut,
+          history: [{ stage: "measured", at: daysFromNow(-14) }, { stage: "templated_cut", at: daysFromNow(-2) }],
+          exception: null,
+          notes: [
+            { at: daysFromNow(-14), text: "Notification sent to customer: job measured." },
+            { at: daysFromNow(-2), text: "Notification sent to customer: job templated & cut." }
+          ]
+        },
+        {
+          ref: "JSE-1003", customer: "Sample Customer C", desc: "Custom furniture build, sample job C",
+          stageIdx: STAGE_INDEX.fabrication,
+          history: [{ stage: "measured", at: daysFromNow(-30) }, { stage: "templated_cut", at: daysFromNow(-20) }, { stage: "fabrication", at: daysFromNow(-9) }],
+          exception: { type: "schedule_change", desc: "Backordered material pushes the install date", impact: "Install date moves from the original estimate by 9 days", status: "approved", proposedAt: daysFromNow(-8), approvedBy: "Sample Customer C", approvedAt: daysFromNow(-8) },
+          notes: [
+            { at: daysFromNow(-30), text: "Notification sent to customer: job measured." },
+            { at: daysFromNow(-20), text: "Notification sent to customer: job templated & cut." },
+            { at: daysFromNow(-9), text: "Notification sent to customer: job in fabrication." },
+            { at: daysFromNow(-8), text: "Exception confirmed by Sample Customer C: schedule change, install date moved 9 days." }
+          ]
+        },
+        {
+          ref: "JSE-1004", customer: "Sample Customer D", desc: "Custom signage install, sample job D",
+          stageIdx: LAST_STAGE,
+          history: [{ stage: "measured", at: daysFromNow(-40) }, { stage: "templated_cut", at: daysFromNow(-30) }, { stage: "fabrication", at: daysFromNow(-18) }, { stage: "installed", at: daysFromNow(-12) }],
+          exception: { type: "scope_change", desc: "Customer requested a matching secondary sign mid-job", impact: "+$260 add-on, added to the same work order", status: "approved", proposedAt: daysFromNow(-19), approvedBy: "Sample Customer D", approvedAt: daysFromNow(-19) },
+          notes: [
+            { at: daysFromNow(-12), text: "Notification sent to customer: job installed." },
+            { at: daysFromNow(-19), text: "Exception confirmed by Sample Customer D: scope change, secondary sign add-on (+$260)." }
+          ]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function stageBlockedByException(j) {
+    return j.exception && j.exception.status === "pending";
+  }
+
+  function renderTimeline(j) {
+    var html = '<div class="timeline">';
+    STAGES.forEach(function (s, i) {
+      var cls = i < j.stageIdx ? "done" : (i === j.stageIdx ? "active" : "");
+      html += '<span class="tl-step ' + cls + '">' + (i < j.stageIdx ? "&#10003; " : "") + escapeHtml(s.label) + "</span>";
+    });
+    html += "</div>";
+    return html;
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var html = "";
+    data.jobs.forEach(function (j) { html += renderOfficeCard(j); });
+    root.innerHTML = html;
+  }
+
+  function renderOfficeCard(j) {
+    var idx = data.jobs.indexOf(j);
+    var complete = j.stageIdx >= LAST_STAGE;
+    var html = '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(j.customer) + " &middot; " + j.ref + '</div><div class="job-meta">' + escapeHtml(j.desc) + "</div></div>";
+    if (stageBlockedByException(j)) html += '<span class="badge blocked">Blocked, awaiting customer</span>';
+    else if (complete) html += '<span class="badge done">Installed</span>';
+    else html += '<span class="badge ok">On track</span>';
+    html += "</div>";
+    html += renderTimeline(j);
+
+    if (j.exception) {
+      var ex = j.exception;
+      html += '<div class="ex-box' + (ex.status === "approved" ? " approved" : "") + '"><span class="ex-type">' + escapeHtml(EX_TYPES[ex.type] || ex.type) + '</span><b>' + escapeHtml(ex.impact) + "</b>" + escapeHtml(ex.desc) + "<br>";
+      if (ex.status === "pending") html += "Raised " + fmtDate(ex.proposedAt) + ", not yet confirmed by customer. Job is held at its current stage.";
+      else html += "Confirmed by " + escapeHtml(ex.approvedBy) + " at " + fmtDate(ex.approvedAt) + ".";
+      html += "</div>";
+    }
+
+    if (j.notes.length) {
+      html += '<div class="log">';
+      j.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+      html += "</div>";
+    }
+
+    html += '<div class="job-actions">';
+    if (!complete && !stageBlockedByException(j)) {
+      html += '<button class="fx-btn-ghost" onclick="__jse.advance(' + idx + ')">Advance to ' + escapeHtml(STAGES[j.stageIdx + 1].label) + '</button>';
+    }
+    if (!j.exception || j.exception.status === "approved") {
+      html += '<button class="fx-btn-ghost" onclick="__jse.toggleExForm(' + idx + ')">Raise exception</button>';
+    }
+    html += "</div>";
+    html += '<div id="ex-form-' + idx + '"></div>';
+    html += "</div>";
+    return html;
+  }
+
+  window.__jse = {
+    advance: function (idx) {
+      var j = data.jobs[idx];
+      j.stageIdx += 1;
+      var stage = STAGES[j.stageIdx];
+      j.history.push({ stage: stage.key, at: Date.now() });
+      j.notes.push({ at: Date.now(), text: "Notification sent to customer: job " + stage.label.toLowerCase() + "." });
+      save(); renderQueue();
+    },
+    toggleExForm: function (idx) {
+      var root = document.getElementById("ex-form-" + idx);
+      if (root.innerHTML) { root.innerHTML = ""; return; }
+      root.innerHTML = '<div class="form-inline"><select id="ex-type-' + idx + '"><option value="fee_change">Fee change</option><option value="schedule_change">Schedule change</option><option value="scope_change">Scope change</option></select><input type="text" id="ex-desc-' + idx + '" placeholder="What is changing"><input type="text" id="ex-impact-' + idx + '" placeholder="Impact (e.g. +$220, or new date)"><button class="fx-btn-ghost" onclick="__jse.submitEx(' + idx + ')">Send to customer for confirmation</button></div>';
+    },
+    submitEx: function (idx) {
+      var j = data.jobs[idx];
+      var type = document.getElementById("ex-type-" + idx).value;
+      var desc = document.getElementById("ex-desc-" + idx).value.trim();
+      var impact = document.getElementById("ex-impact-" + idx).value.trim();
+      if (!desc || !impact) { alert("Describe the change and its impact."); return; }
+      var now = Date.now();
+      j.exception = { type: type, desc: desc, impact: impact, status: "pending", proposedAt: now };
+      j.notes.push({ at: now, text: "Exception raised: " + (EX_TYPES[type] || type).toLowerCase() + " (" + impact + "). Blocked pending customer confirmation, job will not move to the next stage until confirmed." });
+      save(); renderQueue();
+    },
+    confirmEx: function () {
+      var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+      var j = data.jobs.filter(function (x) { return x.ref === ref; })[0];
+      if (!j || !j.exception) return;
+      var box = document.getElementById("cust-consent");
+      var name = document.getElementById("cust-signer").value.trim();
+      if (!box.checked) { alert("Check the confirmation box first."); return; }
+      if (!name) { alert("Enter your typed full name."); return; }
+      var now = Date.now();
+      j.exception.status = "approved";
+      j.exception.approvedBy = name;
+      j.exception.approvedAt = now;
+      j.notes.push({ at: now, text: "Exception confirmed by " + name + ": " + (EX_TYPES[j.exception.type] || j.exception.type).toLowerCase() + " (" + j.exception.impact + ")." });
+      save(); renderQueue();
+      renderLookup(j);
+    }
+  };
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue();
+  });
+
+  function renderLookup(j) {
+    var root = document.getElementById("lookup-root");
+    var html = '<div style="margin-top:1.1rem;"><h3 style="font-family:var(--serif);font-size:1.15rem;margin:0 0 0.3rem;">' + escapeHtml(j.desc) + "</h3>";
+    html += renderTimeline(j);
+    if (j.exception) {
+      var ex = j.exception;
+      html += '<div class="ex-box' + (ex.status === "approved" ? " approved" : "") + '"><span class="ex-type">' + escapeHtml(EX_TYPES[ex.type] || ex.type) + '</span><b>' + escapeHtml(ex.impact) + "</b>" + escapeHtml(ex.desc);
+      if (ex.status === "pending") {
+        html += '<div class="confirm-block"><div class="confirm-line"><input type="checkbox" id="cust-consent"> <label for="cust-consent">I have reviewed this change and its impact, and authorize the job to proceed on this basis.</label></div>' +
+          '<div class="confirm-row"><input type="text" id="cust-signer" placeholder="Your typed full name"><button class="fx-btn-ghost" onclick="__jse.confirmEx()">Confirm exception</button></div></div>';
+      } else {
+        html += '<div class="confirm-fact">Confirmed by ' + escapeHtml(ex.approvedBy) + " at " + fmtDate(ex.approvedAt) + "</div>";
+      }
+      html += "</div>";
+    }
+    html += '<div class="log">';
+    j.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+    html += "</div></div>";
+    root.innerHTML = html;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var j = data.jobs.filter(function (x) { return x.ref === ref; })[0];
+    if (!j) { root.innerHTML = '<div style="margin-top:1rem;"><p class="not-found">No record found for that job number. Please contact us directly.</p></div>'; return; }
+    renderLookup(j);
+  });
+
+  document.querySelectorAll(".jse-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".jse-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".jse-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderQueue();
+})();
+</script>
+</body>
+</html>
