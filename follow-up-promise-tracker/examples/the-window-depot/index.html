@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Follow-up promise tracker: working example for The Window Depot, LLC</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .fpt-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .fpt-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .fpt-tab.active { background: var(--ink); color: var(--surface); }
+  .fpt-view { display: none; }
+  .fpt-view.active { display: block; }
+  .fpt-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .fpt-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .promise-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .promise-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .promise-title { font-weight: 660; }
+  .promise-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.overdue { color: var(--hot); background: var(--hot-bg); }
+  .badge.soon { color: var(--warn); background: var(--warn-bg); }
+  .badge.ontrack { color: var(--brand); background: var(--brand-soft); }
+  .badge.awaiting { color: var(--warn); background: var(--warn-bg); }
+  .badge.resolved { color: var(--good); background: var(--good-bg); }
+  .promise-summary { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; }
+  .promise-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .log { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.8rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); margin-right: 0.4rem; }
+  .log-entry.confirm { color: var(--brand); }
+  .note-row { display: flex; gap: 0.4rem; margin-top: 0.6rem; }
+  .note-row input { flex: 1; font: inherit; font-size: 0.8rem; padding: 0.4rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 460px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; padding: 1rem 1.1rem; border-radius: var(--radius-sm); background: var(--surface-2); }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.2rem; }
+  .lookup-result .lr-status { margin-top: 0.5rem; }
+  .lookup-result .lr-detail { font-size: 0.86rem; color: var(--ink-2); margin-top: 0.5rem; line-height: 1.5; }
+  .lookup-result .lr-confirm { margin-top: 0.9rem; padding-top: 0.8rem; border-top: 1px solid var(--rule-soft); }
+  .lookup-result .lr-confirmed-note { font-size: 0.82rem; color: var(--good); margin-top: 0.6rem; font-weight: 650; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Follow-up promise tracker</a> / The Window Depot, LLC</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">The Window Depot: a warranty ticket doesn't close until the customer says it's done</h1>
+  <p class="fx-lede">The install work itself is well regarded: The Window Depot has been BBB Accredited since 2012 with an A+ rating and no Pattern of Complaints alert, and has run continuously in Tampa, Palm Harbor and Fort Myers since 2009. The gap shows up after the sale, once something needs a warranty repair, a backordered part, or a punch-list item finished: three of the four complaints on the company's own BBB file describe calls and texts going unanswered for weeks with no proactive update on a delayed part or an unfinished item, and independently-found Yelp and Angi review language describes the identical pattern in different customers' own words ("never called back," "severe lack of communication from the sales rep"), with one reviewer separately praising a specific staff member for responding promptly, showing this is a coverage gap rather than a universal trait. Below is a working tool sized to close that specific gap: every open ticket gets a visible status, and closing a ticket for good requires the customer's own timestamped confirmation instead of the office marking it done on its own.</p>
+  <div class="fact-strip">
+    <span class="fact">The Window Depot, LLC</span>
+    <span class="fact">Tampa, Palm Harbor &amp; Fort Myers, FL &middot; since 2009</span>
+    <span class="fact">Replacement windows, entry/patio doors &amp; siding</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by The Window Depot, LLC.</strong> All customer names, tickets, and reference codes inside the tool below are fictional and clearly for illustration only. The business description and complaint pattern referenced here are drawn from the company's own published site and its public BBB complaint file.</p></div>
+
+  <div class="fpt-tabs">
+    <button class="fpt-tab active" data-view="office" type="button">Office view</button>
+    <button class="fpt-tab" data-view="customer" type="button">Customer status check</button>
+  </div>
+
+  <section class="fpt-view active" id="view-office">
+    <div class="fpt-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new ticket</h2>
+        <form id="add-form" class="form-grid">
+          <div class="field span2"><label for="f-customer">Customer / job label</label><input type="text" id="f-customer" placeholder="e.g. Sample Homeowner A"></div>
+          <div class="field span2"><label for="f-type">Ticket type</label><select id="f-type"></select></div>
+          <div class="field span2"><label for="f-summary">What was promised (customer-facing wording)</label><textarea id="f-summary" placeholder="e.g. Office will call back Thursday with an ETA on the backordered sash."></textarea></div>
+          <div class="field span2"><label for="f-due">Due by</label><input type="datetime-local" id="f-due"></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
+        </form>
+        <p class="team-note" style="font-size:0.78rem;color:var(--muted);margin-top:0.4rem;">A real build reads the reference code from The Window Depot's existing work order or warranty claim number, not a new code invented here.</p>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Open queue, most overdue first</h2>
+        <div id="queue-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="fpt-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check the status of a ticket</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. TWD-1001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try TWD-1001, TWD-1002, TWD-1003 or TWD-1004 from the office view's sample queue. TWD-1002 is marked "action completed" and is waiting on the customer's own confirmation, try confirming it here.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>Closeout needs the customer, not just the office.</b> Once staff mark the promised action done (part delivered, punch-list item finished, warranty repair completed), the ticket moves to "awaiting your confirmation" and only the customer's own click on the status page, timestamped, closes it for good. Nothing here lets the office close a ticket unilaterally.</div>
+      <div class="lim"><b>The reference code is whatever the office already uses.</b> A real build reads from an existing work order or warranty claim number instead of inventing a new one for the customer to remember.</div>
+      <div class="lim"><b>The customer view shows only customer-safe wording.</b> Internal notes typed in the office view never appear on the lookup page.</div>
+      <div class="lim"><b>Back to the general template: <a href="../../">Follow-up promise tracker</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by The Window Depot, LLC.</strong></p><p>Prepared by Shlok Sarnayak. Fictional ticket and customer data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "fpt_the_window_depot_v1";
+
+  var TYPES = [
+    { key: "part", label: "Backordered part" },
+    { key: "punchlist", label: "Punch-list item" },
+    { key: "warranty", label: "Warranty repair call" }
+  ];
+  var TYPE_LABEL = {}; TYPES.forEach(function (t) { TYPE_LABEL[t.key] = t.label; });
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function hoursFromNow(h) { return Date.now() + h * 3600000; }
+
+  function defaultData() {
+    return {
+      seq: 1004,
+      promises: [
+        {
+          id: "TWD-1001", ref: "TWD-1001", customer: "Sample Homeowner A", type: "part",
+          summary: "Office will call back by Thursday with an ETA on the backordered patio door sash.",
+          openedAt: hoursFromNow(-58), dueAt: hoursFromNow(-6), status: "open",
+          notes: [{ at: hoursFromNow(-55), text: "Manufacturer contacted for updated lead time, awaiting reply." }]
+        },
+        {
+          id: "TWD-1002", ref: "TWD-1002", customer: "Sample Homeowner B", type: "punchlist",
+          summary: "Trim touch-up around the living room window will be finished by the crew.",
+          openedAt: hoursFromNow(-30), dueAt: hoursFromNow(-2), status: "awaiting_confirmation", actionCompletedAt: hoursFromNow(-2),
+          notes: [{ at: hoursFromNow(-28), text: "Crew scheduled for trim touch-up." }, { at: hoursFromNow(-2), text: "Crew reports trim touch-up finished, awaiting customer confirmation.", confirm: true }]
+        },
+        {
+          id: "TWD-1003", ref: "TWD-1003", customer: "Sample Homeowner C", type: "warranty",
+          summary: "Someone will come out to re-check the seal on the bay window installed last spring.",
+          openedAt: hoursFromNow(-20), dueAt: hoursFromNow(30), status: "open",
+          notes: [{ at: hoursFromNow(-18), text: "Left message for the warranty tech, awaiting an open slot." }]
+        },
+        {
+          id: "TWD-1004", ref: "TWD-1004", customer: "Sample Homeowner D", type: "part",
+          summary: "Replacement screen panel for the entry door was on backorder and has since arrived and been installed.",
+          openedAt: hoursFromNow(-120), dueAt: hoursFromNow(-96), status: "confirmed_closed", actionCompletedAt: hoursFromNow(-50), confirmedAt: hoursFromNow(-48),
+          notes: [{ at: hoursFromNow(-50), text: "Panel arrived and installed, awaiting customer confirmation.", confirm: true }, { at: hoursFromNow(-48), text: "Customer confirmed the ticket is complete.", confirm: true }]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function statusInfo(p) {
+    if (p.status === "confirmed_closed") return { cls: "resolved", label: "Closed, confirmed by customer" };
+    if (p.status === "awaiting_confirmation") return { cls: "awaiting", label: "Awaiting your confirmation" };
+    var now = Date.now();
+    if (p.dueAt < now) return { cls: "overdue", label: "Overdue" };
+    if (p.dueAt - now < 12 * 3600000) return { cls: "soon", label: "Due soon" };
+    return { cls: "ontrack", label: "On track" };
+  }
+
+  function populateTypeSelect() {
+    var sel = document.getElementById("f-type");
+    sel.innerHTML = TYPES.map(function (t) { return '<option value="' + t.key + '">' + escapeHtml(t.label) + "</option>"; }).join("");
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var open = data.promises.filter(function (p) { return p.status === "open" || p.status === "awaiting_confirmation"; }).slice().sort(function (a, b) { return a.dueAt - b.dueAt; });
+    var closed = data.promises.filter(function (p) { return p.status === "confirmed_closed"; }).slice().sort(function (a, b) { return b.confirmedAt - a.confirmedAt; });
+    var html = "";
+    if (!open.length) html += '<p class="empty">Nothing open. Every ticket is caught up.</p>';
+    open.forEach(function (p) { html += renderCard(p); });
+    if (closed.length) {
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently closed (customer-confirmed)</h3>';
+      closed.slice(0, 5).forEach(function (p) { html += renderCard(p); });
+    }
+    root.innerHTML = html;
+  }
+
+  function renderCard(p) {
+    var st = statusInfo(p);
+    var idx = data.promises.indexOf(p);
+    var html = '<div class="promise-card"><div class="promise-head"><div><div class="promise-title">' + escapeHtml(p.customer) + " &middot; " + p.ref + '</div><div class="promise-meta">' + TYPE_LABEL[p.type] + " &middot; opened " + fmtDate(p.openedAt) + " &middot; due " + fmtDate(p.dueAt) + '</div></div><span class="badge ' + st.cls + '">' + st.label + "</span></div>";
+    html += '<div class="promise-summary">' + escapeHtml(p.summary) + "</div>";
+    if (p.notes.length) {
+      html += '<div class="log">';
+      p.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry' + (n.confirm ? " confirm" : "") + '"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+      html += "</div>";
+    }
+    if (p.status === "open") {
+      html += '<div class="note-row"><input type="text" id="note-' + idx + '" placeholder="Add an internal note"><button class="fx-btn-ghost" onclick="__fpt.addNote(' + idx + ')">Add</button></div>';
+      html += '<div class="promise-actions"><button class="fx-btn-ghost" onclick="__fpt.markActionCompleted(' + idx + ')">Mark action completed (awaiting customer confirmation)</button></div>';
+    } else if (p.status === "awaiting_confirmation") {
+      html += '<div class="note-row"><input type="text" id="note-' + idx + '" placeholder="Add an internal note"><button class="fx-btn-ghost" onclick="__fpt.addNote(' + idx + ')">Add</button></div>';
+      html += '<div class="promise-actions" style="color:var(--muted);font-size:0.82rem;">Waiting on the customer to confirm on the status page. The office cannot close this ticket on its own.</div>';
+    }
+    html += "</div>";
+    return html;
+  }
+
+  window.__fpt = {
+    addNote: function (idx) {
+      var input = document.getElementById("note-" + idx);
+      var text = input.value.trim();
+      if (!text) return;
+      data.promises[idx].notes.push({ at: Date.now(), text: text });
+      save(); renderQueue();
+    },
+    markActionCompleted: function (idx) {
+      data.promises[idx].status = "awaiting_confirmation";
+      data.promises[idx].actionCompletedAt = Date.now();
+      data.promises[idx].notes.push({ at: Date.now(), text: "Promised action marked completed by the office, awaiting customer confirmation.", confirm: true });
+      save(); renderQueue();
+    },
+    customerConfirm: function (ref) {
+      var p = data.promises.filter(function (x) { return x.ref.toUpperCase() === ref.toUpperCase(); })[0];
+      if (!p || p.status !== "awaiting_confirmation") return;
+      p.status = "confirmed_closed";
+      p.confirmedAt = Date.now();
+      p.notes.push({ at: Date.now(), text: "Customer confirmed the ticket is complete.", confirm: true });
+      save(); renderQueue(); renderLookup(ref);
+    }
+  };
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("f-customer").value.trim();
+    var type = document.getElementById("f-type").value;
+    var summary = document.getElementById("f-summary").value.trim();
+    var dueRaw = document.getElementById("f-due").value;
+    if (!customer || !summary || !dueRaw) { alert("Fill in the customer, promise wording, and due date."); return; }
+    data.seq += 1;
+    var ref = "TWD-" + data.seq;
+    data.promises.push({ id: ref, ref: ref, customer: customer, type: type, summary: summary, openedAt: Date.now(), dueAt: new Date(dueRaw).getTime(), status: "open", notes: [] });
+    save(); renderQueue();
+    document.getElementById("add-form").reset();
+    populateTypeSelect();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue();
+  });
+
+  function renderLookup(refRaw) {
+    var ref = (refRaw || "").trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var p = data.promises.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
+    if (!p) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No open or recent record found for that reference code. Please call the office directly.</p></div>'; return; }
+    var st = statusInfo(p);
+    var html = '<div class="lookup-result"><h3>' + TYPE_LABEL[p.type] + '</h3><div class="lr-status"><span class="badge ' + st.cls + '">' + st.label + '</span></div><div class="lr-detail">' + escapeHtml(p.summary) + '<br><br>Opened ' + fmtDate(p.openedAt);
+    if (p.status === "confirmed_closed") {
+      html += ", you confirmed complete " + fmtDate(p.confirmedAt);
+    } else if (p.status === "awaiting_confirmation") {
+      html += ", office marked the action completed " + fmtDate(p.actionCompletedAt);
+    } else {
+      html += ", expected by " + fmtDate(p.dueAt);
+    }
+    html += "</div>";
+    if (p.status === "awaiting_confirmation") {
+      html += '<div class="lr-confirm"><p style="font-size:0.86rem;color:var(--ink-2);margin:0 0 0.6rem;">The office says this is done. If that matches what you see, confirm below to close the ticket. This closes it for good, with a timestamp, only after you confirm.</p><button class="fx-btn" onclick="__fpt.customerConfirm(\'' + escapeHtml(p.ref) + '\')">Confirm this is complete</button></div>';
+    } else if (p.status === "confirmed_closed") {
+      html += '<div class="lr-confirmed-note">You confirmed this ticket complete on ' + fmtDate(p.confirmedAt) + ".</div>";
+    }
+    html += "</div>";
+    root.innerHTML = html;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    renderLookup(document.getElementById("lookup-ref").value);
+  });
+
+  document.querySelectorAll(".fpt-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".fpt-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".fpt-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  populateTypeSelect();
+  renderQueue();
+})();
+</script>
+</body>
+</html>
