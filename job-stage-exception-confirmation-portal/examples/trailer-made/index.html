@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Job-stage &amp; exception confirmation portal: working example for Trailer Made, LLC</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .jse-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .jse-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .jse-tab.active { background: var(--ink); color: var(--surface); }
+  .jse-view { display: none; }
+  .jse-view.active { display: block; }
+  .team-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
+  .team-chip { font-size: 0.76rem; font-weight: 700; padding: 0.32rem 0.7rem; border: 1.5px solid var(--rule); border-radius: 999px; background: var(--surface); color: var(--ink-2); }
+  .job-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1.1rem 1.2rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem; }
+  .job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .job-title { font-weight: 660; }
+  .job-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.blocked { color: var(--hot); background: var(--hot-bg); }
+  .badge.ok { color: var(--good); background: var(--good-bg); }
+  .badge.done { color: var(--ink); background: var(--lime); }
+  .badge.pending { color: var(--warn); background: var(--warn-bg); }
+  .timeline { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.7rem 0; }
+  .tl-step { display: flex; align-items: center; gap: 0.35rem; font-size: 0.74rem; padding: 0.3rem 0.6rem; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+  .tl-step.done { background: var(--good-bg); color: var(--good); font-weight: 700; }
+  .tl-step.active { background: var(--warn-bg); color: var(--warn); font-weight: 700; }
+  .ex-box { margin-top: 0.8rem; padding: 0.85rem 1rem; border-left: 4px solid var(--warn); background: var(--warn-bg); border-radius: var(--radius-sm); font-size: 0.86rem; }
+  .ex-box.approved { border-left-color: var(--good); background: var(--good-bg); }
+  .ex-box b { display: block; margin-bottom: 0.2rem; }
+  .ex-type { font-family: var(--mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); display: block; margin-bottom: 0.2rem; }
+  .wt-box { margin-top: 0.8rem; padding: 0.85rem 1rem; border-left: 4px solid var(--brand); background: var(--surface-2); border-radius: var(--radius-sm); font-size: 0.86rem; }
+  .wt-box.approved { border-left-color: var(--good); background: var(--good-bg); }
+  .wt-box.defect { border-left-color: var(--hot); background: var(--hot-bg); }
+  .wt-box b { display: block; margin-bottom: 0.2rem; }
+  .log { margin-top: 0.8rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.79rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--brand); margin-right: 0.4rem; }
+  .job-actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; flex-wrap: wrap; align-items: center; }
+  .form-inline { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.6rem; align-items: center; }
+  .form-inline input, .form-inline select { font: inherit; font-size: 0.82rem; padding: 0.42rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .form-inline input[type="text"] { flex: 1; min-width: 160px; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 460px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .confirm-block { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px dashed var(--rule); }
+  .confirm-line { font-size: 0.82rem; color: var(--ink-2); display: flex; gap: 0.4rem; align-items: flex-start; }
+  .confirm-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.55rem; }
+  .confirm-row input[type="text"] { flex: 1; min-width: 160px; font: inherit; font-size: 0.85rem; padding: 0.45rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .confirm-fact { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin-top: 0.4rem; }
+  .wt-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.6rem; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Job-stage &amp; exception confirmation portal</a> / Trailer Made, LLC</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built around Trailer Made, LLC's own published facts</span>
+  <h1 class="fx-h1">A 30-day mobile-kitchen build shouldn't go quiet, and a defect shouldn't surface at delivery</h1>
+  <p class="fx-lede">Trailer Made's own homepage markets a structured 30-day build process for its Chef Supreme mobile-kitchen trailers: a Day-0 strategy call, days 1-25 of construction with photo and video check-ins, and a Day-30 customer walkthrough approval before final payment is collected. Its BBB record shows that promise breaking down under a real order queue: one customer who paid $15,000 upfront went six months past a 12-week estimate with no proactive update, and a separate $44,530.83 commercial-kitchen-trailer customer received their unit over two months late with defects, wrong oven placement, unusable sinks, faulty wiring, leaks, discovered only at delivery. Trailer Made's own BBB response says it absorbed over $6,500 in unbilled labor, parts, transportation and electrician costs fixing this after the fact. Below is a working tool sized to close exactly that gap: a stage timeline the customer can check anytime, a required, logged update the moment a promised check-in or delivery date slips, and a Day-30 walkthrough step where the customer explicitly approves the trailer or logs a defect, before final payment is requested, not after.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> Customer names, order details, dollar amounts and dates on this page are sample data, illustrative only, not Trailer Made's real customer or order records. Sample order TM-1001 is deliberately shaped to mirror the "no proactive update while a promised date slips" pattern described in Trailer Made's own BBB complaint record, and TM-1004's resolved defect note mirrors the "defect found at delivery" pattern from the $44,530.83 complaint, recast here as caught and fixed before the walkthrough is approved rather than after, neither reflects a real Trailer Made customer.</p></div>
+
+  <div class="jse-tabs">
+    <button class="jse-tab active" data-view="office" type="button">Office view</button>
+    <button class="jse-tab" data-view="customer" type="button">Customer status check</button>
+  </div>
+
+  <section class="jse-view active" id="view-office">
+    <div class="team-row">
+      <span class="team-chip">Rebecca Desormeaux &middot; Managing Member</span>
+    </div>
+    <h2 class="fx-h2" style="margin-top:0;">Build queue</h2>
+    <div id="queue-root"></div>
+    <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+  </section>
+
+  <section class="jse-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check your build status</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Order reference number</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. TM-1001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try TM-1001, TM-1002, TM-1003 or TM-1004 from the office view's sample queue. Replaces waiting on a callback to hear how a build is going.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The order number is whatever Trailer Made already uses.</b> A real build reads from the existing deposit confirmation or work order number instead of inventing a new one for the customer to remember.</div>
+      <div class="lim"><b>The notification pings here are log entries, not real sends.</b> A real build wires the check-in, exception and walkthrough pings to Trailer Made's existing info@trailer-made.com Google Workspace inbox, so an update reaches the customer the moment staff log it, matching the "photo and video check-ins" it already promises.</div>
+      <div class="lim"><b>"Confirmed" here is a typed name and a timestamp.</b> A real build can add an actual e-signature provider for a stronger record on a schedule slip or the Day-30 walkthrough approval; this demo shows the workflow, not a specific vendor.</div>
+      <div class="lim"><b>The Day-30 gate blocks final payment, not just a status label.</b> A real build ties the walkthrough-approved state to whatever actually triggers the final invoice, so a flagged defect holds the payment request the same way it holds the demo's "Delivered" stage here.</div>
+      <div class="lim"><b>This does not fix a fabrication defect by itself.</b> It only makes a schedule slip or a walkthrough defect visible and logged the moment it happens, instead of surfacing six months late or only at delivery.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Trailer Made, LLC.</strong></p><p>Prepared by Shlok Sarnayak. Fictional order and customer data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "jse_trailer_made_v1";
+  var REF_PREFIX = "TM-";
+
+  var STAGES = [
+    { key: "deposit_confirmed", label: "Deposit confirmed" },
+    { key: "design_locked", label: "Design & spec locked" },
+    { key: "construction", label: "Construction" },
+    { key: "delivered", label: "Delivered" }
+  ];
+  var STAGE_INDEX = {}; STAGES.forEach(function (s, i) { STAGE_INDEX[s.key] = i; });
+  var LAST_STAGE = STAGES.length - 1;
+  var CONSTRUCTION_STAGE = STAGE_INDEX.construction;
+
+  var EX_TYPES = { fee_change: "Fee change", schedule_change: "Schedule change", scope_change: "Scope change" };
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function daysFromNow(d) { return Date.now() + d * 86400000; }
+
+  function defaultData() {
+    return {
+      jobs: [
+        {
+          id: REF_PREFIX + "1001", ref: REF_PREFIX + "1001", customer: "Sample Customer A (illustrative, matches the BBB \"no proactive update\" pattern)", item: "16-ft Chef Supreme mobile kitchen, sample order A",
+          stageIdx: CONSTRUCTION_STAGE,
+          history: [{ stage: "deposit_confirmed", at: daysFromNow(-40) }, { stage: "design_locked", at: daysFromNow(-33) }, { stage: "construction", at: daysFromNow(-20) }],
+          exception: { type: "schedule_change", desc: "The promised day-15 photo/video check-in was not logged on schedule while the build queue backed up", impact: "Delivery date moves from the original 12-week estimate by 3 weeks so far", status: "pending", proposedAt: daysFromNow(-2) },
+          walkthrough: null,
+          notes: [
+            { at: daysFromNow(-40), text: "Notification sent to customer: deposit confirmed, Day-0 strategy call complete." },
+            { at: daysFromNow(-33), text: "Notification sent to customer: design & spec locked." },
+            { at: daysFromNow(-20), text: "Notification sent to customer: construction started." },
+            { at: daysFromNow(-2), text: "Exception raised: schedule change, missed day-15 check-in (delivery +3 weeks so far). Blocked pending customer confirmation, order will not move to Delivered until confirmed." }
+          ]
+        },
+        {
+          id: REF_PREFIX + "1002", ref: REF_PREFIX + "1002", customer: "Sample Customer B", item: "16-ft Chef Supreme mobile kitchen, sample order B",
+          stageIdx: STAGE_INDEX.deposit_confirmed,
+          history: [{ stage: "deposit_confirmed", at: daysFromNow(-1) }],
+          exception: null,
+          walkthrough: null,
+          notes: [
+            { at: daysFromNow(-1), text: "Notification sent to customer: deposit confirmed, Day-0 strategy call complete." }
+          ]
+        },
+        {
+          id: REF_PREFIX + "1003", ref: REF_PREFIX + "1003", customer: "Sample Customer C", item: "16-ft Chef Supreme mobile kitchen, sample order C",
+          stageIdx: CONSTRUCTION_STAGE,
+          history: [{ stage: "deposit_confirmed", at: daysFromNow(-38) }, { stage: "design_locked", at: daysFromNow(-31) }, { stage: "construction", at: daysFromNow(-19) }],
+          exception: { type: "schedule_change", desc: "Backordered refrigeration unit pushed the day-20 check-in", impact: "Delivery date moves from the original estimate by 6 days", status: "approved", proposedAt: daysFromNow(-4), approvedBy: "Sample Customer C", approvedAt: daysFromNow(-4) },
+          walkthrough: { status: "pending", requestedAt: daysFromNow(-1) },
+          notes: [
+            { at: daysFromNow(-38), text: "Notification sent to customer: deposit confirmed, Day-0 strategy call complete." },
+            { at: daysFromNow(-31), text: "Notification sent to customer: design & spec locked." },
+            { at: daysFromNow(-19), text: "Notification sent to customer: construction started." },
+            { at: daysFromNow(-4), text: "Exception confirmed by Sample Customer C: schedule change, delivery moved 6 days." },
+            { at: daysFromNow(-1), text: "Day-30 walkthrough approval requested. Order will not move to Delivered, and final payment will not be requested, until the customer approves or logs a defect." }
+          ]
+        },
+        {
+          id: REF_PREFIX + "1004", ref: REF_PREFIX + "1004", customer: "Sample Customer D (illustrative, resolves before payment rather than at delivery)", item: "16-ft Chef Supreme mobile kitchen, sample order D",
+          stageIdx: LAST_STAGE,
+          history: [{ stage: "deposit_confirmed", at: daysFromNow(-52) }, { stage: "design_locked", at: daysFromNow(-45) }, { stage: "construction", at: daysFromNow(-30) }, { stage: "delivered", at: daysFromNow(-3) }],
+          exception: null,
+          walkthrough: { status: "approved", requestedAt: daysFromNow(-9), defectNote: "Oven placement did not match the locked spec drawing", defectLoggedAt: daysFromNow(-8), resolvedAt: daysFromNow(-4), approvedBy: "Sample Customer D", approvedAt: daysFromNow(-3) },
+          notes: [
+            { at: daysFromNow(-52), text: "Notification sent to customer: deposit confirmed, Day-0 strategy call complete." },
+            { at: daysFromNow(-45), text: "Notification sent to customer: design & spec locked." },
+            { at: daysFromNow(-30), text: "Notification sent to customer: construction started." },
+            { at: daysFromNow(-9), text: "Day-30 walkthrough approval requested." },
+            { at: daysFromNow(-8), text: "Defect logged by Sample Customer D at walkthrough: oven placement did not match the locked spec drawing. Final payment held." },
+            { at: daysFromNow(-4), text: "Defect resolved, oven repositioned to match spec. Walkthrough approval re-requested." },
+            { at: daysFromNow(-3), text: "Walkthrough approved by Sample Customer D. Final payment requested, order marked Delivered." }
+          ]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function stageBlockedByException(j) {
+    return j.exception && j.exception.status === "pending";
+  }
+  function awaitingWalkthrough(j) {
+    return j.walkthrough && (j.walkthrough.status === "pending" || j.walkthrough.status === "defect");
+  }
+  function readyForWalkthrough(j) {
+    return j.stageIdx === CONSTRUCTION_STAGE && !stageBlockedByException(j) && !j.walkthrough;
+  }
+  function readyToDeliver(j) {
+    return j.stageIdx === CONSTRUCTION_STAGE && j.walkthrough && j.walkthrough.status === "approved";
+  }
+
+  function renderTimeline(j) {
+    var html = '<div class="timeline">';
+    STAGES.forEach(function (s, i) {
+      var cls = i < j.stageIdx ? "done" : (i === j.stageIdx ? "active" : "");
+      html += '<span class="tl-step ' + cls + '">' + (i < j.stageIdx ? "&#10003; " : "") + escapeHtml(s.label) + "</span>";
+    });
+    html += "</div>";
+    return html;
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var html = "";
+    data.jobs.forEach(function (j) { html += renderOfficeCard(j); });
+    root.innerHTML = html;
+  }
+
+  function renderWalkthroughBox(j, ctx) {
+    var wt = j.walkthrough;
+    if (!wt) return "";
+    var cls = wt.status === "approved" ? " approved" : (wt.status === "defect" ? " defect" : "");
+    var html = '<div class="wt-box' + cls + '"><b>Day-30 walkthrough</b>';
+    if (wt.status === "pending") {
+      html += "Requested " + fmtDate(wt.requestedAt) + ", not yet approved by customer. Order is held at Construction and final payment will not be requested until this is resolved.";
+      if (ctx === "customer") {
+        html += '<div class="confirm-block"><div class="confirm-line"><input type="checkbox" id="wt-consent"> <label for="wt-consent">I have completed my Day-30 walkthrough and the trailer matches the confirmed spec, with no outstanding defects.</label></div>' +
+          '<div class="confirm-row"><input type="text" id="wt-signer" placeholder="Your typed full name"><button class="fx-btn-ghost" onclick="__jse.approveWalkthrough()">Approve, request final payment</button></div>' +
+          '<div class="confirm-row"><input type="text" id="wt-defect" placeholder="Or describe a defect found at walkthrough"><button class="fx-btn-ghost" onclick="__jse.flagDefect()">Log defect, hold payment</button></div></div>';
+      }
+    } else if (wt.status === "defect") {
+      html += "Defect logged " + fmtDate(wt.defectLoggedAt) + ": " + escapeHtml(wt.defectNote) + ". Final payment is held until Trailer Made resolves this and the customer re-approves.";
+    } else {
+      html += "Approved by " + escapeHtml(wt.approvedBy) + " at " + fmtDate(wt.approvedAt) + ". Final payment requested.";
+      if (wt.defectNote) html += '<div class="confirm-fact">Note: a defect (' + escapeHtml(wt.defectNote) + ") was logged " + fmtDate(wt.defectLoggedAt) + " and resolved " + fmtDate(wt.resolvedAt) + " before this approval.</div>";
+    }
+    html += "</div>";
+    return html;
+  }
+
+  function renderOfficeCard(j) {
+    var idx = data.jobs.indexOf(j);
+    var complete = j.stageIdx >= LAST_STAGE;
+    var html = '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(j.customer) + " &middot; " + j.ref + '</div><div class="job-meta">' + escapeHtml(j.item) + "</div></div>";
+    if (stageBlockedByException(j)) html += '<span class="badge blocked">Blocked, awaiting customer</span>';
+    else if (j.walkthrough && j.walkthrough.status === "defect") html += '<span class="badge blocked">Payment held, defect logged</span>';
+    else if (j.walkthrough && j.walkthrough.status === "pending") html += '<span class="badge pending">Awaiting walkthrough approval</span>';
+    else if (complete) html += '<span class="badge done">Delivered</span>';
+    else html += '<span class="badge ok">On track</span>';
+    html += "</div>";
+    html += renderTimeline(j);
+
+    if (j.exception) {
+      var ex = j.exception;
+      html += '<div class="ex-box' + (ex.status === "approved" ? " approved" : "") + '"><span class="ex-type">' + escapeHtml(EX_TYPES[ex.type] || ex.type) + '</span><b>' + escapeHtml(ex.impact) + "</b>" + escapeHtml(ex.desc) + "<br>";
+      if (ex.status === "pending") html += "Raised " + fmtDate(ex.proposedAt) + ", not yet confirmed by customer. Order is held at its current stage.";
+      else html += "Confirmed by " + escapeHtml(ex.approvedBy) + " at " + fmtDate(ex.approvedAt) + ".";
+      html += "</div>";
+    }
+
+    html += renderWalkthroughBox(j, "office");
+
+    if (j.notes.length) {
+      html += '<div class="log">';
+      j.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+      html += "</div>";
+    }
+
+    html += '<div class="job-actions">';
+    if (j.stageIdx < CONSTRUCTION_STAGE && !stageBlockedByException(j)) {
+      html += '<button class="fx-btn-ghost" onclick="__jse.advance(' + idx + ')">Advance to ' + escapeHtml(STAGES[j.stageIdx + 1].label) + '</button>';
+    }
+    if (readyForWalkthrough(j)) {
+      html += '<button class="fx-btn-ghost" onclick="__jse.requestWalkthrough(' + idx + ')">Request Day-30 walkthrough approval</button>';
+    }
+    if (j.walkthrough && j.walkthrough.status === "defect") {
+      html += '<button class="fx-btn-ghost" onclick="__jse.resolveDefect(' + idx + ')">Mark defect resolved, re-request approval</button>';
+    }
+    if (readyToDeliver(j)) {
+      html += '<button class="fx-btn-ghost" onclick="__jse.deliver(' + idx + ')">Mark Delivered (payment received)</button>';
+    }
+    if (!complete && (!j.exception || j.exception.status === "approved") && j.stageIdx < CONSTRUCTION_STAGE) {
+      html += '<button class="fx-btn-ghost" onclick="__jse.toggleExForm(' + idx + ')">Raise exception</button>';
+    }
+    if (j.stageIdx === CONSTRUCTION_STAGE && (!j.exception || j.exception.status === "approved") && !j.walkthrough) {
+      html += '<button class="fx-btn-ghost" onclick="__jse.toggleExForm(' + idx + ')">Raise exception</button>';
+    }
+    html += "</div>";
+    html += '<div id="ex-form-' + idx + '"></div>';
+    html += "</div>";
+    return html;
+  }
+
+  window.__jse = {
+    advance: function (idx) {
+      var j = data.jobs[idx];
+      j.stageIdx += 1;
+      var stage = STAGES[j.stageIdx];
+      j.history.push({ stage: stage.key, at: Date.now() });
+      j.notes.push({ at: Date.now(), text: "Notification sent to customer: " + stage.label.toLowerCase() + "." });
+      save(); renderQueue();
+    },
+    toggleExForm: function (idx) {
+      var root = document.getElementById("ex-form-" + idx);
+      if (root.innerHTML) { root.innerHTML = ""; return; }
+      root.innerHTML = '<div class="form-inline"><select id="ex-type-' + idx + '"><option value="fee_change">Fee change</option><option value="schedule_change">Schedule change</option><option value="scope_change">Scope change</option></select><input type="text" id="ex-desc-' + idx + '" placeholder="What is changing"><input type="text" id="ex-impact-' + idx + '" placeholder="Impact (e.g. +$220, or new date)"><button class="fx-btn-ghost" onclick="__jse.submitEx(' + idx + ')">Send to customer for confirmation</button></div>';
+    },
+    submitEx: function (idx) {
+      var j = data.jobs[idx];
+      var type = document.getElementById("ex-type-" + idx).value;
+      var desc = document.getElementById("ex-desc-" + idx).value.trim();
+      var impact = document.getElementById("ex-impact-" + idx).value.trim();
+      if (!desc || !impact) { alert("Describe the change and its impact."); return; }
+      var now = Date.now();
+      j.exception = { type: type, desc: desc, impact: impact, status: "pending", proposedAt: now };
+      j.notes.push({ at: now, text: "Exception raised: " + (EX_TYPES[type] || type).toLowerCase() + " (" + impact + "). Blocked pending customer confirmation, order will not move to Delivered until confirmed." });
+      save(); renderQueue();
+    },
+    confirmEx: function () {
+      var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+      var j = data.jobs.filter(function (x) { return x.ref === ref; })[0];
+      if (!j || !j.exception) return;
+      var box = document.getElementById("cust-consent");
+      var name = document.getElementById("cust-signer").value.trim();
+      if (!box.checked) { alert("Check the confirmation box first."); return; }
+      if (!name) { alert("Enter your typed full name."); return; }
+      var now = Date.now();
+      j.exception.status = "approved";
+      j.exception.approvedBy = name;
+      j.exception.approvedAt = now;
+      j.notes.push({ at: now, text: "Exception confirmed by " + name + ": " + (EX_TYPES[j.exception.type] || j.exception.type).toLowerCase() + " (" + j.exception.impact + ")." });
+      save(); renderQueue();
+      renderLookup(j);
+    },
+    requestWalkthrough: function (idx) {
+      var j = data.jobs[idx];
+      j.walkthrough = { status: "pending", requestedAt: Date.now() };
+      j.notes.push({ at: Date.now(), text: "Day-30 walkthrough approval requested. Order will not move to Delivered, and final payment will not be requested, until the customer approves or logs a defect." });
+      save(); renderQueue();
+    },
+    resolveDefect: function (idx) {
+      var j = data.jobs[idx];
+      var now = Date.now();
+      j.walkthrough.status = "pending";
+      j.walkthrough.resolvedAt = now;
+      j.walkthrough.requestedAt = now;
+      j.notes.push({ at: now, text: "Defect marked resolved. Walkthrough approval re-requested." });
+      save(); renderQueue();
+    },
+    deliver: function (idx) {
+      var j = data.jobs[idx];
+      j.stageIdx = LAST_STAGE;
+      j.history.push({ stage: "delivered", at: Date.now() });
+      j.notes.push({ at: Date.now(), text: "Order marked Delivered, final payment received." });
+      save(); renderQueue();
+    },
+    approveWalkthrough: function () {
+      var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+      var j = data.jobs.filter(function (x) { return x.ref === ref; })[0];
+      if (!j || !j.walkthrough) return;
+      var box = document.getElementById("wt-consent");
+      var name = document.getElementById("wt-signer").value.trim();
+      if (!box.checked) { alert("Check the confirmation box first."); return; }
+      if (!name) { alert("Enter your typed full name."); return; }
+      var now = Date.now();
+      j.walkthrough.status = "approved";
+      j.walkthrough.approvedBy = name;
+      j.walkthrough.approvedAt = now;
+      j.notes.push({ at: now, text: "Walkthrough approved by " + name + ". Final payment requested." });
+      save(); renderQueue();
+      renderLookup(j);
+    },
+    flagDefect: function () {
+      var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+      var j = data.jobs.filter(function (x) { return x.ref === ref; })[0];
+      if (!j || !j.walkthrough) return;
+      var note = document.getElementById("wt-defect").value.trim();
+      if (!note) { alert("Describe the defect found at walkthrough."); return; }
+      var now = Date.now();
+      j.walkthrough.status = "defect";
+      j.walkthrough.defectNote = note;
+      j.walkthrough.defectLoggedAt = now;
+      j.notes.push({ at: now, text: "Defect logged by customer at walkthrough: " + note + ". Final payment held." });
+      save(); renderQueue();
+      renderLookup(j);
+    }
+  };
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue();
+  });
+
+  function renderLookup(j) {
+    var root = document.getElementById("lookup-root");
+    var html = '<div style="margin-top:1.1rem;"><h3 style="font-family:var(--serif);font-size:1.15rem;margin:0 0 0.3rem;">' + escapeHtml(j.item) + "</h3>";
+    html += renderTimeline(j);
+    if (j.exception) {
+      var ex = j.exception;
+      html += '<div class="ex-box' + (ex.status === "approved" ? " approved" : "") + '"><span class="ex-type">' + escapeHtml(EX_TYPES[ex.type] || ex.type) + '</span><b>' + escapeHtml(ex.impact) + "</b>" + escapeHtml(ex.desc);
+      if (ex.status === "pending") {
+        html += '<div class="confirm-block"><div class="confirm-line"><input type="checkbox" id="cust-consent"> <label for="cust-consent">I have reviewed this change and its impact, and authorize Trailer Made to proceed on this basis.</label></div>' +
+          '<div class="confirm-row"><input type="text" id="cust-signer" placeholder="Your typed full name"><button class="fx-btn-ghost" onclick="__jse.confirmEx()">Confirm exception</button></div></div>';
+      } else {
+        html += '<div class="confirm-fact">Confirmed by ' + escapeHtml(ex.approvedBy) + " at " + fmtDate(ex.approvedAt) + "</div>";
+      }
+      html += "</div>";
+    }
+    html += renderWalkthroughBox(j, "customer");
+    html += '<div class="log">';
+    j.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+    html += "</div></div>";
+    root.innerHTML = html;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var j = data.jobs.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
+    if (!j) { root.innerHTML = '<div style="margin-top:1rem;"><p class="not-found">No record found for that order number. Please contact us directly.</p></div>'; return; }
+    renderLookup(j);
+  });
+
+  document.querySelectorAll(".jse-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".jse-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".jse-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderQueue();
+})();
+</script>
+</body>
+</html>
