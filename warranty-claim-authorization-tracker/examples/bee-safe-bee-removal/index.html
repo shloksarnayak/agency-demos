@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Bee Safe Bee Removal: warranty claim &amp; charge authorization tracker</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .wcat-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .wcat-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .wcat-tab.active { background: var(--ink); color: var(--surface); }
+  .wcat-view { display: none; }
+  .wcat-view.active { display: block; }
+  .ticket-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1.1rem 1.2rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem; }
+  .ticket-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .ticket-title { font-weight: 660; }
+  .ticket-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.none { color: var(--muted); background: var(--surface-2); }
+  .badge.received { color: var(--warn); background: var(--warn-bg); }
+  .badge.scheduled { color: var(--brand); background: var(--brand-soft); }
+  .badge.done { color: var(--good); background: var(--good-bg); }
+  .badge.overdue { color: var(--hot); background: var(--hot-bg); }
+  .badge.chargehold { color: var(--warn); background: var(--warn-bg); }
+  .warranty-line { font-size: 0.82rem; color: var(--ink-2); margin-top: 0.4rem; }
+  .warranty-line b { color: var(--ink); }
+  .warranty-line.expired { color: var(--muted); }
+  .timeline { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.7rem 0; }
+  .tl-step { display: flex; align-items: center; gap: 0.35rem; font-size: 0.74rem; padding: 0.3rem 0.6rem; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+  .tl-step.done { background: var(--good-bg); color: var(--good); font-weight: 700; }
+  .tl-step.active { background: var(--brand-soft); color: var(--brand); font-weight: 700; }
+  .deadline-line { font-size: 0.82rem; margin-top: 0.4rem; color: var(--ink-2); }
+  .deadline-line.overdue { color: var(--hot); font-weight: 650; }
+  .issue-box { margin-top: 0.7rem; padding: 0.7rem 0.9rem; background: var(--surface-2); border-radius: var(--radius-sm); font-size: 0.86rem; color: var(--ink-2); }
+  .charges { margin-top: 0.85rem; padding-top: 0.7rem; border-top: 1px dashed var(--rule); }
+  .charges-title { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 0.5rem; }
+  .charge-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.6rem; font-size: 0.86rem; padding: 0.5rem 0; border-bottom: 1px solid var(--rule-soft); }
+  .charge-row:last-child { border-bottom: none; }
+  .charge-desc { flex: 1; }
+  .charge-amount { font-family: var(--mono); font-weight: 700; white-space: nowrap; }
+  .charge-status { font-size: 0.7rem; margin-top: 0.15rem; }
+  .charge-status.pending { color: var(--warn); }
+  .charge-status.acknowledged { color: var(--good); }
+  .add-charge-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.6rem; }
+  .add-charge-row input[type="text"] { flex: 2; min-width: 160px; font: inherit; font-size: 0.85rem; padding: 0.45rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .add-charge-row input[type="number"] { flex: 1; min-width: 90px; font: inherit; font-size: 0.85rem; padding: 0.45rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .log { margin-top: 0.8rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.79rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--brand); margin-right: 0.4rem; }
+  .ticket-actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; flex-wrap: wrap; align-items: center; }
+  .claim-form { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px dashed var(--rule); display: flex; flex-direction: column; gap: 0.5rem; }
+  .claim-form textarea { font: inherit; font-size: 0.85rem; padding: 0.5rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); min-height: 4.5rem; resize: vertical; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 480px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .confirm-box { margin-top: 0.85rem; padding: 0.85rem 1rem; border-left: 4px solid var(--warn); background: var(--warn-bg); border-radius: var(--radius-sm); font-size: 0.86rem; }
+  .confirm-box b { display: block; margin-bottom: 0.2rem; }
+  .ack-block { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px dashed var(--rule); }
+  .ack-line { font-size: 0.82rem; color: var(--ink-2); display: flex; gap: 0.4rem; align-items: flex-start; }
+  .ack-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.55rem; }
+  .ack-row input[type="text"] { flex: 1; min-width: 160px; font: inherit; font-size: 0.85rem; padding: 0.45rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../index.html">Warranty claim &amp; charge authorization tracker</a> / Bee Safe Bee Removal example</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample, built for Bee Safe Bee Removal</span>
+  <h1 class="fx-h1">The warranty is already real. This makes it visible.</h1>
+  <p class="fx-lede">Bee Safe Bee Removal's own service page markets a job warranty as a core selling point: "we not only do bee removals but also warranty our work," and its own customer-reviews page quotes customers describing "a one year guarantee." But the company's BBB complaint record shows that promise breaking down in practice once a customer needs it. One complaint describes a customer who paid $774 under the one-year warranty, had bees return, and despite calling, texting, and emailing multiple times over weeks, could not get the company to come finish the job. A second, similarly shaped complaint describes bees returning within weeks of a paid removal, with the customer reporting "no communication for more than a month" while trying to use the warranty. A third disputes a surprise $350 "extermination" charge added after the company killed bees without authorization, partially refunded to a net $370 but never reversed on the charge itself. Nothing on the customer's side today lets them see whether a return visit is scheduled, confirmed, or being ignored, and nothing stops an add-on charge from being billed before the customer has agreed to it. This page shows one small, working tool that fixes both: every job's one-year warranty window is visible from a reference number, a claim opens a status ticket with a stated response-time commitment instead of a phone call the customer has to keep repeating, and any charge added beyond the original warranty scope is itemized and held until the customer explicitly acknowledges it, before it is ever billed.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> All customer names and claim details on this page are sample data, clearly labeled as such, and not Bee Safe Bee Removal's real records. The claim types shown (bees returning within warranty, a return visit finding a separate new nest) reflect the kinds of issues named in Bee Safe Bee Removal's own BBB complaint record, not any specific real customer's file. A real build reads from whatever Bee Safe Bee Removal's office already uses to log a job and connects the response-time and charge-authorization prompts to real email or text.</p></div>
+
+  <div class="wcat-tabs">
+    <button class="wcat-tab active" data-view="office" type="button">Office view</button>
+    <button class="wcat-tab" data-view="customer" type="button">Customer status check</button>
+  </div>
+
+  <section class="wcat-view active" id="view-office">
+    <h2 class="fx-h2" style="margin-top:0;">Completed jobs &amp; claims</h2>
+    <div id="queue-root"></div>
+    <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+  </section>
+
+  <section class="wcat-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check your warranty or claim</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Job or claim reference number</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. BSBR-3001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try BSBR-3001, BSBR-3002, BSBR-3003 or BSBR-3004 from the office view's sample queue.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The reference number can be whatever Bee Safe Bee Removal already gives a customer.</b> A real build reads from an existing job or invoice number, it does not invent a new one to remember.</div>
+      <div class="lim"><b>The one-year warranty window is set the moment a removal job is completed.</b> A real build can text or email that window to the customer automatically, closing the exact gap the BBB record describes: a customer with no way to check whether they are still covered short of calling in.</div>
+      <div class="lim"><b>The response-time commitment is a real clock, not a promise.</b> A claim that sits at "Claim received" past its stated response window shows as overdue in the office view, the direct fix for the "no communication for more than a month" and "twelve contact attempts" shape described in the BBB record.</div>
+      <div class="lim"><b>An itemized charge genuinely cannot be billed without customer acknowledgment.</b> If a return visit finds a separate problem beyond the original warranted removal, staff can itemize that charge, but it is held until the customer checks a box and types their name from their own status page, the direct fix for the disputed $350 "extermination" charge that was added without authorization.</div>
+      <div class="lim"><b>"Acknowledged" here is a typed name and a timestamp.</b> A real build can add an actual e-signature provider for a stronger record; this demo shows the workflow, not a specific vendor.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Bee Safe Bee Removal.</strong></p><p>Prepared by Shlok Sarnayak. Fictional claim and customer data on this page, not connected to Bee Safe Bee Removal's real systems.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "wcat_beesafebeeremoval_v1";
+  var RESPONSE_HOURS = 48;
+
+  var STAGES = [
+    { key: "received", label: "Claim received" },
+    { key: "scheduled", label: "Return visit scheduled" },
+    { key: "completed", label: "Completed" }
+  ];
+  var STAGE_INDEX = {}; STAGES.forEach(function (s, i) { STAGE_INDEX[s.key] = i; });
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function fmtDateOnly(ds) { var d = new Date(ds + "T00:00:00"); return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); }
+  function fmtMoney(n) { return "$" + n.toFixed(2).replace(/\.00$/, ""); }
+  function daysFromNow(d) { return Date.now() + d * 86400000; }
+  function isoDateFromNow(d) { return new Date(daysFromNow(d)).toISOString().slice(0, 10); }
+
+  function defaultData() {
+    return {
+      tickets: [
+        {
+          ref: "BSBR-3001", customer: "Sample Customer A", service: "Live honey bee colony removal, exterior wall void",
+          completedAt: daysFromNow(-40), warrantyStart: isoDateFromNow(-40), warrantyEnd: isoDateFromNow(325),
+          claim: {
+            issue: "Sample Customer A reports bees have returned to the same wall void within the one year warranty.",
+            filedAt: daysFromNow(-26), stageIdx: STAGE_INDEX.received, visitDate: null,
+            charges: [],
+            notes: [ { at: daysFromNow(-26), text: "Claim opened, bees reported returned. Original removal was $774, covered under the one year warranty." } ]
+          }
+        },
+        {
+          ref: "BSBR-3002", customer: "Sample Customer B", service: "Live honey bee colony removal, attic access",
+          completedAt: daysFromNow(-55), warrantyStart: isoDateFromNow(-55), warrantyEnd: isoDateFromNow(310),
+          claim: {
+            issue: "Sample Customer B reports bees returning within weeks of the paid removal.",
+            filedAt: daysFromNow(-9), stageIdx: STAGE_INDEX.scheduled, visitDate: isoDateFromNow(2),
+            charges: [],
+            notes: [
+              { at: daysFromNow(-9), text: "Claim opened, bees reported returning." },
+              { at: daysFromNow(-5), text: "Return visit scheduled and confirmed with the customer." }
+            ]
+          }
+        },
+        {
+          ref: "BSBR-3003", customer: "Sample Customer C", service: "Live honey bee colony removal, eave void",
+          completedAt: daysFromNow(-70), warrantyStart: isoDateFromNow(-70), warrantyEnd: isoDateFromNow(295),
+          claim: {
+            issue: "Sample Customer C reports bees returned; return visit found a separate, newly established yellow jacket nest in a different part of the structure.",
+            filedAt: daysFromNow(-15), stageIdx: STAGE_INDEX.completed, visitDate: isoDateFromNow(-4),
+            charges: [
+              { id: "c1", desc: "Yellow jacket nest treatment, separate location from original honey bee removal, outside warranty scope", amount: 350, status: "pending", ackBy: null, ackAt: null }
+            ],
+            notes: [
+              { at: daysFromNow(-15), text: "Claim opened, bees reported returned." },
+              { at: daysFromNow(-9), text: "Return visit scheduled." },
+              { at: daysFromNow(-4), text: "Return visit completed. Original honey bee void confirmed clear. A separate yellow jacket nest was found and treated, itemized as a $350 charge, held pending customer acknowledgment before billing." }
+            ]
+          }
+        },
+        {
+          ref: "BSBR-3004", customer: "Sample Customer D", service: "Live honey bee colony removal, chimney void",
+          completedAt: daysFromNow(-100), warrantyStart: isoDateFromNow(-100), warrantyEnd: isoDateFromNow(265),
+          claim: {
+            issue: "Sample Customer D reports partial recurrence; return visit found a small secondary comb outside the original removal footprint.",
+            filedAt: daysFromNow(-22), stageIdx: STAGE_INDEX.completed, visitDate: isoDateFromNow(-16),
+            charges: [
+              { id: "c1", desc: "Secondary comb removal, outside original warranty scope", amount: 120, status: "acknowledged", ackBy: "Sample Customer D", ackAt: daysFromNow(-15) }
+            ],
+            notes: [
+              { at: daysFromNow(-22), text: "Claim opened." },
+              { at: daysFromNow(-19), text: "Return visit scheduled." },
+              { at: daysFromNow(-16), text: "Return visit completed. Secondary comb removal itemized as a $120 charge, held pending customer acknowledgment before billing." },
+              { at: daysFromNow(-15), text: "Charge acknowledged by Sample Customer D. Cleared to bill." }
+            ]
+          }
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function findTicket(ref) { return data.tickets.filter(function (t) { return t.ref.toUpperCase() === ref.toUpperCase(); })[0]; }
+  function isInWarranty(t) { return new Date(t.warrantyEnd + "T00:00:00").getTime() >= Date.now(); }
+  function pendingCharges(c) { return c.charges.filter(function (ch) { return ch.status === "pending"; }); }
+  function isOverdue(c) { return c.stageIdx === STAGE_INDEX.received && Date.now() > c.filedAt + RESPONSE_HOURS * 3600000; }
+
+  function claimBadge(c) {
+    if (isOverdue(c)) return { cls: "overdue", label: "Overdue for response" };
+    if (c.stageIdx === STAGE_INDEX.completed) {
+      return pendingCharges(c).length ? { cls: "chargehold", label: "Awaiting charge acknowledgment" } : { cls: "done", label: "Resolved" };
+    }
+    if (c.stageIdx === STAGE_INDEX.scheduled) return { cls: "scheduled", label: "Visit scheduled" };
+    return { cls: "received", label: "Claim received" };
+  }
+
+  function renderTimeline(c) {
+    var html = '<div class="timeline">';
+    STAGES.forEach(function (s, i) {
+      var cls = i < c.stageIdx ? "done" : (i === c.stageIdx ? "active" : "");
+      html += '<span class="tl-step ' + cls + '">' + (i < c.stageIdx ? "&#10003; " : "") + escapeHtml(s.label) + "</span>";
+    });
+    html += "</div>";
+    return html;
+  }
+
+  function renderDeadline(c) {
+    var deadline = c.filedAt + RESPONSE_HOURS * 3600000;
+    if (c.stageIdx > STAGE_INDEX.received) return "";
+    var overdue = isOverdue(c);
+    return '<div class="deadline-line' + (overdue ? " overdue" : "") + '">' +
+      (overdue ? "Past our " + RESPONSE_HOURS + "-hour response commitment. Response was due " : "Response due by ") +
+      fmtDate(deadline) + "</div>";
+  }
+
+  function renderCharges(c) {
+    if (!c.charges.length) return "";
+    var html = '<div class="charges"><div class="charges-title">Itemized charges beyond original warranty scope</div>';
+    c.charges.forEach(function (ch) {
+      html += '<div class="charge-row"><div class="charge-desc">' + escapeHtml(ch.desc) +
+        '<div class="charge-status ' + ch.status + '">' +
+        (ch.status === "pending" ? "Held, pending customer acknowledgment before billing" : "Acknowledged by " + escapeHtml(ch.ackBy) + " at " + fmtDate(ch.ackAt) + ", cleared to bill") +
+        '</div></div><div class="charge-amount">' + fmtMoney(ch.amount) + '</div></div>';
+    });
+    html += "</div>";
+    return html;
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var html = "";
+    data.tickets.forEach(function (t) { html += renderOfficeCard(t); });
+    root.innerHTML = html;
+  }
+
+  function renderOfficeCard(t) {
+    var idx = data.tickets.indexOf(t);
+    var html = '<div class="ticket-card"><div class="ticket-head"><div><div class="ticket-title">' + escapeHtml(t.customer) + " &middot; " + t.ref + '</div><div class="ticket-meta">' + escapeHtml(t.service) + "</div></div>";
+    if (t.claim) {
+      var b = claimBadge(t.claim);
+      html += '<span class="badge ' + b.cls + '">' + b.label + '</span>';
+    } else {
+      html += '<span class="badge none">No claim filed</span>';
+    }
+    html += "</div>";
+    html += '<div class="warranty-line' + (isInWarranty(t) ? "" : " expired") + '"><b>Warranty window:</b> ' + fmtDateOnly(t.warrantyStart) + " to " + fmtDateOnly(t.warrantyEnd) + (isInWarranty(t) ? " (active)" : " (expired)") + "</div>";
+
+    if (t.claim) {
+      var c = t.claim;
+      html += '<div class="issue-box">' + escapeHtml(c.issue) + '</div>';
+      html += renderTimeline(c);
+      html += renderDeadline(c);
+      if (c.stageIdx === STAGE_INDEX.scheduled && c.visitDate) {
+        html += '<div class="deadline-line"><b>Return visit scheduled:</b> ' + fmtDateOnly(c.visitDate) + '</div>';
+      }
+      html += renderCharges(c);
+      if (c.notes.length) {
+        html += '<div class="log">';
+        c.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+        html += "</div>";
+      }
+      html += '<div class="ticket-actions">';
+      if (c.stageIdx === STAGE_INDEX.received) {
+        html += '<button class="fx-btn-ghost" onclick="__wcat.scheduleVisit(' + idx + ')">Schedule return visit</button>';
+      }
+      if (c.stageIdx === STAGE_INDEX.scheduled) {
+        html += '<button class="fx-btn-ghost" onclick="__wcat.completeVisit(' + idx + ')">Mark return visit completed</button>';
+      }
+      if (c.stageIdx >= STAGE_INDEX.scheduled) {
+        html += '<button class="fx-btn-ghost" onclick="__wcat.addChargeToggle(' + idx + ')">Add itemized charge</button>';
+      }
+      html += "</div>";
+      html += '<div id="charge-form-' + idx + '"></div>';
+    } else {
+      html += '<div class="ticket-actions"><button class="fx-btn-ghost" onclick="__wcat.logCallClaim(' + idx + ')">Log a claim from a customer call</button></div>';
+    }
+    html += "</div>";
+    return html;
+  }
+
+  window.__wcat = {
+    logCallClaim: function (idx) {
+      var t = data.tickets[idx];
+      if (!isInWarranty(t)) { alert("This job's warranty window has expired. A claim cannot be opened."); return; }
+      var issue = prompt("Describe the issue the customer reported on the call:");
+      if (!issue || !issue.trim()) return;
+      t.claim = {
+        issue: issue.trim(), filedAt: Date.now(), stageIdx: STAGE_INDEX.received, visitDate: null,
+        charges: [], notes: [ { at: Date.now(), text: "Claim opened from office-logged customer call." } ]
+      };
+      save(); renderQueue();
+    },
+    scheduleVisit: function (idx) {
+      var t = data.tickets[idx]; var c = t.claim;
+      var dateStr = prompt("Return visit date (YYYY-MM-DD):", isoDateFromNow(2));
+      if (!dateStr) return;
+      c.stageIdx = STAGE_INDEX.scheduled;
+      c.visitDate = dateStr;
+      c.notes.push({ at: Date.now(), text: "Return visit scheduled for " + dateStr + "." });
+      save(); renderQueue();
+    },
+    completeVisit: function (idx) {
+      var t = data.tickets[idx]; var c = t.claim;
+      c.stageIdx = STAGE_INDEX.completed;
+      c.notes.push({ at: Date.now(), text: "Return visit completed." });
+      save(); renderQueue();
+    },
+    addChargeToggle: function (idx) {
+      var root = document.getElementById("charge-form-" + idx);
+      if (root.innerHTML) { root.innerHTML = ""; return; }
+      root.innerHTML = '<div class="claim-form"><div class="add-charge-row">' +
+        '<input type="text" id="charge-desc-' + idx + '" placeholder="What is this charge for">' +
+        '<input type="number" id="charge-amount-' + idx + '" placeholder="Amount" min="0" step="0.01">' +
+        '<button class="fx-btn-ghost" onclick="__wcat.addCharge(' + idx + ')">Add, held for acknowledgment</button></div></div>';
+    },
+    addCharge: function (idx) {
+      var t = data.tickets[idx]; var c = t.claim;
+      var desc = document.getElementById("charge-desc-" + idx).value.trim();
+      var amount = parseFloat(document.getElementById("charge-amount-" + idx).value);
+      if (!desc || isNaN(amount) || amount <= 0) { alert("Enter a description and a valid amount."); return; }
+      c.charges.push({ id: "c" + (c.charges.length + 1), desc: desc, amount: amount, status: "pending", ackBy: null, ackAt: null });
+      c.notes.push({ at: Date.now(), text: "Additional charge itemized (" + fmtMoney(amount) + "). Held pending customer acknowledgment before billing." });
+      save(); renderQueue();
+    },
+    acknowledgeCharge: function (ref, chargeId) {
+      var t = findTicket(ref); if (!t || !t.claim) return;
+      var ch = t.claim.charges.filter(function (x) { return x.id === chargeId; })[0];
+      if (!ch || ch.status !== "pending") return;
+      var box = document.getElementById("ack-consent-" + chargeId);
+      var name = document.getElementById("ack-signer-" + chargeId).value.trim();
+      if (!box.checked) { alert("Check the acknowledgment box first."); return; }
+      if (!name) { alert("Enter your typed full name."); return; }
+      ch.status = "acknowledged"; ch.ackBy = name; ch.ackAt = Date.now();
+      t.claim.notes.push({ at: Date.now(), text: "Charge acknowledged by " + name + ". Cleared to bill." });
+      save(); renderQueue(); runLookup(ref);
+    },
+    fileClaim: function (ref) {
+      var t = findTicket(ref); if (!t) return;
+      var issue = document.getElementById("file-issue").value.trim();
+      if (!issue) { alert("Describe the issue before filing."); return; }
+      t.claim = {
+        issue: issue, filedAt: Date.now(), stageIdx: STAGE_INDEX.received, visitDate: null,
+        charges: [], notes: [ { at: Date.now(), text: "Claim opened by customer from the status page." } ]
+      };
+      save(); renderQueue(); runLookup(ref);
+    }
+  };
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue();
+  });
+
+  function renderLookup(t) {
+    var root = document.getElementById("lookup-root");
+    var html = '<div style="margin-top:1.1rem;"><h3 style="font-family:var(--serif);font-size:1.15rem;margin:0 0 0.3rem;">' + escapeHtml(t.service) + "</h3>";
+    html += '<div class="warranty-line' + (isInWarranty(t) ? "" : " expired") + '"><b>Warranty window:</b> ' + fmtDateOnly(t.warrantyStart) + " to " + fmtDateOnly(t.warrantyEnd) + (isInWarranty(t) ? " (active)" : " (expired)") + "</div>";
+
+    if (!t.claim) {
+      if (isInWarranty(t)) {
+        html += '<div class="claim-form"><p style="font-size:0.86rem;color:var(--ink-2);margin:0;">This job is still within its one year warranty window. If bees have returned or something needs a second look, describe it below to open a claim.</p>' +
+          '<textarea id="file-issue" placeholder="Describe the issue"></textarea>' +
+          '<div><button class="fx-btn-ghost" onclick="__wcat.fileClaim(\'' + t.ref + '\')">File a warranty claim</button></div></div>';
+      } else {
+        html += '<p style="font-size:0.86rem;color:var(--ink-2);">This job\'s one year warranty window has ended, so a new claim cannot be filed here. Please contact us directly.</p>';
+      }
+      html += "</div>";
+      root.innerHTML = html;
+      return;
+    }
+
+    var c = t.claim;
+    var b = claimBadge(c);
+    html += '<span class="badge ' + b.cls + '" style="margin-top:0.6rem;display:inline-block;">' + b.label + '</span>';
+    html += '<div class="issue-box">' + escapeHtml(c.issue) + '</div>';
+    html += renderTimeline(c);
+    html += renderDeadline(c);
+    if (c.stageIdx === STAGE_INDEX.scheduled && c.visitDate) {
+      html += '<div class="deadline-line"><b>Return visit scheduled:</b> ' + fmtDateOnly(c.visitDate) + '</div>';
+    }
+    if (c.charges.length) {
+      html += '<div class="charges"><div class="charges-title">Itemized charges beyond original warranty scope</div>';
+      c.charges.forEach(function (ch) {
+        html += '<div class="charge-row"><div class="charge-desc">' + escapeHtml(ch.desc) + '<div class="charge-status ' + ch.status + '">' +
+          (ch.status === "pending" ? "Held, needs your acknowledgment before it is billed" : "Acknowledged by " + escapeHtml(ch.ackBy) + " at " + fmtDate(ch.ackAt)) +
+          '</div></div><div class="charge-amount">' + fmtMoney(ch.amount) + '</div></div>';
+        if (ch.status === "pending") {
+          html += '<div class="ack-block"><p style="font-size:0.84rem;color:var(--ink-2);margin:0;">This charge is not on your original job and will not be billed until you acknowledge it here.</p>' +
+            '<div class="ack-line" style="margin-top:0.5rem;"><input type="checkbox" id="ack-consent-' + ch.id + '"> <label for="ack-consent-' + ch.id + '">I acknowledge and authorize this charge.</label></div>' +
+            '<div class="ack-row"><input type="text" id="ack-signer-' + ch.id + '" placeholder="Your typed full name"><button class="fx-btn-ghost" onclick="__wcat.acknowledgeCharge(\'' + t.ref + '\',\'' + ch.id + '\')">Acknowledge charge</button></div></div>';
+        }
+      });
+      html += "</div>";
+    }
+    html += '<div class="log">';
+    c.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+    html += "</div></div>";
+    root.innerHTML = html;
+  }
+
+  function runLookup(refRaw) {
+    var ref = refRaw.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var t = findTicket(ref);
+    if (!t) { root.innerHTML = '<div style="margin-top:1rem;"><p class="not-found">No record found for that reference number. Please contact us directly.</p></div>'; return; }
+    renderLookup(t);
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    runLookup(document.getElementById("lookup-ref").value);
+  });
+
+  document.querySelectorAll(".wcat-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".wcat-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".wcat-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderQueue();
+})();
+</script>
+</body>
+</html>
