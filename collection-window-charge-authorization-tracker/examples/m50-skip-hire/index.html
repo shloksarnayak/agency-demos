@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>M50 Skip Hire &amp; Recycling: collection-window &amp; charge authorization tracker example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .cwc-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .cwc-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .cwc-tab.active { background: var(--ink); color: var(--surface); }
+  .cwc-view { display: none; }
+  .cwc-view.active { display: block; }
+  .cwc-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.6rem; align-items: end; margin-bottom: 1.2rem; padding: 1rem 1.1rem; border: 1px dashed var(--rule); border-radius: 16px; }
+  .cwc-field { display: flex; flex-direction: column; gap: 0.3rem; }
+  .cwc-field label { font-size: 0.72rem; font-weight: 700; color: var(--ink-2); }
+  .cwc-field input, .cwc-field select { font: inherit; font-size: 0.85rem; padding: 0.5rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  .cwc-field input:focus, .cwc-field select:focus { outline: none; border-color: var(--brand); }
+  .cwc-submit-cell { display: flex; }
+  .order-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1.1rem 1.2rem; box-shadow: var(--shadow-sm); margin-bottom: 1rem; }
+  .order-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .order-title { font-weight: 660; }
+  .order-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.awaiting { color: var(--brand); background: var(--brand-soft); }
+  .badge.onsite { color: var(--warn); background: var(--warn-bg); }
+  .badge.requested { color: var(--warn); background: var(--warn-bg); }
+  .badge.overdue { color: var(--hot); background: var(--hot-bg); }
+  .badge.collected { color: var(--good); background: var(--good-bg); }
+  .badge.chargehold { color: var(--warn); background: var(--warn-bg); }
+  .window-line { font-size: 0.82rem; color: var(--ink-2); margin-top: 0.45rem; }
+  .window-line b { color: var(--ink); }
+  .window-line.overdue { color: var(--hot); font-weight: 650; }
+  .charges { margin-top: 0.85rem; padding-top: 0.7rem; border-top: 1px dashed var(--rule); }
+  .charges-title { font-family: var(--mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 0.5rem; }
+  .charge-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.6rem; font-size: 0.86rem; padding: 0.5rem 0; border-bottom: 1px solid var(--rule-soft); }
+  .charge-row:last-child { border-bottom: none; }
+  .charge-desc { flex: 1; }
+  .charge-amount { font-family: var(--mono); font-weight: 700; white-space: nowrap; }
+  .charge-status { font-size: 0.7rem; margin-top: 0.15rem; }
+  .charge-status.pending { color: var(--warn); }
+  .charge-status.acknowledged { color: var(--good); }
+  .add-charge-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.6rem; }
+  .add-charge-row input[type="text"] { flex: 2; min-width: 160px; font: inherit; font-size: 0.85rem; padding: 0.45rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .add-charge-row input[type="number"] { flex: 1; min-width: 90px; font: inherit; font-size: 0.85rem; padding: 0.45rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .log { margin-top: 0.8rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.79rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--brand); margin-right: 0.4rem; }
+  .order-actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; flex-wrap: wrap; align-items: center; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 480px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink); border-radius: var(--radius-sm); }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .ack-block { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px dashed var(--rule); }
+  .ack-line { font-size: 0.82rem; color: var(--ink-2); display: flex; gap: 0.4rem; align-items: flex-start; }
+  .ack-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.55rem; }
+  .ack-row input[type="text"] { flex: 1; min-width: 160px; font: inherit; font-size: 0.85rem; padding: 0.45rem 0.65rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .reset-row { margin-top: 1.3rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Collection-window &amp; charge authorization tracker</a> / M50 Skip Hire example</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Built for M50 Skip Hire &amp; Recycling Ltd, Santry, Dublin</span>
+  <h1 class="fx-h1">A locked collection window, and a charge nobody sees until you agree to it</h1>
+  <p class="fx-lede">M50's own site markets "an insured &amp; reliable service" and says its "prompt service is designed to keep your project on time &amp; on-budget." Its Trustpilot record (2.6/5, 20 reviews) tells a different story for collection specifically: 14 of 20 reviews describe a skip left blocking a driveway or parking space for 11 to nearly 30 days after being told collection was imminent, with repeat callers told "it's not allocated" and no way to check status themselves. A separate boards.ie post describes a customer billed an unadvised extra &euro;40 "overloaded skip" charge after collection, sprung on them after the fact rather than disclosed up front. This example shows a small, working fix: every order gets a reference number and a locked collection window the moment it's booked, a dispatch queue flags any order approaching or past that window automatically, sorted most-overdue-first, a no-login customer lookup shows the same status without a phone call, and any charge beyond the original quote, like that &euro;40 fee, is itemized and held until the customer explicitly acknowledges it, before it is ever billed.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Illustrative example.</strong> The customer names, orders, and dates below are fictional. The &euro;40 "overloaded skip" charge pattern is drawn directly from an independently-sourced boards.ie post describing M50, not invented; the "it's not allocated" callback pattern and the 11-to-nearly-30-day collection delays reflect the shape of M50's own Trustpilot review history, not any one named reviewer's exact order. Skip pricing is a placeholder sample rate (M50's own pricing loads through a client-side widget not available to this build); &euro;194 is a directly comparable Dublin competitor's (Kollect.ie) published all-in household skip price, shown here only as a reasoned proxy for the market, not M50's confirmed rate.</p></div>
+
+  <div class="cwc-tabs">
+    <button class="cwc-tab active" data-view="office" type="button">Dispatch queue</button>
+    <button class="cwc-tab" data-view="customer" type="button">Customer status check</button>
+  </div>
+
+  <section class="cwc-view active" id="view-office">
+    <h2 class="fx-h2" style="margin-top:0;">Book a new order</h2>
+    <form id="order-form" class="cwc-form">
+      <div class="cwc-field"><label for="o-customer">Customer / address</label><input type="text" id="o-customer" placeholder="e.g. Sample Customer A, Santry" required></div>
+      <div class="cwc-field"><label for="o-item">Skip size</label><select id="o-item"></select></div>
+      <div class="cwc-field"><label for="o-delivery">Delivery date</label><input type="date" id="o-delivery" required></div>
+      <div class="cwc-field"><label for="o-window">Collection promised within (days of delivery)</label><input type="number" id="o-window" min="1" value="7" required></div>
+      <div class="cwc-submit-cell"><button type="submit" class="fx-btn-ghost">Book order</button></div>
+    </form>
+    <p style="font-size:0.8rem;color:var(--muted);margin:-0.4rem 0 1.1rem;">This same locked window would go to the customer by text or email the moment they book, not only appear on this internal screen.</p>
+    <h2 class="fx-h2" style="margin-top:0;">Orders, most-overdue-first</h2>
+    <div id="orders-root"></div>
+    <div class="reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+  </section>
+
+  <section class="cwc-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check your order</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Order reference number</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. M50-1001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try M50-1001, M50-1002, M50-1003, M50-1004 or M50-1005 from the dispatch queue's sample orders. No login needed, matching how M50's site currently offers no order-status or portal feature at all.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this maps to the real gap</h2>
+    <div class="limits">
+      <div class="lim"><b>M50-1001 and M50-1002 reproduce the Trustpilot pattern.</b> Both are shown overdue and sorted to the top of the queue, exactly the "it's not allocated" gap that repeat callers describe, made visible before a fifth call instead of after it.</div>
+      <div class="lim"><b>M50-1003 reproduces the boards.ie pattern.</b> A &euro;40 "overloaded skip" charge sits itemized and held, not yet billed, until the customer checks the box and types their name on their own status page.</div>
+      <div class="lim"><b>The reference number would be whatever M50 already hands out at booking.</b> No new booking system, this sits on top of however orders are taken today.</div>
+      <div class="lim"><b>Back to the template: <a href="../../">Collection-window &amp; charge authorization tracker</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by M50 Skip Hire &amp; Recycling Ltd.</strong></p><p>Prepared by Shlok Sarnayak. Fictional order and customer data on this page, not connected to any live billing system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "cwc_m50_v1";
+
+  var ITEMS = ["4-yard mini skip", "8-yard builder's skip", "12-yard skip"];
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function fmtDateOnly(ds) { var d = new Date(ds + "T00:00:00"); return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); }
+  function fmtMoney(n) { return "€" + n.toFixed(2).replace(/\.00$/, ""); }
+  function daysFromNow(d) { return Date.now() + d * 86400000; }
+  function isoDateFromNow(d) { return new Date(daysFromNow(d)).toISOString().slice(0, 10); }
+  function addDaysIso(iso, days) { var t = new Date(iso + "T00:00:00").getTime() + days * 86400000; return new Date(t).toISOString().slice(0, 10); }
+  function daysOverdue(promisedIso) { var diff = Date.now() - new Date(promisedIso + "T00:00:00").getTime(); return Math.floor(diff / 86400000); }
+
+  function defaultData() {
+    var d1 = isoDateFromNow(-15), d2 = isoDateFromNow(-26), d3 = isoDateFromNow(-10), d4 = isoDateFromNow(-2), d5 = isoDateFromNow(0);
+    return {
+      orders: [
+        {
+          ref: "M50-1001", customer: "Sample Customer A, Santry", item: ITEMS[1],
+          deliveredAt: d1, collectionPromisedBy: addDaysIso(d1, 7), status: "on_site",
+          charges: [],
+          notes: [ { at: new Date(d1).getTime(), text: "Delivered, collection window opened." }, { at: daysFromNow(-3), text: "Customer called, told collection is 'not allocated yet'." } ]
+        },
+        {
+          ref: "M50-1002", customer: "Sample Customer B, Whitehall", item: ITEMS[2],
+          deliveredAt: d2, collectionPromisedBy: addDaysIso(d2, 7), status: "collection_requested",
+          charges: [],
+          notes: [ { at: new Date(d2).getTime(), text: "Delivered, collection window opened." }, { at: daysFromNow(-8), text: "Customer requested collection from the status page." }, { at: daysFromNow(-2), text: "Customer called again, no update available." } ]
+        },
+        {
+          ref: "M50-1003", customer: "Sample Customer C, Beaumont", item: ITEMS[1],
+          deliveredAt: d3, collectionPromisedBy: addDaysIso(d3, 5), status: "collected",
+          charges: [
+            { id: "c1", desc: "Overloaded skip surcharge (found at collection)", amount: 40, status: "pending", ackBy: null, ackAt: null }
+          ],
+          notes: [ { at: new Date(d3).getTime(), text: "Delivered, collection window opened." }, { at: daysFromNow(-4), text: "Collected." }, { at: daysFromNow(-4), text: "Additional charge itemized (€40, overloaded skip). Held pending customer acknowledgment before billing." } ]
+        },
+        {
+          ref: "M50-1004", customer: "Sample Customer D, Santry", item: ITEMS[0],
+          deliveredAt: d4, collectionPromisedBy: addDaysIso(d4, 7), status: "on_site",
+          charges: [],
+          notes: [ { at: new Date(d4).getTime(), text: "Delivered, collection window opened." } ]
+        },
+        {
+          ref: "M50-1005", customer: "Sample Customer E, Ballymun", item: ITEMS[1],
+          deliveredAt: d5, collectionPromisedBy: addDaysIso(d5, 7), status: "on_site",
+          charges: [
+            { id: "c1", desc: "Extended hire, extra 3 days (customer requested)", amount: 25, status: "acknowledged", ackBy: "Sample Customer E", ackAt: daysFromNow(0) }
+          ],
+          notes: [ { at: new Date(d5).getTime(), text: "Delivered, collection window opened." }, { at: daysFromNow(0), text: "Additional charge itemized (€25, extended hire). Held pending customer acknowledgment before billing." }, { at: daysFromNow(0), text: "Charge acknowledged by Sample Customer E. Cleared to bill." } ]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function findOrder(ref) { return data.orders.filter(function (o) { return o.ref.toUpperCase() === ref.toUpperCase(); })[0]; }
+  function pendingCharges(o) { return o.charges.filter(function (c) { return c.status === "pending"; }); }
+  function isOverdue(o) { return (o.status === "on_site" || o.status === "collection_requested") && daysOverdue(o.collectionPromisedBy) > 0; }
+
+  function orderBadge(o) {
+    if (o.status === "collected") return pendingCharges(o).length ? { cls: "chargehold", label: "Awaiting charge acknowledgment" } : { cls: "collected", label: "Collected" };
+    if (isOverdue(o)) return { cls: "overdue", label: "Collection overdue by " + daysOverdue(o.collectionPromisedBy) + " day" + (daysOverdue(o.collectionPromisedBy) === 1 ? "" : "s") };
+    if (o.status === "collection_requested") return { cls: "requested", label: "Collection requested" };
+    return { cls: "onsite", label: "On site, within window" };
+  }
+
+  function renderCharges(o) {
+    if (!o.charges.length) return "";
+    var html = '<div class="charges"><div class="charges-title">Itemized charges beyond original quote</div>';
+    o.charges.forEach(function (ch) {
+      html += '<div class="charge-row"><div class="charge-desc">' + escapeHtml(ch.desc) +
+        '<div class="charge-status ' + ch.status + '">' +
+        (ch.status === "pending" ? "Held, pending customer acknowledgment before billing" : "Acknowledged by " + escapeHtml(ch.ackBy) + " at " + fmtDate(ch.ackAt) + ", cleared to bill") +
+        '</div></div><div class="charge-amount">' + fmtMoney(ch.amount) + '</div></div>';
+    });
+    html += "</div>";
+    return html;
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("orders-root");
+    var sorted = data.orders.slice().sort(function (a, b) {
+      var oa = isOverdue(a) ? daysOverdue(a.collectionPromisedBy) : -1;
+      var ob = isOverdue(b) ? daysOverdue(b.collectionPromisedBy) : -1;
+      if (oa !== ob) return ob - oa;
+      return a.collectionPromisedBy.localeCompare(b.collectionPromisedBy);
+    });
+    if (!sorted.length) { root.innerHTML = '<p class="empty">No orders yet.</p>'; return; }
+    var html = "";
+    sorted.forEach(function (o) { html += renderOfficeCard(o); });
+    root.innerHTML = html;
+  }
+
+  function renderOfficeCard(o) {
+    var idx = data.orders.indexOf(o);
+    var b = orderBadge(o);
+    var html = '<div class="order-card"><div class="order-head"><div><div class="order-title">' + escapeHtml(o.customer) + " &middot; " + o.ref + '</div><div class="order-meta">' + escapeHtml(o.item) + '</div></div><span class="badge ' + b.cls + '">' + b.label + '</span></div>';
+    html += '<div class="window-line' + (isOverdue(o) ? " overdue" : "") + '"><b>Collection promised by:</b> ' + fmtDateOnly(o.collectionPromisedBy) + ' &middot; delivered ' + fmtDateOnly(o.deliveredAt) + '</div>';
+    html += renderCharges(o);
+    if (o.notes.length) {
+      html += '<div class="log">';
+      o.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+      html += "</div>";
+    }
+    html += '<div class="order-actions">';
+    if (o.status === "on_site") html += '<button class="fx-btn-ghost" onclick="__cwc.requestCollection(' + idx + ')">Log collection requested</button>';
+    if (o.status === "on_site" || o.status === "collection_requested") html += '<button class="fx-btn-ghost" onclick="__cwc.markCollected(' + idx + ')">Mark collected</button>';
+    if (o.status !== "collected") html += '<button class="fx-btn-ghost" onclick="__cwc.addChargeToggle(' + idx + ')">Add itemized charge</button>';
+    else if (pendingCharges(o).length === 0) html += '<button class="fx-btn-ghost" onclick="__cwc.addChargeToggle(' + idx + ')">Add itemized charge</button>';
+    html += "</div>";
+    html += '<div id="charge-form-' + idx + '"></div>';
+    html += "</div>";
+    return html;
+  }
+
+  window.__cwc = {
+    requestCollection: function (idx) {
+      var o = data.orders[idx];
+      o.status = "collection_requested";
+      o.notes.push({ at: Date.now(), text: "Collection requested." });
+      save(); renderQueue();
+    },
+    markCollected: function (idx) {
+      var o = data.orders[idx];
+      o.status = "collected";
+      o.notes.push({ at: Date.now(), text: "Collected." });
+      save(); renderQueue();
+    },
+    addChargeToggle: function (idx) {
+      var root = document.getElementById("charge-form-" + idx);
+      if (root.innerHTML) { root.innerHTML = ""; return; }
+      root.innerHTML = '<div class="add-charge-row">' +
+        '<input type="text" id="charge-desc-' + idx + '" placeholder="What is this charge for and why">' +
+        '<input type="number" id="charge-amount-' + idx + '" placeholder="Amount (€)" min="0" step="0.01">' +
+        '<button class="fx-btn-ghost" onclick="__cwc.addCharge(' + idx + ')">Add, held for acknowledgment</button></div>';
+    },
+    addCharge: function (idx) {
+      var o = data.orders[idx];
+      var desc = document.getElementById("charge-desc-" + idx).value.trim();
+      var amount = parseFloat(document.getElementById("charge-amount-" + idx).value);
+      if (!desc || isNaN(amount) || amount <= 0) { alert("Enter a description/reason and a valid amount."); return; }
+      o.charges.push({ id: "c" + (o.charges.length + 1), desc: desc, amount: amount, status: "pending", ackBy: null, ackAt: null });
+      o.notes.push({ at: Date.now(), text: "Additional charge itemized (" + fmtMoney(amount) + "). Held pending customer acknowledgment before billing." });
+      save(); renderQueue();
+    },
+    acknowledgeCharge: function (ref, chargeId) {
+      var o = findOrder(ref); if (!o) return;
+      var ch = o.charges.filter(function (x) { return x.id === chargeId; })[0];
+      if (!ch || ch.status !== "pending") return;
+      var box = document.getElementById("ack-consent-" + chargeId);
+      var name = document.getElementById("ack-signer-" + chargeId).value.trim();
+      if (!box.checked) { alert("Check the acknowledgment box first."); return; }
+      if (!name) { alert("Enter your typed full name."); return; }
+      ch.status = "acknowledged"; ch.ackBy = name; ch.ackAt = Date.now();
+      o.notes.push({ at: Date.now(), text: "Charge acknowledged by " + name + ". Cleared to bill." });
+      save(); renderQueue(); runLookup(ref);
+    },
+    requestCollectionFromCustomer: function (ref) {
+      var o = findOrder(ref); if (!o || o.status !== "on_site") return;
+      o.status = "collection_requested";
+      o.notes.push({ at: Date.now(), text: "Collection requested by the customer from the status page." });
+      save(); renderQueue(); runLookup(ref);
+    }
+  };
+
+  document.getElementById("order-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("o-customer").value.trim();
+    var delivery = document.getElementById("o-delivery").value;
+    var windowDays = parseInt(document.getElementById("o-window").value, 10) || 7;
+    if (!customer || !delivery) { alert("Fill in the customer/address and delivery date."); return; }
+    var ref = "M50-" + (1000 + data.orders.length + Math.floor(Math.random() * 90));
+    data.orders.push({
+      ref: ref, customer: customer, item: document.getElementById("o-item").value,
+      deliveredAt: delivery, collectionPromisedBy: addDaysIso(delivery, windowDays), status: "on_site",
+      charges: [], notes: [ { at: Date.now(), text: "Delivered, collection window opened." } ]
+    });
+    save(); renderQueue(); e.target.reset();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the dispatch queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue();
+  });
+
+  function renderLookup(o) {
+    var root = document.getElementById("lookup-root");
+    var b = orderBadge(o);
+    var html = '<div style="margin-top:1.1rem;"><h3 style="font-family:var(--serif);font-size:1.15rem;margin:0 0 0.3rem;">' + escapeHtml(o.item) + "</h3>";
+    html += '<span class="badge ' + b.cls + '" style="display:inline-block;">' + b.label + '</span>';
+    html += '<div class="window-line' + (isOverdue(o) ? " overdue" : "") + '" style="margin-top:0.6rem;"><b>Collection promised by:</b> ' + fmtDateOnly(o.collectionPromisedBy) + ' &middot; delivered ' + fmtDateOnly(o.deliveredAt) + '</div>';
+    if (o.status === "on_site") {
+      html += '<div style="margin-top:0.6rem;"><button class="fx-btn-ghost" onclick="__cwc.requestCollectionFromCustomer(\'' + o.ref + '\')">Request collection now</button></div>';
+    }
+    if (o.charges.length) {
+      html += '<div class="charges"><div class="charges-title">Itemized charges beyond original quote</div>';
+      o.charges.forEach(function (ch) {
+        html += '<div class="charge-row"><div class="charge-desc">' + escapeHtml(ch.desc) + '<div class="charge-status ' + ch.status + '">' +
+          (ch.status === "pending" ? "Held, needs your acknowledgment before it is billed" : "Acknowledged by " + escapeHtml(ch.ackBy) + " at " + fmtDate(ch.ackAt)) +
+          '</div></div><div class="charge-amount">' + fmtMoney(ch.amount) + '</div></div>';
+        if (ch.status === "pending") {
+          html += '<div class="ack-block"><p style="font-size:0.84rem;color:var(--ink-2);margin:0;">This charge is not on your original quote and will not be billed until you acknowledge it here.</p>' +
+            '<div class="ack-line" style="margin-top:0.5rem;"><input type="checkbox" id="ack-consent-' + ch.id + '"> <label for="ack-consent-' + ch.id + '">I acknowledge and authorize this charge.</label></div>' +
+            '<div class="ack-row"><input type="text" id="ack-signer-' + ch.id + '" placeholder="Your typed full name"><button class="fx-btn-ghost" onclick="__cwc.acknowledgeCharge(\'' + o.ref + '\',\'' + ch.id + '\')">Acknowledge charge</button></div></div>';
+        }
+      });
+      html += "</div>";
+    }
+    html += '<div class="log">';
+    o.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+    html += "</div></div>";
+    root.innerHTML = html;
+  }
+
+  function runLookup(refRaw) {
+    var ref = refRaw.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var o = findOrder(ref);
+    if (!o) { root.innerHTML = '<div style="margin-top:1rem;"><p class="not-found">No record found for that reference number. Please contact us directly.</p></div>'; return; }
+    renderLookup(o);
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    runLookup(document.getElementById("lookup-ref").value);
+  });
+
+  document.querySelectorAll(".cwc-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".cwc-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".cwc-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  function populateSelects() {
+    document.getElementById("o-item").innerHTML = ITEMS.map(function (s) { return "<option>" + escapeHtml(s) + "</option>"; }).join("");
+  }
+
+  populateSelects();
+  renderQueue();
+})();
+</script>
+</body>
+</html>
