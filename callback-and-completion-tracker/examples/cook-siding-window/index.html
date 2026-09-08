@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Cook Siding &amp; Window Company, callback &amp; completion checklist example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .cct-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .cct-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .cct-tab.active { background: var(--ink); color: var(--surface); }
+  .cct-view { display: none; }
+  .cct-view.active { display: block; }
+  .cct-sub { margin-bottom: 2.4rem; }
+  .cct-cols { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .cct-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .card-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .card-title { font-weight: 660; }
+  .card-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.overdue { color: var(--hot); background: var(--hot-bg); }
+  .badge.soon { color: var(--warn); background: var(--warn-bg); }
+  .badge.ontrack { color: var(--brand); background: var(--brand-soft); }
+  .badge.resolved { color: var(--good); background: var(--good-bg); }
+  .badge.open { color: var(--hot); background: var(--hot-bg); }
+  .badge.complete { color: var(--good); background: var(--good-bg); }
+  .card-summary { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; }
+  .card-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .log { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.8rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); margin-right: 0.4rem; }
+  .note-row { display: flex; gap: 0.4rem; margin-top: 0.6rem; }
+  .note-row input { flex: 1; font: inherit; font-size: 0.8rem; padding: 0.4rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 480px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; padding: 1rem 1.1rem; border-radius: var(--radius-sm); background: var(--surface-2); }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.2rem; }
+  .lookup-result .lr-detail { font-size: 0.86rem; color: var(--ink-2); margin-top: 0.5rem; line-height: 1.5; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .checklist { margin-top: 0.6rem; }
+  .checklist-item { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.32rem 0; font-size: 0.86rem; border-bottom: 1px solid var(--rule-soft); }
+  .checklist-item:last-child { border-bottom: none; }
+  .checklist-item input { margin-top: 0.2rem; }
+  .checklist-item.checked-item .ci-label { color: var(--muted); text-decoration: line-through; }
+  .checklist-progress { font-size: 0.76rem; color: var(--muted); margin-top: 0.5rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Callback log &amp; job completion checklist</a> / Cook Siding &amp; Window Company</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">Cook Siding &amp; Window Company: a shared queue for open callbacks, and a checklist that will not call a job done until every step on it is checked</h1>
+  <p class="fx-lede">Cook Siding &amp; Window has been in business since January 15, 1954 (72 years, per BBB) and holds an A+ BBB rating with accreditation since 1988, a strong long-term reputation. Its own public record shows two distinct, corroborated gaps underneath that reputation. A BBB complaint (filed 09/25/2024, status Answered/Unresolved) describes a broken bedroom window seal where the customer says they called at least five times and their HOA also contacted the company directly, with no callback; the company's own response cites "high call volume" as the reason, an admitted intake and tracking gap rather than a denial that the calls happened. Separately, a HomeAdvisor/Angi review describes a vinyl siding job completed with house wrap left off one entire side of the house, discovered only after the fact, taking over two months before a crew returned to remove the siding, install the missed wrap, and redo the job, with the customer charged full price for the correction. Cook Siding's own site (homepage, contact, about, careers all checked directly) has no customer portal, job-tracking system, or online scheduling, only a static "free estimate" form, consistent with a gap in how open items are tracked rather than handled by phone alone. This example shows two small, working tools built on the same idea: nothing gets forgotten because nothing depends on one person's memory.</p>
+  <div class="fact-strip">
+    <span class="fact">Cook Siding &amp; Window Company, Inc.</span>
+    <span class="fact">Salem, VA &middot; Roanoke/Salem region</span>
+    <span class="fact">Siding, roofing, windows, gutters &amp; more since 1954</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Cook Siding &amp; Window Company, Inc.</strong> All customer names, callback entries, job checklists, and reference codes inside the tools below are fictional and clearly for illustration only. The business description and complaint pattern referenced here are drawn from the company's own published site, its BBB profile and complaint file, and a HomeAdvisor/Angi review, all checked directly.</p></div>
+
+  <div class="cct-tabs">
+    <button class="cct-tab active" data-view="office" type="button">Office view</button>
+    <button class="cct-tab" data-view="customer" type="button">Customer look-up</button>
+  </div>
+
+  <section class="cct-view active" id="view-office">
+    <div class="cct-sub">
+      <h2 class="fx-h2" style="margin-top:0;">Callback &amp; follow-up log</h2>
+      <p class="card-summary" style="margin:0 0 1rem;">Directly targets the BBB complaint's failure mode: every inbound call, HOA contact, or walkthrough note gets a timestamp and a committed follow-up date the moment it's logged, so "we called five times" versus "we have no record of the call" has a shared answer instead of an unresolvable dispute.</p>
+      <div class="cct-cols">
+        <div>
+          <h3 class="fx-h2" style="margin-top:0;font-size:1.05rem;">Log a new callback request</h3>
+          <form id="cb-form" class="form-grid">
+            <div class="field span2"><label for="cb-customer">Customer / job label</label><input type="text" id="cb-customer" placeholder="e.g. Sample Customer A"></div>
+            <div class="field span2"><label for="cb-type">Request type</label><select id="cb-type"></select></div>
+            <div class="field span2"><label for="cb-summary">What was requested / promised</label><textarea id="cb-summary" placeholder="e.g. Office will call back about a window seal issue."></textarea></div>
+            <div class="field span2"><label for="cb-due">Committed follow-up by</label><input type="datetime-local" id="cb-due"></div>
+            <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
+          </form>
+        </div>
+        <div>
+          <h3 class="fx-h2" style="margin-top:0;font-size:1.05rem;">Open queue, most overdue first</h3>
+          <div id="cb-queue-root"></div>
+          <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="cb-reset-btn">Reset callback log to sample data</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="fx-h2">Job completion checklist</h2>
+      <p class="card-summary" style="margin:0 0 1rem;">Directly targets the HomeAdvisor complaint's failure mode: a job is only shown "Complete" once every scope item on it, including a step like house wrap on every elevation, is checked off, so a missed piece stays visible on the job itself instead of surfacing two months later when the homeowner notices it.</p>
+      <div class="cct-cols">
+        <div>
+          <h3 class="fx-h2" style="margin-top:0;font-size:1.05rem;">Log a new job</h3>
+          <form id="job-form" class="form-grid">
+            <div class="field span2"><label for="job-customer">Customer name</label><input type="text" id="job-customer" placeholder="e.g. Sample Customer E"></div>
+            <div class="field span2"><label for="job-label">Job description</label><input type="text" id="job-label" placeholder="e.g. Full-house vinyl siding install"></div>
+            <div class="field span2"><label for="job-items">Scope items, one per line</label><textarea id="job-items" placeholder="e.g.&#10;Front elevation installed&#10;House wrap installed, all sides&#10;Final walkthrough with homeowner"></textarea></div>
+            <div class="field span2"><button type="submit" class="fx-btn-ghost">Add job</button></div>
+          </form>
+        </div>
+        <div>
+          <h3 class="fx-h2" style="margin-top:0;font-size:1.05rem;">Job queue, open first</h3>
+          <div id="job-queue-root"></div>
+          <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="job-reset-btn">Reset job queue to sample data</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cct-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check the status of a callback or a job</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. CB-1001 or JC-2001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try CB-1001, CB-1002, CB-1003, CB-1004, JC-2001, JC-2002, JC-2003 or JC-2004 from the office view's sample data.</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The reference code would be whatever Cook Siding already hands out.</b> A real build reads from an existing work order or estimate number instead of inventing a new one for the homeowner to remember.</div>
+      <div class="lim"><b>Scope items would be set per job type.</b> A real build starts each job from a standard checklist for that job type (a siding install, a roof, a window swap), covering every elevation and step, so staff check items off instead of re-typing the list each time.</div>
+      <div class="lim"><b>Overdue math here is a simple timer.</b> A real build can text or page whoever is responsible once a callback crosses overdue, instead of relying on someone opening this page.</div>
+      <div class="lim"><b>See the general-purpose version of this tool: <a href="../../">Callback log &amp; job completion checklist template</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Cook Siding &amp; Window Company, Inc.</strong></p><p>Prepared by Shlok Sarnayak. Fictional callback and job data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "cct_cook_siding_window_v1";
+
+  var CB_TYPES = [
+    { key: "damage", label: "Damage / defect report" },
+    { key: "callback", label: "Callback / site-visit request" },
+    { key: "arrival", label: "Arrival window notice" }
+  ];
+  var CB_TYPE_LABEL = {}; CB_TYPES.forEach(function (t) { CB_TYPE_LABEL[t.key] = t.label; });
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  function hoursFromNow(h) { return Date.now() + h * 3600000; }
+  function daysFromNow(d) { return Date.now() + d * 86400000; }
+
+  function defaultData() {
+    return {
+      cbSeq: 1004,
+      callbacks: [
+        {
+          id: "CB-1001", ref: "CB-1001", customer: "Sample Customer A", type: "damage",
+          summary: "Office will call back about a reported bedroom window seal issue.",
+          openedAt: hoursFromNow(-120), dueAt: hoursFromNow(-24), status: "open",
+          notes: [
+            { at: hoursFromNow(-96), text: "Customer called again, no scheduling decision yet." },
+            { at: hoursFromNow(-48), text: "HOA also called on the customer's behalf, still no decision logged." }
+          ]
+        },
+        {
+          id: "CB-1002", ref: "CB-1002", customer: "Sample Customer B", type: "callback",
+          summary: "Someone will come back out to re-inspect a completed siding job.",
+          openedAt: hoursFromNow(-10), dueAt: hoursFromNow(14), status: "open",
+          notes: []
+        },
+        {
+          id: "CB-1003", ref: "CB-1003", customer: "Sample Customer C", type: "arrival",
+          summary: "Crew arrival window for tomorrow's roof estimate: 9am to 12pm.",
+          openedAt: hoursFromNow(-3), dueAt: hoursFromNow(18), status: "open",
+          notes: []
+        },
+        {
+          id: "CB-1004", ref: "CB-1004", customer: "Sample Customer D", type: "damage",
+          summary: "Gutter damage report reviewed and closed, repair scheduled.",
+          openedAt: hoursFromNow(-140), dueAt: hoursFromNow(-116), status: "resolved", resolvedAt: hoursFromNow(-110),
+          notes: [{ at: hoursFromNow(-110), text: "Repair crew booked for next week, customer notified by phone." }]
+        }
+      ],
+      jobSeq: 2004,
+      jobs: [
+        {
+          id: "JC-2001", ref: "JC-2001", customer: "Sample Customer E", label: "Full-house vinyl siding install",
+          items: [
+            { text: "Front elevation installed", checked: true, checkedAt: daysFromNow(-9) },
+            { text: "Left elevation installed", checked: true, checkedAt: daysFromNow(-8) },
+            { text: "Right elevation installed", checked: true, checkedAt: daysFromNow(-7) },
+            { text: "Rear elevation installed", checked: true, checkedAt: daysFromNow(-6) },
+            { text: "House wrap installed, all sides", checked: false, checkedAt: null },
+            { text: "Trim and flashing sealed", checked: false, checkedAt: null },
+            { text: "Final walkthrough with homeowner", checked: false, checkedAt: null }
+          ]
+        },
+        {
+          id: "JC-2002", ref: "JC-2002", customer: "Sample Customer F", label: "Roof replacement",
+          items: [
+            { text: "Tear-off complete", checked: true, checkedAt: daysFromNow(-3) },
+            { text: "Underlayment installed", checked: true, checkedAt: daysFromNow(-2) },
+            { text: "Shingles installed", checked: false, checkedAt: null },
+            { text: "Site debris cleared", checked: false, checkedAt: null }
+          ]
+        },
+        {
+          id: "JC-2003", ref: "JC-2003", customer: "Sample Customer G", label: "Window replacement, 6 units",
+          items: [
+            { text: "Old units removed", checked: true, checkedAt: daysFromNow(-1) },
+            { text: "New units installed and sealed", checked: true, checkedAt: daysFromNow(-1) },
+            { text: "Interior trim reinstalled", checked: true, checkedAt: daysFromNow(0) },
+            { text: "Final walkthrough with homeowner", checked: true, checkedAt: daysFromNow(0) }
+          ]
+        },
+        {
+          id: "JC-2004", ref: "JC-2004", customer: "Sample Customer H", label: "Gutter and soffit install",
+          items: [
+            { text: "Gutters hung", checked: true, checkedAt: daysFromNow(-14) },
+            { text: "Soffit installed", checked: true, checkedAt: daysFromNow(-13) },
+            { text: "Downspouts tied to drainage", checked: true, checkedAt: daysFromNow(-13) }
+          ]
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function cbStatusInfo(p) {
+    if (p.status === "resolved") return { cls: "resolved", label: "Resolved" };
+    var now = Date.now();
+    if (p.dueAt < now) return { cls: "overdue", label: "Overdue" };
+    if (p.dueAt - now < 12 * 3600000) return { cls: "soon", label: "Due soon" };
+    return { cls: "ontrack", label: "On track" };
+  }
+
+  function jobComplete(j) { return j.items.length > 0 && j.items.every(function (i) { return i.checked; }); }
+  function jobOpenCount(j) { return j.items.filter(function (i) { return !i.checked; }).length; }
+
+  function populateCbTypeSelect() {
+    var sel = document.getElementById("cb-type");
+    sel.innerHTML = CB_TYPES.map(function (t) { return '<option value="' + t.key + '">' + escapeHtml(t.label) + "</option>"; }).join("");
+  }
+
+  function renderCbQueue() {
+    var root = document.getElementById("cb-queue-root");
+    var open = data.callbacks.filter(function (p) { return p.status === "open"; }).slice().sort(function (a, b) { return a.dueAt - b.dueAt; });
+    var resolved = data.callbacks.filter(function (p) { return p.status === "resolved"; }).slice().sort(function (a, b) { return b.resolvedAt - a.resolvedAt; });
+    var html = "";
+    if (!open.length) html += '<p class="empty">Nothing open. Every callback is caught up.</p>';
+    open.forEach(function (p) { html += renderCbCard(p); });
+    if (resolved.length) {
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently resolved</h3>';
+      resolved.slice(0, 5).forEach(function (p) { html += renderCbCard(p); });
+    }
+    root.innerHTML = html;
+  }
+
+  function renderCbCard(p) {
+    var st = cbStatusInfo(p);
+    var idx = data.callbacks.indexOf(p);
+    var html = '<div class="card"><div class="card-head"><div><div class="card-title">' + escapeHtml(p.customer) + " &middot; " + p.ref + '</div><div class="card-meta">' + CB_TYPE_LABEL[p.type] + " &middot; opened " + fmtDate(p.openedAt) + " &middot; due " + fmtDate(p.dueAt) + '</div></div><span class="badge ' + st.cls + '">' + st.label + "</span></div>";
+    html += '<div class="card-summary">' + escapeHtml(p.summary) + "</div>";
+    if (p.notes.length) {
+      html += '<div class="log">';
+      p.notes.slice().reverse().forEach(function (n) { html += '<div class="log-entry"><span class="tag">' + fmtDate(n.at) + "</span>" + escapeHtml(n.text) + "</div>"; });
+      html += "</div>";
+    }
+    if (p.status === "open") {
+      html += '<div class="note-row"><input type="text" id="cb-note-' + idx + '" placeholder="Add an internal note"><button class="fx-btn-ghost" onclick="__cct.addNote(' + idx + ')">Add</button></div>';
+      html += '<div class="card-actions"><button class="fx-btn-ghost" onclick="__cct.resolve(' + idx + ')">Mark resolved</button></div>';
+    }
+    html += "</div>";
+    return html;
+  }
+
+  function renderJobQueue() {
+    var root = document.getElementById("job-queue-root");
+    var open = data.jobs.filter(function (j) { return !jobComplete(j); }).slice();
+    var complete = data.jobs.filter(function (j) { return jobComplete(j); }).slice();
+    var html = "";
+    if (!open.length) html += '<p class="empty">No open jobs. Every checklist is fully checked off.</p>';
+    open.forEach(function (j) { html += renderJobCard(j); });
+    if (complete.length) {
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently completed</h3>';
+      complete.slice(0, 5).forEach(function (j) { html += renderJobCard(j); });
+    }
+    root.innerHTML = html;
+  }
+
+  function renderJobCard(j) {
+    var idx = data.jobs.indexOf(j);
+    var complete = jobComplete(j);
+    var openCount = jobOpenCount(j);
+    var html = '<div class="card"><div class="card-head"><div><div class="card-title">' + escapeHtml(j.customer) + " &middot; " + j.ref + '</div><div class="card-meta">' + escapeHtml(j.label) + '</div></div><span class="badge ' + (complete ? "complete" : "open") + '">' + (complete ? "Complete" : (openCount + " item" + (openCount === 1 ? "" : "s") + " open")) + "</span></div>";
+    html += '<div class="checklist">';
+    j.items.forEach(function (item, i) {
+      html += '<div class="checklist-item' + (item.checked ? " checked-item" : "") + '"><input type="checkbox" id="ci-' + idx + "-" + i + '" ' + (item.checked ? "checked" : "") + ' onchange="__cct.toggleItem(' + idx + "," + i + ')"><label class="ci-label" for="ci-' + idx + "-" + i + '">' + escapeHtml(item.text) + "</label></div>";
+    });
+    html += "</div>";
+    html += '<div class="checklist-progress">' + j.items.filter(function (i2) { return i2.checked; }).length + " of " + j.items.length + " scope items checked off</div>";
+    html += "</div>";
+    return html;
+  }
+
+  window.__cct = {
+    addNote: function (idx) {
+      var input = document.getElementById("cb-note-" + idx);
+      var text = input.value.trim();
+      if (!text) return;
+      data.callbacks[idx].notes.push({ at: Date.now(), text: text });
+      save(); renderCbQueue();
+    },
+    resolve: function (idx) {
+      data.callbacks[idx].status = "resolved";
+      data.callbacks[idx].resolvedAt = Date.now();
+      save(); renderCbQueue();
+    },
+    toggleItem: function (jobIdx, itemIdx) {
+      var item = data.jobs[jobIdx].items[itemIdx];
+      item.checked = !item.checked;
+      item.checkedAt = item.checked ? Date.now() : null;
+      save(); renderJobQueue();
+    }
+  };
+
+  document.getElementById("cb-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("cb-customer").value.trim();
+    var type = document.getElementById("cb-type").value;
+    var summary = document.getElementById("cb-summary").value.trim();
+    var dueRaw = document.getElementById("cb-due").value;
+    if (!customer || !summary || !dueRaw) { alert("Fill in the customer, request wording, and follow-up date."); return; }
+    data.cbSeq += 1;
+    var ref = "CB-" + data.cbSeq;
+    data.callbacks.push({ id: ref, ref: ref, customer: customer, type: type, summary: summary, openedAt: Date.now(), dueAt: new Date(dueRaw).getTime(), status: "open", notes: [] });
+    save(); renderCbQueue();
+    document.getElementById("cb-form").reset();
+    populateCbTypeSelect();
+  });
+
+  document.getElementById("cb-reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the callback log back to the original sample data?")) return;
+    var fresh = defaultData();
+    data.cbSeq = fresh.cbSeq; data.callbacks = fresh.callbacks;
+    save(); renderCbQueue();
+  });
+
+  document.getElementById("job-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("job-customer").value.trim();
+    var label = document.getElementById("job-label").value.trim();
+    var itemsRaw = document.getElementById("job-items").value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
+    if (!customer || !label || !itemsRaw.length) { alert("Fill in the customer, job description, and at least one scope item."); return; }
+    data.jobSeq += 1;
+    var ref = "JC-" + data.jobSeq;
+    data.jobs.push({ id: ref, ref: ref, customer: customer, label: label, items: itemsRaw.map(function (t) { return { text: t, checked: false, checkedAt: null }; }) });
+    save(); renderJobQueue();
+    document.getElementById("job-form").reset();
+  });
+
+  document.getElementById("job-reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the job queue back to the original sample data?")) return;
+    var fresh = defaultData();
+    data.jobSeq = fresh.jobSeq; data.jobs = fresh.jobs;
+    save(); renderJobQueue();
+  });
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    if (ref.indexOf("CB-") === 0) {
+      var p = data.callbacks.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
+      if (!p) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No record found for that callback reference. Please call the office directly.</p></div>'; return; }
+      var st = cbStatusInfo(p);
+      root.innerHTML = '<div class="lookup-result"><h3>' + CB_TYPE_LABEL[p.type] + '</h3><div><span class="badge ' + st.cls + '">' + st.label + '</span></div><div class="lr-detail">' + escapeHtml(p.summary) + '<br><br>Opened ' + fmtDate(p.openedAt) + (p.status === "resolved" ? ", resolved " + fmtDate(p.resolvedAt) : ", expected by " + fmtDate(p.dueAt)) + "</div></div>";
+      return;
+    }
+    if (ref.indexOf("JC-") === 0) {
+      var j = data.jobs.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
+      if (!j) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No record found for that job reference. Please contact us directly.</p></div>'; return; }
+      var complete = jobComplete(j);
+      var html = '<div class="lookup-result"><h3>' + escapeHtml(j.label) + '</h3><div><span class="badge ' + (complete ? "complete" : "open") + '">' + (complete ? "Complete" : "In progress") + '</span></div><div class="checklist" style="margin-top:0.8rem;">';
+      j.items.forEach(function (item) {
+        html += '<div class="checklist-item' + (item.checked ? " checked-item" : "") + '"><span style="width:1.1rem;">' + (item.checked ? "&#10003;" : "&#9744;") + '</span><span class="ci-label">' + escapeHtml(item.text) + "</span></div>";
+      });
+      html += "</div></div>";
+      root.innerHTML = html;
+      return;
+    }
+    root.innerHTML = '<div class="lookup-result"><p class="not-found">Reference codes start with CB- (callback) or JC- (job). Please check the code and try again.</p></div>';
+  });
+
+  document.querySelectorAll(".cct-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".cct-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".cct-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  populateCbTypeSelect();
+  renderCbQueue();
+  renderJobQueue();
+})();
+</script>
+</body>
+</html>
