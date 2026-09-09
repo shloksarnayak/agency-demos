@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Follow-up promise tracker template</title>
-<link rel="stylesheet" href="../assets/theme.css">
+<title>Irish Roofers Dublin, follow-up promise tracker example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
 <style>
   .fpt-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
   .fpt-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
@@ -49,26 +49,35 @@
   .limits { display: flex; flex-direction: column; gap: 1.1rem; }
   .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
   .lim b { color: var(--ink); font-weight: 640; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
 </style>
 </head>
 <body>
 <nav class="fx-nav">
   <div class="fx-nav-row">
-    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
-    <span class="fx-crumb"><a href="../index.html">Templates</a> / Follow-up promise tracker</span>
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Follow-up promise tracker</a> / Irish Roofers Dublin</span>
   </div>
 </nav>
 <header class="fx-hero">
-  <span class="fx-kicker">Template, not built for a specific business</span>
-  <h1 class="fx-h1">Every "someone will call you back" promise, visible until it's kept</h1>
-  <p class="fx-lede">A crew tells a customer someone will come out, or the office says a damage report is being looked into, and then it lives only in one person's memory or a sticky note. When that person is busy the promise quietly slips, the customer calls back annoyed, and it looks like the business does not follow through even when the actual work is good. This page shows one small, working tool that fixes that: an internal queue that surfaces every open promise sorted by how overdue it is, and a customer-facing status page so a customer can check where things stand without calling the office first.</p>
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">Irish Roofers Dublin: a place for every promised return visit, callback, or invoice request to live until it's kept</h1>
+  <p class="fx-lede">Irish Roofers Dublin's own Google Business reviews describe a repeated shape underneath an otherwise strong 4.9-star record: a return visit, a callback, or an invoice is promised, and it then depends on one staff member remembering to follow through rather than on any shared record. The company's own site has a quote-request contact form only, no scheduling portal, customer account, or job-tracking login anywhere. This example shows a small tool that gives every open promise a due time, an automatic overdue flag sorted worst-first for the office across three locations, and a no-login reference-code lookup so a customer can check status without starting the call over.</p>
+  <div class="fact-strip">
+    <span class="fact">Irish Roofers Dublin</span>
+    <span class="fact">Northside, Southside &amp; Dublin City offices, since 1970</span>
+    <span class="fact">Roofing, chimney repair, guttering &amp; skylights, Greater Dublin</span>
+  </div>
 </header>
 <main class="fx-main">
-  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the office view is what staff actually use to log and close out promises, and the reference code on the customer view is whatever the office already hands out (a work order number, a claim number), not a new system to adopt.</p></div>
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Irish Roofers Dublin.</strong> All customer names, jobs, and promises inside the tool below are fictional and clearly for illustration only. The business description and complaint pattern referenced here are drawn from the company's own published site and from its public Google Business reviews and an independent third-party review roundup.</p></div>
+
+  <p style="color:var(--ink-2); font-size:0.92rem; max-width:74ch;">Irish Roofers Dublin holds a 4.9-star average across 326 Google reviews, but a small number of the negative ones share a pattern: a chimney leak repair that a customer says was still leaking five months later, after being ignored on repeated calls and never sent an invoice despite asking for one; a second customer who spoke with a staff member about a repair and says he "never heard anything back" and switched to a competitor; and an independent third-party roundup that separately flags wrong fittings used on rush jobs. The company's own testimonials page shows follow-up working well when one particular staffer happens to chase it personally, which is exactly the kind of thing a shared queue makes reliable instead of personality-dependent. Checked directly against the company's own site: no service, portal, or job-tracking page exists anywhere on it today, and everything runs through one shared phone line and a contact form.</p>
 
   <div class="fpt-tabs">
     <button class="fpt-tab active" data-view="office" type="button">Office view</button>
-    <button class="fpt-tab" data-view="customer" type="button">Customer status check</button>
+    <button class="fpt-tab" data-view="customer" type="button">Status lookup</button>
   </div>
 
   <section class="fpt-view active" id="view-office">
@@ -78,7 +87,7 @@
         <form id="add-form" class="form-grid">
           <div class="field span2"><label for="f-customer">Customer / job label</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
           <div class="field span2"><label for="f-type">Promise type</label><select id="f-type"></select></div>
-          <div class="field span2"><label for="f-summary">What was promised (customer-facing wording)</label><textarea id="f-summary" placeholder="e.g. Office will call back by Thursday with a decision on the gate repair."></textarea></div>
+          <div class="field span2"><label for="f-summary">What was promised (customer-facing wording)</label><textarea id="f-summary" placeholder="e.g. A roofer will call out this week to re-check the chimney flashing."></textarea></div>
           <div class="field span2"><label for="f-due">Due by</label><input type="datetime-local" id="f-due"></div>
           <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
         </form>
@@ -93,35 +102,36 @@
 
   <section class="fpt-view" id="view-customer">
     <h2 class="fx-h2" style="margin-top:0;">Check the status of a promise</h2>
+    <p style="color:var(--ink-2); font-size:0.88rem; max-width:60ch; margin-top:-0.4rem;">The same lookup an office staffer uses on an incoming call to answer "is this actually scheduled," or that a customer could use directly, by whatever job reference number they were already given.</p>
     <div class="lookup-box">
       <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code</label>
-      <input type="text" id="lookup-ref" placeholder="e.g. FPT-1001">
+      <input type="text" id="lookup-ref" placeholder="e.g. IRD-2001">
       <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
       <div id="lookup-root"></div>
     </div>
-    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try FPT-1001, FPT-1002, FPT-1003 or FPT-1004 from the office view's sample queue.</p>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try IRD-2001, IRD-2002, IRD-2003 or IRD-2004 from the office view's sample queue.</p>
   </section>
 
   <section>
     <h2 class="fx-h2">How this gets built for real</h2>
     <div class="limits">
-      <div class="lim"><b>The reference code is whatever the office already uses.</b> A real build reads from an existing work-order or claim number instead of inventing a new one for the customer to remember.</div>
-      <div class="lim"><b>Overdue math here is a simple timer.</b> A real build can page or text the person responsible once something crosses overdue, instead of relying on someone opening this page.</div>
-      <div class="lim"><b>The customer view shows only customer-safe wording.</b> Internal notes stay in the office view; nothing typed there is exposed on the lookup page.</div>
-      <div class="lim"><b>See it built for real businesses: <a href="examples/barberton-tree-service/">Barberton Tree Service</a>, <a href="examples/arrow-auto-glass/">Arrow Auto Glass</a>, <a href="examples/fabian-oil/">Fabian Oil</a>, <a href="examples/4us-moving/">4US Moving</a>, <a href="examples/budget-heating-cooling-plumbing/">Budget Heating, Cooling &amp; Plumbing</a>, <a href="examples/the-london-removal-company/">The London Removal Company</a>, <a href="examples/dallas-automatic-gate/">Dallas Automatic Gate</a>, <a href="examples/floorguard/">Floorguard, Inc.</a>, <a href="examples/the-window-depot/">The Window Depot, LLC</a>, <a href="examples/britannia-double-glazing/">Britannia Double Glazing Ltd</a>, <a href="examples/hot-tubs-inc/">Hot Tubs, Inc.</a> and <a href="examples/irish-roofers-dublin/">Irish Roofers Dublin</a>.</b></div>
+      <div class="lim"><b>This replaces nothing, it fills a real gap.</b> The company's own site has no service, portal, or job-tracking page today, so a real build gives all three offices their first shared view of open promises instead of competing with an existing system.</div>
+      <div class="lim"><b>The reference code is whatever the office already writes down.</b> A real build reads from an existing job or quote reference instead of inventing a new one.</div>
+      <div class="lim"><b>The status lookup shows only customer-safe wording.</b> Internal notes typed in the office view stay in the office view, so staff can look up a call without exposing internal handling notes.</div>
+      <div class="lim"><b>Back to the general template: <a href="../../">Follow-up promise tracker</a>.</b></div>
     </div>
   </section>
 </main>
-<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional promise and customer data on this page, not connected to any live system.</p></footer>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Irish Roofers Dublin.</strong></p><p>Prepared by Shlok Sarnayak. Fictional promise and customer data on this page, not connected to any live system.</p></footer>
 <script>
 (function () {
   "use strict";
-  var STORE_KEY = "fpt_template_generic_v1";
+  var STORE_KEY = "fpt_irish_roofers_dublin_v1";
 
   var TYPES = [
-    { key: "damage", label: "Property damage claim" },
-    { key: "arrival", label: "Arrival window notice" },
-    { key: "callback", label: "Callback / site-visit promise" }
+    { key: "returnvisit", label: "Scheduled return visit / repair follow-up" },
+    { key: "callback", label: "Callback / status update" },
+    { key: "invoice", label: "Invoice request follow-up" }
   ];
   var TYPE_LABEL = {}; TYPES.forEach(function (t) { TYPE_LABEL[t.key] = t.label; });
 
@@ -131,31 +141,31 @@
 
   function defaultData() {
     return {
-      seq: 1004,
+      seq: 2004,
       promises: [
         {
-          id: "FPT-1001", ref: "FPT-1001", customer: "Sample Customer A", type: "damage",
-          summary: "Office will call back by Thursday with a decision on the fence gate repair.",
-          openedAt: hoursFromNow(-52), dueAt: hoursFromNow(-4), status: "open",
-          notes: [{ at: hoursFromNow(-50), text: "Photos received from crew lead, forwarded to estimator." }]
+          id: "IRD-2001", ref: "IRD-2001", customer: "Sample Customer A", type: "returnvisit",
+          summary: "A roofer will return to inspect and fix the still-leaking chimney flashing from the original repair.",
+          openedAt: hoursFromNow(-3600), dueAt: hoursFromNow(-720), status: "open",
+          notes: [{ at: hoursFromNow(-3500), text: "Customer has called repeatedly asking for a firm date, still not scheduled." }]
         },
         {
-          id: "FPT-1002", ref: "FPT-1002", customer: "Sample Customer B", type: "arrival",
-          summary: "Crew arrival window for tomorrow: 8am to 11am.",
-          openedAt: hoursFromNow(-6), dueAt: hoursFromNow(2), status: "open",
-          notes: []
+          id: "IRD-2002", ref: "IRD-2002", customer: "Sample Customer B", type: "callback",
+          summary: "Office will call back with a decision after the on-site chat about the roof repair.",
+          openedAt: hoursFromNow(-96), dueAt: hoursFromNow(-24), status: "open",
+          notes: [{ at: hoursFromNow(-90), text: "Spoke with customer on site, said office would follow up this week." }]
         },
         {
-          id: "FPT-1003", ref: "FPT-1003", customer: "Sample Customer C", type: "callback",
-          summary: "Someone will come out to re-look at the tree near the driveway.",
-          openedAt: hoursFromNow(-20), dueAt: hoursFromNow(28), status: "open",
-          notes: [{ at: hoursFromNow(-18), text: "Left message for scheduling, awaiting a slot." }]
+          id: "IRD-2003", ref: "IRD-2003", customer: "Sample Customer C", type: "invoice",
+          summary: "Invoice for the completed chimney repair will be emailed by end of week, as the customer requested twice.",
+          openedAt: hoursFromNow(-20), dueAt: hoursFromNow(10), status: "open",
+          notes: [{ at: hoursFromNow(-18), text: "Job marked complete on the crew side, invoice not yet raised in the office." }]
         },
         {
-          id: "FPT-1004", ref: "FPT-1004", customer: "Sample Customer D", type: "damage",
-          summary: "Damage report reviewed and closed, repair scheduled.",
-          openedAt: hoursFromNow(-96), dueAt: hoursFromNow(-72), status: "resolved", resolvedAt: hoursFromNow(-70),
-          notes: [{ at: hoursFromNow(-70), text: "Repair crew booked for next week, customer notified by phone." }]
+          id: "IRD-2004", ref: "IRD-2004", customer: "Sample Customer D", type: "returnvisit",
+          summary: "Return visit to re-check a Velux skylight seal after a reported minor drip.",
+          openedAt: hoursFromNow(-72), dueAt: hoursFromNow(-48), status: "resolved", resolvedAt: hoursFromNow(-46),
+          notes: [{ at: hoursFromNow(-46), text: "Roofer re-sealed the skylight, customer confirmed no further drip by phone." }]
         }
       ]
     };
@@ -236,7 +246,7 @@
     var dueRaw = document.getElementById("f-due").value;
     if (!customer || !summary || !dueRaw) { alert("Fill in the customer, promise wording, and due date."); return; }
     data.seq += 1;
-    var ref = "FPT-" + data.seq;
+    var ref = "IRD-" + data.seq;
     data.promises.push({ id: ref, ref: ref, customer: customer, type: type, summary: summary, openedAt: Date.now(), dueAt: new Date(dueRaw).getTime(), status: "open", notes: [] });
     save(); renderQueue();
     document.getElementById("add-form").reset();
