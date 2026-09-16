@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Milestone commitment tracker template</title>
-<link rel="stylesheet" href="../assets/theme.css">
+<title>Milestone commitment tracker, Integrity Pools example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
 <style>
   .mct-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
   .mct-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
@@ -14,6 +14,8 @@
   .mct-view.active { display: block; }
   .mct-cols { display: grid; grid-template-columns: 1fr 1.3fr; gap: 1.2rem; align-items: start; }
   @media (max-width: 980px) { .mct-cols { grid-template-columns: 1fr; } }
+  .team-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .team-chip { font-size: 0.76rem; font-weight: 650; padding: 0.35rem 0.7rem; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--rule); }
   .field { display: flex; flex-direction: column; gap: 0.35rem; }
   .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
   .field input, .field select, .field textarea {
@@ -65,37 +67,41 @@
 <body>
 <nav class="fx-nav">
   <div class="fx-nav-row">
-    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
-    <span class="fx-crumb"><a href="../index.html">Templates</a> / Milestone commitment tracker</span>
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Milestone commitment tracker</a> / Integrity Pools</span>
   </div>
 </nav>
 <header class="fx-hero">
-  <span class="fx-kicker">Template, not built for a specific business</span>
-  <h1 class="fx-h1">"Two weeks" quietly becomes twelve, and the customer only finds out by asking</h1>
-  <p class="fx-lede">Many businesses that run large, multi-stage custom builds (decks, additions, renovations, fabrication) promise a completion window at the start, then coordinate the actual stages, materials ordered, materials delivered, and each build phase, entirely by phone and email. When a stage runs long there is nothing that surfaces it until the customer calls upset or files a complaint. This page shows one small, working tool that fixes that: every job gets a committed date for its current stage, an internal queue sorted by how overdue anything is, and a no-login customer lookup so someone can check real status against the original promise without calling the office.</p>
+  <span class="fx-kicker">Working example, built around Integrity Pools' own published facts</span>
+  <h1 class="fx-h1">On a $40,000-$100,000+ pool build, a quiet month with no visible progress is the whole complaint</h1>
+  <p class="fx-lede">Integrity Pools (Richardson, TX) has run DFW-area pool remodels and new construction for 17 years, and its overall reputation is strong: 4.7/5 on Google (451 reviews) and 4.9/5 on Houzz. But its own remodel/new-construction customers, on Angi and HomeAdvisor, separately describe scheduling and communication that "could be improved," estimated completion dates missed without notice, and "no work being performed for almost a month" on some jobs, with "multiple departments" not communicating well between themselves. A company-side Indeed review corroborates the same gap from the inside: "operations here are in shambles," with customers regularly calling to ask why no one showed up. Integrity Pools is actively hiring for Scheduling/Dispatch and Remodel Field Service roles right now, a real signal it is already trying to add capacity to this exact function. Below is a working tool sized to close the visibility gap directly: every remodel or new build gets a committed date for its current construction stage, an internal queue sorted by how overdue anything is, and a client can check real status against the original promise without a phone call.</p>
 </header>
 <main class="fx-main">
-  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the office view reads from whatever already tracks jobs (a spreadsheet, a project-management tool, or email), and the reference code on the customer view is whatever the business already gives out at contract signing.</p></div>
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> Customer names, project details, dates and dollar amounts on this page are sample data, illustrative only, not Integrity Pools' real client or job records. Two of the four sample jobs below are deliberately shaped to mirror the pattern described in Integrity Pools' own public Angi/HomeAdvisor reviews and Indeed employee account (a promised stage slipping well past its committed date, with no proactive update) to make the tool concrete, not because they reflect a real Integrity Pools customer or project.</p></div>
 
   <div class="mct-tabs">
-    <button class="mct-tab active" data-view="office" type="button">Office view</button>
-    <button class="mct-tab" data-view="customer" type="button">Customer status check</button>
+    <button class="mct-tab active" data-view="office" type="button">Team view</button>
+    <button class="mct-tab" data-view="customer" type="button">Client status check</button>
   </div>
 
   <section class="mct-view active" id="view-office">
+    <div class="team-row">
+      <span class="team-chip">Matthew Dunshea &middot; President</span>
+      <span class="team-chip">Remodel &amp; New Construction team</span>
+    </div>
     <div class="mct-cols">
       <div>
-        <h2 class="fx-h2" style="margin-top:0;">Log a new job</h2>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new build</h2>
         <form id="add-form" class="form-grid">
           <div class="field span2"><label for="f-customer">Customer name</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
-          <div class="field span2"><label for="f-item">Project description</label><input type="text" id="f-item" placeholder="e.g. Composite deck, 320 sq ft"></div>
-          <div class="field span2"><label for="f-due">Committed date for the first stage (materials ordered)</label><input type="date" id="f-due"></div>
+          <div class="field span2"><label for="f-item">Project description</label><input type="text" id="f-item" placeholder="e.g. Gunite pool + spa remodel"></div>
+          <div class="field span2"><label for="f-due">Committed date for the first stage (design &amp; permit approval)</label><input type="date" id="f-due"></div>
           <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
         </form>
-        <p class="team-note">A real deployment shows this same queue to everyone who needs it, on one shared screen, instead of one person's inbox or notebook.</p>
+        <p class="team-note">Scheduling/Dispatch, the remodel sales team and the field crews all see this same queue at once, no separate login or handoff needed, instead of a stalled job only surfacing when a customer calls repeatedly.</p>
       </div>
       <div>
-        <h2 class="fx-h2" style="margin-top:0;">Shared job queue, most overdue first</h2>
+        <h2 class="fx-h2" style="margin-top:0;">Shared build queue, most overdue first</h2>
         <div id="queue-root"></div>
         <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
       </div>
@@ -103,38 +109,39 @@
   </section>
 
   <section class="mct-view" id="view-customer">
-    <h2 class="fx-h2" style="margin-top:0;">Check the status of a job</h2>
+    <h2 class="fx-h2" style="margin-top:0;">Check the status of a build</h2>
     <div class="lookup-box">
       <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Job / contract reference number</label>
-      <input type="text" id="lookup-ref" placeholder="e.g. MCT-1001">
+      <input type="text" id="lookup-ref" placeholder="e.g. ITP-1001">
       <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
       <div id="lookup-root"></div>
     </div>
-    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try MCT-1001, MCT-1002, MCT-1003 or MCT-1004 from the office view's sample queue.</p>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try ITP-1001, ITP-1002, ITP-1003 or ITP-1004 from the team view's sample queue. Replaces calling the office to ask "where is my pool."</p>
   </section>
 
   <section>
     <h2 class="fx-h2">How this gets built for real</h2>
     <div class="limits">
-      <div class="lim"><b>The reference code is whatever the office already hands out.</b> A real build reads from an existing contract or job number instead of inventing a new one for the customer to remember.</div>
-      <div class="lim"><b>Committed dates here are set by whoever logs the job.</b> A real build can pull the committed date straight from the signed contract or work order instead of manual entry.</div>
-      <div class="lim"><b>The office sets the next stage's committed date when the current one closes.</b> That is the moment a slipping promise either gets caught and reset honestly, or gets missed again, visibly, instead of silently.</div>
-      <div class="lim"><b>See it built for a real business:</b> <a href="examples/outback-deck/">Outback Deck, Inc.</a>, <a href="examples/integrity-pools/">Integrity Pools, USA</a>.</div>
+      <div class="lim"><b>The reference code is whatever Integrity Pools already uses.</b> A real build reads from the existing contract or job number instead of inventing a new one for the client to remember.</div>
+      <div class="lim"><b>Committed dates here are entered by whoever logs the job.</b> A real build can pull the committed date straight from the signed contract, and let a project manager update it from the field.</div>
+      <div class="lim"><b>This does not replace the crew's judgment on scheduling.</b> It only makes a slipping promise visible to the whole team, Scheduling/Dispatch included, the moment it slips, instead of only when a customer calls repeatedly or leaves a review.</div>
     </div>
   </section>
 </main>
-<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job and customer data on this page, not connected to any live system.</p></footer>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Integrity Pools, USA.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job and customer data on this page, not connected to any live system.</p></footer>
 <script>
 (function () {
   "use strict";
-  var STORE_KEY = "mct_template_generic_v1";
-  var REF_PREFIX = "MCT-";
+  var STORE_KEY = "mct_integrity_pools_v1";
+  var REF_PREFIX = "ITP-";
 
   var STAGES = [
-    { key: "materials_ordered", label: "Materials ordered" },
-    { key: "materials_delivered", label: "Materials delivered" },
-    { key: "framing", label: "Framing" },
-    { key: "decking", label: "Decking" },
+    { key: "design_permit", label: "Design & permit approval" },
+    { key: "demolition_excavation", label: "Demolition / excavation" },
+    { key: "gunite_shell", label: "Gunite / shell" },
+    { key: "plumbing_electrical", label: "Plumbing & electrical rough-in" },
+    { key: "decking_coping", label: "Decking & coping" },
+    { key: "plaster_finish", label: "Plaster / finish" },
     { key: "final_walkthrough", label: "Final walkthrough" }
   ];
   var LAST_STAGE = STAGES.length - 1;
@@ -153,46 +160,43 @@
       seq: 1004,
       jobs: [
         {
-          id: REF_PREFIX + "1001", ref: REF_PREFIX + "1001", customer: "Sample Customer A", item: "Composite deck, 320 sq ft",
-          stageIdx: 2, complete: false,
-          history: [
-            { stage: "materials_ordered", committedAt: daysFromNow(-33), completedAt: daysFromNow(-30) },
-            { stage: "materials_delivered", committedAt: daysFromNow(-26), completedAt: daysFromNow(-19) }
-          ],
-          currentCommittedAt: daysFromNow(-9)
-        },
-        {
-          id: REF_PREFIX + "1002", ref: REF_PREFIX + "1002", customer: "Sample Customer B", item: "Motorized louvered pergola install",
+          id: REF_PREFIX + "1001", ref: REF_PREFIX + "1001", customer: "Sample Customer A", item: "Gunite pool + spa remodel, Plano",
           stageIdx: 3, complete: false,
           history: [
-            { stage: "materials_ordered", committedAt: daysFromNow(-20), completedAt: daysFromNow(-20) },
-            { stage: "materials_delivered", committedAt: daysFromNow(-13), completedAt: daysFromNow(-14) },
-            { stage: "framing", committedAt: daysFromNow(-6), completedAt: daysFromNow(-5) }
+            { stage: "design_permit", committedAt: daysFromNow(-70), completedAt: daysFromNow(-65) },
+            { stage: "demolition_excavation", committedAt: daysFromNow(-58), completedAt: daysFromNow(-40) },
+            { stage: "gunite_shell", committedAt: daysFromNow(-30), completedAt: daysFromNow(-29) }
+          ],
+          currentCommittedAt: daysFromNow(-10)
+        },
+        {
+          id: REF_PREFIX + "1002", ref: REF_PREFIX + "1002", customer: "Sample Customer B", item: "New gunite pool construction, Frisco",
+          stageIdx: 2, complete: false,
+          history: [
+            { stage: "design_permit", committedAt: daysFromNow(-25), completedAt: daysFromNow(-25) },
+            { stage: "demolition_excavation", committedAt: daysFromNow(-15), completedAt: daysFromNow(-15) }
           ],
           currentCommittedAt: daysFromNow(2)
         },
         {
-          id: REF_PREFIX + "1003", ref: REF_PREFIX + "1003", customer: "Sample Customer C", item: "Screened porch, design-build",
+          id: REF_PREFIX + "1003", ref: REF_PREFIX + "1003", customer: "Sample Customer C", item: "Backyard pool remodel with new decking, McKinney",
           stageIdx: LAST_STAGE, complete: true,
           history: [
-            { stage: "materials_ordered", committedAt: daysFromNow(-60), completedAt: daysFromNow(-59) },
-            { stage: "materials_delivered", committedAt: daysFromNow(-51), completedAt: daysFromNow(-52) },
-            { stage: "framing", committedAt: daysFromNow(-40), completedAt: daysFromNow(-39) },
-            { stage: "decking", committedAt: daysFromNow(-30), completedAt: daysFromNow(-29) },
-            { stage: "final_walkthrough", committedAt: daysFromNow(-25), completedAt: daysFromNow(-25) }
+            { stage: "design_permit", committedAt: daysFromNow(-90), completedAt: daysFromNow(-89) },
+            { stage: "demolition_excavation", committedAt: daysFromNow(-80), completedAt: daysFromNow(-78) },
+            { stage: "gunite_shell", committedAt: daysFromNow(-68), completedAt: daysFromNow(-66) },
+            { stage: "plumbing_electrical", committedAt: daysFromNow(-55), completedAt: daysFromNow(-54) },
+            { stage: "decking_coping", committedAt: daysFromNow(-40), completedAt: daysFromNow(-38) },
+            { stage: "plaster_finish", committedAt: daysFromNow(-25), completedAt: daysFromNow(-24) },
+            { stage: "final_walkthrough", committedAt: daysFromNow(-18), completedAt: daysFromNow(-18) }
           ],
           currentCommittedAt: null
         },
         {
-          id: REF_PREFIX + "1004", ref: REF_PREFIX + "1004", customer: "Sample Customer D", item: "Whole-yard deck and pergola rebuild",
-          stageIdx: LAST_STAGE, complete: false,
-          history: [
-            { stage: "materials_ordered", committedAt: daysFromNow(-95), completedAt: daysFromNow(-80) },
-            { stage: "materials_delivered", committedAt: daysFromNow(-73), completedAt: daysFromNow(-55) },
-            { stage: "framing", committedAt: daysFromNow(-48), completedAt: daysFromNow(-33) },
-            { stage: "decking", committedAt: daysFromNow(-25), completedAt: daysFromNow(-12) }
-          ],
-          currentCommittedAt: daysFromNow(-12)
+          id: REF_PREFIX + "1004", ref: REF_PREFIX + "1004", customer: "Sample Customer D", item: "New pool + spa build, Southlake",
+          stageIdx: 0, complete: false,
+          history: [],
+          currentCommittedAt: daysFromNow(-6)
         }
       ]
     };
@@ -219,7 +223,7 @@
     open.sort(function (a, b) { return a.currentCommittedAt - b.currentCommittedAt; });
     var done = data.jobs.filter(function (j) { return j.complete; }).slice();
     var html = "";
-    if (!open.length) html += '<p class="empty">Nothing open. Every job is caught up.</p>';
+    if (!open.length) html += '<p class="empty">Nothing open. Every build is caught up.</p>';
     open.forEach(function (j) { html += renderCard(j); });
     if (done.length) {
       html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently completed</h3>';
@@ -238,10 +242,9 @@
     if (j.history.length) {
       html += '<div class="log">';
       j.history.slice().reverse().forEach(function (h) {
-        var lateDays = daysAgo(h.committedAt) - daysAgo(h.completedAt);
         var late = h.completedAt > h.committedAt;
         var cls = late ? "late" : "ontime";
-        var note = late ? (fmtDuration(daysAgo(h.committedAt) * -1 + daysAgo(h.completedAt)) + " late") : "on time";
+        var note = late ? (fmtDuration(daysAgo(h.committedAt) - daysAgo(h.completedAt)) + " late") : "on time";
         var stageLabelFor = STAGES.filter(function (s) { return s.key === h.stage; })[0].label;
         html += '<div class="log-entry ' + cls + '"><span class="tag">' + fmtDate(h.completedAt) + "</span>" + stageLabelFor + " done, committed " + fmtDate(h.committedAt) + " (" + note + ")</div>";
       });
