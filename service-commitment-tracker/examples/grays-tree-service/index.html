@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Service commitment tracker template</title>
-<link rel="stylesheet" href="../assets/theme.css">
+<title>Gray's Tree Service, service commitment tracker example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
 <style>
   .sct-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
   .sct-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
@@ -53,22 +53,31 @@
   .limits { display: flex; flex-direction: column; gap: 1.1rem; }
   .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
   .lim b { color: var(--ink); font-weight: 640; }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
 </style>
 </head>
 <body>
 <nav class="fx-nav">
   <div class="fx-nav-row">
-    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
-    <span class="fx-crumb"><a href="../index.html">Templates</a> / Service commitment tracker</span>
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Service commitment tracker</a> / Gray's Tree Service</span>
   </div>
 </nav>
 <header class="fx-hero">
-  <span class="fx-kicker">Template, not built for a specific business</span>
-  <h1 class="fx-h1">Every promised visit stays visible until it's kept, not just remembered</h1>
-  <p class="fx-lede">A paid maintenance plan or a follow-up install visit gets promised, then cancelled once, then cancelled again, and by the time a customer has called in a third or fourth time asking where the technician is, it already looks like the business does not follow through. This page shows one small, working tool that fixes that: every promised visit gets a due date and a cancellation count, a visit that sits overdue or gets cancelled twice escalates itself into a manager queue automatically, and a customer can check status without calling the office again.</p>
+  <span class="fx-kicker">Independent work sample, built for one real business</span>
+  <h1 class="fx-h1">Gray's Tree Service: a queue that catches a slipping job before day three of no-shows</h1>
+  <p class="fx-lede">Gray's own site (checked directly) runs only a "Schedule Free Estimate" contact-form flow, with no customer login, client portal, or job-status dashboard anywhere on the homepage, /contact-us/, or /about-us/ pages. What's missing sits one layer above that initial estimate request: nothing tracks whether a promised tree removal, land-clearing, or storm-response job actually happens once it's on the calendar. Two separate BBB customer reviews document what that gap looks like in practice: one describes being scheduled three straight days for a tree removal with no-shows and no calls on any of them, requiring the customer to call the office up to four times in a single day just to get the work done; the other describes an October 2025 removal still not completed months later, with repeated promised dates and no follow-through. A separate Angi review names the same root pattern in its own words: "the business side of the company needs to improve on their communication." This example shows a small internal queue built for Gray's office staff: every promised job gets a scheduled date and a reschedule count, and a job that gets rescheduled twice or sits overdue escalates itself into a manager queue automatically, well before it reaches the three-day, four-phone-call pattern in the business's own review file.</p>
+  <div class="fact-strip">
+    <span class="fact">Gray's Tree Service, Bessemer, AL</span>
+    <span class="fact">Family-owned since 1995 &middot; 30 years in business</span>
+    <span class="fact">BBB A rating, Accredited since 2013</span>
+  </div>
 </header>
 <main class="fx-main">
-  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the office queue is what dispatch or CSR staff use to log and track every promised visit, the manager queue mirrors the same data filtered to what actually needs attention, and the customer reference code is whatever the office already hands out (a work order number, an account number), not a new system to adopt.</p></div>
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by Gray's Tree Service.</strong> All customer names, job records, and reference codes inside the tool below are fictional and clearly for illustration only. The business description, service list, tech-stack check, and complaint pattern referenced here are drawn from the company's own published site and its BBB business, complaints, and customer-reviews pages, fetched directly.</p></div>
+
+  <p style="color:var(--ink-2); font-size:0.92rem; max-width:74ch;">Gray's carries a genuinely strong reputation alongside this gap: Google 4.8 across 276 reviews, Birdeye 276 reviews, and roughly 4.7 on Angi/HomeAdvisor, so the pitch should not overstate this as a business in trouble. The clearest documented pattern is a promised job date passing with no visit and no call, described across two independently worded BBB reviews and a separate BBB review platform (Angi), not a single one-off complaint. A formal BBB complaint filed 08/25/2026, a different channel from the reviews above, disputes a $7,500 tree-removal and grinding invoice; in its own written response to BBB, the business itself acknowledged "communication gaps regarding scheduling timelines." Gray's own current job postings include an Operations Coordinator role explicitly focused on "scheduling and customer communication," the exact area this tool targets. This tool is scoped narrowly to the scheduling follow-through gap; it does not touch or attempt to adjudicate the separate disputed-invoice question named in that same BBB complaint.</p>
 
   <div class="sct-tabs">
     <button class="sct-tab active" data-view="office" type="button">Office queue</button>
@@ -79,11 +88,11 @@
   <section class="sct-view active" id="view-office">
     <div class="sct-cols">
       <div>
-        <h2 class="fx-h2" style="margin-top:0;">Log a new commitment</h2>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new job commitment</h2>
         <form id="add-form" class="form-grid">
-          <div class="field span2"><label for="f-customer">Customer / account label</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
-          <div class="field span2"><label for="f-type">Visit type</label><select id="f-type"></select></div>
-          <div class="field span2"><label for="f-summary">What was promised (customer-facing wording)</label><textarea id="f-summary" placeholder="e.g. Technician will complete the second contracted maintenance visit."></textarea></div>
+          <div class="field span2"><label for="f-customer">Customer / job label</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
+          <div class="field span2"><label for="f-type">Job type</label><select id="f-type"></select></div>
+          <div class="field span2"><label for="f-summary">What was promised (customer-facing wording)</label><textarea id="f-summary" placeholder="e.g. Crew will complete the quoted tree removal and stump grinding."></textarea></div>
           <div class="field span2"><label for="f-due">Scheduled for</label><input type="datetime-local" id="f-due"></div>
           <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
         </form>
@@ -98,43 +107,44 @@
 
   <section class="sct-view" id="view-manager">
     <h2 class="fx-h2" style="margin-top:0;">Manager escalation queue</h2>
-    <div class="rule-callout">A commitment lands here automatically once it has been cancelled or rescheduled by the company twice, or once it has sat more than 24 hours past its scheduled time with no reschedule logged, whichever comes first. Nobody has to notice it and flag it by hand.</div>
+    <div class="rule-callout">A job lands here automatically once Gray's has rescheduled it twice, or once it has sat more than 24 hours past its promised date with no reschedule logged, whichever comes first. That is well before the three-straight-days, four-phone-call pattern documented in Gray's own BBB review file, and nobody has to notice it and flag it by hand.</div>
     <div id="escalation-root"></div>
   </section>
 
   <section class="sct-view" id="view-customer">
-    <h2 class="fx-h2" style="margin-top:0;">Check the status of a commitment</h2>
+    <h2 class="fx-h2" style="margin-top:0;">Check the status of a job</h2>
     <div class="lookup-box">
-      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Reference code</label>
-      <input type="text" id="lookup-ref" placeholder="e.g. SCT-1001">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Job / quote number</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. GTS-1001">
       <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
       <div id="lookup-root"></div>
     </div>
-    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try SCT-1001, SCT-1002, SCT-1003, SCT-1004 or SCT-1005 from the office view's sample queue.</p>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try GTS-1001, GTS-1002, GTS-1003, GTS-1004 or GTS-1005 from the office view's sample queue.</p>
   </section>
 
   <section>
     <h2 class="fx-h2">How this gets built for real</h2>
     <div class="limits">
-      <div class="lim"><b>The escalation thresholds are adjustable.</b> A real build sets the cancellation count and overdue-hours trigger to match the business's own service-level target, not this demo's defaults.</div>
-      <div class="lim"><b>This tracks the promise, not the technician's calendar.</b> It sits alongside whatever tool already books the appointment (a contact form, a dispatch board) and only tracks whether the promised visit actually happens.</div>
-      <div class="lim"><b>The reference code is whatever the office already uses.</b> A real build reads from an existing work-order or plan account number instead of inventing a new one for the customer to remember.</div>
-      <div class="lim"><b>The customer view shows only customer-safe wording.</b> Internal notes and manager escalation reasons stay in the office and manager views; nothing typed there is exposed on the lookup page.</div>
-      <div class="lim"><b>See it built for a real business: <a href="examples/premier-heating-air/">Premier Heating and Air</a>, <a href="examples/a-clean-pool-usa/">A Clean Pool USA</a>, or <a href="examples/grays-tree-service/">Gray's Tree Service</a>.</b></div>
+      <div class="lim"><b>The core deliverable is the office and manager queues, not a customer portal.</b> The researched offer here is an internal follow-through tool for Gray's office staff. The customer lookup tab above is a small optional extra, not a replacement for Gray's existing "Schedule Free Estimate" form.</div>
+      <div class="lim"><b>This does not touch billing or the disputed invoice.</b> Gray's own BBB complaint file also names a separate disputed-charge question on a $7,500 invoice; that is a billing question, not a scheduling gap, and this tool deliberately does not claim to fix it.</div>
+      <div class="lim"><b>The job / quote number is whatever the office already uses.</b> A real build reads from an existing quote or work-order number instead of asking a homeowner to remember a new code while they're mid-wait.</div>
+      <div class="lim"><b>The customer view shows only customer-safe wording.</b> Internal notes and manager escalation reasons typed in the office and manager views never appear on the lookup page.</div>
+      <div class="lim"><b>Back to the general template: <a href="../../">Service commitment tracker</a>.</b></div>
     </div>
   </section>
 </main>
-<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional commitment and customer data on this page, not connected to any live system.</p></footer>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Gray's Tree Service.</strong></p><p>Prepared by Shlok Sarnayak. Fictional commitment and customer data on this page, not connected to any live system.</p></footer>
 <script>
 (function () {
   "use strict";
-  var STORE_KEY = "sct_template_generic_v1";
+  var STORE_KEY = "sct_grays_tree_service_v1";
   var ESCALATE_CANCEL_COUNT = 2;
   var ESCALATE_OVERDUE_HOURS = 24;
 
   var TYPES = [
-    { key: "install_followup", label: "New-install follow-up visit" },
-    { key: "maintenance_visit", label: "Contracted maintenance-plan visit" }
+    { key: "tree_removal", label: "Tree removal / land-clearing job" },
+    { key: "trim_prune", label: "Trimming & pruning job" },
+    { key: "storm_response", label: "Storm damage response call" }
   ];
   var TYPE_LABEL = {}; TYPES.forEach(function (t) { TYPE_LABEL[t.key] = t.label; });
 
@@ -147,41 +157,41 @@
       seq: 1005,
       commitments: [
         {
-          id: "SCT-1001", ref: "SCT-1001", customer: "Sample Customer A", type: "maintenance_visit",
-          summary: "First contracted annual visit under the installed-system maintenance plan.",
-          scheduledAt: hoursFromNow(30), cancelCount: 0, status: "open",
-          history: [{ at: hoursFromNow(-40), text: "Commitment logged from the maintenance-plan schedule." }]
-        },
-        {
-          id: "SCT-1002", ref: "SCT-1002", customer: "Sample Customer B", type: "install_followup",
-          summary: "Follow-up visit to finish two punch-list items from the install.",
-          scheduledAt: hoursFromNow(10), cancelCount: 0, status: "open",
-          history: [{ at: hoursFromNow(-2), text: "Confirmed with customer by phone." }]
-        },
-        {
-          id: "SCT-1003", ref: "SCT-1003", customer: "Sample Customer C", type: "install_followup",
-          summary: "Final inspection visit to close out the install.",
-          scheduledAt: hoursFromNow(-8), cancelCount: 1, status: "open",
-          history: [
-            { at: hoursFromNow(-60), text: "Originally scheduled, then cancelled by office (short-staffed)." },
-            { at: hoursFromNow(-58), text: "Rescheduled to current date." }
-          ]
-        },
-        {
-          id: "SCT-1004", ref: "SCT-1004", customer: "Sample Customer D", type: "maintenance_visit",
-          summary: "Second contracted maintenance visit, originally due last month.",
+          id: "GTS-1001", ref: "GTS-1001", customer: "Sample Customer A", type: "tree_removal",
+          summary: "Quoted large-tree removal, originally promised three days ago with no crew arrival on any of the three days.",
           scheduledAt: hoursFromNow(-70), cancelCount: 2, status: "open",
           history: [
-            { at: hoursFromNow(-200), text: "Originally scheduled, cancelled by office." },
-            { at: hoursFromNow(-150), text: "Rescheduled, then cancelled a second time, no-show reported by customer." },
-            { at: hoursFromNow(-148), text: "Rescheduled to current date, still not completed." }
+            { at: hoursFromNow(-70), text: "Crew did not arrive, no call made to customer." },
+            { at: hoursFromNow(-46), text: "Rescheduled to next day, crew did not arrive again." },
+            { at: hoursFromNow(-22), text: "Customer called the office twice today asking for status." }
           ]
         },
         {
-          id: "SCT-1005", ref: "SCT-1005", customer: "Sample Customer E", type: "maintenance_visit",
-          summary: "Third contracted maintenance visit, completed on schedule.",
-          scheduledAt: hoursFromNow(-96), cancelCount: 0, status: "completed", completedAt: hoursFromNow(-95),
-          history: [{ at: hoursFromNow(-95), text: "Technician completed the visit, customer signed off." }]
+          id: "GTS-1002", ref: "GTS-1002", customer: "Sample Customer B", type: "tree_removal",
+          summary: "Land-clearing job, originally promised over a month ago, still not completed.",
+          scheduledAt: hoursFromNow(-760), cancelCount: 1, status: "open",
+          history: [
+            { at: hoursFromNow(-900), text: "Originally scheduled after quote accepted." },
+            { at: hoursFromNow(-762), text: "Rescheduled once, still not completed as of today." }
+          ]
+        },
+        {
+          id: "GTS-1003", ref: "GTS-1003", customer: "Sample Customer C", type: "storm_response",
+          summary: "Storm-damaged limb removal, crew failed to show on the promised day with no call.",
+          scheduledAt: hoursFromNow(-9), cancelCount: 0, status: "open",
+          history: [{ at: hoursFromNow(-9), text: "Promised arrival window passed, no crew arrival and no call logged." }]
+        },
+        {
+          id: "GTS-1004", ref: "GTS-1004", customer: "Sample Customer D", type: "trim_prune",
+          summary: "Routine trimming and pruning visit, scheduled for tomorrow.",
+          scheduledAt: hoursFromNow(20), cancelCount: 0, status: "open",
+          history: [{ at: hoursFromNow(-4), text: "Confirmed with customer by phone." }]
+        },
+        {
+          id: "GTS-1005", ref: "GTS-1005", customer: "Sample Customer E", type: "tree_removal",
+          summary: "Stump grinding job, completed on the originally promised date.",
+          scheduledAt: hoursFromNow(-48), cancelCount: 0, status: "completed", completedAt: hoursFromNow(-47),
+          history: [{ at: hoursFromNow(-47), text: "Crew completed the job, customer confirmed by phone." }]
         }
       ]
     };
@@ -196,7 +206,7 @@
 
   function escalationReason(c, overdueMs) {
     var reasons = [];
-    if (c.cancelCount >= ESCALATE_CANCEL_COUNT) reasons.push(c.cancelCount + " cancellations logged");
+    if (c.cancelCount >= ESCALATE_CANCEL_COUNT) reasons.push(c.cancelCount + " reschedules logged");
     if (overdueMs > ESCALATE_OVERDUE_HOURS * 3600000) reasons.push("overdue " + Math.floor(overdueMs / 3600000) + "h with no reschedule");
     return reasons.join("; ");
   }
@@ -227,7 +237,7 @@
     });
     var completed = data.commitments.filter(function (c) { return c.status === "completed"; }).slice().sort(function (a, b) { return b.completedAt - a.completedAt; });
     var html = "";
-    if (!open.length) html += '<p class="empty">Nothing open. Every commitment is caught up.</p>';
+    if (!open.length) html += '<p class="empty">Nothing open. Every job is caught up.</p>';
     open.forEach(function (c) { html += renderCard(c, true); });
     if (completed.length) {
       html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently completed</h3>';
@@ -248,7 +258,7 @@
   function renderCard(c, showCancelAction) {
     var st = statusInfo(c);
     var idx = data.commitments.indexOf(c);
-    var html = '<div class="commit-card' + (st.cls === "escalated" ? " is-escalated" : "") + '"><div class="commit-head"><div><div class="commit-title">' + escapeHtml(c.customer) + " &middot; " + c.ref + '</div><div class="commit-meta">' + TYPE_LABEL[c.type] + " &middot; scheduled " + fmtDate(c.scheduledAt) + (c.cancelCount ? " &middot; cancelled " + c.cancelCount + "x" : "") + '</div></div><span class="badge ' + st.cls + '">' + st.label + "</span></div>";
+    var html = '<div class="commit-card' + (st.cls === "escalated" ? " is-escalated" : "") + '"><div class="commit-head"><div><div class="commit-title">' + escapeHtml(c.customer) + " &middot; " + c.ref + '</div><div class="commit-meta">' + TYPE_LABEL[c.type] + " &middot; scheduled " + fmtDate(c.scheduledAt) + (c.cancelCount ? " &middot; rescheduled " + c.cancelCount + "x" : "") + '</div></div><span class="badge ' + st.cls + '">' + st.label + "</span></div>";
     if (st.reason) html += '<div class="escalation-reason">Why: ' + escapeHtml(st.reason) + "</div>";
     html += '<div class="commit-summary">' + escapeHtml(c.summary) + "</div>";
     if (c.history.length) {
@@ -259,7 +269,7 @@
     if (c.status === "open") {
       html += '<div class="note-row"><input type="text" id="note-' + idx + '" placeholder="Add an internal note"><button class="fx-btn-ghost" onclick="__sct.addNote(' + idx + ')">Add</button></div>';
       html += '<div class="commit-actions">';
-      if (showCancelAction) html += '<button class="fx-btn-ghost" onclick="__sct.cancelReschedule(' + idx + ')">Company cancelled / rescheduled</button>';
+      if (showCancelAction) html += '<button class="fx-btn-ghost" onclick="__sct.cancelReschedule(' + idx + ')">Reschedule this job</button>';
       html += '<button class="fx-btn-ghost" onclick="__sct.complete(' + idx + ')">Mark completed</button></div>';
     }
     html += "</div>";
@@ -278,14 +288,14 @@
     },
     cancelReschedule: function (idx) {
       var c = data.commitments[idx];
-      var newDate = prompt("New scheduled date/time for this visit (e.g. 2026-09-01 14:00):");
+      var newDate = prompt("New scheduled date/time for this job (e.g. 2026-09-20 08:00):");
       if (!newDate) return;
       var parsed = new Date(newDate.replace(" ", "T"));
-      if (isNaN(parsed.getTime())) { alert("Could not read that date. Try a format like 2026-09-01 14:00."); return; }
+      if (isNaN(parsed.getTime())) { alert("Could not read that date. Try a format like 2026-09-20 08:00."); return; }
       var old = c.scheduledAt;
       c.cancelCount += 1;
       c.scheduledAt = parsed.getTime();
-      c.history.push({ at: Date.now(), text: "Cancelled by company, was " + fmtDate(old) + ", rescheduled to " + fmtDate(c.scheduledAt) + "." });
+      c.history.push({ at: Date.now(), text: "Rescheduled, was " + fmtDate(old) + ", now " + fmtDate(c.scheduledAt) + "." });
       save(); renderAll();
     },
     complete: function (idx) {
@@ -304,8 +314,8 @@
     var dueRaw = document.getElementById("f-due").value;
     if (!customer || !summary || !dueRaw) { alert("Fill in the customer, promised wording, and scheduled date."); return; }
     data.seq += 1;
-    var ref = "SCT-" + data.seq;
-    data.commitments.push({ id: ref, ref: ref, customer: customer, type: type, summary: summary, scheduledAt: new Date(dueRaw).getTime(), cancelCount: 0, status: "open", history: [{ at: Date.now(), text: "Commitment logged." }] });
+    var ref = "GTS-" + data.seq;
+    data.commitments.push({ id: ref, ref: ref, customer: customer, type: type, summary: summary, scheduledAt: new Date(dueRaw).getTime(), cancelCount: 0, status: "open", history: [{ at: Date.now(), text: "Job logged." }] });
     save(); renderAll();
     document.getElementById("add-form").reset();
     populateTypeSelect();
@@ -321,7 +331,7 @@
     var root = document.getElementById("lookup-root");
     if (!ref) { root.innerHTML = ""; return; }
     var c = data.commitments.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
-    if (!c) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No open or recent record found for that reference code. Please call the office directly.</p></div>'; return; }
+    if (!c) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No open or recent record found for that job / quote number. Please call the office directly.</p></div>'; return; }
     var st = statusInfo(c);
     var customerLabel = (st.cls === "escalated") ? "Being handled by management" : st.label;
     root.innerHTML = '<div class="lookup-result"><h3>' + TYPE_LABEL[c.type] + '</h3><div class="lr-status"><span class="badge ' + st.cls + '">' + escapeHtml(customerLabel) + '</span></div><div class="lr-detail">' + escapeHtml(c.summary) + '<br><br>' + (c.status === "completed" ? "Completed " + fmtDate(c.completedAt) : "Scheduled for " + fmtDate(c.scheduledAt)) + "</div></div>";
