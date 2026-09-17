@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Milestone commitment tracker, Fence &amp; Deck Depot example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .mct-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .mct-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
+  .mct-tab.active { background: var(--ink); color: var(--surface); }
+  .mct-view { display: none; }
+  .mct-view.active { display: block; }
+  .mct-cols { display: grid; grid-template-columns: 1fr 1.3fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .mct-cols { grid-template-columns: 1fr; } }
+  .team-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .team-chip { font-size: 0.76rem; font-weight: 650; padding: 0.35rem 0.7rem; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--rule); }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .job-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .job-title { font-weight: 660; }
+  .job-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.overdue { color: var(--hot); background: var(--hot-bg); }
+  .badge.soon { color: var(--warn); background: var(--warn-bg); }
+  .badge.ontrack { color: var(--brand); background: var(--brand-soft); }
+  .badge.done { color: var(--good); background: var(--good-bg); }
+  .job-summary { font-size: 0.88rem; color: var(--ink-2); margin-top: 0.5rem; }
+  .job-flag { font-size: 0.84rem; color: var(--hot); margin-top: 0.35rem; font-weight: 650; }
+  .job-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .log { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px solid var(--rule-soft); }
+  .log-entry { font-size: 0.8rem; color: var(--ink-2); padding: 0.18rem 0; }
+  .log-entry .tag { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); margin-right: 0.4rem; }
+  .log-entry.late { color: var(--hot); }
+  .log-entry.ontime { color: var(--good); }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .lookup-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.4rem; background: var(--surface); box-shadow: var(--shadow-sm); max-width: 480px; }
+  .lookup-box input { width: 100%; margin-top: 0.4rem; }
+  .lookup-result { margin-top: 1.1rem; }
+  .lookup-result h3 { margin: 0 0 0.3rem; font-family: var(--serif); font-size: 1.2rem; }
+  .not-found { color: var(--hot); font-size: 0.88rem; }
+  .stage { display: grid; grid-template-columns: 1.6rem 1fr; gap: 0.8rem; padding: 0.5rem 0; }
+  .stage-dot { width: 1rem; height: 1rem; border-radius: 999px; margin-top: 0.2rem; }
+  .stage-dot.done { background: var(--good); }
+  .stage-dot.active { background: var(--warn); box-shadow: 0 0 0 4px var(--warn-bg); }
+  .stage-dot.overdue-dot { background: var(--hot); box-shadow: 0 0 0 4px var(--hot-bg); }
+  .stage-dot.pending { background: var(--rule); }
+  .stage-label { font-weight: 610; font-size: 0.96rem; }
+  .stage-label.pending-text { color: var(--muted); font-weight: 500; }
+  .stage-time { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+  .stage-time.late-text { color: var(--hot); }
+  .stage-time.ontime-text { color: var(--good); }
+  .team-note { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Milestone commitment tracker</a> / Fence &amp; Deck Depot</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built around Fence &amp; Deck Depot's own published facts</span>
+  <h1 class="fx-h1">The fence goes in on schedule. The gates are a separate promise, and nobody is tracking that one.</h1>
+  <p class="fx-lede">Fence &amp; Deck Depot (St. Charles, MO / O'Fallon, IL) installs fences, decks and combo fence-plus-gate projects. A closed BBB complaint on file describes a contract signed for a fence with custom gates: the fence itself went in on the promised date, but the gates were not installed alongside it, a temporary chainlink fence blocked backyard access, and the customer received no update for three-plus weeks. In its own response to that complaint, the business apologized, cited "personnel matters" for the delay past even its own revised estimate, and confirmed the gates were only installed after the complaint was filed. A separate Angi review independently describes communication as "inconsistent and poor." Below is a working tool sized to close exactly this gap: every job's sub-components, not just the whole project, get their own committed date, an internal queue sorted by how overdue anything is, and a customer can check real status by contract number without calling the office.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> Customer names, project details, dates and dollar amounts on this page are sample data, illustrative only, not Fence &amp; Deck Depot's real client or job records. One of the four sample jobs below is deliberately shaped to mirror the pattern described in Fence &amp; Deck Depot's own public BBB complaint (the main fence finishing on time while a gate sub-component trails silently past its own promised date) to make the tool concrete, not because it reflects a real Fence &amp; Deck Depot customer or project.</p></div>
+
+  <div class="mct-tabs">
+    <button class="mct-tab active" data-view="office" type="button">Office view</button>
+    <button class="mct-tab" data-view="customer" type="button">Customer status check</button>
+  </div>
+
+  <section class="mct-view active" id="view-office">
+    <div class="team-row">
+      <span class="team-chip">Sean Nesbit &middot; President</span>
+    </div>
+    <div class="mct-cols">
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new job</h2>
+        <form id="add-form" class="form-grid">
+          <div class="field span2"><label for="f-customer">Customer name</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
+          <div class="field span2"><label for="f-item">Project description</label><input type="text" id="f-item" placeholder="e.g. 6-ft wood privacy fence, 180 linear ft, with custom double gate"></div>
+          <div class="field span2"><label for="f-due">Committed date for the first stage (materials ordered)</label><input type="date" id="f-due"></div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
+        </form>
+        <p class="team-note">The office and the install crew see this same queue at once, so a gate or accessory that trails the main install is visible the moment it slips, not only after a customer has waited weeks.</p>
+      </div>
+      <div>
+        <h2 class="fx-h2" style="margin-top:0;">Shared job queue, most overdue first</h2>
+        <div id="queue-root"></div>
+        <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mct-view" id="view-customer">
+    <h2 class="fx-h2" style="margin-top:0;">Check the status of a job</h2>
+    <div class="lookup-box">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Job / contract reference number</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. FDD-1001">
+      <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
+      <div id="lookup-root"></div>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try FDD-1001, FDD-1002, FDD-1003 or FDD-1004 from the office view's sample queue. Replaces calling the office to ask "where are my gates."</p>
+  </section>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>The reference code is whatever Fence &amp; Deck Depot already uses.</b> A real build reads from the existing contract or work order number instead of inventing a new one for the customer to remember.</div>
+      <div class="lim"><b>A gate or accessory gets its own committed date, separate from the main fence or deck.</b> That is the specific gap the BBB complaint describes: the main structure finishing on time hid a sub-component quietly slipping for weeks with no visible flag anywhere.</div>
+      <div class="lim"><b>This does not replace crew scheduling judgment.</b> It only makes a slipping sub-component promise visible to the office the moment it passes its committed date, instead of only when a customer calls upset or files a complaint.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Fence &amp; Deck Depot, Inc.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job and customer data on this page, not connected to any live system.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "mct_fence_deck_depot_v1";
+  var REF_PREFIX = "FDD-";
+
+  var STAGES = [
+    { key: "materials_ordered", label: "Materials ordered" },
+    { key: "main_install", label: "Fence / deck installed" },
+    { key: "gates_accessories", label: "Gates & accessories installed" },
+    { key: "final_walkthrough", label: "Final walkthrough" }
+  ];
+  var LAST_STAGE = STAGES.length - 1;
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
+  function daysFromNow(d) { return Date.now() + d * 86400000; }
+  function daysAgo(ts) { return (Date.now() - ts) / 86400000; }
+  function fmtDuration(days) {
+    var r = Math.round(Math.abs(days));
+    return r < 1 ? "under a day" : (r + (r === 1 ? " day" : " days"));
+  }
+
+  function defaultData() {
+    return {
+      seq: 1004,
+      jobs: [
+        {
+          id: REF_PREFIX + "1001", ref: REF_PREFIX + "1001", customer: "Sample Customer A", item: "6-ft wood privacy fence, 180 linear ft, with custom double gate",
+          stageIdx: 2, complete: false,
+          history: [
+            { stage: "materials_ordered", committedAt: daysFromNow(-38), completedAt: daysFromNow(-36) },
+            { stage: "main_install", committedAt: daysFromNow(-23), completedAt: daysFromNow(-23) }
+          ],
+          currentCommittedAt: daysFromNow(-9)
+        },
+        {
+          id: REF_PREFIX + "1002", ref: REF_PREFIX + "1002", customer: "Sample Customer B", item: "Composite deck, 280 sq ft, no gates",
+          stageIdx: 1, complete: false,
+          history: [
+            { stage: "materials_ordered", committedAt: daysFromNow(-11), completedAt: daysFromNow(-10) }
+          ],
+          currentCommittedAt: daysFromNow(3)
+        },
+        {
+          id: REF_PREFIX + "1003", ref: REF_PREFIX + "1003", customer: "Sample Customer C", item: "Vinyl fence, 120 linear ft, single walk gate",
+          stageIdx: LAST_STAGE, complete: true,
+          history: [
+            { stage: "materials_ordered", committedAt: daysFromNow(-52), completedAt: daysFromNow(-51) },
+            { stage: "main_install", committedAt: daysFromNow(-40), completedAt: daysFromNow(-40) },
+            { stage: "gates_accessories", committedAt: daysFromNow(-36), completedAt: daysFromNow(-37) },
+            { stage: "final_walkthrough", committedAt: daysFromNow(-33), completedAt: daysFromNow(-33) }
+          ],
+          currentCommittedAt: null
+        },
+        {
+          id: REF_PREFIX + "1004", ref: REF_PREFIX + "1004", customer: "Sample Customer D", item: "Wood privacy fence + deck combo, custom double gate and pergola accessory",
+          stageIdx: 3, complete: false,
+          history: [
+            { stage: "materials_ordered", committedAt: daysFromNow(-70), completedAt: daysFromNow(-66) },
+            { stage: "main_install", committedAt: daysFromNow(-49), completedAt: daysFromNow(-44) },
+            { stage: "gates_accessories", committedAt: daysFromNow(-30), completedAt: daysFromNow(-19) }
+          ],
+          currentCommittedAt: daysFromNow(-4)
+        }
+      ]
+    };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  function statusInfo(j) {
+    if (j.complete) return { cls: "done", label: "Complete", flag: null };
+    var overdueDays = daysAgo(j.currentCommittedAt);
+    if (overdueDays > 0) return { cls: "overdue", label: "Overdue", flag: STAGES[j.stageIdx].label + " committed for " + fmtDate(j.currentCommittedAt) + ", now " + fmtDuration(overdueDays) + " late." };
+    if (-overdueDays < 3) return { cls: "soon", label: "Due soon", flag: null };
+    return { cls: "ontrack", label: "On track", flag: null };
+  }
+
+  function renderQueue() {
+    var root = document.getElementById("queue-root");
+    var open = data.jobs.filter(function (j) { return !j.complete; }).slice();
+    open.sort(function (a, b) { return a.currentCommittedAt - b.currentCommittedAt; });
+    var done = data.jobs.filter(function (j) { return j.complete; }).slice();
+    var html = "";
+    if (!open.length) html += '<p class="empty">Nothing open. Every job is caught up.</p>';
+    open.forEach(function (j) { html += renderCard(j); });
+    if (done.length) {
+      html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently completed</h3>';
+      done.slice(0, 5).forEach(function (j) { html += renderCard(j); });
+    }
+    root.innerHTML = html;
+  }
+
+  function renderCard(j) {
+    var st = statusInfo(j);
+    var idx = data.jobs.indexOf(j);
+    var html = '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(j.customer) + " &middot; " + j.ref + '</div><div class="job-meta">' + escapeHtml(j.item) + "</div></div><span>";
+    html += '<span class="badge ' + st.cls + '">' + st.label + "</span></span></div>";
+    if (!j.complete) html += '<div class="job-summary">Current stage: ' + STAGES[j.stageIdx].label + ' &middot; committed ' + fmtDate(j.currentCommittedAt) + "</div>";
+    if (st.flag) html += '<div class="job-flag">&#9888; ' + escapeHtml(st.flag) + "</div>";
+    if (j.history.length) {
+      html += '<div class="log">';
+      j.history.slice().reverse().forEach(function (h) {
+        var late = h.completedAt > h.committedAt;
+        var cls = late ? "late" : "ontime";
+        var note = late ? (fmtDuration(daysAgo(h.committedAt) - daysAgo(h.completedAt)) + " late") : "on time";
+        var stageLabelFor = STAGES.filter(function (s) { return s.key === h.stage; })[0].label;
+        html += '<div class="log-entry ' + cls + '"><span class="tag">' + fmtDate(h.completedAt) + "</span>" + stageLabelFor + " done, committed " + fmtDate(h.committedAt) + " (" + note + ")</div>";
+      });
+      html += "</div>";
+    }
+    if (!j.complete) {
+      var nextLabel = j.stageIdx < LAST_STAGE ? STAGES[j.stageIdx + 1].label : null;
+      html += '<div class="job-actions">';
+      if (nextLabel) {
+        html += '<button class="fx-btn-ghost" onclick="__mct.advance(' + idx + ')">Mark ' + escapeHtml(STAGES[j.stageIdx].label) + ' complete &amp; set next commit date</button>';
+      } else {
+        html += '<button class="fx-btn-ghost" onclick="__mct.complete(' + idx + ')">Mark final walkthrough complete</button>';
+      }
+      html += "</div>";
+    }
+    html += "</div>";
+    return html;
+  }
+
+  window.__mct = {
+    advance: function (idx) {
+      var j = data.jobs[idx];
+      var completedAt = Date.now();
+      j.history.push({ stage: STAGES[j.stageIdx].key, committedAt: j.currentCommittedAt, completedAt: completedAt });
+      j.stageIdx += 1;
+      var nextLabel = STAGES[j.stageIdx].label;
+      var raw = prompt("Committed date for \"" + nextLabel + "\" (YYYY-MM-DD):", new Date(daysFromNow(7)).toISOString().slice(0, 10));
+      if (raw === null) raw = new Date(daysFromNow(7)).toISOString().slice(0, 10);
+      var parsed = new Date(raw + "T00:00:00");
+      j.currentCommittedAt = isNaN(parsed.getTime()) ? daysFromNow(7) : parsed.getTime();
+      save(); renderQueue();
+    },
+    complete: function (idx) {
+      var j = data.jobs[idx];
+      j.history.push({ stage: STAGES[j.stageIdx].key, committedAt: j.currentCommittedAt, completedAt: Date.now() });
+      j.complete = true;
+      j.currentCommittedAt = null;
+      save(); renderQueue();
+    }
+  };
+
+  document.getElementById("add-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var customer = document.getElementById("f-customer").value.trim();
+    var item = document.getElementById("f-item").value.trim();
+    var dueRaw = document.getElementById("f-due").value;
+    if (!customer || !item || !dueRaw) { alert("Fill in the customer, project description, and committed date."); return; }
+    data.seq += 1;
+    var ref = REF_PREFIX + data.seq;
+    var parsed = new Date(dueRaw + "T00:00:00");
+    data.jobs.push({ id: ref, ref: ref, customer: customer, item: item, stageIdx: 0, complete: false, history: [], currentCommittedAt: parsed.getTime() });
+    save(); renderQueue();
+    document.getElementById("add-form").reset();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset the queue back to the original sample data?")) return;
+    data = defaultData(); save(); renderQueue();
+  });
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var ref = document.getElementById("lookup-ref").value.trim().toUpperCase();
+    var root = document.getElementById("lookup-root");
+    if (!ref) { root.innerHTML = ""; return; }
+    var j = data.jobs.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
+    if (!j) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No record found for that reference number. Please contact us directly.</p></div>'; return; }
+    var html = '<div class="lookup-result"><h3>' + escapeHtml(j.item) + '</h3>';
+    STAGES.forEach(function (s, i) {
+      var histEntry = j.history.filter(function (h) { return h.stage === s.key; })[0];
+      var cls, timeHtml;
+      if (histEntry) {
+        var late = histEntry.completedAt > histEntry.committedAt;
+        cls = "done";
+        timeHtml = '<div class="stage-time ' + (late ? "late-text" : "ontime-text") + '">Done ' + fmtDate(histEntry.completedAt) + ", committed " + fmtDate(histEntry.committedAt) + " (" + (late ? "late" : "on time") + ")</div>";
+      } else if (i === j.stageIdx && !j.complete) {
+        var overdue = daysAgo(j.currentCommittedAt) > 0;
+        cls = overdue ? "overdue-dot" : "active";
+        timeHtml = '<div class="stage-time' + (overdue ? " late-text" : "") + '">Committed ' + fmtDate(j.currentCommittedAt) + (overdue ? ", now " + fmtDuration(daysAgo(j.currentCommittedAt)) + " late" : ", in progress") + "</div>";
+      } else {
+        cls = "pending";
+        timeHtml = '<div class="stage-time">Not started</div>';
+      }
+      html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === "pending" ? " pending-text" : "") + '">' + s.label + '</div>' + timeHtml + "</div></div>";
+    });
+    if (j.complete) html += '<p style="margin-top:1rem;color:var(--good);font-weight:650;font-size:0.88rem;">Project complete.</p>';
+    html += "</div>";
+    root.innerHTML = html;
+  });
+
+  document.querySelectorAll(".mct-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".mct-tab").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".mct-view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  renderQueue();
+})();
+</script>
+</body>
+</html>
