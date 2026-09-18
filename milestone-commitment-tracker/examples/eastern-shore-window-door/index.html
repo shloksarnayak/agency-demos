@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Milestone commitment tracker template</title>
-<link rel="stylesheet" href="../assets/theme.css">
+<title>Milestone commitment tracker, Eastern Shore Window &amp; Door example</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
 <style>
   .mct-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
   .mct-tab { font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.6rem 1.1rem; border: 2px solid var(--ink); border-radius: 999px; background: var(--surface); color: var(--ink); cursor: pointer; }
@@ -14,6 +14,8 @@
   .mct-view.active { display: block; }
   .mct-cols { display: grid; grid-template-columns: 1fr 1.3fr; gap: 1.2rem; align-items: start; }
   @media (max-width: 980px) { .mct-cols { grid-template-columns: 1fr; } }
+  .team-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .team-chip { font-size: 0.76rem; font-weight: 650; padding: 0.35rem 0.7rem; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--rule); }
   .field { display: flex; flex-direction: column; gap: 0.35rem; }
   .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
   .field input, .field select, .field textarea {
@@ -65,17 +67,17 @@
 <body>
 <nav class="fx-nav">
   <div class="fx-nav-row">
-    <a class="fx-brand" href="../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
-    <span class="fx-crumb"><a href="../index.html">Templates</a> / Milestone commitment tracker</span>
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Milestone commitment tracker</a> / Eastern Shore Window &amp; Door</span>
   </div>
 </nav>
 <header class="fx-hero">
-  <span class="fx-kicker">Template, not built for a specific business</span>
-  <h1 class="fx-h1">"Two weeks" quietly becomes twelve, and the customer only finds out by asking</h1>
-  <p class="fx-lede">Many businesses that run large, multi-stage custom builds (decks, additions, renovations, fabrication) promise a completion window at the start, then coordinate the actual stages, materials ordered, materials delivered, and each build phase, entirely by phone and email. When a stage runs long there is nothing that surfaces it until the customer calls upset or files a complaint. This page shows one small, working tool that fixes that: every job gets a committed date for its current stage, an internal queue sorted by how overdue anything is, and a no-login customer lookup so someone can check real status against the original promise without calling the office.</p>
+  <span class="fx-kicker">Working example, built around Eastern Shore Window &amp; Door's own published facts</span>
+  <h1 class="fx-h1">A backordered sash goes quiet for months, and the only way to find out is another unanswered call</h1>
+  <p class="fx-lede">Eastern Shore Window &amp; Door (Ocean City, MD, family-owned since 1994, BBB A+ accredited) sells and installs replacement windows and doors coordinated by phone and email, with no client-facing way to see where a specific order stands. A public BBB complaint on file (filed 04/29/2025) describes windows ordered January 2024 for a March 2024 install, three scratched sashes and a missing half-round window, and after eight months only two replacement sashes arriving and still not fitting, with "repeated unanswered calls and texts since December 2024." The business's own BBB response acknowledged manufacturing defects and factory delays rather than denying the pattern. Independent Birdeye and Angi reviews spanning 2020-2025 describe the same shape: a customer calling and texting repeatedly with no proactive update. Below is a working tool sized to close that visibility gap: every order gets a committed date for its current milestone, an internal queue sorted by how overdue anything is, and a no-login customer lookup so someone waiting on a backordered piece can check real status without calling and texting the office again.</p>
 </header>
 <main class="fx-main">
-  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> When this gets built for a real business, the office view reads from whatever already tracks jobs (a spreadsheet, a project-management tool, or email), and the reference code on the customer view is whatever the business already gives out at contract signing.</p></div>
+  <div class="fx-notice"><p><strong>Everything below is fictional.</strong> Customer names, order details and dates on this page are sample data, illustrative only, not Eastern Shore Window &amp; Door's real client or job records. One sample order below is deliberately shaped to mirror the pattern described in the business's own public BBB complaint (a factory-delayed item going months without a proactive update) to make the tool concrete, not because it reflects a real Eastern Shore customer or order. This tool addresses the visibility gap, not the manufacturer's own factory lead times, which are outside any office tool's control.</p></div>
 
   <div class="mct-tabs">
     <button class="mct-tab active" data-view="office" type="button">Office view</button>
@@ -83,19 +85,22 @@
   </div>
 
   <section class="mct-view active" id="view-office">
+    <div class="team-row">
+      <span class="team-chip">Joseph "Joe" Del Grosso &middot; Owner</span>
+    </div>
     <div class="mct-cols">
       <div>
-        <h2 class="fx-h2" style="margin-top:0;">Log a new job</h2>
+        <h2 class="fx-h2" style="margin-top:0;">Log a new order</h2>
         <form id="add-form" class="form-grid">
           <div class="field span2"><label for="f-customer">Customer name</label><input type="text" id="f-customer" placeholder="e.g. Sample Customer A"></div>
-          <div class="field span2"><label for="f-item">Project description</label><input type="text" id="f-item" placeholder="e.g. Composite deck, 320 sq ft"></div>
-          <div class="field span2"><label for="f-due">Committed date for the first stage (materials ordered)</label><input type="date" id="f-due"></div>
+          <div class="field span2"><label for="f-item">Order description</label><input type="text" id="f-item" placeholder="e.g. 3 replacement sashes, custom color"></div>
+          <div class="field span2"><label for="f-due">Committed date for the first milestone (ordered)</label><input type="date" id="f-due"></div>
           <div class="field span2"><button type="submit" class="fx-btn-ghost">Add to queue</button></div>
         </form>
-        <p class="team-note">A real deployment shows this same queue to everyone who needs it, on one shared screen, instead of one person's inbox or notebook.</p>
+        <p class="team-note">Joe and anyone else answering the phone see this same queue at once, no separate login or handoff needed.</p>
       </div>
       <div>
-        <h2 class="fx-h2" style="margin-top:0;">Shared job queue, most overdue first</h2>
+        <h2 class="fx-h2" style="margin-top:0;">Shared order queue, most overdue first</h2>
         <div id="queue-root"></div>
         <div style="margin-top:1.1rem;"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
       </div>
@@ -103,39 +108,39 @@
   </section>
 
   <section class="mct-view" id="view-customer">
-    <h2 class="fx-h2" style="margin-top:0;">Check the status of a job</h2>
+    <h2 class="fx-h2" style="margin-top:0;">Check the status of an order</h2>
     <div class="lookup-box">
-      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Job / contract reference number</label>
-      <input type="text" id="lookup-ref" placeholder="e.g. MCT-1001">
+      <label for="lookup-ref" style="font-size:0.78rem;font-weight:700;color:var(--ink-2);">Order reference number</label>
+      <input type="text" id="lookup-ref" placeholder="e.g. ESW-1001">
       <div style="margin-top:0.8rem;"><button class="fx-btn" id="lookup-btn" type="button">Check status</button></div>
       <div id="lookup-root"></div>
     </div>
-    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try MCT-1001, MCT-1002, MCT-1003 or MCT-1004 from the office view's sample queue.</p>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:1rem;max-width:60ch;">Try ESW-1001, ESW-1002, ESW-1003 or ESW-1004 from the office view's sample queue. Replaces calling and texting the office to ask "where is my window."</p>
   </section>
 
   <section>
     <h2 class="fx-h2">How this gets built for real</h2>
     <div class="limits">
-      <div class="lim"><b>The reference code is whatever the office already hands out.</b> A real build reads from an existing contract or job number instead of inventing a new one for the customer to remember.</div>
-      <div class="lim"><b>Committed dates here are set by whoever logs the job.</b> A real build can pull the committed date straight from the signed contract or work order instead of manual entry.</div>
-      <div class="lim"><b>The office sets the next stage's committed date when the current one closes.</b> That is the moment a slipping promise either gets caught and reset honestly, or gets missed again, visibly, instead of silently.</div>
-      <div class="lim"><b>See it built for a real business:</b> <a href="examples/outback-deck/">Outback Deck, Inc.</a>, <a href="examples/integrity-pools/">Integrity Pools, USA</a>, <a href="examples/eastern-shore-window-door/">Eastern Shore Window &amp; Door</a>.</div>
+      <div class="lim"><b>The order number is whatever Eastern Shore already uses.</b> A real build reads from the existing invoice or work order number instead of inventing a new one for the customer to remember.</div>
+      <div class="lim"><b>Committed dates here are entered by whoever logs the order.</b> A real build can pull the factory ETA straight from the supplier's own confirmation and let the office update it the moment the supplier reports a change, instead of the customer finding out by calling.</div>
+      <div class="lim"><b>This does not fix the factory's own lead times.</b> A meaningful share of this business's documented delays trace back to manufacturer backorders and factory moves, outside any office tool's control. What this closes is the silence around a real delay, so a customer sees an honest, current date instead of nothing at all.</div>
+      <div class="lim"><b>See the generic version of this tool:</b> <a href="../../index.html">Milestone commitment tracker template</a>.</div>
     </div>
   </section>
 </main>
-<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p><p>Prepared by Shlok Sarnayak. Fictional job and customer data on this page, not connected to any live system.</p></footer>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Eastern Shore Window &amp; Door.</strong></p><p>Prepared by Shlok Sarnayak. Fictional order and customer data on this page, not connected to any live system.</p></footer>
 <script>
 (function () {
   "use strict";
-  var STORE_KEY = "mct_template_generic_v1";
-  var REF_PREFIX = "MCT-";
+  var STORE_KEY = "mct_eastern_shore_window_door_v1";
+  var REF_PREFIX = "ESW-";
 
   var STAGES = [
-    { key: "materials_ordered", label: "Materials ordered" },
-    { key: "materials_delivered", label: "Materials delivered" },
-    { key: "framing", label: "Framing" },
-    { key: "decking", label: "Decking" },
-    { key: "final_walkthrough", label: "Final walkthrough" }
+    { key: "ordered", label: "Ordered" },
+    { key: "factory_eta", label: "Factory ETA confirmed" },
+    { key: "arrived", label: "Arrived at shop" },
+    { key: "installed", label: "Installed" },
+    { key: "punch_list_closed", label: "Punch-list closed" }
   ];
   var LAST_STAGE = STAGES.length - 1;
 
@@ -153,46 +158,44 @@
       seq: 1004,
       jobs: [
         {
-          id: REF_PREFIX + "1001", ref: REF_PREFIX + "1001", customer: "Sample Customer A", item: "Composite deck, 320 sq ft",
+          id: REF_PREFIX + "1001", ref: REF_PREFIX + "1001", customer: "Sample Customer A", item: "3 replacement sashes + half-round transom, backordered",
+          stageIdx: 1, complete: false,
+          history: [
+            { stage: "ordered", committedAt: daysFromNow(-210), completedAt: daysFromNow(-205) }
+          ],
+          currentCommittedAt: daysFromNow(-60)
+        },
+        {
+          id: REF_PREFIX + "1002", ref: REF_PREFIX + "1002", customer: "Sample Customer B", item: "French patio door replacement, 2 units",
           stageIdx: 2, complete: false,
           history: [
-            { stage: "materials_ordered", committedAt: daysFromNow(-33), completedAt: daysFromNow(-30) },
-            { stage: "materials_delivered", committedAt: daysFromNow(-26), completedAt: daysFromNow(-19) }
+            { stage: "ordered", committedAt: daysFromNow(-20), completedAt: daysFromNow(-20) },
+            { stage: "factory_eta", committedAt: daysFromNow(-13), completedAt: daysFromNow(-14) }
           ],
-          currentCommittedAt: daysFromNow(-9)
+          currentCommittedAt: daysFromNow(3)
         },
         {
-          id: REF_PREFIX + "1002", ref: REF_PREFIX + "1002", customer: "Sample Customer B", item: "Motorized louvered pergola install",
-          stageIdx: 3, complete: false,
-          history: [
-            { stage: "materials_ordered", committedAt: daysFromNow(-20), completedAt: daysFromNow(-20) },
-            { stage: "materials_delivered", committedAt: daysFromNow(-13), completedAt: daysFromNow(-14) },
-            { stage: "framing", committedAt: daysFromNow(-6), completedAt: daysFromNow(-5) }
-          ],
-          currentCommittedAt: daysFromNow(2)
-        },
-        {
-          id: REF_PREFIX + "1003", ref: REF_PREFIX + "1003", customer: "Sample Customer C", item: "Screened porch, design-build",
+          id: REF_PREFIX + "1003", ref: REF_PREFIX + "1003", customer: "Sample Customer C", item: "Whole-house window replacement, 14 units",
           stageIdx: LAST_STAGE, complete: true,
           history: [
-            { stage: "materials_ordered", committedAt: daysFromNow(-60), completedAt: daysFromNow(-59) },
-            { stage: "materials_delivered", committedAt: daysFromNow(-51), completedAt: daysFromNow(-52) },
-            { stage: "framing", committedAt: daysFromNow(-40), completedAt: daysFromNow(-39) },
-            { stage: "decking", committedAt: daysFromNow(-30), completedAt: daysFromNow(-29) },
-            { stage: "final_walkthrough", committedAt: daysFromNow(-25), completedAt: daysFromNow(-25) }
+            { stage: "ordered", committedAt: daysFromNow(-60), completedAt: daysFromNow(-59) },
+            { stage: "factory_eta", committedAt: daysFromNow(-51), completedAt: daysFromNow(-52) },
+            { stage: "arrived", committedAt: daysFromNow(-40), completedAt: daysFromNow(-39) },
+            { stage: "installed", committedAt: daysFromNow(-30), completedAt: daysFromNow(-29) },
+            { stage: "punch_list_closed", committedAt: daysFromNow(-25), completedAt: daysFromNow(-25) }
           ],
           currentCommittedAt: null
         },
         {
-          id: REF_PREFIX + "1004", ref: REF_PREFIX + "1004", customer: "Sample Customer D", item: "Whole-yard deck and pergola rebuild",
+          id: REF_PREFIX + "1004", ref: REF_PREFIX + "1004", customer: "Sample Customer D", item: "Storm door + 2 replacement windows",
           stageIdx: LAST_STAGE, complete: false,
           history: [
-            { stage: "materials_ordered", committedAt: daysFromNow(-95), completedAt: daysFromNow(-80) },
-            { stage: "materials_delivered", committedAt: daysFromNow(-73), completedAt: daysFromNow(-55) },
-            { stage: "framing", committedAt: daysFromNow(-48), completedAt: daysFromNow(-33) },
-            { stage: "decking", committedAt: daysFromNow(-25), completedAt: daysFromNow(-12) }
+            { stage: "ordered", committedAt: daysFromNow(-140), completedAt: daysFromNow(-132) },
+            { stage: "factory_eta", committedAt: daysFromNow(-120), completedAt: daysFromNow(-100) },
+            { stage: "arrived", committedAt: daysFromNow(-80), completedAt: daysFromNow(-60) },
+            { stage: "installed", committedAt: daysFromNow(-45), completedAt: daysFromNow(-30) }
           ],
-          currentCommittedAt: daysFromNow(-12)
+          currentCommittedAt: daysFromNow(-10)
         }
       ]
     };
@@ -219,7 +222,7 @@
     open.sort(function (a, b) { return a.currentCommittedAt - b.currentCommittedAt; });
     var done = data.jobs.filter(function (j) { return j.complete; }).slice();
     var html = "";
-    if (!open.length) html += '<p class="empty">Nothing open. Every job is caught up.</p>';
+    if (!open.length) html += '<p class="empty">Nothing open. Every order is caught up.</p>';
     open.forEach(function (j) { html += renderCard(j); });
     if (done.length) {
       html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently completed</h3>';
@@ -252,7 +255,7 @@
       if (nextLabel) {
         html += '<button class="fx-btn-ghost" onclick="__mct.advance(' + idx + ')">Mark ' + escapeHtml(STAGES[j.stageIdx].label) + ' complete &amp; set next commit date</button>';
       } else {
-        html += '<button class="fx-btn-ghost" onclick="__mct.complete(' + idx + ')">Mark final walkthrough complete</button>';
+        html += '<button class="fx-btn-ghost" onclick="__mct.complete(' + idx + ')">Mark punch-list closed</button>';
       }
       html += "</div>";
     }
@@ -287,7 +290,7 @@
     var customer = document.getElementById("f-customer").value.trim();
     var item = document.getElementById("f-item").value.trim();
     var dueRaw = document.getElementById("f-due").value;
-    if (!customer || !item || !dueRaw) { alert("Fill in the customer, project description, and committed date."); return; }
+    if (!customer || !item || !dueRaw) { alert("Fill in the customer, order description, and committed date."); return; }
     data.seq += 1;
     var ref = REF_PREFIX + data.seq;
     var parsed = new Date(dueRaw + "T00:00:00");
@@ -306,7 +309,7 @@
     var root = document.getElementById("lookup-root");
     if (!ref) { root.innerHTML = ""; return; }
     var j = data.jobs.filter(function (x) { return x.ref.toUpperCase() === ref; })[0];
-    if (!j) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No record found for that reference number. Please contact us directly.</p></div>'; return; }
+    if (!j) { root.innerHTML = '<div class="lookup-result"><p class="not-found">No record found for that order number. Please contact us directly.</p></div>'; return; }
     var html = '<div class="lookup-result"><h3>' + escapeHtml(j.item) + '</h3>';
     STAGES.forEach(function (s, i) {
       var histEntry = j.history.filter(function (h) { return h.stage === s.key; })[0];
@@ -325,7 +328,7 @@
       }
       html += '<div class="stage"><div class="stage-dot ' + cls + '"></div><div><div class="stage-label' + (cls === "pending" ? " pending-text" : "") + '">' + s.label + '</div>' + timeHtml + "</div></div>";
     });
-    if (j.complete) html += '<p style="margin-top:1rem;color:var(--good);font-weight:650;font-size:0.88rem;">Project complete.</p>';
+    if (j.complete) html += '<p style="margin-top:1rem;color:var(--good);font-weight:650;font-size:0.88rem;">Order complete.</p>';
     html += "</div>";
     root.innerHTML = html;
   });
