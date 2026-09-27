@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for The Levin Law Group</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .also-line { font-size: 0.8rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 24rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 96%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .sample-tag { display: inline-block; background: var(--brand-soft); color: var(--brand); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 5px; margin-bottom: 0.9rem; }
+  .track-tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 5px; margin-left: 0.4rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / The Levin Law Group</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for The Levin Law Group</span>
+  <h1 class="fx-h1">The update your file-login portal can't send on its own</h1>
+  <p class="fx-lede">A Birdeye reviewer, Farnon Dix, wrote: "They are horrible when it comes to communication... It was only after missing the purchasing deadline 3 times and me emailing them that they were fired that I received a response." A second reviewer, Ankita Nagpal, wrote: "There was no communication about who would be representing me... the lack of transparency was concerning." Both describe the same gap: nothing tells a client automatically when their file's status changes, they only find out by calling, emailing, or logging into the portal to check.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> both reviews above are quoted directly from your firm's public Birdeye listing (51 reviews). Your BBB profile shows an A- rating with 10 closed complaints in the last 3 years. Your own site already runs a client-file portal at <code>file-login.html</code>, titled "Client Portal Access for Transaction Status and Documents," where a client can log in to check status and view documents 24/7, but only after staff manually opens a file and hands them login credentials, and only if the client thinks to log in. A nationally-marketed competitor product, Track Your Closing, sells exactly this kind of automatic status push to law firms, confirming this is a proven, already-validated fix, not a speculative idea.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the case files, client names, addresses, and attorney/agent names below are a fictional sample, not real Levin Law Group clients or matters. Nothing here sends a real email or text. This shows exactly what a client, and anyone else on the file, would receive automatically at each milestone. A real build connects to whatever field or status a paralegal already updates (including the existing file-login system's own backend, if that's the simpler path) and sends through an actual email/SMS service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Paralegal view: update a file's status</h3>
+      <span class="sample-tag">Sample files, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the client (and anyone else on the file) sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email or text.</b> This demo only shows what a client and any co-counsel, lender, or agent on the file would receive. A real version needs an actual email/SMS service (for example SendGrid or Twilio) wired to whatever field your paralegals already update to mark a file's stage.</div>
+      <div class="lim"><b>This sits beside your existing client-file portal, it doesn't replace it.</b> Clients who prefer to log in and pull up documents still can. This only adds the automatic push half your reviews say is missing, so a client stops finding out about a status change only by calling, emailing, or thinking to check the portal.</div>
+      <div class="lim"><b>The milestone stages shown for a purchase/sale closing and for an estate matter are typical for NY residential real estate and probate work, not copied from your firm's internal case-management process.</b> A real build should confirm the exact stages your team already tracks and the field they update to move a file between them.</div>
+      <div class="lim"><b>Worth a specific conversation before this goes live: what a status update can safely say.</b> Since this touches active legal matters, a real build should keep the message content to a status label and a plain next step (as shown below), not case substance, so nothing privileged or confidential goes out over an unencrypted text.</div>
+      <div class="lim"><b>The BBB and Birdeye reviews above are real and quoted directly, this is a reasonable response to the documented pattern, not a guarantee nothing is ever delayed.</b> A title search can still take longer than expected. What changes is whether the client, and whoever else is on the file, hears about it automatically instead of finding out by calling repeatedly or being told only after the fact.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for The Levin Law Group. BBB rating/complaint count, the Birdeye reviews quoted above, and the existing file-login client portal are drawn from direct verification of your public listings and site. Case, client, and attorney/agent data below is a fictional sample, not connected to any real file.</p>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "llg-status-pipeline-files-v1";
+
+  var TRACKS = {
+    closing: {
+      label: "Real estate closing",
+      stages: ["Contract signed", "Title search ordered", "Mortgage commitment received", "Closing date scheduled", "Closing completed"],
+      messages: [
+        function (j) { return "This is The Levin Law Group. Your file for " + j.property + " has been opened following your signed contract. We'll update you automatically at each stage, no need to call or log in to check."; },
+        function (j) { return "Title search has been ordered for " + j.property + ". We'll notify you again the moment the commitment comes back."; },
+        function (j) { return "Good news: the mortgage commitment for " + j.property + " has been received. We're now working toward scheduling your closing date."; },
+        function (j) { return "Your closing date for " + j.property + " has been scheduled: " + j.detail + "."; },
+        function (j) { return "Your closing on " + j.property + " is complete. Thank you for choosing The Levin Law Group."; }
+      ]
+    },
+    probate: {
+      label: "Estate administration",
+      stages: ["Petition for probate filed", "Filing accepted by court", "Executor appointed", "Estate inventory filed", "Administration complete"],
+      messages: [
+        function (j) { return "This is The Levin Law Group. The petition for probate in the matter of " + j.property + " has been filed. We'll update you automatically as the court acts on the file."; },
+        function (j) { return "The probate filing for " + j.property + " has been accepted by the court. Next, we're working toward the executor's formal appointment."; },
+        function (j) { return "The executor for " + j.property + " has been formally appointed. We'll notify you again once the estate inventory is filed."; },
+        function (j) { return "The estate inventory for " + j.property + " has been filed with the court: " + j.detail + "."; },
+        function (j) { return "Administration of " + j.property + " is complete. Thank you for trusting The Levin Law Group with this matter."; }
+      ]
+    }
+  };
+
+  function seedFiles() {
+    var now = 1758931200000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "LLG-4001",
+        client: "Sample Client A (Buyer)",
+        contact: "sample.clienta@example.com",
+        track: "closing",
+        property: "118 Voorhies Ave, Brooklyn (Purchase)",
+        detail: "",
+        alsoNotified: ["Sample Buyer's Agent, D. Reyes"],
+        stage: 1,
+        notifications: [
+          { text: "This is The Levin Law Group. Your file for 118 Voorhies Ave, Brooklyn (Purchase) has been opened following your signed contract. We'll update you automatically at each stage, no need to call or log in to check.", at: now },
+          { text: "Title search has been ordered for 118 Voorhies Ave, Brooklyn (Purchase). We'll notify you again the moment the commitment comes back.", at: now + 3600000 }
+        ]
+      },
+      {
+        id: "LLG-4002",
+        client: "Sample Client B (Seller)",
+        contact: "sample.clientb@example.com",
+        track: "closing",
+        property: "47 Highland Blvd, Brooklyn (Sale)",
+        detail: "October 14 at 10:00 AM, Kings County title office",
+        alsoNotified: ["Sample Lender Loan Officer, M. Ostrowski", "Sample Buyer's Co-Counsel, T. Farah, Esq."],
+        stage: 4,
+        notifications: [
+          { text: "This is The Levin Law Group. Your file for 47 Highland Blvd, Brooklyn (Sale) has been opened following your signed contract. We'll update you automatically at each stage, no need to call or log in to check.", at: now },
+          { text: "Title search has been ordered for 47 Highland Blvd, Brooklyn (Sale). We'll notify you again the moment the commitment comes back.", at: now + 3600000 },
+          { text: "Good news: the mortgage commitment for 47 Highland Blvd, Brooklyn (Sale) has been received. We're now working toward scheduling your closing date.", at: now + 7200000 },
+          { text: "Your closing date for 47 Highland Blvd, Brooklyn (Sale) has been scheduled: October 14 at 10:00 AM, Kings County title office.", at: now + 10800000 },
+          { text: "Your closing on 47 Highland Blvd, Brooklyn (Sale) is complete. Thank you for choosing The Levin Law Group.", at: now + 14400000 }
+        ]
+      },
+      {
+        id: "LLG-4003",
+        client: "Sample Client C (Executor)",
+        contact: "sample.clientc@example.com",
+        track: "probate",
+        property: "Estate of Sample Decedent",
+        detail: "",
+        alsoNotified: [],
+        stage: 2,
+        notifications: [
+          { text: "This is The Levin Law Group. The petition for probate in the matter of Estate of Sample Decedent has been filed. We'll update you automatically as the court acts on the file.", at: now },
+          { text: "The probate filing for Estate of Sample Decedent has been accepted by the court. Next, we're working toward the executor's formal appointment.", at: now + 3600000 },
+          { text: "The executor for Estate of Sample Decedent has been formally appointed. We'll notify you again once the estate inventory is filed.", at: now + 7200000 }
+        ]
+      }
+    ];
+  }
+
+  function loadFiles() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedFiles();
+    saveFiles(seeded);
+    return seeded;
+  }
+  function saveFiles(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var files = loadFiles();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    files.forEach(function (j) {
+      var track = TRACKS[j.track];
+      var atLast = j.stage >= track.stages.length - 1;
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.client) + '</h4><span class="stage-pill">' + track.stages[j.stage] + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(j.property) + '<span class="track-tag">' + track.label + '</span></div>';
+      if (j.alsoNotified.length) {
+        html += '<div class="also-line">Also on this file: ' + escapeHtml(j.alsoNotified.join(", ")) + '</div>';
+      }
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next milestone</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceFile(btn.dataset.advance); });
+    });
+  }
+
+  function advanceFile(id) {
+    var j = files.find(function (x) { return x.id === id; });
+    var track = TRACKS[j.track];
+    if (!j || j.stage >= track.stages.length - 1) return;
+    j.stage += 1;
+    var msg = track.messages[j.stage];
+    if (msg) j.notifications.push({ text: msg(j), at: Date.now() });
+    saveFiles(files);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    sel.innerHTML = "";
+    files.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.client;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = files.find(function (x) { return x.id === sel.value; }) || files[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this file. Advance it in the paralegal view on the left.</p>';
+      return;
+    }
+    var recipients = "Email to " + j.contact + (j.alsoNotified.length ? "; also sent to " + j.alsoNotified.join(", ") : "");
+    var html = "";
+    j.notifications.forEach(function (n) {
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-meta">' + escapeHtml(recipients) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  renderShop();
+  populatePicker();
+  renderThread();
+})();
+</script>
+</body>
+</html>
