@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Blackhurst Budd Solicitors</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .also-line { font-size: 0.8rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 24rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 96%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .sample-tag { display: inline-block; background: var(--brand-soft); color: var(--brand); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 5px; margin-bottom: 0.9rem; }
+  .track-tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 5px; margin-left: 0.4rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Blackhurst Budd Solicitors</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Blackhurst Budd Solicitors</span>
+  <h1 class="fx-h1">The update your matter file doesn't send until someone asks</h1>
+  <p class="fx-lede">A Trustpilot reviewer, John Stephens, wrote that the firm "only seems to give updates when asked otherwise you will not know where proceedings are up to." Another reviewer, Eric Leung, described going over two years without a response or update on whether a Land Registry property-ownership registration had even been submitted after his purchase completed. A third reviewer, Frema, described a completion delayed a week because the assigned solicitor was on holiday that day and no one had flagged it. All three describe the same gap: nothing tells a client automatically when their matter moves, or doesn't move, they only find out by chasing the firm themselves.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the three Trustpilot reviews quoted above are public. The UK Legal Ombudsman's own published decision data also lists one upheld decision against Blackhurst Budd Limited, Property/conveyancing, decided 05/05/2026, with complaint types recorded as "Delay, Failure to keep informed." A direct review of blackhurstbudd.co.uk found no client portal, case-status login, or CRM-facing feature anywhere on the site, only a phone number, a contact form, and a general inbox email, so this would introduce visibility that doesn't exist today, not add to something already there. Nationally-marketed UK legal-tech products such as Access Legal's client portal, TrackMyCase, Perfect Portal, Hoowla, and InTouch all sell exactly this kind of automatic case-progress visibility to law firms today, confirming this is a proven, already-validated fix.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the matters, client names, addresses, and solicitor/agent names below are a fictional sample, not real Blackhurst Budd clients or matters. Nothing here sends a real email or text. This shows exactly what a client, and anyone else on the matter, would receive automatically at each milestone. A real build connects to whatever field a fee earner already updates and sends through an actual email/SMS service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Fee earner view: update a matter's status</h3>
+      <span class="sample-tag">Sample matters, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the client (and anyone else on the matter) sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email or text.</b> This demo only shows what a client and any co-executor, lender, or agent on the matter would receive. A real version needs an actual email/SMS service (for example SendGrid or Twilio) wired to whatever field your fee earners already update to mark a matter's stage.</div>
+      <div class="lim"><b>This introduces visibility your site doesn't have today, it doesn't sit beside an existing tool.</b> Direct review of blackhurstbudd.co.uk found no client portal, case-status login, or CRM-facing feature of any kind, so this closes the exact gap the Trustpilot reviews describe rather than adding a second way to check status.</div>
+      <div class="lim"><b>The milestone stages shown for a residential conveyancing matter and for an estate matter are typical stages for that kind of work, not copied from your firm's internal case-management process.</b> A real build should confirm the exact stages your team already tracks and the field they update to move a matter between them.</div>
+      <div class="lim"><b>Worth a specific conversation before this goes live: what a status update can safely say.</b> Since this touches active legal matters, a real build should keep the message content to a status label and a plain next step (as shown below), not matter substance, so nothing privileged or confidential goes out over an unencrypted text.</div>
+      <div class="lim"><b>The Ombudsman decision and Trustpilot reviews above are real and cited directly, this is a reasonable response to the documented pattern, not a guarantee nothing is ever delayed.</b> A Land Registry application can still take time to process. What changes is whether the client, and whoever else is on the matter, hears about it automatically instead of finding out only by chasing the firm, or not at all.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Blackhurst Budd Solicitors. The Legal Ombudsman decision record and the Trustpilot reviews quoted above are drawn from direct verification of public sources. Matter, client, and solicitor/agent data below is a fictional sample, not connected to any real matter.</p>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "bbs-status-pipeline-matters-v1";
+
+  var TRACKS = {
+    conveyancing: {
+      label: "Residential conveyancing",
+      stages: ["Instructions received, file opened", "Property searches ordered", "Enquiries raised, mortgage offer received", "Exchange of contracts", "Completion", "Land Registry application submitted", "Land Registry registration confirmed"],
+      messages: [
+        function (j) { return "This is Blackhurst Budd Solicitors. Your file for " + j.property + " has been opened following receipt of instructions. We'll update you automatically at each stage, no need to call or email to check."; },
+        function (j) { return "Property searches have been ordered for " + j.property + ". We'll notify you again once enquiries are raised."; },
+        function (j) { return "Enquiries have been raised with the other side's solicitor for " + j.property + ", and the mortgage offer has been received. We're now working toward exchange of contracts."; },
+        function (j) { return "Contracts have been exchanged for " + j.property + ". " + j.detail + "."; },
+        function (j) { return "Completion has taken place on " + j.property + ". Congratulations, and thank you for instructing Blackhurst Budd Solicitors."; },
+        function (j) { return "Your application to register the change of ownership for " + j.property + " has been submitted to HM Land Registry. We'll notify you again the moment it's confirmed, you won't need to chase us for this."; },
+        function (j) { return "HM Land Registry has confirmed registration for " + j.property + ". " + j.detail + "."; }
+      ]
+    },
+    probate: {
+      label: "Wills, probate & estate administration",
+      stages: ["Instructions received, estate information gathered", "Application for Grant of Probate submitted", "Grant of Probate received", "Estate assets collected, liabilities settled", "Estate accounts finalised, administration complete"],
+      messages: [
+        function (j) { return "This is Blackhurst Budd Solicitors. We've opened the file for " + j.property + " and are gathering the initial estate information. We'll update you automatically as the matter progresses."; },
+        function (j) { return "The application for the Grant of Probate in the matter of " + j.property + " has been submitted to the Probate Registry. We'll notify you again once it's granted."; },
+        function (j) { return "The Grant of Probate for " + j.property + " has been received. We're now working to collect the estate's assets and settle its liabilities."; },
+        function (j) { return "The estate's assets have been collected and liabilities settled for " + j.property + ". " + j.detail + "."; },
+        function (j) { return "Administration of " + j.property + " is complete and the estate accounts have been finalised. Thank you for trusting Blackhurst Budd Solicitors with this matter."; }
+      ]
+    }
+  };
+
+  function seedFiles() {
+    var now = 1758931200000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "BB-2101",
+        client: "Sample Client A (Purchaser)",
+        contact: "sample.clienta@example.com",
+        track: "conveyancing",
+        property: "14 Talbot Road, Blackpool (Purchase)",
+        detail: "",
+        alsoNotified: ["Sample Mortgage Broker, K. Whittaker"],
+        stage: 1,
+        notifications: [
+          { text: "This is Blackhurst Budd Solicitors. Your file for 14 Talbot Road, Blackpool (Purchase) has been opened following receipt of instructions. We'll update you automatically at each stage, no need to call or email to check.", at: now },
+          { text: "Property searches have been ordered for 14 Talbot Road, Blackpool (Purchase). We'll notify you again once enquiries are raised.", at: now + 3600000 }
+        ]
+      },
+      {
+        id: "BB-2102",
+        client: "Sample Client B (Seller)",
+        contact: "sample.clientb@example.com",
+        track: "conveyancing",
+        property: "22 Church Street, Lytham St Annes (Sale)",
+        detail: "Registration confirmed 03 March, HM Land Registry title absolute",
+        alsoNotified: ["Sample Estate Agent, R. Openshaw", "Sample Buyer's Solicitor, T. Ainscough"],
+        stage: 6,
+        notifications: [
+          { text: "This is Blackhurst Budd Solicitors. Your file for 22 Church Street, Lytham St Annes (Sale) has been opened following receipt of instructions. We'll update you automatically at each stage, no need to call or email to check.", at: now },
+          { text: "Property searches have been ordered for 22 Church Street, Lytham St Annes (Sale). We'll notify you again once enquiries are raised.", at: now + 3600000 },
+          { text: "Enquiries have been raised with the other side's solicitor for 22 Church Street, Lytham St Annes (Sale), and the mortgage offer has been received. We're now working toward exchange of contracts.", at: now + 7200000 },
+          { text: "Contracts have been exchanged for 22 Church Street, Lytham St Annes (Sale). Completion is set for 28 February.", at: now + 10800000 },
+          { text: "Completion has taken place on 22 Church Street, Lytham St Annes (Sale). Congratulations, and thank you for instructing Blackhurst Budd Solicitors.", at: now + 14400000 },
+          { text: "Your application to register the change of ownership for 22 Church Street, Lytham St Annes (Sale) has been submitted to HM Land Registry. We'll notify you again the moment it's confirmed, you won't need to chase us for this.", at: now + 18000000 },
+          { text: "HM Land Registry has confirmed registration for 22 Church Street, Lytham St Annes (Sale). Registration confirmed 03 March, HM Land Registry title absolute.", at: now + 21600000 }
+        ]
+      },
+      {
+        id: "BB-2103",
+        client: "Sample Client C (Executor)",
+        contact: "sample.clientc@example.com",
+        track: "probate",
+        property: "Estate of Sample Decedent",
+        detail: "",
+        alsoNotified: ["Sample Co-Executor, N. Fairclough"],
+        stage: 2,
+        notifications: [
+          { text: "This is Blackhurst Budd Solicitors. We've opened the file for Estate of Sample Decedent and are gathering the initial estate information. We'll update you automatically as the matter progresses.", at: now },
+          { text: "The application for the Grant of Probate in the matter of Estate of Sample Decedent has been submitted to the Probate Registry. We'll notify you again once it's granted.", at: now + 3600000 },
+          { text: "The Grant of Probate for Estate of Sample Decedent has been received. We're now working to collect the estate's assets and settle its liabilities.", at: now + 7200000 }
+        ]
+      }
+    ];
+  }
+
+  function loadFiles() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedFiles();
+    saveFiles(seeded);
+    return seeded;
+  }
+  function saveFiles(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var files = loadFiles();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    files.forEach(function (j) {
+      var track = TRACKS[j.track];
+      var atLast = j.stage >= track.stages.length - 1;
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.client) + '</h4><span class="stage-pill">' + track.stages[j.stage] + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(j.property) + '<span class="track-tag">' + track.label + '</span></div>';
+      if (j.alsoNotified.length) {
+        html += '<div class="also-line">Also on this file: ' + escapeHtml(j.alsoNotified.join(", ")) + '</div>';
+      }
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next milestone</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceFile(btn.dataset.advance); });
+    });
+  }
+
+  function advanceFile(id) {
+    var j = files.find(function (x) { return x.id === id; });
+    var track = TRACKS[j.track];
+    if (!j || j.stage >= track.stages.length - 1) return;
+    j.stage += 1;
+    var msg = track.messages[j.stage];
+    if (msg) j.notifications.push({ text: msg(j), at: Date.now() });
+    saveFiles(files);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    sel.innerHTML = "";
+    files.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.client;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = files.find(function (x) { return x.id === sel.value; }) || files[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this matter. Advance it in the fee earner view on the left.</p>';
+      return;
+    }
+    var recipients = "Email to " + j.contact + (j.alsoNotified.length ? "; also sent to " + j.alsoNotified.join(", ") : "");
+    var html = "";
+    j.notifications.forEach(function (n) {
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-meta">' + escapeHtml(recipients) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  renderShop();
+  populatePicker();
+  renderThread();
+})();
+</script>
+</body>
+</html>
