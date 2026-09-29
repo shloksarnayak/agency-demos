@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Pellys</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .also-line { font-size: 0.8rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 24rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 96%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble.inbound { align-self: flex-end; background: var(--brand-soft); border-radius: 0.9rem 0.9rem 0.2rem 0.9rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .sample-tag { display: inline-block; background: var(--brand-soft); color: var(--brand); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 5px; margin-bottom: 0.9rem; }
+  .track-tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 5px; margin-left: 0.4rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+
+  .inbox-form { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem; }
+  .inbox-form label { font-size: 0.78rem; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.04em; }
+  .inbox-form input, .inbox-form textarea { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; box-sizing: border-box; resize: vertical; }
+  .inbox-form textarea { min-height: 4.5rem; }
+  .inbox-row-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  @media (max-width: 560px) { .inbox-row-fields { grid-template-columns: 1fr; } }
+  .btn-primary { font: inherit; font-size: 0.85rem; padding: 0.55rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--brand); background: var(--brand); color: var(--surface-raised); cursor: pointer; align-self: flex-start; }
+  .btn-primary:hover { opacity: 0.9; }
+  .ack-note { font-size: 0.8rem; color: var(--muted); margin-top: -0.2rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Pellys</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Pellys</span>
+  <h1 class="fx-h1">The acknowledgment a client never gets until they've already called back</h1>
+  <p class="fx-lede">A Trustpilot reviewer, CTI, wrote that after "hundreds of calls, emails" they "just haven't bothered" to call back. Another reviewer, Michaela Mensah Kayla, was told a matter "should be sorted real soon" and then couldn't reach anyone. Neither is describing a matter that moved slowly, they're describing silence: nothing telling them their message had even been received, let alone when to expect a reply. That is the exact complaint type the UK Legal Ombudsman upheld against Pellys Solicitors Limited: "Failure to respond."</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the UK Legal Ombudsman's own published decision data lists one upheld decision against Pellys Solicitors Limited, decision ID D011783, decided 15/08/2025, area "Wills and Probate," complaint type recorded as "Failure to respond," Evidence of Poor Service: Yes. Six Trustpilot reviews (uk.trustpilot.com/review/www.pellys.co.uk, 3.9/5 from 28 reviews) spanning November 2023 to November 2025 describe the same pattern beyond the two quoted above: Mark Nicholson ("over a month of no replies to emails"), Alan Watson ("communication and liaison was non existent"), Pat ("lack of communication and delays"), and Natalie ("painfully slow"). A direct review of pellys.co.uk found no client portal, case-status login, or tracking system anywhere on the site, only phone numbers, a contact form, and a general inbox address. Nationally marketed UK legal-tech products, Clio's Client Portal and InfoTrack's Digital Conveyancing Portal among them, already sell exactly this kind of automatic acknowledgment and status visibility to solicitors' firms today, including specifically for conveyancing work.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the matters, client names, and inbox messages below are a fictional sample, not real Pellys clients, matters, or correspondence. Nothing here sends a real email or text. This shows exactly what a client, and anyone else on the matter, would receive automatically the moment their matter moves or the moment their message lands in the inbox. A real build connects to whatever field a fee earner already updates and to the info@pellys.co.uk inbox itself, sending through an actual email service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Fee earner view: update a matter's status</h3>
+      <span class="sample-tag">Sample matters, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the client (and anyone else on the matter) sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top: 1.4rem;">
+    <h3 class="panel-title">General inbox: every message gets an automatic acknowledgment</h3>
+    <span class="sample-tag">Sample inbox, fictional</span>
+    <p class="ack-note">This is the direct answer to the Ombudsman's "Failure to respond" finding: a message to info@pellys.co.uk gets an immediate, automatic acknowledgment naming a specific date to expect a reply, instead of silence. Try it below.</p>
+    <div class="inbox-form">
+      <div class="inbox-row-fields">
+        <div>
+          <label for="inbox-name">From</label>
+          <input type="text" id="inbox-name" value="Sample Enquirer">
+        </div>
+        <div>
+          <label for="inbox-ref">Matter reference (optional)</label>
+          <input type="text" id="inbox-ref" placeholder="e.g. PY-4021">
+        </div>
+      </div>
+      <div>
+        <label for="inbox-message">Message</label>
+        <textarea id="inbox-message" placeholder="Type a sample message to info@pellys.co.uk...">Hello, I emailed last week about my late mother's estate and haven't heard back. Could someone let me know where things stand?</textarea>
+      </div>
+      <button class="btn-primary" id="inbox-send">Send message</button>
+    </div>
+    <div class="thread" id="inbox-thread-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email or text.</b> This demo only shows what a client would receive. A real version needs an actual email service (for example SendGrid or Postmark) wired to both the info@pellys.co.uk inbox and to whatever field your fee earners already update to mark a matter's stage.</div>
+      <div class="lim"><b>This introduces acknowledgment and visibility your site doesn't have today, it doesn't sit beside an existing tool.</b> Direct review of pellys.co.uk found no client portal, case-status login, or CRM-facing feature of any kind, so this closes the exact gap the Ombudsman decision and the Trustpilot reviews describe rather than adding a second way to check status.</div>
+      <div class="lim"><b>The milestone stages shown for a conveyancing matter and for a wills/probate matter are typical stages for that kind of work, not copied from Pellys' internal case-management process.</b> A real build should confirm the exact stages your team already tracks, the field they update to move a matter between them, and a reply-by window your team can actually hit before it's promised automatically.</div>
+      <div class="lim"><b>Worth a specific conversation before this goes live: what an acknowledgment or status update can safely say.</b> Since this touches active legal matters, a real build should keep the message content to a status label, a reference number, and a plain next step, as shown below, not matter substance, so nothing privileged or confidential goes out over an unencrypted channel.</div>
+      <div class="lim"><b>The Ombudsman decision and Trustpilot reviews above are real and cited directly, this is a reasonable response to the documented pattern, not a guarantee nothing is ever delayed.</b> A Grant of Probate or a property search can still take time to come back. What changes is whether the client hears something automatically the moment they make contact and at each real step after, instead of finding out only by calling back, or not at all.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Pellys. The Legal Ombudsman decision record and the Trustpilot reviews quoted above are drawn from direct verification of public sources. Matter, client, and inbox message data below is a fictional sample, not connected to any real matter or correspondence.</p>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "pellys-status-pipeline-matters-v1";
+  var INBOX_KEY = "pellys-status-pipeline-inbox-v1";
+
+  var TRACKS = {
+    conveyancing: {
+      label: "Residential conveyancing",
+      stages: ["Instructions received, file opened", "Property searches ordered", "Awaiting third party (enquiries raised, mortgage offer awaited)", "Exchange of contracts", "Completion"],
+      messages: [
+        function (j) { return "This is Pellys. Your file for " + j.property + " has been opened following receipt of instructions. We'll update you automatically at each stage, no need to call or email to check."; },
+        function (j) { return "Property searches have been ordered for " + j.property + ". We'll notify you again once we're waiting on the other side."; },
+        function (j) { return "We're now awaiting the other side's solicitor and the mortgage offer for " + j.property + ". As soon as either comes back, we'll update you."; },
+        function (j) { return "Contracts have been exchanged for " + j.property + ". " + j.detail + "."; },
+        function (j) { return "Completion has taken place on " + j.property + ". Congratulations, and thank you for instructing Pellys."; }
+      ]
+    },
+    probate: {
+      label: "Wills, probate & estate administration",
+      stages: ["Instructions received, estate information gathered", "Application for Grant of Probate submitted", "Awaiting third party (Probate Registry)", "Grant of Probate received, assets being collected", "Estate accounts finalised, administration complete"],
+      messages: [
+        function (j) { return "This is Pellys. We've opened the file for " + j.property + " and are gathering the initial estate information. We'll update you automatically as the matter progresses."; },
+        function (j) { return "The application for the Grant of Probate in the matter of " + j.property + " has been submitted. We'll notify you again once we hear back."; },
+        function (j) { return "We're now waiting on the Probate Registry for " + j.property + ". This step is outside our control, but we'll let you know the moment it moves, you won't need to chase us for it."; },
+        function (j) { return "The Grant of Probate for " + j.property + " has been received. We're now working to collect the estate's assets and settle its liabilities."; },
+        function (j) { return "Administration of " + j.property + " is complete and the estate accounts have been finalised. Thank you for trusting Pellys with this matter."; }
+      ]
+    }
+  };
+
+  function seedFiles() {
+    var now = 1758931200000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "PY-4011",
+        client: "Sample Client A (Purchaser)",
+        contact: "sample.clienta@example.com",
+        track: "conveyancing",
+        property: "9 Fairycroft Road, Saffron Walden (Purchase)",
+        detail: "",
+        alsoNotified: ["Sample Mortgage Broker, D. Iverson"],
+        stage: 1,
+        notifications: [
+          { text: "This is Pellys. Your file for 9 Fairycroft Road, Saffron Walden (Purchase) has been opened following receipt of instructions. We'll update you automatically at each stage, no need to call or email to check.", at: now },
+          { text: "Property searches have been ordered for 9 Fairycroft Road, Saffron Walden (Purchase). We'll notify you again once we're waiting on the other side.", at: now + 3600000 }
+        ]
+      },
+      {
+        id: "PY-4012",
+        client: "Sample Client B (Seller)",
+        contact: "sample.clientb@example.com",
+        track: "conveyancing",
+        property: "3 Baldock Street, Royston (Sale)",
+        detail: "Completion took place as scheduled, keys released same day",
+        alsoNotified: ["Sample Estate Agent, H. Prentice", "Sample Buyer's Solicitor, M. Okafor"],
+        stage: 4,
+        notifications: [
+          { text: "This is Pellys. Your file for 3 Baldock Street, Royston (Sale) has been opened following receipt of instructions. We'll update you automatically at each stage, no need to call or email to check.", at: now },
+          { text: "Property searches have been ordered for 3 Baldock Street, Royston (Sale). We'll notify you again once we're waiting on the other side.", at: now + 3600000 },
+          { text: "We're now awaiting the other side's solicitor and the mortgage offer for 3 Baldock Street, Royston (Sale). As soon as either comes back, we'll update you.", at: now + 7200000 },
+          { text: "Contracts have been exchanged for 3 Baldock Street, Royston (Sale). Completion took place as scheduled, keys released same day.", at: now + 10800000 },
+          { text: "Completion has taken place on 3 Baldock Street, Royston (Sale). Congratulations, and thank you for instructing Pellys.", at: now + 14400000 }
+        ]
+      },
+      {
+        id: "PY-4013",
+        client: "Sample Client C (Executor)",
+        contact: "sample.clientc@example.com",
+        track: "probate",
+        property: "Estate of Sample Decedent",
+        detail: "",
+        alsoNotified: ["Sample Co-Executor, R. Fenn"],
+        stage: 2,
+        notifications: [
+          { text: "This is Pellys. We've opened the file for Estate of Sample Decedent and are gathering the initial estate information. We'll update you automatically as the matter progresses.", at: now },
+          { text: "The application for the Grant of Probate in the matter of Estate of Sample Decedent has been submitted. We'll notify you again once we hear back.", at: now + 3600000 },
+          { text: "We're now waiting on the Probate Registry for Estate of Sample Decedent. This step is outside our control, but we'll let you know the moment it moves, you won't need to chase us for it.", at: now + 7200000 }
+        ]
+      }
+    ];
+  }
+
+  function loadFiles() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedFiles();
+    saveFiles(seeded);
+    return seeded;
+  }
+  function saveFiles(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var files = loadFiles();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    files.forEach(function (j) {
+      var track = TRACKS[j.track];
+      var atLast = j.stage >= track.stages.length - 1;
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.client) + '</h4><span class="stage-pill">' + track.stages[j.stage] + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(j.property) + '<span class="track-tag">' + track.label + '</span></div>';
+      if (j.alsoNotified.length) {
+        html += '<div class="also-line">Also on this file: ' + escapeHtml(j.alsoNotified.join(", ")) + '</div>';
+      }
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next milestone</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceFile(btn.dataset.advance); });
+    });
+  }
+
+  function advanceFile(id) {
+    var j = files.find(function (x) { return x.id === id; });
+    var track = TRACKS[j.track];
+    if (!j || j.stage >= track.stages.length - 1) return;
+    j.stage += 1;
+    var msg = track.messages[j.stage];
+    if (msg) j.notifications.push({ text: msg(j), at: Date.now() });
+    saveFiles(files);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    sel.innerHTML = "";
+    files.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.client;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = files.find(function (x) { return x.id === sel.value; }) || files[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this matter. Advance it in the fee earner view on the left.</p>';
+      return;
+    }
+    var recipients = "Email to " + j.contact + (j.alsoNotified.length ? "; also sent to " + j.alsoNotified.join(", ") : "");
+    var html = "";
+    j.notifications.forEach(function (n) {
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-meta">' + escapeHtml(recipients) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  // General inbox / automatic acknowledgment
+  function addBusinessDays(date, days) {
+    var d = new Date(date.getTime());
+    var added = 0;
+    while (added < days) {
+      d.setDate(d.getDate() + 1);
+      var day = d.getDay();
+      if (day !== 0 && day !== 6) added += 1;
+    }
+    return d;
+  }
+  function fmtReplyDate(d) {
+    return d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+  }
+
+  function seedInbox() {
+    var now = 1758931200000;
+    var replyBy = fmtReplyDate(addBusinessDays(new Date(now), 2));
+    return [
+      {
+        from: "Sample Enquirer D.",
+        ref: "",
+        inbound: "Hi, I sent an email on Tuesday about a family law matter and haven't had a response yet. Can someone confirm it's been received?",
+        at: now,
+        ack: "Thank you for contacting Pellys. Your message has been received and logged. You can expect a reply by " + replyBy + ". If your matter is urgent, please call the office directly.",
+        ackAt: now + 60000
+      }
+    ];
+  }
+
+  function loadInbox() {
+    try {
+      var raw = localStorage.getItem(INBOX_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedInbox();
+    saveInbox(seeded);
+    return seeded;
+  }
+  function saveInbox(list) { localStorage.setItem(INBOX_KEY, JSON.stringify(list)); }
+
+  var inbox = loadInbox();
+
+  function renderInbox() {
+    var root = document.getElementById("inbox-thread-root");
+    if (!inbox.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet. Send one above to see the automatic acknowledgment.</p>';
+      return;
+    }
+    var html = "";
+    inbox.forEach(function (m) {
+      var fromLine = escapeHtml(m.from) + (m.ref ? " &middot; ref " + escapeHtml(m.ref) : "") + " &middot; to info@pellys.co.uk";
+      html += '<div class="bubble inbound"><div class="bubble-text">' + escapeHtml(m.inbound) + '</div><div class="bubble-meta">' + fromLine + ' &middot; ' + fmtTime(m.at) + '</div></div>';
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(m.ack) + '</div><div class="bubble-meta">Automatic reply from Pellys &middot; ' + fmtTime(m.ackAt) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  function sendInboxMessage() {
+    var nameEl = document.getElementById("inbox-name");
+    var refEl = document.getElementById("inbox-ref");
+    var msgEl = document.getElementById("inbox-message");
+    var text = msgEl.value.trim();
+    if (!text) return;
+    var at = Date.now();
+    var replyBy = fmtReplyDate(addBusinessDays(new Date(at), 2));
+    var name = nameEl.value.trim() || "Sample Enquirer";
+    inbox.push({
+      from: name,
+      ref: refEl.value.trim(),
+      inbound: text,
+      at: at,
+      ack: "Thank you for contacting Pellys. Your message has been received and logged. You can expect a reply by " + replyBy + ". If your matter is urgent, please call the office directly.",
+      ackAt: at + 1500
+    });
+    saveInbox(inbox);
+    msgEl.value = "";
+    renderInbox();
+  }
+
+  document.getElementById("inbox-send").addEventListener("click", sendInboxMessage);
+
+  renderShop();
+  populatePicker();
+  renderThread();
+  renderInbox();
+})();
+</script>
+</body>
+</html>
