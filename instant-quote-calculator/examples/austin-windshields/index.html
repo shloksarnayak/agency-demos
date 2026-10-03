@@ -68,7 +68,7 @@
 </header>
 <main class="fx-main">
   <div class="fx-notice">
-    <p><strong>Vehicle lookup below hits a real, live government API</strong> (NHTSA's public VIN decoder) — type or paste an actual VIN and it returns the real year/make/model/body style for that vehicle, the same way a VIN-based quote tool would. Service area is your own published coverage list (Austin, Cedar Park, Round Rock, Georgetown, Lakeway, Bee Cave, Spicewood, Dripping Springs, Buda, Kyle, Manor, Elgin). <strong>Prices are marked "Illustrative"</strong> because your site doesn't publish a rate table the way, say, a pricing-page business would — swap in your real numbers and this becomes live.</p>
+    <p><strong>Vehicle lookup below hits a real, live government API</strong> (NHTSA's public VIN decoder) - type or paste an actual VIN and it returns the real year/make/model/body style for that vehicle, the same way a VIN-based quote tool would. Service area is your own published coverage list (Austin, Cedar Park, Round Rock, Georgetown, Lakeway, Bee Cave, Spicewood, Dripping Springs, Buda, Kyle, Manor, Elgin). <strong>Prices are marked "Illustrative"</strong> because your site doesn't publish a rate table the way, say, a pricing-page business would - swap in your real numbers and this becomes live.</p>
   </div>
 
   <section>
@@ -113,7 +113,7 @@
 
   <section>
     <h2 class="fx-h2">2. What a Saturday-night lead looks like with 24/7 text intake</h2>
-    <p class="fx-lede" style="font-size:0.95rem;">This is a simulation, not a live SMS integration — there's no phone number behind it. It's here to show the mechanism your competitor already has running: a text that arrives outside business hours gets an instant, specific reply instead of sitting until Monday.</p>
+    <p class="fx-lede" style="font-size:0.95rem;">This is a simulation, not a live SMS integration - there's no phone number behind it. It's here to show the mechanism your competitor already has running: a text that arrives outside business hours gets an instant, specific reply instead of sitting until Monday.</p>
     <div class="fx-card">
       <div class="sms-shell">
         <div class="sms-head"><span>(512) 692-7672</span><span id="sms-clock">Sat 9:47 PM</span></div>
@@ -135,11 +135,11 @@
   <section>
     <h2 class="fx-h2">What I'd flag before this goes live</h2>
     <div class="limits">
-      <div class="lim"><b>The VIN decode is real, the pricing isn't.</b> The year/make/model/body style returned above comes from NHTSA's live public VIN database — that part works against any real VIN today. The dollar figures are marked "Illustrative" throughout because your site doesn't publish a rate table; a real build needs your actual repair, replacement, and recalibration numbers by vehicle class.</div>
+      <div class="lim"><b>The VIN decode is real, the pricing isn't.</b> The year/make/model/body style returned above comes from NHTSA's live public VIN database - that part works against any real VIN today. The dollar figures are marked "Illustrative" throughout because your site doesn't publish a rate table; a real build needs your actual repair, replacement, and recalibration numbers by vehicle class.</div>
       <div class="lim"><b>ADAS recalibration is suggested by model year, not confirmed by the VIN.</b> NHTSA's data on which specific trims carry a forward-facing camera is inconsistent across manufacturers, so this flags "likely needs recalibration" for 2018+ vehicles as a starting point and leaves the final call to whoever's writing the ticket, the same way a tech would visually confirm it today.</div>
       <div class="lim"><b>Service-city check is a name match against your published list, not a real address lookup.</b> It confirms the city the customer typed is one you already serve; it doesn't validate a street address or calculate drive time.</div>
       <div class="lim"><b>The text thread is a scripted simulation, not a working phone number.</b> Standing this up for real means a provider like Twilio wired to a triage script and, ideally, this same VIN/quote logic so the auto-reply carries a real number, not just "we'll call you back."</div>
-      <div class="lim"><b>This calculates and demonstrates, it doesn't book anything.</b> No calendar, no payment, no confirmation email. The honest next step after "here's your estimate" is still your existing quote process — this just gets someone there already knowing what to expect, at 9 PM on a Saturday instead of Monday morning.</div>
+      <div class="lim"><b>This calculates and demonstrates, it doesn't book anything.</b> No calendar, no payment, no confirmation email. The honest next step after "here's your estimate" is still your existing quote process - this just gets someone there already knowing what to expect, at 9 PM on a Saturday instead of Monday morning.</div>
     </div>
   </section>
 </main>
@@ -153,7 +153,7 @@
   // ---- Real service area, copied from austinwindshields.net ----
   var SERVICE_CITIES = ["austin","cedar park","round rock","georgetown","lakeway","bee cave","spicewood","dripping springs","buda","kyle","manor","elgin"];
 
-  // ---- Illustrative pricing only — not published by Austin Windshields ----
+  // ---- Illustrative pricing only - not published by Austin Windshields ----
   var PRICING = {
     repair: 130,
     replace: 400,
@@ -241,7 +241,7 @@
     html += '<b>' + (vehicle.year || '?') + ' ' + (vehicle.make || '') + ' ' + (vehicle.model || '') + '</b>';
     html += '<div>' + (vehicle.body || 'Body style not returned') + '</div>';
     if (likelyAdas()) {
-      html += '<span class="adas-flag">2018+ model — likely has a windshield-mounted ADAS camera</span>';
+      html += '<span class="adas-flag">2018+ model - likely has a windshield-mounted ADAS camera</span>';
     }
     html += '</div>';
     vehicleOut.innerHTML = html;
@@ -332,11 +332,11 @@
     if (afterHours) {
       msgs.push({ who: 'out', text: 'Thanks for texting Austin Windshields! We’re closed right now but here’s an instant estimate for a 2021 RAV4 replacement in Cedar Park: <b>~' + money(PRICING.replace + PRICING.adas) + '</b> (incl. ADAS recalibration, illustrative). Reply YES to lock this in and Jas will call to schedule when we open at 8 AM.', ts: '9:48 PM' });
       msgs.push({ who: 'in', text: 'Yes please, that works', ts: '9:52 PM' });
-      msgs.push({ who: 'out', text: 'Got it — you’re first on the schedule Monday. This lead would have otherwise waited until we reopened.', ts: '9:52 PM' });
+      msgs.push({ who: 'out', text: 'Got it - you’re first on the schedule Monday. This lead would have otherwise waited until we reopened.', ts: '9:52 PM' });
     } else {
       msgs.push({ who: 'out', text: 'Thanks for texting Austin Windshields! Instant estimate for a 2021 RAV4 replacement in Cedar Park: <b>~' + money(PRICING.replace + PRICING.adas) + '</b> (incl. ADAS recalibration, illustrative). Reply YES and Jas will confirm a same-day slot.', ts: '11:16 AM' });
       msgs.push({ who: 'in', text: 'Yes please', ts: '11:18 AM' });
-      msgs.push({ who: 'out', text: 'You’re on today’s schedule. Same response either way — the difference is only the after-hours case, where this replaces a message that would otherwise sit until Monday.', ts: '11:18 AM' });
+      msgs.push({ who: 'out', text: 'You’re on today’s schedule. Same response either way - the difference is only the after-hours case, where this replaces a message that would otherwise sit until Monday.', ts: '11:18 AM' });
     }
     var i = 0;
     function step() {

@@ -74,7 +74,7 @@
         <div class="visit-box">
           <div>
             <div class="note-inline" style="margin:0 0 .2rem;">Next scheduled visit</div>
-            <div class="big" id="visit-date-label">&mdash;</div>
+            <div class="big" id="visit-date-label">-</div>
           </div>
           <span class="badge" id="visit-status-badge">Scheduled</span>
         </div>
@@ -84,7 +84,7 @@
         </div>
         <div class="slot-grid" id="slot-grid"></div>
         <button class="fx-btn" id="confirm-resched" disabled>Confirm reschedule</button>
-        <p class="note-inline">One tap here is the same action a client would take from the reschedule link in the automated reminder &mdash; no call to the shop line required.</p>
+        <p class="note-inline">One tap here is the same action a client would take from the reschedule link in the automated reminder - no call to the shop line required.</p>
       </div>
 
       <div class="panel" data-panel="reminder">
@@ -99,7 +99,7 @@
       </div>
 
       <div class="panel" data-panel="inquiry">
-        <div class="inquiry-note"><strong>This form is intentionally separate from the route-client view above.</strong> A first-time visitor filling this out never touches an existing client's schedule, and an existing client rescheduling never gets funneled into a new-lead queue &mdash; today both go through the same inbox and phone number.</div>
+        <div class="inquiry-note"><strong>This form is intentionally separate from the route-client view above.</strong> A first-time visitor filling this out never touches an existing client's schedule, and an existing client rescheduling never gets funneled into a new-lead queue - today both go through the same inbox and phone number.</div>
         <form id="inquiry-form" class="field-row">
           <div class="field"><span>Name</span><input type="text" id="inq-name" placeholder="e.g. Sample Visitor" required></div>
           <div class="field"><span>Tank size / type</span><input type="text" id="inq-tank" placeholder="e.g. 75g reef"></div>
@@ -260,7 +260,7 @@
     if (!inquiries.length) { root.innerHTML = "<p class=\"empty\">No inquiries logged yet in this session.</p>"; return; }
     var html = "<table class=\"orders\"><thead><tr><th>Name</th><th>Tank</th><th>Interested plan</th></tr></thead><tbody>";
     inquiries.slice().reverse().forEach(function (q) {
-      html += "<tr><td>" + escapeHtml(q.name) + "</td><td>" + escapeHtml(q.tank || "&mdash;") + "</td><td>" + escapeHtml(q.plan) + "</td></tr>";
+      html += "<tr><td>" + escapeHtml(q.name) + "</td><td>" + escapeHtml(q.tank || "-") + "</td><td>" + escapeHtml(q.plan) + "</td></tr>";
     });
     html += "</tbody></table><p class=\"note-inline\">Routed to a separate new-lead queue, never mixed with the route-client schedule above.</p>";
     root.innerHTML = html;

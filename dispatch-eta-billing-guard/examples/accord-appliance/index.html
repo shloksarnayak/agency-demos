@@ -173,7 +173,7 @@
       html += '<div class="deb-card"><div class="deb-card-head"><div><div class="deb-card-title">' + escapeHtml(job.customer) + " &middot; " + escapeHtml(job.service) + '</div><div class="deb-card-meta">' + fmtDate(job.date) + ", " + fmtTime(job.winStart) + "&ndash;" + fmtTime(job.winEnd) + '</div></div></div>';
       html += '<div class="deb-badges"><span class="deb-badge ' + STATUS_BADGE_CLASS[job.status] + '">' + STATUS_LABEL[job.status] + '</span><span class="deb-badge ' + integ.cls + '">' + integ.text + '</span></div>';
       if (job.verification) {
-        html += '<div class="verify-block"><b>Verification on file</b>' + escapeHtml(job.verification.method) + (job.verification.note ? " &mdash; " + escapeHtml(job.verification.note) : "") + ' &middot; ' + escapeHtml(job.verification.at) + '</div>';
+        html += '<div class="verify-block"><b>Verification on file</b>' + escapeHtml(job.verification.method) + (job.verification.note ? " - " + escapeHtml(job.verification.note) : "") + ' &middot; ' + escapeHtml(job.verification.at) + '</div>';
       }
       html += '<div class="deb-log">' + job.log.slice().reverse().map(function (l) { return '<div class="deb-log-item"><span>' + escapeHtml(l.status) + '</span><span>' + escapeHtml(l.at) + '</span></div>'; }).join("") + '</div>';
       html += '<div class="deb-row">';

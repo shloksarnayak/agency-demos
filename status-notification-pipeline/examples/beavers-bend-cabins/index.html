@@ -63,7 +63,7 @@
 </header>
 <main class="fx-main">
   <div class="fx-notice">
-    <p><strong>What's real:</strong> Beavers Bend Luxury Cabin Rentals lists <strong>51 properties</strong> in Broken Bow, Oklahoma, ranging from 1-bedroom cottages to 14-bedroom estates (2 to 28 guests), marketed near Broken Bow Lake and Beavers Bend State Park, with each property page showing 550 days of nightly pricing and live availability (beaversbendcabins4rent.com, checked today). Reservations route through reservations@beaversbendcabins4rent.com. The original outreach note referenced roughly 57 listings and an estimated 70% year-over-year growth; the live site shows 51 listings today, which could reflect a normal change in active listings since that estimate was made, or simply be an approximation in the original note &mdash; it was not independently re-verified against a dated source. <strong>No owner or manager name is publicly listed on the site</strong>, so none is used here.</p>
+    <p><strong>What's real:</strong> Beavers Bend Luxury Cabin Rentals lists <strong>51 properties</strong> in Broken Bow, Oklahoma, ranging from 1-bedroom cottages to 14-bedroom estates (2 to 28 guests), marketed near Broken Bow Lake and Beavers Bend State Park, with each property page showing 550 days of nightly pricing and live availability (beaversbendcabins4rent.com, checked today). Reservations route through reservations@beaversbendcabins4rent.com. The original outreach note referenced roughly 57 listings and an estimated 70% year-over-year growth; the live site shows 51 listings today, which could reflect a normal change in active listings since that estimate was made, or simply be an approximation in the original note - it was not independently re-verified against a dated source. <strong>No owner or manager name is publicly listed on the site</strong>, so none is used here.</p>
   </div>
   <div class="fx-notice">
     <p><strong>What's illustrative:</strong> the reservations, guest names, cabin names, door codes, and channel mix (direct site / Airbnb / VRBO) below are a fictional sample, not real Beavers Bend bookings. Multi-channel distribution is a reasonable assumption for a cabin operator this size, not a confirmed fact about this specific business. All dollar figures, if shown, are illustrative. Nothing here sends a real text or email, this shows exactly what a guest would receive at each step. A real build connects to the booking channels' APIs or webhooks (direct site, Airbnb, VRBO) and sends through an actual SMS/email service, triggered by the reservation date rather than a manual click.</p>
@@ -214,7 +214,7 @@
     reservations.forEach(function (r) {
       var atLast = r.stage >= STAGE_NAMES.length - 1;
       html += '<div class="job-row">';
-      html += '<div class="job-head"><h4>' + r.id + ' &mdash; ' + escapeHtml(r.customer) + '</h4><span class="stage-pill">' + STAGE_NAMES[r.stage] + '</span></div>';
+      html += '<div class="job-head"><h4>' + r.id + ' - ' + escapeHtml(r.customer) + '</h4><span class="stage-pill">' + STAGE_NAMES[r.stage] + '</span></div>';
       html += '<div class="job-meta">' + escapeHtml(r.cabin) + ' &middot; <span class="channel-pill">' + escapeHtml(r.channel) + '</span> &middot; ' + escapeHtml(r.contact) + '</div>';
       html += '<div class="window-line">Check-in ' + escapeHtml(r.checkin) + ' &rarr; Check-out ' + escapeHtml(r.checkout) + '</div>';
       html += '<div class="job-actions">';

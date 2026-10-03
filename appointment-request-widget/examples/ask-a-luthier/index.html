@@ -45,18 +45,18 @@
 <header class="fx-hero">
   <span class="fx-kicker">Working example, built for Ask a Luthier</span>
   <h1 class="fx-h1">Giving the repair shop a front door of its own</h1>
-  <p class="fx-lede">Right now, alferdpackerband.com mentions that Steve is a luthier, but there's no link from there to ask-a-luthier.com, and ask-a-luthier.com itself has a Contact link with no request form behind it &mdash; just phone or email tag. Someone who lands on the band site looking for a repair, or reaches the luthier site after hours, has no way to leave a request. This form is that missing piece.</p>
+  <p class="fx-lede">Right now, alferdpackerband.com mentions that Steve is a luthier, but there's no link from there to ask-a-luthier.com, and ask-a-luthier.com itself has a Contact link with no request form behind it - just phone or email tag. Someone who lands on the band site looking for a repair, or reaches the luthier site after hours, has no way to leave a request. This form is that missing piece.</p>
 </header>
 <main class="fx-main">
   <div class="fx-notice">
-    <p><strong>What's real:</strong> the repair categories below (neck resets, truss rod work, fret jobs, bridge and saddle replacement, finish work) are drawn from the questions Steve has answered on ask-a-luthier.com's own Q&amp;A archive, and the instrument types match what he covers there &mdash; guitars, mandolins, violins, cellos, and basses. <strong>What's illustrative:</strong> the site doesn't list hours, a shop address, or turnaround times anywhere, so those below are placeholder values marked "Illustrative" &mdash; a real build would use whatever Steve actually runs on.</p>
+    <p><strong>What's real:</strong> the repair categories below (neck resets, truss rod work, fret jobs, bridge and saddle replacement, finish work) are drawn from the questions Steve has answered on ask-a-luthier.com's own Q&amp;A archive, and the instrument types match what he covers there - guitars, mandolins, violins, cellos, and basses. <strong>What's illustrative:</strong> the site doesn't list hours, a shop address, or turnaround times anywhere, so those below are placeholder values marked "Illustrative" - a real build would use whatever Steve actually runs on.</p>
   </div>
 
   <div class="split">
     <div class="fx-card" id="form-root"></div>
     <div class="site-note">
       <p style="margin-top:0;"><strong>The gap this closes</strong></p>
-      <p>The band's own site, <code>alferdpackerband.com</code>, names Steve as a luthier but sends nobody anywhere. His shop site, <code>ask-a-luthier.com</code>, has a Contact link in the nav with no way to actually request anything behind it. Two real people looking for the same thing &mdash; a bandmate's fan curious about the repair work, and a musician searching for a luthier &mdash; both hit a dead end today. Linking the two sites and dropping this form where "Contact" currently sits fixes both at once, without changing how Steve actually works.</p>
+      <p>The band's own site, <code>alferdpackerband.com</code>, names Steve as a luthier but sends nobody anywhere. His shop site, <code>ask-a-luthier.com</code>, has a Contact link in the nav with no way to actually request anything behind it. Two real people looking for the same thing - a bandmate's fan curious about the repair work, and a musician searching for a luthier - both hit a dead end today. Linking the two sites and dropping this form where "Contact" currently sits fixes both at once, without changing how Steve actually works.</p>
     </div>
   </div>
 
@@ -64,7 +64,7 @@
     <h2 class="fx-h2">What I'd flag before this goes live</h2>
     <div class="limits">
       <div class="lim"><b>This is a request form, not a booking calendar.</b> It doesn't know which days Steve is actually free, because it isn't connected to a real schedule. Someone picks a rough preference and it gets sent to him, same as a phone call or email today, just captured from both sites instead of neither.</div>
-      <div class="lim"><b>Hours, turnaround, and shop location are placeholders.</b> Illustrative only, since neither alferdpackerband.com nor ask-a-luthier.com lists them anywhere public. A real build swaps these for whatever Steve actually runs on &mdash; even "call to check" is fine, it just needs to be there.</div>
+      <div class="lim"><b>Hours, turnaround, and shop location are placeholders.</b> Illustrative only, since neither alferdpackerband.com nor ask-a-luthier.com lists them anywhere public. A real build swaps these for whatever Steve actually runs on - even "call to check" is fine, it just needs to be there.</div>
       <div class="lim"><b>Nothing here actually sends anything.</b> A real version would email or text Steve the moment someone submits it. This demo just shows what that submission would look like.</div>
       <div class="lim"><b>The fix is linking two existing sites, not replacing either.</b> The band site keeps being the band site. This form slots into the Contact page on ask-a-luthier.com, and a single line on alferdpackerband.com points there.</div>
     </div>
@@ -183,7 +183,7 @@
     html += '<dt>Name</dt><dd>' + escapeHtml(state.name) + '</dd>';
     html += '<dt>Contact</dt><dd>' + escapeHtml(state.contact) + '</dd>';
     html += '</dl>';
-    html += '<p style="font-size:0.88rem; color:var(--ink-2);">A real version emails or texts this to Steve the moment it\'s submitted, and he confirms the actual drop-off time back to the customer &mdash; same as a phone call today, just captured from either site, any hour.</p>';
+    html += '<p style="font-size:0.88rem; color:var(--ink-2);">A real version emails or texts this to Steve the moment it\'s submitted, and he confirms the actual drop-off time back to the customer - same as a phone call today, just captured from either site, any hour.</p>';
     html += '<button class="fx-btn-ghost" id="reset-btn" style="align-self:flex-start;">Start over</button>';
     html += '</div>';
     root.innerHTML = html;
