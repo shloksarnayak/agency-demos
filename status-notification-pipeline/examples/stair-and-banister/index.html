@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Stair and Banister</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .stage-pill.flag { background: #f4dede; color: #9c3b3b; }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-sm.warn { border-color: #c76a6a; color: #9c3b3b; }
+  .btn-sm.warn:hover:not(:disabled) { border-color: #9c3b3b; }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 24rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 96%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble.flag { border-color: #c76a6a; background: #fbf1f1; }
+  .bubble.inbound { align-self: flex-end; background: var(--brand-soft); border-radius: 0.9rem 0.9rem 0.2rem 0.9rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .sample-tag { display: inline-block; background: var(--brand-soft); color: var(--brand); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 5px; margin-bottom: 0.9rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+
+  .inbox-form { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem; }
+  .inbox-form label { font-size: 0.78rem; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.04em; }
+  .inbox-form input, .inbox-form textarea { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; box-sizing: border-box; resize: vertical; }
+  .inbox-form textarea { min-height: 4.5rem; }
+  .inbox-row-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  @media (max-width: 560px) { .inbox-row-fields { grid-template-columns: 1fr; } }
+  .btn-primary { font: inherit; font-size: 0.85rem; padding: 0.55rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--brand); background: var(--brand); color: var(--surface-raised); cursor: pointer; align-self: flex-start; }
+  .btn-primary:hover { opacity: 0.9; }
+  .ack-note { font-size: 0.8rem; color: var(--muted); margin-top: -0.2rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Stair and Banister</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Stair and Banister</span>
+  <h1 class="fx-h1">The update that goes out before the customer has to call back</h1>
+  <p class="fx-lede">A Trustpilot reviewer, Javier Martin, wrote that staff were "extremely unprofessional...they never cared" and stopped "answering phone or replying messages." Another reviewer, Catherine, wrote that when she tried to place a follow-up order, "no one had bothered to respond" across multiple calls and emails. A third, Bianca M, described a squeaky-staircase snag after installation going unanswered across multiple contact attempts. All three describe the same gap: once a staircase order is placed and paid for, nothing tells the customer what's happening or confirms their message was even received, unless they chase it themselves.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> Stair and Banister Ltd (Companies House #12297705, active, incorporated 4 November 2019, sole director Jake Millar) describes its own process on stairandbanister.co.uk as on-site measurement, CAD drawing, in-house manufacture, delivery, and one-day installation. Trustpilot shows 29 reviews, 4.2/5 overall, 86% five-star, with the three reviews quoted above (Javier Martin, 7 Oct 2022; Catherine, 5 Sep 2022; Bianca M, 4 May 2025) describing the same stop-responding-after-the-sale pattern. A direct fetch of the live homepage found no portal, client login, order-status tracker, or dashboard of any kind, just phone numbers and the info@stairandbanister.co.uk inbox. Products that solve exactly this kind of job-visibility gap for joiners and trade businesses, Trade2Base among them, are already sold and marketed today.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the orders, customer names, and inbox messages below are a fictional sample, not real Stair and Banister orders, clients, or correspondence. Nothing here sends a real email or text, it shows exactly what a customer would receive at each step. A real build connects to whatever the team already uses to mark an order's stage, and to the info@stairandbanister.co.uk inbox itself, sending through an actual email service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Office view: update an order's stage</h3>
+      <span class="sample-tag">Sample orders, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the customer sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top: 1.4rem;">
+    <h3 class="panel-title">General inbox: every message gets an automatic acknowledgment</h3>
+    <span class="sample-tag">Sample inbox, fictional</span>
+    <p class="ack-note">This is the direct answer to the pattern in Javier Martin's and Catherine's reviews: a message to info@stairandbanister.co.uk, whether chasing a snag or asking about a follow-up order, gets an immediate automatic acknowledgment naming a specific date to expect a reply, instead of silence. Try it below.</p>
+    <div class="inbox-form">
+      <div class="inbox-row-fields">
+        <div>
+          <label for="inbox-name">From</label>
+          <input type="text" id="inbox-name" value="Sample Customer">
+        </div>
+        <div>
+          <label for="inbox-ref">Order reference (optional)</label>
+          <input type="text" id="inbox-ref" placeholder="e.g. SB-3104">
+        </div>
+      </div>
+      <div>
+        <label for="inbox-message">Message</label>
+        <textarea id="inbox-message" placeholder="Type a sample message to info@stairandbanister.co.uk...">Hi, I've called and emailed a couple of times about placing a further order and haven't heard anything back. Could someone let me know you've got this?</textarea>
+      </div>
+      <button class="btn-primary" id="inbox-send">Send message</button>
+    </div>
+    <div class="thread" id="inbox-thread-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email or text.</b> This demo only shows what a customer would receive. A real version needs an actual email/SMS service (for example SendGrid or Twilio) wired to the info@stairandbanister.co.uk inbox and to whatever your team already uses to mark an order's stage.</div>
+      <div class="lim"><b>The five stages shown (measurement booked, CAD design sent for approval, in manufacture, installation scheduled, installed) match the process described on your own site, they are not copied from your internal job tracking.</b> Worth a short conversation before this gets built for real, to confirm the exact point your team marks a job as moved.</div>
+      <div class="lim"><b>The "Flag a snag" button is built directly from the Bianca M review.</b> Try it on the installed sample order below: instead of a customer having to call and call again about a squeaky step, they get an automatic acknowledgment the moment the office logs it, and a visible status once it's booked in and resolved.</div>
+      <div class="lim"><b>No portal, login, or order-status tool exists on stairandbanister.co.uk today, confirmed by a direct fetch of the live homepage.</b> This is a new capability, not a second system competing with something that already works.</div>
+      <div class="lim"><b>The reviews above are real and quoted directly, this is a reasonable response to the documented pattern, not a guarantee every job goes perfectly or every snag is fixed instantly.</b> A squeaky step or a delayed manufacture slot can still happen. What this changes is whether the customer hears something automatically, the moment they make contact and at each real step after, instead of calling repeatedly and getting nothing back.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Stair and Banister. The Trustpilot reviews quoted above, and the absence of any order-status, portal, or CRM system on the live site, were verified by direct fetch today. Order, customer, and inbox message data below is a fictional sample, not connected to any real order or correspondence.</p>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "sb-status-pipeline-orders-v1";
+  var INBOX_KEY = "sb-status-pipeline-inbox-v1";
+
+  var BASE_STAGES = ["Measurement booked", "CAD design sent for approval", "In manufacture", "Installation scheduled", "Installed"];
+  var SNAG_STAGES = ["Snag reported", "Snag resolved"];
+
+  function stageMessage(j, stageName) {
+    switch (stageName) {
+      case "CAD design sent for approval":
+        return "This is Stair and Banister. Your CAD design for " + j.job + " is ready for your approval. We'll text/email again once manufacture begins.";
+      case "In manufacture":
+        return "Your staircase for " + j.job + " is now in manufacture at our workshop. We'll update you again once installation is scheduled, no need to call to check.";
+      case "Installation scheduled":
+        return "Installation for " + j.job + " is scheduled: " + j.window + ". We'll confirm again the day before.";
+      case "Installed":
+        return "Your staircase for " + j.job + " has been installed. Thank you for choosing Stair and Banister. If anything needs attention, just reply to this message or use the form below.";
+      case "Snag reported":
+        return "We've logged the issue you reported with " + j.job + ": " + (j.snagReason || "a snag on the installed staircase") + ". We'll be in touch with a date, no need to keep calling.";
+      case "Snag resolved":
+        return "The snag on " + j.job + " has been resolved as of " + j.window + ". Thank you for your patience.";
+      default:
+        return null;
+    }
+  }
+
+  function seedOrders() {
+    var now = 1758931200000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "SB-3101",
+        customer: "Sample Customer A",
+        contact: "sample.customera@example.com",
+        job: "bespoke oak staircase, Crawley",
+        window: "Design approval pending",
+        stages: BASE_STAGES.slice(),
+        stage: 1,
+        snagReason: "",
+        notifications: [
+          { text: "This is Stair and Banister. Your CAD design for bespoke oak staircase, Crawley is ready for your approval. We'll text/email again once manufacture begins.", at: now }
+        ]
+      },
+      {
+        id: "SB-3104",
+        customer: "Sample Customer B",
+        contact: "sample.customerb@example.com",
+        job: "glass balustrade staircase, Surrey",
+        window: "In manufacture, 3-4 week slot",
+        stages: BASE_STAGES.slice(),
+        stage: 2,
+        snagReason: "",
+        notifications: [
+          { text: "This is Stair and Banister. Your CAD design for glass balustrade staircase, Surrey is ready for your approval. We'll text/email again once manufacture begins.", at: now + 3600000 },
+          { text: "Your staircase for glass balustrade staircase, Surrey is now in manufacture at our workshop. We'll update you again once installation is scheduled, no need to call to check.", at: now + 7200000 }
+        ]
+      },
+      {
+        id: "SB-3108",
+        customer: "Sample Customer C",
+        contact: "sample.customerc@example.com",
+        job: "bespoke staircase, 3-storey residential",
+        window: "Installed",
+        stages: BASE_STAGES.slice(),
+        stage: 4,
+        snagReason: "",
+        notifications: [
+          { text: "This is Stair and Banister. Your CAD design for bespoke staircase, 3-storey residential is ready for your approval. We'll text/email again once manufacture begins.", at: now + 3600000 },
+          { text: "Your staircase for bespoke staircase, 3-storey residential is now in manufacture at our workshop. We'll update you again once installation is scheduled, no need to call to check.", at: now + 7200000 },
+          { text: "Installation for bespoke staircase, 3-storey residential is scheduled: week of the 14th, confirmed morning slot. We'll confirm again the day before.", at: now + 10800000 },
+          { text: "Your staircase for bespoke staircase, 3-storey residential has been installed. Thank you for choosing Stair and Banister. If anything needs attention, just reply to this message or use the form below.", at: now + 14400000 }
+        ]
+      },
+      {
+        id: "SB-3110",
+        customer: "Sample Customer D",
+        contact: "sample.customerd@example.com",
+        job: "staircase refurbishment, commercial premises",
+        window: "Measurement visit to be arranged",
+        stages: BASE_STAGES.slice(),
+        stage: 0,
+        snagReason: "",
+        notifications: []
+      }
+    ];
+  }
+
+  function loadOrders() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedOrders();
+    saveOrders(seeded);
+    return seeded;
+  }
+  function saveOrders(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var orders = loadOrders();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function currentStageName(j) { return j.stages[j.stage]; }
+  function atLastStage(j) { return j.stage >= j.stages.length - 1; }
+  function canFlagSnag(j) { return currentStageName(j) === "Installed"; }
+  function canResolveSnag(j) { return currentStageName(j) === "Snag reported"; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    orders.forEach(function (j) {
+      var stageName = currentStageName(j);
+      var isFlagStage = stageName === "Snag reported";
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.customer) + '</h4><span class="stage-pill' + (isFlagStage ? ' flag' : '') + '">' + escapeHtml(stageName) + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(j.job) + '</div>';
+      html += '<div class="job-meta">' + escapeHtml(j.window) + '</div>';
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLastStage(j) ? " disabled" : "") + '>Advance to next stage</button>';
+      if (canFlagSnag(j)) {
+        html += '<button class="btn-sm warn" data-flag-snag="' + j.id + '">Flag a snag</button>';
+      }
+      if (canResolveSnag(j)) {
+        html += '<button class="btn-sm" data-resolve-snag="' + j.id + '">Mark snag resolved</button>';
+      }
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceOrder(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-flag-snag]"), function (btn) {
+      btn.addEventListener("click", function () { flagSnag(btn.dataset.flagSnag); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-resolve-snag]"), function (btn) {
+      btn.addEventListener("click", function () { resolveSnag(btn.dataset.resolveSnag); });
+    });
+  }
+
+  function pushNotification(j, text, flagged) {
+    j.notifications.push({ text: text, at: Date.now(), flagged: !!flagged });
+  }
+
+  function advanceOrder(id) {
+    var j = orders.find(function (x) { return x.id === id; });
+    if (!j || atLastStage(j)) return;
+    j.stage += 1;
+    var msg = stageMessage(j, currentStageName(j));
+    if (msg) pushNotification(j, msg, false);
+    saveOrders(orders);
+    renderShop();
+    renderThread();
+  }
+
+  function flagSnag(id) {
+    var j = orders.find(function (x) { return x.id === id; });
+    if (!j || !canFlagSnag(j)) return;
+    var reasonInput = window.prompt("What's the snag? (shown to the customer)", j.snagReason || "a squeaky step");
+    if (reasonInput === null) return;
+    j.snagReason = reasonInput.trim() || "a squeaky step";
+    var insertAt = j.stage + 1;
+    j.stages = j.stages.slice(0, insertAt).concat(SNAG_STAGES, j.stages.slice(insertAt));
+    j.stage = insertAt;
+    j.window = "Snag booked in, date to be confirmed";
+    var msg = stageMessage(j, currentStageName(j));
+    pushNotification(j, msg, true);
+    saveOrders(orders);
+    renderShop();
+    renderThread();
+  }
+
+  function resolveSnag(id) {
+    var j = orders.find(function (x) { return x.id === id; });
+    if (!j || !canResolveSnag(j)) return;
+    var dateInput = window.prompt("Resolved on what date? (shown to the customer)", "the 21st");
+    if (dateInput === null) return;
+    j.window = dateInput.trim() || "the 21st";
+    j.stage += 1;
+    var msg = stageMessage(j, currentStageName(j));
+    pushNotification(j, msg, false);
+    saveOrders(orders);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    sel.innerHTML = "";
+    orders.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.customer;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = orders.find(function (x) { return x.id === sel.value; }) || orders[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this order. Advance it in the office view on the left.</p>';
+      return;
+    }
+    var html = "";
+    j.notifications.forEach(function (n) {
+      html += '<div class="bubble' + (n.flagged ? ' flag' : '') + '"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-meta">Email to ' + escapeHtml(j.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  // General inbox / automatic acknowledgment
+  function addBusinessDays(date, days) {
+    var d = new Date(date.getTime());
+    var added = 0;
+    while (added < days) {
+      d.setDate(d.getDate() + 1);
+      var day = d.getDay();
+      if (day !== 0 && day !== 6) added += 1;
+    }
+    return d;
+  }
+  function fmtReplyDate(d) {
+    return d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+  }
+
+  function seedInbox() {
+    var now = 1758931200000;
+    var replyBy = fmtReplyDate(addBusinessDays(new Date(now), 2));
+    return [
+      {
+        from: "Sample Enquirer",
+        ref: "",
+        inbound: "Hello, I've called a couple of times this week about a squeaky step on our new staircase and haven't heard back. Could someone confirm you've got this?",
+        at: now,
+        ack: "Thank you for contacting Stair and Banister. Your message has been received and logged. You can expect a reply by " + replyBy + ". If it's urgent, please call the office directly.",
+        ackAt: now + 60000
+      }
+    ];
+  }
+
+  function loadInbox() {
+    try {
+      var raw = localStorage.getItem(INBOX_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedInbox();
+    saveInbox(seeded);
+    return seeded;
+  }
+  function saveInbox(list) { localStorage.setItem(INBOX_KEY, JSON.stringify(list)); }
+
+  var inbox = loadInbox();
+
+  function renderInbox() {
+    var root = document.getElementById("inbox-thread-root");
+    if (!inbox.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet. Send one above to see the automatic acknowledgment.</p>';
+      return;
+    }
+    var html = "";
+    inbox.forEach(function (m) {
+      var fromLine = escapeHtml(m.from) + (m.ref ? " &middot; ref " + escapeHtml(m.ref) : "") + " &middot; to info@stairandbanister.co.uk";
+      html += '<div class="bubble inbound"><div class="bubble-text">' + escapeHtml(m.inbound) + '</div><div class="bubble-meta">' + fromLine + ' &middot; ' + fmtTime(m.at) + '</div></div>';
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(m.ack) + '</div><div class="bubble-meta">Automatic reply from Stair and Banister &middot; ' + fmtTime(m.ackAt) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  function sendInboxMessage() {
+    var nameEl = document.getElementById("inbox-name");
+    var refEl = document.getElementById("inbox-ref");
+    var msgEl = document.getElementById("inbox-message");
+    var text = msgEl.value.trim();
+    if (!text) return;
+    var at = Date.now();
+    var replyBy = fmtReplyDate(addBusinessDays(new Date(at), 2));
+    var name = nameEl.value.trim() || "Sample Enquirer";
+    inbox.push({
+      from: name,
+      ref: refEl.value.trim(),
+      inbound: text,
+      at: at,
+      ack: "Thank you for contacting Stair and Banister. Your message has been received and logged. You can expect a reply by " + replyBy + ". If it's urgent, please call the office directly.",
+      ackAt: at + 1500
+    });
+    saveInbox(inbox);
+    msgEl.value = "";
+    renderInbox();
+  }
+
+  document.getElementById("inbox-send").addEventListener("click", sendInboxMessage);
+
+  renderShop();
+  populatePicker();
+  renderThread();
+  renderInbox();
+})();
+</script>
+</body>
+</html>
