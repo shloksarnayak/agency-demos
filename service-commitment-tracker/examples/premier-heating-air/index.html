@@ -242,10 +242,10 @@
     var completed = data.commitments.filter(function (c) { return c.status === "completed"; }).slice().sort(function (a, b) { return b.completedAt - a.completedAt; });
     var html = "";
     if (!open.length) html += '<p class="empty">Nothing open. Every commitment is caught up.</p>';
-    open.forEach(function (c) { html += renderCard(c, true); });
+    open.forEach(function (c) { html += renderCard(c, true, "q"); });
     if (completed.length) {
       html += '<h3 class="fx-h2" style="font-size:1rem;margin-top:1.4rem;">Recently completed</h3>';
-      completed.slice(0, 5).forEach(function (c) { html += renderCard(c, true); });
+      completed.slice(0, 5).forEach(function (c) { html += renderCard(c, true, "q"); });
     }
     root.innerHTML = html;
   }
@@ -255,11 +255,11 @@
     var escalated = data.commitments.filter(function (c) { return c.status === "open" && statusInfo(c).cls === "escalated"; }).slice().sort(function (a, b) { return (b.cancelCount - a.cancelCount) || (a.scheduledAt - b.scheduledAt); });
     var html = "";
     if (!escalated.length) html += '<p class="empty">Nothing currently needs manager attention.</p>';
-    escalated.forEach(function (c) { html += renderCard(c, false); });
+    escalated.forEach(function (c) { html += renderCard(c, false, "e"); });
     root.innerHTML = html;
   }
 
-  function renderCard(c, showCancelAction) {
+  function renderCard(c, showCancelAction, scope) {
     var st = statusInfo(c);
     var idx = data.commitments.indexOf(c);
     var html = '<div class="commit-card' + (st.cls === "escalated" ? " is-escalated" : "") + '"><div class="commit-head"><div><div class="commit-title">' + escapeHtml(c.customer) + " &middot; " + c.ref + '</div><div class="commit-meta">' + TYPE_LABEL[c.type] + " &middot; scheduled " + fmtDate(c.scheduledAt) + (c.cancelCount ? " &middot; cancelled " + c.cancelCount + "x" : "") + '</div></div><span class="badge ' + st.cls + '">' + st.label + "</span></div>";
@@ -271,7 +271,7 @@
       html += "</div>";
     }
     if (c.status === "open") {
-      html += '<div class="note-row"><input type="text" id="note-' + idx + '" placeholder="Add an internal note"><button class="fx-btn-ghost" onclick="__sct.addNote(' + idx + ')">Add</button></div>';
+      html += '<div class="note-row"><input type="text" id="note-' + scope + "-" + idx + '" placeholder="Add an internal note"><button class="fx-btn-ghost" onclick="__sct.addNote(' + idx + ", '" + scope + "')\">Add</button></div>";
       html += '<div class="commit-actions">';
       if (showCancelAction) html += '<button class="fx-btn-ghost" onclick="__sct.cancelReschedule(' + idx + ')">Company cancelled / rescheduled</button>';
       html += '<button class="fx-btn-ghost" onclick="__sct.complete(' + idx + ')">Mark completed</button></div>';
@@ -283,8 +283,8 @@
   function renderAll() { renderQueue(); renderEscalation(); }
 
   window.__sct = {
-    addNote: function (idx) {
-      var input = document.getElementById("note-" + idx);
+    addNote: function (idx, scope) {
+      var input = document.getElementById("note-" + scope + "-" + idx);
       var text = input.value.trim();
       if (!text) return;
       data.commitments[idx].history.push({ at: Date.now(), text: text });
