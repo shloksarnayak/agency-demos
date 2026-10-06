@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Ultimate Home Solutions</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .stage-pill.flag { background: #f4dede; color: #9c3b3b; }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-sm.warn { border-color: #c76a6a; color: #9c3b3b; }
+  .btn-sm.warn:hover:not(:disabled) { border-color: #9c3b3b; }
+
+  .recall-count { font-size: 0.72rem; color: var(--muted); font-family: var(--mono); }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 24rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 96%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble.flag { border-color: #c76a6a; background: #fbf1f1; }
+  .bubble.inbound { align-self: flex-end; background: var(--brand-soft); border-radius: 0.9rem 0.9rem 0.2rem 0.9rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .sample-tag { display: inline-block; background: var(--brand-soft); color: var(--brand); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 5px; margin-bottom: 0.9rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+
+  .inbox-form { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem; }
+  .inbox-form label { font-size: 0.78rem; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.04em; }
+  .inbox-form input, .inbox-form textarea { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; box-sizing: border-box; resize: vertical; }
+  .inbox-form textarea { min-height: 4.5rem; }
+  .inbox-row-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  @media (max-width: 560px) { .inbox-row-fields { grid-template-columns: 1fr; } }
+  .btn-primary { font: inherit; font-size: 0.85rem; padding: 0.55rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--brand); background: var(--brand); color: var(--surface-raised); cursor: pointer; align-self: flex-start; }
+  .btn-primary:hover { opacity: 0.9; }
+  .ack-note { font-size: 0.8rem; color: var(--muted); margin-top: -0.2rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Ultimate Home Solutions</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Ultimate Home Solutions</span>
+  <h1 class="fx-h1">The acknowledgment that goes out every time, even on the third recall</h1>
+  <p class="fx-lede">A Trustpilot reviewer, Saffron Smedley, wrote that a shower leaked six months after installation and "they can't even call me back." Another, Ellen, wrote that after paying in full and being promised "final touches," "3 months later no one is calling me back." A third, Alice, described submitting a third recall and still "currently awaiting a response." A fourth, Zuzka M, wrote that after a third recall was submitted, the "manager stopped responding to calls." Four separately dated reviewers, the same shape every time: a job gets done, a snag gets reported, and the trail goes cold, often by the second or third contact.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> Ultimate Home Solutions Limited (Companies House #SC442380, active, sole director Colin Fraser Pass, trading from a showroom at Dobbies Garden Centre Braehead, Renfrew) installs fitted bathrooms, kitchens, windows, doors and roofing across Central Scotland. Trustpilot shows 299 reviews, a 4.3 TrustScore, 85% five-star. Among the visible one-star reviews, five independently named and dated reviewers across eighteen months (Saffron Smedley, Ellen, Alice, Letitia Campbell, Zuzka M) describe the same pattern quoted above: the job is substantially complete, a snag or follow-up is reported, and calls and messages then go unanswered, in some cases across multiple recall attempts. Several real UK job-management products (Tradify, Commusoft, Powered Now) already sell customer-facing job-status and communication features that answer exactly this kind of gap.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the jobs, customer names and inbox messages below are a fictional sample, not real Ultimate Home Solutions jobs, clients or correspondence. Nothing here sends a real email or text, it shows exactly what a customer would receive at each step. A real build connects to whatever the team already uses to mark a job's stage, and to the info@ultimategroup.co.uk inbox itself, sending through an actual email/SMS service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Showroom view: update a job's stage</h3>
+      <span class="sample-tag">Sample jobs, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the customer sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top: 1.4rem;">
+    <h3 class="panel-title">General inbox: every message gets an automatic acknowledgment</h3>
+    <span class="sample-tag">Sample inbox, fictional</span>
+    <p class="ack-note">This is the direct answer to the pattern in the reviews quoted above: a message to info@ultimategroup.co.uk, whether it is a first snag report or a third recall, gets an immediate automatic acknowledgment naming a specific date to expect a reply, instead of silence. Try it below, including sending it more than once.</p>
+    <div class="inbox-form">
+      <div class="inbox-row-fields">
+        <div>
+          <label for="inbox-name">From</label>
+          <input type="text" id="inbox-name" value="Sample Customer">
+        </div>
+        <div>
+          <label for="inbox-ref">Job reference (optional)</label>
+          <input type="text" id="inbox-ref" placeholder="e.g. UHS-2203">
+        </div>
+      </div>
+      <div>
+        <label for="inbox-message">Message</label>
+        <textarea id="inbox-message" placeholder="Type a sample message to info@ultimategroup.co.uk...">Hi, this is my third time reporting the same leak since the shower was fitted and I still haven't heard back. Can someone confirm you've got this?</textarea>
+      </div>
+      <button class="btn-primary" id="inbox-send">Send message</button>
+    </div>
+    <div class="thread" id="inbox-thread-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email or text.</b> This demo only shows what a customer would receive. A real version needs an actual email/SMS service (for example SendGrid or Twilio) wired to the info@ultimategroup.co.uk inbox and to whatever your team already uses to mark a job's stage.</div>
+      <div class="lim"><b>The five stages shown (survey and design confirmed, materials ordered, installation scheduled, installed, snag/callback window open) are a reasonable generic fit for a design-supply-install business, not copied from your internal job tracking.</b> The company's own site could not be directly fetched for this demo (its SiteGround hosting blocks automated fetches), so this needs a short conversation to confirm the exact point your team marks a job as moved.</div>
+      <div class="lim"><b>The "Flag a snag" button is built directly from the Saffron Smedley, Alice and Zuzka M reviews, and it can be used more than once per job.</b> Try it on the sample job already in the snag/callback window below: log a snag, then log a second one on the same job. Each one gets its own automatic acknowledgment with a reply-by date, which is exactly the point where the real reviews describe the company going quiet.</div>
+      <div class="lim"><b>No client portal, login or job-status tool was found for Ultimate Home Solutions on the independent sources checked (press coverage, trade directories, a trade-profile listing), only a phone number and showroom visits.</b> This is weaker evidence than a direct fetch of the live homepage, which the site's own bot protection blocked, disclosed here rather than overstated. This would be a new capability either way, not a second system competing with something that already works.</div>
+      <div class="lim"><b>The reviews above are real and quoted directly, this is a reasonable response to the documented pattern, not a guarantee every job goes perfectly or every snag is fixed instantly.</b> A leak or a delayed recall can still happen. What this changes is whether the customer hears something automatically, on the first contact and every one after it, instead of calling and emailing repeatedly and getting nothing back.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Ultimate Home Solutions. The Trustpilot reviews quoted above were verified by direct fetch today. Job, customer, and inbox message data below is a fictional sample, not connected to any real job or correspondence.</p>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "uhs-status-pipeline-jobs-v1";
+  var INBOX_KEY = "uhs-status-pipeline-inbox-v1";
+
+  var BASE_STAGES = ["Survey and design confirmed", "Materials ordered", "Installation scheduled", "Installed", "Snag/callback window open"];
+
+  function stageMessage(j, stageName) {
+    switch (stageName) {
+      case "Materials ordered":
+        return "This is Ultimate Home Solutions. The materials for " + j.job + " have been ordered. We'll update you again once installation is scheduled.";
+      case "Installation scheduled":
+        return "Installation for " + j.job + " is scheduled: " + j.window + ". We'll confirm again the day before.";
+      case "Installed":
+        return "Your " + j.job + " has been installed. Thank you for choosing Ultimate Home Solutions. If anything needs attention during your callback window, use the form below or just reply to this message.";
+      case "Snag/callback window open":
+        return "Your callback window for " + j.job + " is now open. If you spot anything that needs attention, flag it any time, we'll acknowledge it straight away.";
+      default:
+        return null;
+    }
+  }
+
+  function recallAckMessage(j, recallNumber, reason) {
+    return "We've logged recall " + recallNumber + " on " + j.job + ": " + reason + ". We'll be in touch with a date, no need to keep calling.";
+  }
+  function recallResolvedMessage(j, recallNumber, dateText) {
+    return "Recall " + recallNumber + " on " + j.job + " has been resolved as of " + dateText + ". Thank you for your patience.";
+  }
+
+  function seedJobs() {
+    var now = 1758931200000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "UHS-2201",
+        customer: "Sample Customer A",
+        contact: "sample.customera@example.com",
+        job: "fitted bathroom, Paisley",
+        window: "Design approval pending",
+        stages: BASE_STAGES.slice(),
+        stage: 0,
+        recalls: [],
+        notifications: []
+      },
+      {
+        id: "UHS-2204",
+        customer: "Sample Customer B",
+        contact: "sample.customerb@example.com",
+        job: "composite front door, Motherwell",
+        window: "Fitted week of the 9th",
+        stages: BASE_STAGES.slice(),
+        stage: 2,
+        recalls: [],
+        notifications: [
+          { text: "This is Ultimate Home Solutions. The materials for composite front door, Motherwell have been ordered. We'll update you again once installation is scheduled.", at: now },
+          { text: "Installation for composite front door, Motherwell is scheduled: Fitted week of the 9th. We'll confirm again the day before.", at: now + 3600000 }
+        ]
+      },
+      {
+        id: "UHS-2208",
+        customer: "Sample Customer C",
+        contact: "sample.customerc@example.com",
+        job: "fitted kitchen, Falkirk",
+        window: "Installed",
+        stages: BASE_STAGES.slice(),
+        stage: 4,
+        recalls: [],
+        notifications: [
+          { text: "This is Ultimate Home Solutions. The materials for fitted kitchen, Falkirk have been ordered. We'll update you again once installation is scheduled.", at: now + 3600000 },
+          { text: "Installation for fitted kitchen, Falkirk is scheduled: week of the 14th, morning slot. We'll confirm again the day before.", at: now + 7200000 },
+          { text: "Your fitted kitchen, Falkirk has been installed. Thank you for choosing Ultimate Home Solutions. If anything needs attention during your callback window, use the form below or just reply to this message.", at: now + 10800000 },
+          { text: "Your callback window for fitted kitchen, Falkirk is now open. If you spot anything that needs attention, flag it any time, we'll acknowledge it straight away.", at: now + 14400000 }
+        ]
+      },
+      {
+        id: "UHS-2211",
+        customer: "Sample Customer D",
+        contact: "sample.customerd@example.com",
+        job: "conservatory roof conversion, Ayr",
+        window: "Survey booked",
+        stages: BASE_STAGES.slice(),
+        stage: 0,
+        recalls: [],
+        notifications: []
+      }
+    ];
+  }
+
+  function loadJobs() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedJobs();
+    saveJobs(seeded);
+    return seeded;
+  }
+  function saveJobs(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var jobs = loadJobs();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function currentStageName(j) { return j.stages[j.stage]; }
+  function atLastStage(j) { return j.stage >= j.stages.length - 1; }
+  function canFlagSnag(j) { return currentStageName(j) === "Snag/callback window open"; }
+  function openRecall(j) {
+    for (var i = j.recalls.length - 1; i >= 0; i--) {
+      if (!j.recalls[i].resolvedAt) return j.recalls[i];
+    }
+    return null;
+  }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    jobs.forEach(function (j) {
+      var stageName = currentStageName(j);
+      var hasOpenRecall = !!openRecall(j);
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.customer) + '</h4><span class="stage-pill' + (hasOpenRecall ? ' flag' : '') + '">' + escapeHtml(stageName) + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(j.job) + '</div>';
+      html += '<div class="job-meta">' + escapeHtml(j.window) + '</div>';
+      if (j.recalls.length) {
+        html += '<div class="recall-count">' + j.recalls.length + ' recall' + (j.recalls.length === 1 ? '' : 's') + ' logged' + (hasOpenRecall ? ', latest still open' : ', all resolved') + '</div>';
+      }
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLastStage(j) ? " disabled" : "") + '>Advance to next stage</button>';
+      if (canFlagSnag(j)) {
+        html += '<button class="btn-sm warn" data-flag-snag="' + j.id + '">Flag a snag</button>';
+        html += '<button class="btn-sm" data-resolve-snag="' + j.id + '"' + (hasOpenRecall ? "" : " disabled") + '>Mark latest snag resolved</button>';
+      }
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceJob(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-flag-snag]"), function (btn) {
+      btn.addEventListener("click", function () { flagSnag(btn.dataset.flagSnag); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-resolve-snag]"), function (btn) {
+      btn.addEventListener("click", function () { resolveSnag(btn.dataset.resolveSnag); });
+    });
+  }
+
+  function pushNotification(j, text, flagged) {
+    j.notifications.push({ text: text, at: Date.now(), flagged: !!flagged });
+  }
+
+  function advanceJob(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || atLastStage(j)) return;
+    j.stage += 1;
+    var msg = stageMessage(j, currentStageName(j));
+    if (msg) pushNotification(j, msg, false);
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function flagSnag(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || !canFlagSnag(j)) return;
+    var reasonInput = window.prompt("What's the snag? (shown to the customer)", "a leak near the shower tray");
+    if (reasonInput === null) return;
+    var reason = reasonInput.trim() || "a snag on the job";
+    var recallNumber = j.recalls.length + 1;
+    j.recalls.push({ n: recallNumber, reason: reason, resolvedAt: null });
+    j.window = "Recall " + recallNumber + " booked in, date to be confirmed";
+    pushNotification(j, recallAckMessage(j, recallNumber, reason), true);
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function resolveSnag(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    var recall = j && openRecall(j);
+    if (!recall) return;
+    var dateInput = window.prompt("Resolved on what date? (shown to the customer)", "the 21st");
+    if (dateInput === null) return;
+    var dateText = dateInput.trim() || "the 21st";
+    recall.resolvedAt = Date.now();
+    j.window = "Recall " + recall.n + " resolved";
+    pushNotification(j, recallResolvedMessage(j, recall.n, dateText), false);
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    sel.innerHTML = "";
+    jobs.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.customer;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = jobs.find(function (x) { return x.id === sel.value; }) || jobs[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this job. Advance it in the showroom view on the left.</p>';
+      return;
+    }
+    var html = "";
+    j.notifications.forEach(function (n) {
+      html += '<div class="bubble' + (n.flagged ? ' flag' : '') + '"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-meta">Email to ' + escapeHtml(j.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  // General inbox / automatic acknowledgment
+  function addBusinessDays(date, days) {
+    var d = new Date(date.getTime());
+    var added = 0;
+    while (added < days) {
+      d.setDate(d.getDate() + 1);
+      var day = d.getDay();
+      if (day !== 0 && day !== 6) added += 1;
+    }
+    return d;
+  }
+  function fmtReplyDate(d) {
+    return d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+  }
+
+  function seedInbox() {
+    var now = 1758931200000;
+    var replyBy = fmtReplyDate(addBusinessDays(new Date(now), 2));
+    return [
+      {
+        from: "Sample Enquirer",
+        ref: "",
+        inbound: "Hello, this is the second time I've called about a leak near the shower tray and no one has got back to me. Could someone confirm you've got this?",
+        at: now,
+        ack: "Thank you for contacting Ultimate Home Solutions. Your message has been received and logged. You can expect a reply by " + replyBy + ". If it's urgent, please call the showroom directly.",
+        ackAt: now + 60000
+      }
+    ];
+  }
+
+  function loadInbox() {
+    try {
+      var raw = localStorage.getItem(INBOX_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedInbox();
+    saveInbox(seeded);
+    return seeded;
+  }
+  function saveInbox(list) { localStorage.setItem(INBOX_KEY, JSON.stringify(list)); }
+
+  var inbox = loadInbox();
+
+  function renderInbox() {
+    var root = document.getElementById("inbox-thread-root");
+    if (!inbox.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet. Send one above to see the automatic acknowledgment.</p>';
+      return;
+    }
+    var html = "";
+    inbox.forEach(function (m) {
+      var fromLine = escapeHtml(m.from) + (m.ref ? " &middot; ref " + escapeHtml(m.ref) : "") + " &middot; to info@ultimategroup.co.uk";
+      html += '<div class="bubble inbound"><div class="bubble-text">' + escapeHtml(m.inbound) + '</div><div class="bubble-meta">' + fromLine + ' &middot; ' + fmtTime(m.at) + '</div></div>';
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(m.ack) + '</div><div class="bubble-meta">Automatic reply from Ultimate Home Solutions &middot; ' + fmtTime(m.ackAt) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  function sendInboxMessage() {
+    var nameEl = document.getElementById("inbox-name");
+    var refEl = document.getElementById("inbox-ref");
+    var msgEl = document.getElementById("inbox-message");
+    var text = msgEl.value.trim();
+    if (!text) return;
+    var at = Date.now();
+    var replyBy = fmtReplyDate(addBusinessDays(new Date(at), 2));
+    var name = nameEl.value.trim() || "Sample Enquirer";
+    inbox.push({
+      from: name,
+      ref: refEl.value.trim(),
+      inbound: text,
+      at: at,
+      ack: "Thank you for contacting Ultimate Home Solutions. Your message has been received and logged. You can expect a reply by " + replyBy + ". If it's urgent, please call the showroom directly.",
+      ackAt: at + 1500
+    });
+    saveInbox(inbox);
+    msgEl.value = "";
+    renderInbox();
+  }
+
+  document.getElementById("inbox-send").addEventListener("click", sendInboxMessage);
+
+  renderShop();
+  populatePicker();
+  renderThread();
+  renderInbox();
+})();
+</script>
+</body>
+</html>
