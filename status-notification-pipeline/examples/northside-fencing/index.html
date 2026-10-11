@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Northside Fencing</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .stage-pill.flag { background: #f4dede; color: #9c3b3b; }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-sm.warn { border-color: #c76a6a; color: #9c3b3b; }
+  .btn-sm.warn:hover:not(:disabled) { border-color: #9c3b3b; }
+
+  .claim-count { font-size: 0.72rem; color: var(--muted); font-family: var(--mono); }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 24rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 96%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble.flag { border-color: #c76a6a; background: #fbf1f1; }
+  .bubble.inbound { align-self: flex-end; background: var(--brand-soft); border-radius: 0.9rem 0.9rem 0.2rem 0.9rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .sample-tag { display: inline-block; background: var(--brand-soft); color: var(--brand); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 5px; margin-bottom: 0.9rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+
+  .inbox-form { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem; }
+  .inbox-form label { font-size: 0.78rem; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.04em; }
+  .inbox-form input, .inbox-form textarea { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; box-sizing: border-box; resize: vertical; }
+  .inbox-form textarea { min-height: 4.5rem; }
+  .inbox-row-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  @media (max-width: 560px) { .inbox-row-fields { grid-template-columns: 1fr; } }
+  .btn-primary { font: inherit; font-size: 0.85rem; padding: 0.55rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--brand); background: var(--brand); color: var(--surface-raised); cursor: pointer; align-self: flex-start; }
+  .btn-primary:hover { opacity: 0.9; }
+  .ack-note { font-size: 0.8rem; color: var(--muted); margin-top: -0.2rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Northside Fencing</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Northside Fencing</span>
+  <h1 class="fx-h1">The warranty claim that gets an answer, not a second one gone quiet</h1>
+  <p class="fx-lede">A ProductReview.com.au reviewer, Olga, wrote that her fence was built below the agreed height with shorter gates than ordered, and "he stated he will not fix anything." Another, Kaz, wrote that a warranty claim on a fence over $20,000 went unanswered and that she was told she was banned from requesting future work after complaining, so she filed a complaint with Queensland Fair Trading. A third, harry h., wrote that a mains electrical line drilled during installation failed nine months later and "they don't care." Independently dated reviewers describe the same shape: the fence goes up, something is wrong or fails later, and the business stops answering, sometimes refusing the work outright.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> Northside Fencing (QLD) Pty. Ltd. (ABN 45 060 593 259 / ACN 060 593 259, active on the Australian Business Register since 24 March 2000) manufactures and powder-coats pool, garden, timber, Colorbond, weldmesh and glass fencing from a single Burpengary, Queensland premises housing its office, showroom, workshop, powder-coating factory and timber yard. ProductReview.com.au shows 40 reviews, 3.9/5, 71% positive. Among the visible negative reviews, six independently named and dated reviewers across six years (Olga, harry h., Jaswinder Singh, Kaz, Karen, and a reviewer posting as "Annoyed") describe a job that was substantially completed and paid for, then a defect, boundary dispute, or warranty issue that calls and emails did not resolve, two of them (Kaz, Karen) reporting they were told not to contact the business again about future work after complaining. Real job-management and customer-portal products already sell exactly this kind of warranty and job-status visibility to fencing and trades businesses, among them Nexus Service Manager, WorkGuru, Jobber and ClickHome.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the jobs, customer names, and inbox messages below are a fictional sample, not real Northside Fencing jobs, clients, or correspondence. Nothing here sends a real email or text, it shows exactly what a customer would receive at each step. A real build connects to whatever the team already uses to mark a job's stage, and to the sales@northsidefencing.com.au inbox itself, sending through an actual email service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Workshop view: update a job's stage</h3>
+      <span class="sample-tag">Sample jobs, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the customer sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top: 1.4rem;">
+    <h3 class="panel-title">General inbox: every message gets an automatic acknowledgment</h3>
+    <span class="sample-tag">Sample inbox, fictional</span>
+    <p class="ack-note">This is the direct answer to the pattern in Olga's and Karen's reviews: a message to sales@northsidefencing.com.au, whether it is a first warranty claim or a repeat follow-up, gets an immediate automatic acknowledgment naming a specific date to expect a reply, instead of silence. Try it below, including sending it more than once.</p>
+    <div class="inbox-form">
+      <div class="inbox-row-fields">
+        <div>
+          <label for="inbox-name">From</label>
+          <input type="text" id="inbox-name" value="Sample Customer">
+        </div>
+        <div>
+          <label for="inbox-ref">Job reference (optional)</label>
+          <input type="text" id="inbox-ref" placeholder="e.g. NF-4118">
+        </div>
+      </div>
+      <div>
+        <label for="inbox-message">Message</label>
+        <textarea id="inbox-message" placeholder="Type a sample message to sales@northsidefencing.com.au...">Hi, this is the second time I've called about the gate on our fence not latching properly since it was installed, and I still haven't heard back. Could someone confirm you've got this?</textarea>
+      </div>
+      <button class="btn-primary" id="inbox-send">Send message</button>
+    </div>
+    <div class="thread" id="inbox-thread-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email or text.</b> This demo only shows what a customer would receive. A real version needs an actual email/SMS service (for example SendGrid or Twilio) wired to the sales@northsidefencing.com.au inbox and to whatever your team already uses to mark a job's stage.</div>
+      <div class="lim"><b>The five stages shown (survey booked, in manufacture/powder-coating, installation scheduled, installed, warranty/callback window open) are a reasonable fit for a fencing manufacturer that builds and powder-coats its own product, not copied from your internal job tracking.</b> A direct fetch of northsidefencing.com.au today found no mention of a customer login, portal, or job-status page of any kind, so this is a new capability, but worth a short conversation to confirm the exact point your team marks a job as moved.</div>
+      <div class="lim"><b>The "File a warranty/callback claim" button is built directly from the Olga, Kaz, Karen and harry h. reviews, and it can be used more than once per job.</b> Try it on the sample job already in the warranty/callback window below: log a claim, then log a second one on the same job. Each one gets its own automatic acknowledgment with a reply-by date, tracked separately until it is marked resolved, which is exactly the point where the real reviews describe the business going quiet or refusing to continue.</div>
+      <div class="lim"><b>No portal, login, or warranty-tracking tool exists on northsidefencing.com.au today, confirmed by a direct fetch of the live homepage.</b> Products already sold to other fencing and trades businesses (Nexus Service Manager, WorkGuru, Jobber, ClickHome) show this kind of tracking is an established, sellable pattern, not a speculative feature.</div>
+      <div class="lim"><b>The reviews above are real and quoted directly, this is a reasonable response to the documented pattern, not a guarantee every job goes perfectly or every claim is resolved instantly.</b> A defect or a delayed manufacture slot can still happen. What this changes is whether the customer hears something automatically, on the first claim and every one after it, instead of calling and emailing repeatedly and getting nothing back, or being told not to come back.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Northside Fencing. The ProductReview.com.au reviews quoted above, and the absence of any warranty, portal, or job-status system on the live site, were verified by direct fetch today. Job, customer, and inbox message data below is a fictional sample, not connected to any real job or correspondence.</p>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "nf-status-pipeline-jobs-v1";
+  var INBOX_KEY = "nf-status-pipeline-inbox-v1";
+
+  var BASE_STAGES = ["Survey booked", "In manufacture / powder-coating", "Installation scheduled", "Installed", "Warranty/callback window open"];
+
+  function stageMessage(j, stageName) {
+    switch (stageName) {
+      case "In manufacture / powder-coating":
+        return "This is Northside Fencing. Your " + j.job + " is now in manufacture and powder-coating at our Burpengary workshop. We'll update you again once installation is scheduled.";
+      case "Installation scheduled":
+        return "Installation for " + j.job + " is scheduled: " + j.window + ". We'll confirm again the day before.";
+      case "Installed":
+        return "Your " + j.job + " has been installed. Thank you for choosing Northside Fencing. If anything needs attention during your warranty/callback window, use the form below or just reply to this message.";
+      case "Warranty/callback window open":
+        return "Your warranty/callback window for " + j.job + " is now open. If you spot anything that needs attention, flag it any time, we'll acknowledge it straight away.";
+      default:
+        return null;
+    }
+  }
+
+  function claimAckMessage(j, claimNumber, reason) {
+    return "We've logged warranty/callback claim " + claimNumber + " on " + j.job + ": " + reason + ". We'll be in touch with a date, no need to keep calling.";
+  }
+  function claimResolvedMessage(j, claimNumber, dateText) {
+    return "Warranty/callback claim " + claimNumber + " on " + j.job + " has been resolved as of " + dateText + ". Thank you for your patience.";
+  }
+
+  function seedJobs() {
+    var now = 1758931200000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "NF-4102",
+        customer: "Sample Customer A",
+        contact: "sample.customera@example.com",
+        job: "pool fencing, Burpengary",
+        window: "Survey booked",
+        stages: BASE_STAGES.slice(),
+        stage: 0,
+        claims: [],
+        notifications: []
+      },
+      {
+        id: "NF-4105",
+        customer: "Sample Customer B",
+        contact: "sample.customerb@example.com",
+        job: "Colorbond boundary fence, Narangba",
+        window: "In manufacture, 2-3 week slot",
+        stages: BASE_STAGES.slice(),
+        stage: 1,
+        claims: [],
+        notifications: [
+          { text: "This is Northside Fencing. Your Colorbond boundary fence, Narangba is now in manufacture and powder-coating at our Burpengary workshop. We'll update you again once installation is scheduled.", at: now }
+        ]
+      },
+      {
+        id: "NF-4110",
+        customer: "Sample Customer C",
+        contact: "sample.customerc@example.com",
+        job: "glass pool fence, Morayfield",
+        window: "Warranty claim 1 booked in, date to be confirmed",
+        stages: BASE_STAGES.slice(),
+        stage: 4,
+        claims: [ { n: 1, reason: "a gate panel not latching flush since installation", resolvedAt: null } ],
+        notifications: [
+          { text: "This is Northside Fencing. Your glass pool fence, Morayfield is now in manufacture and powder-coating at our Burpengary workshop. We'll update you again once installation is scheduled.", at: now + 3600000 },
+          { text: "Installation for glass pool fence, Morayfield is scheduled: week of the 11th, morning slot. We'll confirm again the day before.", at: now + 7200000 },
+          { text: "Your glass pool fence, Morayfield has been installed. Thank you for choosing Northside Fencing. If anything needs attention during your warranty/callback window, use the form below or just reply to this message.", at: now + 10800000 },
+          { text: "Your warranty/callback window for glass pool fence, Morayfield is now open. If you spot anything that needs attention, flag it any time, we'll acknowledge it straight away.", at: now + 14400000 },
+          { text: "We've logged warranty/callback claim 1 on glass pool fence, Morayfield: a gate panel not latching flush since installation. We'll be in touch with a date, no need to keep calling.", at: now + 18000000, flagged: true }
+        ]
+      },
+      {
+        id: "NF-4118",
+        customer: "Sample Customer D",
+        contact: "sample.customerd@example.com",
+        job: "timber and Colorbond fence, large residential, Burpengary",
+        window: "Warranty claim 2 resolved",
+        stages: BASE_STAGES.slice(),
+        stage: 4,
+        claims: [
+          { n: 1, reason: "a leaning post on the rear boundary line", resolvedAt: now + 5000000 },
+          { n: 2, reason: "two palings cracked after a storm", resolvedAt: now + 12000000 }
+        ],
+        notifications: [
+          { text: "This is Northside Fencing. Your timber and Colorbond fence, large residential, Burpengary is now in manufacture and powder-coating at our Burpengary workshop. We'll update you again once installation is scheduled.", at: now + 3600000 },
+          { text: "Installation for timber and Colorbond fence, large residential, Burpengary is scheduled: week of the 4th, full day. We'll confirm again the day before.", at: now + 7200000 },
+          { text: "Your timber and Colorbond fence, large residential, Burpengary has been installed. Thank you for choosing Northside Fencing. If anything needs attention during your warranty/callback window, use the form below or just reply to this message.", at: now + 10800000 },
+          { text: "Your warranty/callback window for timber and Colorbond fence, large residential, Burpengary is now open. If you spot anything that needs attention, flag it any time, we'll acknowledge it straight away.", at: now + 14400000 },
+          { text: "We've logged warranty/callback claim 1 on timber and Colorbond fence, large residential, Burpengary: a leaning post on the rear boundary line. We'll be in touch with a date, no need to keep calling.", at: now + 18000000, flagged: true },
+          { text: "Warranty/callback claim 1 on timber and Colorbond fence, large residential, Burpengary has been resolved as of the 19th. Thank you for your patience.", at: now + 21600000 },
+          { text: "We've logged warranty/callback claim 2 on timber and Colorbond fence, large residential, Burpengary: two palings cracked after a storm. We'll be in touch with a date, no need to keep calling.", at: now + 25200000, flagged: true },
+          { text: "Warranty/callback claim 2 on timber and Colorbond fence, large residential, Burpengary has been resolved as of the 27th. Thank you for your patience.", at: now + 28800000 }
+        ]
+      }
+    ];
+  }
+
+  function loadJobs() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedJobs();
+    saveJobs(seeded);
+    return seeded;
+  }
+  function saveJobs(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var jobs = loadJobs();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function currentStageName(j) { return j.stages[j.stage]; }
+  function atLastStage(j) { return j.stage >= j.stages.length - 1; }
+  function canFileClaim(j) { return currentStageName(j) === "Warranty/callback window open"; }
+  function openClaim(j) {
+    for (var i = j.claims.length - 1; i >= 0; i--) {
+      if (!j.claims[i].resolvedAt) return j.claims[i];
+    }
+    return null;
+  }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    jobs.forEach(function (j) {
+      var stageName = currentStageName(j);
+      var hasOpenClaim = !!openClaim(j);
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.customer) + '</h4><span class="stage-pill' + (hasOpenClaim ? ' flag' : '') + '">' + escapeHtml(stageName) + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(j.job) + '</div>';
+      html += '<div class="job-meta">' + escapeHtml(j.window) + '</div>';
+      if (j.claims.length) {
+        html += '<div class="claim-count">' + j.claims.length + ' warranty/callback claim' + (j.claims.length === 1 ? '' : 's') + ' logged' + (hasOpenClaim ? ', latest still open' : ', all resolved') + '</div>';
+      }
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLastStage(j) ? " disabled" : "") + '>Advance to next stage</button>';
+      if (canFileClaim(j)) {
+        html += '<button class="btn-sm warn" data-file-claim="' + j.id + '">File a warranty/callback claim</button>';
+        html += '<button class="btn-sm" data-resolve-claim="' + j.id + '"' + (hasOpenClaim ? "" : " disabled") + '>Mark latest claim resolved</button>';
+      }
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceJob(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-file-claim]"), function (btn) {
+      btn.addEventListener("click", function () { fileClaim(btn.dataset.fileClaim); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-resolve-claim]"), function (btn) {
+      btn.addEventListener("click", function () { resolveClaim(btn.dataset.resolveClaim); });
+    });
+  }
+
+  function pushNotification(j, text, flagged) {
+    j.notifications.push({ text: text, at: Date.now(), flagged: !!flagged });
+  }
+
+  function advanceJob(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || atLastStage(j)) return;
+    j.stage += 1;
+    var msg = stageMessage(j, currentStageName(j));
+    if (msg) pushNotification(j, msg, false);
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function fileClaim(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || !canFileClaim(j)) return;
+    var reasonInput = window.prompt("What's the issue? (shown to the customer)", "a gate panel not latching flush");
+    if (reasonInput === null) return;
+    var reason = reasonInput.trim() || "a warranty issue on the job";
+    var claimNumber = j.claims.length + 1;
+    j.claims.push({ n: claimNumber, reason: reason, resolvedAt: null });
+    j.window = "Warranty claim " + claimNumber + " booked in, date to be confirmed";
+    pushNotification(j, claimAckMessage(j, claimNumber, reason), true);
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function resolveClaim(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    var claim = j && openClaim(j);
+    if (!claim) return;
+    var dateInput = window.prompt("Resolved on what date? (shown to the customer)", "the 21st");
+    if (dateInput === null) return;
+    var dateText = dateInput.trim() || "the 21st";
+    claim.resolvedAt = Date.now();
+    j.window = "Warranty claim " + claim.n + " resolved";
+    pushNotification(j, claimResolvedMessage(j, claim.n, dateText), false);
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    sel.innerHTML = "";
+    jobs.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.customer;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = jobs.find(function (x) { return x.id === sel.value; }) || jobs[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this job. Advance it in the workshop view on the left.</p>';
+      return;
+    }
+    var html = "";
+    j.notifications.forEach(function (n) {
+      html += '<div class="bubble' + (n.flagged ? ' flag' : '') + '"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-meta">Email to ' + escapeHtml(j.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  // General inbox / automatic acknowledgment
+  function addBusinessDays(date, days) {
+    var d = new Date(date.getTime());
+    var added = 0;
+    while (added < days) {
+      d.setDate(d.getDate() + 1);
+      var day = d.getDay();
+      if (day !== 0 && day !== 6) added += 1;
+    }
+    return d;
+  }
+  function fmtReplyDate(d) {
+    return d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+  }
+
+  function seedInbox() {
+    var now = 1758931200000;
+    var replyBy = fmtReplyDate(addBusinessDays(new Date(now), 2));
+    return [
+      {
+        from: "Sample Enquirer",
+        ref: "",
+        inbound: "Hello, I've called a couple of times this week about a boundary-line question on our new fence and haven't heard back. Could someone confirm you've got this?",
+        at: now,
+        ack: "Thank you for contacting Northside Fencing. Your message has been received and logged. You can expect a reply by " + replyBy + ". If it's urgent, please call the office directly.",
+        ackAt: now + 60000
+      }
+    ];
+  }
+
+  function loadInbox() {
+    try {
+      var raw = localStorage.getItem(INBOX_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedInbox();
+    saveInbox(seeded);
+    return seeded;
+  }
+  function saveInbox(list) { localStorage.setItem(INBOX_KEY, JSON.stringify(list)); }
+
+  var inbox = loadInbox();
+
+  function renderInbox() {
+    var root = document.getElementById("inbox-thread-root");
+    if (!inbox.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet. Send one above to see the automatic acknowledgment.</p>';
+      return;
+    }
+    var html = "";
+    inbox.forEach(function (m) {
+      var fromLine = escapeHtml(m.from) + (m.ref ? " &middot; ref " + escapeHtml(m.ref) : "") + " &middot; to sales@northsidefencing.com.au";
+      html += '<div class="bubble inbound"><div class="bubble-text">' + escapeHtml(m.inbound) + '</div><div class="bubble-meta">' + fromLine + ' &middot; ' + fmtTime(m.at) + '</div></div>';
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(m.ack) + '</div><div class="bubble-meta">Automatic reply from Northside Fencing &middot; ' + fmtTime(m.ackAt) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  function sendInboxMessage() {
+    var nameEl = document.getElementById("inbox-name");
+    var refEl = document.getElementById("inbox-ref");
+    var msgEl = document.getElementById("inbox-message");
+    var text = msgEl.value.trim();
+    if (!text) return;
+    var at = Date.now();
+    var replyBy = fmtReplyDate(addBusinessDays(new Date(at), 2));
+    var name = nameEl.value.trim() || "Sample Enquirer";
+    inbox.push({
+      from: name,
+      ref: refEl.value.trim(),
+      inbound: text,
+      at: at,
+      ack: "Thank you for contacting Northside Fencing. Your message has been received and logged. You can expect a reply by " + replyBy + ". If it's urgent, please call the office directly.",
+      ackAt: at + 1500
+    });
+    saveInbox(inbox);
+    msgEl.value = "";
+    renderInbox();
+  }
+
+  document.getElementById("inbox-send").addEventListener("click", sendInboxMessage);
+
+  renderShop();
+  populatePicker();
+  renderThread();
+  renderInbox();
+})();
+</script>
+</body>
+</html>
