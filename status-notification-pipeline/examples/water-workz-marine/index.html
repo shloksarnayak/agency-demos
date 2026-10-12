@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Water Workz Marine</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .recheck-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: #f6dede; color: #9a2f2f; padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .queue-line { font-size: 0.85rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 92%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .field { display: flex; flex-direction: column; gap: 0.45rem; }
+  .field-label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  input[type="text"].wide { width: 100%; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus, select:focus { outline: none; border-color: var(--brand); }
+  textarea { font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; resize: vertical; min-height: 4rem; }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .confirm h3 { margin: 0; font-size: 1.02rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+  .sample-tag { display:inline-block; background:var(--brand-soft); color:var(--brand); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:0.25rem 0.6rem; border-radius:5px; margin-bottom:0.9rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Water Workz Marine</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Water Workz Marine</span>
+  <h1 class="fx-h1">The update that goes out before the customer has to call and ask</h1>
+  <p class="fx-lede">A BBB review describes a boat left in for service that "sat outside for about two weeks before work began," then overheating on the first outing afterward. A separate Birdeye review describes issues "asked to be fixed" that "haven't been," with repeated vague excuses instead of a firm date. Both are the same underlying gap: nothing in your current setup tells a customer what's happening to their boat until they call and chase it themselves.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> both reviews above are quoted from your actual listings, BBB (Logan S., describing a two-week wait and an overheating issue on the next outing) and Birdeye (Kurt Troyer, 4.5/5 average across 125 reviews overall, describing unresolved issues and repeated excuses from the service desk). A direct fetch of your live site's contact and service-department pages today found no online scheduling, no customer portal, and no service-status tool of any kind, phone and a single shared email address are the only contact paths, and the service-department page states only that technicians are "on duty during business hours" with no description of how a drop-off is tracked.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the tickets, customers, and boats below are fictional, not your real service queue. Nothing here sends a real text or email, this shows exactly what a customer would receive at each step. A real build connects to whatever your service team already uses to mark a ticket's stage, and swaps in an actual SMS/email service to send it.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Service desk view: update a ticket</h3>
+      <span class="sample-tag">Sample tickets, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the customer sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top:1.4rem;">
+    <h3 class="panel-title">New drop-off: replaces phone-only intake</h3>
+    <div id="form-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real text or email.</b> This demo shows exactly what a customer would receive at each step. A real version needs an actual SMS/email service (for example Twilio or SendGrid) connected to whichever system your service desk already uses to mark a ticket as diagnosing, waiting on parts, or ready for pickup.</div>
+      <div class="lim"><b>The six-stage flow shown (dropped off, diagnosing, waiting on parts, in progress, ready for pickup, picked up) is a typical marine-service flow, not copied from your internal process.</b> Worth a short conversation before this gets built for real, your service team may track things differently or add a step like a signed estimate approval.</div>
+      <div class="lim"><b>The queue position shown at drop-off is a count, not a promised date.</b> It answers "how many boats are ahead of mine" without promising a specific day, since that's the actual information a customer is given verbally today, just automatically and the moment it changes instead of only when they call.</div>
+      <div class="lim"><b>The "report issue persists" action models the Birdeye review directly, it is not a guarantee every recheck gets fixed.</b> What it changes is that a reopened issue becomes a tracked, front-of-queue ticket with its own notification, rather than a phone call that may or may not get written down anywhere.</div>
+      <div class="lim"><b>The BBB and Birdeye reviews are real and quoted directly; the detailed Birdeye account is from several years ago and your BBB complaint count is low relative to your review volume.</b> This is a reasonable response to a documented, real pattern, not a claim that the problem is currently severe or widespread, your dealer rating overall is strong.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Water Workz Marine, Inc. BBB and Birdeye reviews, and the absence of any online scheduling/status system on your live site, verified by direct fetch today. Ticket, customer, and boat data below is a fictional sample, not connected to any of your real service jobs.</p>
+</footer>
+
+<script>
+(function () {
+  var STAGE_NAMES = ["Dropped off", "Diagnosing", "Waiting on parts", "In progress", "Ready for pickup", "Picked up"];
+  var STORAGE_KEY = "wwm-status-pipeline-tickets-v1";
+
+  var STAGE_MESSAGES = [
+    null,
+    function (j) { return "This is Water Workz Marine. We've started diagnosing your " + j.boat + ". We'll text you again the moment there's an update, no need to call and check."; },
+    function (j) { return "We've identified what your " + j.boat + " needs and ordered the part. We'll text you again the moment it's in."; },
+    function (j) { return "Your part is in and your " + j.boat + " is now in progress."; },
+    function (j) { return "Your " + j.boat + " is ready for pickup. Thank you for your patience."; },
+    null
+  ];
+
+  function ackMessage(j) {
+    return "This is Water Workz Marine. We've logged your " + j.boat + " as drop-off ticket " + j.id + ". You're currently " + ordinal(j.queuePosition) + " in our service queue. We'll text you again the moment there's a status update, no need to call and check.";
+  }
+  function ordinal(n) {
+    var s = ["th", "st", "nd", "rd"], v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+
+  function seedTickets() {
+    var now = 1755878400000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "WWM-4512",
+        customer: "J. Keener",
+        contact: "(423) 555-0131",
+        boat: "SeaArk 20' bay boat (winterization)",
+        stage: 0,
+        queuePosition: 3,
+        recheck: null,
+        notifications: [
+          { text: "This is Water Workz Marine. We've logged your SeaArk 20' bay boat (winterization) as drop-off ticket WWM-4512. You're currently 3rd in our service queue. We'll text you again the moment there's a status update, no need to call and check.", at: now }
+        ]
+      },
+      {
+        id: "WWM-4505",
+        customer: "D. Halloway",
+        contact: "(423) 555-0164",
+        boat: "Four Winns 24' bowrider (engine won't start)",
+        stage: 2,
+        queuePosition: 1,
+        recheck: null,
+        notifications: [
+          { text: "This is Water Workz Marine. We've started diagnosing your Four Winns 24' bowrider (engine won't start). We'll text you again the moment there's an update, no need to call and check.", at: now + 3600000 },
+          { text: "We've identified what your Four Winns 24' bowrider (engine won't start) needs and ordered the part. We'll text you again the moment it's in.", at: now + 90000000 }
+        ]
+      },
+      {
+        id: "WWM-4498",
+        customer: "R. Castellano",
+        contact: "(423) 555-0119",
+        boat: "G3 18' aluminum fishing boat (de-winterization and tune-up)",
+        stage: 4,
+        queuePosition: null,
+        recheck: null,
+        notifications: [
+          { text: "This is Water Workz Marine. We've started diagnosing your G3 18' aluminum fishing boat (de-winterization and tune-up). We'll text you again the moment there's an update, no need to call and check.", at: now + 7200000 },
+          { text: "We've identified what your G3 18' aluminum fishing boat (de-winterization and tune-up) needs and ordered the part. We'll text you again the moment it's in.", at: now + 93600000 },
+          { text: "Your part is in and your G3 18' aluminum fishing boat (de-winterization and tune-up) is now in progress.", at: now + 180000000 },
+          { text: "Your G3 18' aluminum fishing boat (de-winterization and tune-up) is ready for pickup. Thank you for your patience.", at: now + 260000000 }
+        ]
+      },
+      {
+        id: "WWM-4480",
+        customer: "M. Ferris",
+        contact: "(423) 555-0177",
+        boat: "Avalon pontoon 22' (shift cable repair)",
+        stage: 5,
+        queuePosition: null,
+        recheck: { open: true, resolved: false },
+        notifications: [
+          { text: "This is Water Workz Marine. We've started diagnosing your Avalon pontoon 22' (shift cable repair). We'll text you again the moment there's an update, no need to call and check.", at: now - 5000000000 },
+          { text: "We've identified what your Avalon pontoon 22' (shift cable repair) needs and ordered the part. We'll text you again the moment it's in.", at: now - 4900000000 },
+          { text: "Your part is in and your Avalon pontoon 22' (shift cable repair) is now in progress.", at: now - 4800000000 },
+          { text: "Your Avalon pontoon 22' (shift cable repair) is ready for pickup. Thank you for your patience.", at: now - 4700000000 },
+          { text: "We're sorry the shift cable issue came back on your Avalon pontoon 22'. We've reopened this as a warranty recheck and moved it to the front of our service queue.", at: now - 100000000 }
+        ]
+      }
+    ];
+  }
+
+  function loadTickets() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedTickets();
+    saveTickets(seeded);
+    return seeded;
+  }
+  function saveTickets(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var tickets = loadTickets();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    tickets.forEach(function (j) {
+      var atLast = j.stage >= STAGE_NAMES.length - 1;
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.customer) + '</h4>';
+      html += j.recheck && j.recheck.open ? '<span class="recheck-pill">Warranty recheck requested</span>' : '<span class="stage-pill">' + STAGE_NAMES[j.stage] + '</span>';
+      html += '</div>';
+      html += '<div class="job-meta">' + escapeHtml(j.boat) + ' &middot; ' + escapeHtml(j.contact) + '</div>';
+      if (j.queuePosition != null && j.stage === 0) {
+        html += '<div class="queue-line">Queue position at drop-off: ' + ordinal(j.queuePosition) + '</div>';
+      }
+      html += '<div class="job-actions">';
+      if (j.recheck && j.recheck.open) {
+        html += '<button class="btn-sm" data-resolve-recheck="' + j.id + '">Mark recheck resolved</button>';
+      } else {
+        html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+        if (j.stage === STAGE_NAMES.length - 1 && !(j.recheck && j.recheck.resolved === false)) {
+          html += '<button class="btn-sm" data-report-recheck="' + j.id + '">Report issue persists</button>';
+        }
+      }
+      html += '</div>';
+      html += '</div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceTicket(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-report-recheck]"), function (btn) {
+      btn.addEventListener("click", function () { reportRecheck(btn.dataset.reportRecheck); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-resolve-recheck]"), function (btn) {
+      btn.addEventListener("click", function () { resolveRecheck(btn.dataset.resolveRecheck); });
+    });
+  }
+
+  function pushNotification(j, text) {
+    j.notifications.push({ text: text, at: Date.now() });
+  }
+
+  function advanceTicket(id) {
+    var j = tickets.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGE_NAMES.length - 1) return;
+    j.stage += 1;
+    var msg = STAGE_MESSAGES[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveTickets(tickets);
+    renderShop();
+    renderThread();
+  }
+
+  function reportRecheck(id) {
+    var j = tickets.find(function (x) { return x.id === id; });
+    if (!j) return;
+    j.recheck = { open: true, resolved: false };
+    pushNotification(j, "We're sorry the issue came back on your " + j.boat + ". We've reopened this as a warranty recheck and moved it to the front of our service queue.");
+    saveTickets(tickets);
+    renderShop();
+    renderThread();
+  }
+
+  function resolveRecheck(id) {
+    var j = tickets.find(function (x) { return x.id === id; });
+    if (!j || !j.recheck) return;
+    j.recheck = { open: false, resolved: true };
+    pushNotification(j, "We've rechecked your " + j.boat + " and resolved the issue from your prior visit. Thanks for your patience, and let us know if anything comes up again.");
+    saveTickets(tickets);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    sel.innerHTML = "";
+    tickets.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.customer;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = tickets.find(function (x) { return x.id === sel.value; }) || tickets[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this customer. Advance the ticket in the service desk view on the left.</p>';
+      return;
+    }
+    var html = "";
+    j.notifications.forEach(function (n) {
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-time">Text to ' + escapeHtml(j.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  // ---- New drop-off form ----
+  var formState = { boat: "", issue: "", name: "", contact: "", submitted: false };
+  var formRoot = document.getElementById("form-root");
+
+  function canSubmitForm() {
+    return formState.boat.trim() && formState.issue.trim() && formState.name.trim() && formState.contact.trim();
+  }
+
+  function openQueueCount() {
+    return tickets.filter(function (j) { return j.stage < STAGE_NAMES.length - 2; }).length;
+  }
+
+  function renderForm() {
+    if (formState.submitted) { renderFormConfirm(); return; }
+    var html = "";
+    html += '<div class="field"><div class="field-label">Boat make and model</div><input type="text" class="wide" id="f-boat" value="' + escapeHtml(formState.boat) + '" placeholder="e.g. Xpress 19 bass boat"></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Service requested</div><textarea id="f-issue" placeholder="e.g. winterization, or describe the problem">' + escapeHtml(formState.issue) + '</textarea></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Your name</div><input type="text" class="wide" id="f-name" value="' + escapeHtml(formState.name) + '" placeholder="First and last name"></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Phone or email</div><input type="text" class="wide" id="f-contact" value="' + escapeHtml(formState.contact) + '" placeholder="How should we reach you?"></div>';
+    html += '<button class="fx-btn" id="f-submit" style="margin-top:1rem;"' + (canSubmitForm() ? "" : " disabled") + '>Drop off boat</button>';
+    formRoot.innerHTML = html;
+
+    document.getElementById("f-boat").addEventListener("input", function (e) { formState.boat = e.target.value; syncFormBtn(); });
+    document.getElementById("f-issue").addEventListener("input", function (e) { formState.issue = e.target.value; syncFormBtn(); });
+    document.getElementById("f-name").addEventListener("input", function (e) { formState.name = e.target.value; syncFormBtn(); });
+    document.getElementById("f-contact").addEventListener("input", function (e) { formState.contact = e.target.value; syncFormBtn(); });
+    document.getElementById("f-submit").addEventListener("click", function () {
+      if (!canSubmitForm()) return;
+      var newId = "WWM-" + (4512 + tickets.length * 3 + tickets.length);
+      var queuePosition = openQueueCount() + 1;
+      var ticket = {
+        id: newId,
+        customer: formState.name,
+        contact: formState.contact,
+        boat: formState.boat + " (" + formState.issue + ")",
+        stage: 0,
+        queuePosition: queuePosition,
+        recheck: null,
+        notifications: []
+      };
+      pushNotification(ticket, ackMessage(ticket));
+      tickets.push(ticket);
+      saveTickets(tickets);
+      formState.submitted = true;
+      formState.lastId = newId;
+      formState.lastQueue = queuePosition;
+      renderForm();
+      renderShop();
+      populatePicker();
+    });
+  }
+
+  function syncFormBtn() {
+    var btn = document.getElementById("f-submit");
+    if (btn) btn.disabled = !canSubmitForm();
+  }
+
+  function renderFormConfirm() {
+    var html = '<div class="confirm">';
+    html += '<h3>Logged as ' + formState.lastId + ', ' + ordinal(formState.lastQueue) + ' in the service queue</h3>';
+    html += '<p style="font-size:0.9rem; color:var(--ink-2);">It now appears at "Dropped off" in the service desk view above, and the customer\'s thread already has the queue-position acknowledgment. A real version texts or emails that the moment this is submitted, replacing phone-only intake.</p>';
+    html += '<button class="fx-btn-ghost" id="f-reset" style="align-self:flex-start;">Log another drop-off</button>';
+    html += '</div>';
+    formRoot.innerHTML = html;
+    document.getElementById("f-reset").addEventListener("click", function () {
+      formState = { boat: "", issue: "", name: "", contact: "", submitted: false };
+      renderForm();
+    });
+  }
+
+  renderShop();
+  populatePicker();
+  renderThread();
+  renderForm();
+})();
+</script>
+</body>
+</html>
