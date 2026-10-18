@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Recreational Concepts, Inc.</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .pill-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .dept-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--surface-raised); border: 1px solid var(--rule); color: var(--ink-2); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .flag-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: #f6dede; color: #9a2f2f; padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+  .filter-row { margin-bottom: 0.9rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 92%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .field { display: flex; flex-direction: column; gap: 0.45rem; }
+  .field-label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  input[type="text"].wide { width: 100%; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus, select:focus { outline: none; border-color: var(--brand); }
+  textarea { font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; resize: vertical; min-height: 4rem; }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .confirm h3 { margin: 0; font-size: 1.02rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+  .sample-tag { display:inline-block; background:var(--brand-soft); color:var(--brand); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:0.25rem 0.6rem; border-radius:5px; margin-bottom:0.9rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Recreational Concepts</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Recreational Concepts, Inc.</span>
+  <h1 class="fx-h1">The update that goes out before the customer has to call, email, and stop by the office</h1>
+  <p class="fx-lede">A Google Business Profile review describes a Pentair pool heater warranty claim where the customer was told to expect contact within 72 hours, then heard nothing after follow-up calls, an email, and an in-person office visit. A separate Yelp review describes a service call that took over a month to get someone out. Both are the same underlying gap: once a ticket is handed to a department (service, pools, billing, or electrical), nothing tells the customer, or flags to staff, that it has gone quiet.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> both reviews above are quoted from your actual listings. Google Business Profile (Thomas Namk, approximately 10 months ago, via PoolPad's disclosed Google-sourced reviews): a Pentair pool heater warranty claim assigned to Recreational Concepts, told to expect contact within 72 hours, no response after follow-up calls, an email, and an in-person office visit over several weeks. Yelp (Kirsten M., 08/24/21, via Yahoo Local's syndicated copy of the same native Yelp review): "it took over a month" to get someone out for service. A direct fetch of your own contact page today found no online booking, scheduling tool, service-status tracker, or customer portal, only one-way "Request a Pool/Service/Spa Estimate" intake forms and a general contact form.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the tickets, customers, and department routing below are fictional, not your real service queue. The department inboxes shown (service@, pools@, billing@, electrician@) are the real addresses listed on your own contact page, used here only to show how a ticket would route, not connected to any real message. Nothing here sends a real email, this shows exactly what a customer, and your staff, would see at each step.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Staff dashboard: update a ticket</h3>
+      <span class="sample-tag">Sample tickets, fictional</span>
+      <div class="filter-row">
+        <select id="dept-filter"></select>
+      </div>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the customer sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top:1.4rem;">
+    <h3 class="panel-title">New request: replaces the one-way estimate/contact forms</h3>
+    <div id="form-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email.</b> This demo shows exactly what a customer, and your staff dashboard, would show at each step. A real version needs an actual email service (for example SendGrid or Microsoft Graph, since your mail already runs on Microsoft 365) connected to whichever system each department already uses to log a ticket.</div>
+      <div class="lim"><b>The five-stage flow and the four department lanes (service, pools, billing, electrical) are a reasonable read of your contact page's own department structure, not copied from your internal process.</b> Worth a short conversation with Denise, Cortney, Jennifer, Patty, and Scott before this gets built for real, your team may route or stage things differently, and your retail store and estimate-request flows aren't modeled here at all.</div>
+      <div class="lim"><b>The 72-hour "manufacturer response promised by" flag models the Pentair review specifically, it is not a policy you've stated.</b> It shows what an automatic overdue flag would look like on a manufacturer warranty claim, computed from when the claim was opened, so staff see it before the customer has to visit the office to ask.</div>
+      <div class="lim"><b>The "days since last update" flag uses a 14-day threshold chosen for this demo, not a number from your own process.</b> It is a generic staleness check: any ticket nobody has touched in a while gets surfaced to staff automatically, which is the direct answer to both the five-month liner wait and the month-long service callback described in your reviews.</div>
+      <div class="lim"><b>The two corroborating reviews are not perfectly clean "communication-only" examples.</b> Kirsten M.'s Yelp review pairs "worst communication" with a workmanship complaint ("their work is shoty") in the same sentence, and a related Google review (Skelly Bixler, a five-month liner wait) pairs the delay with an alleged installation defect. Disclosed here rather than glossed over, since both could partly read as quality complaints riding alongside the communication complaint.</div>
+      <div class="lim"><b>Your overall ratings are decidedly positive.</b> Google is 4.0 stars across 140 reviews and even Yelp's negative cluster is a minority of 11 reviews. The communication-gap pattern is real and recurring across multiple years, but it's a persistent minority theme, not the dominant customer experience, worth knowing for outreach framing, not a sign of a widespread problem.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Recreational Concepts, Inc. The Google Business Profile and Yelp reviews quoted above, the department contact addresses, and the absence of any online scheduling/status system on your live site were all verified by direct fetch today. Ticket, customer, and job data below is a fictional sample, not connected to any of your real service jobs.</p>
+</footer>
+
+<script>
+(function () {
+  var STAGE_NAMES = ["Request received", "Assigned to department", "Waiting on manufacturer/parts", "Scheduled", "Complete"];
+  var DEPTS = {
+    service: { label: "Service", inbox: "service@recreationalconceptsinc.com (Cortney)" },
+    pools: { label: "Pools & Spas", inbox: "pools@recreationalconceptsinc.com (Jennifer)" },
+    billing: { label: "Billing", inbox: "billing@recreationalconceptsinc.com (Patty)" },
+    electrical: { label: "Electrical", inbox: "electrician@recreationalconceptsinc.com (Scott)" }
+  };
+  var STORAGE_KEY = "rci-status-pipeline-tickets-v1";
+  var NOW = 1760745600000; // fixed reference timestamp so the demo is deterministic
+  var STALE_DAYS = 14;
+  var WARRANTY_WINDOW_MS = 72 * 3600000;
+
+  var STAGE_MESSAGES = [
+    null,
+    function (j) { return "This is Recreational Concepts. Your ticket " + j.id + " is now assigned to our " + DEPTS[j.dept].label + " team. We'll email you again the moment there's an update, no need to call or stop by."; },
+    function (j) { return "Your ticket " + j.id + " is waiting on a manufacturer response or parts. We'll email you again the moment that changes."; },
+    function (j) { return "Your ticket " + j.id + " is now scheduled."; },
+    function (j) { return "Your ticket " + j.id + " is complete. Thank you for your business."; },
+    null
+  ];
+
+  function ackMessage(j) {
+    return "This is Recreational Concepts. We've logged your request as ticket " + j.id + " and routed it to our " + DEPTS[j.dept].label + " team (" + DEPTS[j.dept].inbox + "). We'll email you again the moment there's a status update, no need to call or stop by the office.";
+  }
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function seedTickets() {
+    return [
+      {
+        id: "RCI-2241",
+        customer: "T. Marsh",
+        contact: "t.marsh@example.com",
+        job: "Pool heater warranty assessment (Pentair)",
+        dept: "service",
+        stage: 1,
+        warrantyHold: true,
+        openedAt: NOW - 5 * 24 * 3600000,
+        escalations: 0,
+        notifications: [
+          { text: "This is Recreational Concepts. We've logged your request as ticket RCI-2241 and routed it to our Service team (service@recreationalconceptsinc.com (Cortney)). We'll email you again the moment there's a status update, no need to call or stop by the office.", at: NOW - 5 * 24 * 3600000 },
+          { text: "This is Recreational Concepts. Your ticket RCI-2241 is now assigned to our Service team. We'll email you again the moment there's an update, no need to call or stop by.", at: NOW - 5 * 24 * 3600000 + 3600000 }
+        ]
+      },
+      {
+        id: "RCI-2198",
+        customer: "S. Okafor",
+        contact: "s.okafor@example.com",
+        job: "Prepaid pool liner replacement",
+        dept: "pools",
+        stage: 2,
+        warrantyHold: false,
+        openedAt: NOW - 150 * 24 * 3600000,
+        escalations: 0,
+        notifications: [
+          { text: "This is Recreational Concepts. We've logged your request as ticket RCI-2198 and routed it to our Pools & Spas team (pools@recreationalconceptsinc.com (Jennifer)). We'll email you again the moment there's a status update, no need to call or stop by the office.", at: NOW - 150 * 24 * 3600000 },
+          { text: "This is Recreational Concepts. Your ticket RCI-2198 is now assigned to our Pools & Spas team. We'll email you again the moment there's an update, no need to call or stop by.", at: NOW - 149 * 24 * 3600000 },
+          { text: "Your ticket RCI-2198 is waiting on a manufacturer response or parts. We'll email you again the moment that changes.", at: NOW - 120 * 24 * 3600000 }
+        ]
+      },
+      {
+        id: "RCI-2250",
+        customer: "D. Reyes",
+        contact: "d.reyes@example.com",
+        job: "Hot tub GFCI breaker trips on startup, service call",
+        dept: "electrical",
+        stage: 0,
+        warrantyHold: false,
+        openedAt: NOW - 2 * 3600000,
+        escalations: 0,
+        notifications: [
+          { text: "This is Recreational Concepts. We've logged your request as ticket RCI-2250 and routed it to our Electrical team (electrician@recreationalconceptsinc.com (Scott)). We'll email you again the moment there's a status update, no need to call or stop by the office.", at: NOW - 2 * 3600000 }
+        ]
+      },
+      {
+        id: "RCI-2179",
+        customer: "M. Haugen",
+        contact: "m.haugen@example.com",
+        job: "Billing discrepancy on liner-replacement invoice",
+        dept: "billing",
+        stage: 4,
+        warrantyHold: false,
+        openedAt: NOW - 20 * 24 * 3600000,
+        escalations: 0,
+        notifications: [
+          { text: "This is Recreational Concepts. We've logged your request as ticket RCI-2179 and routed it to our Billing team (billing@recreationalconceptsinc.com (Patty)). We'll email you again the moment there's a status update, no need to call or stop by the office.", at: NOW - 20 * 24 * 3600000 },
+          { text: "This is Recreational Concepts. Your ticket RCI-2179 is now assigned to our Billing team. We'll email you again the moment there's an update, no need to call or stop by.", at: NOW - 19 * 24 * 3600000 },
+          { text: "Your ticket RCI-2179 is now scheduled.", at: NOW - 10 * 24 * 3600000 },
+          { text: "Your ticket RCI-2179 is complete. Thank you for your business.", at: NOW - 5 * 24 * 3600000 }
+        ]
+      }
+    ];
+  }
+
+  function loadTickets() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedTickets();
+    saveTickets(seeded);
+    return seeded;
+  }
+  function saveTickets(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var tickets = loadTickets();
+  var filterDept = "all";
+
+  function daysSinceLastUpdate(j) {
+    var last = j.notifications.length ? j.notifications[j.notifications.length - 1].at : j.openedAt;
+    return Math.floor((NOW - last) / 86400000);
+  }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    var visible = tickets.filter(function (j) { return filterDept === "all" || j.dept === filterDept; });
+    if (!visible.length) {
+      root.innerHTML = '<p class="thread-empty">No tickets in this department right now.</p>';
+      return;
+    }
+    visible.forEach(function (j) {
+      var atLast = j.stage >= STAGE_NAMES.length - 1;
+      var stale = j.stage < STAGE_NAMES.length - 1 && daysSinceLastUpdate(j) > STALE_DAYS;
+      var overdue = j.warrantyHold && j.stage < STAGE_NAMES.length - 1 && (NOW - j.openedAt) > WARRANTY_WINDOW_MS;
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.customer) + '</h4>';
+      html += '<div class="pill-row"><span class="dept-pill">' + DEPTS[j.dept].label + '</span><span class="stage-pill">' + STAGE_NAMES[j.stage] + '</span></div>';
+      html += '</div>';
+      html += '<div class="job-meta">' + escapeHtml(j.job) + '</div>';
+      html += '<div class="pill-row">';
+      if (overdue) html += '<span class="flag-pill">Manufacturer response overdue (72h window passed)</span>';
+      if (stale) html += '<span class="flag-pill">' + daysSinceLastUpdate(j) + ' days since last update</span>';
+      html += '</div>';
+      html += '<div class="job-actions">';
+      if (j.warrantyHold && j.stage < STAGE_NAMES.length - 1) {
+        html += '<button class="btn-sm" data-mfr-received="' + j.id + '">Log manufacturer response received</button>';
+        html += '<button class="btn-sm" data-escalate="' + j.id + '">Report: still no response from manufacturer</button>';
+      } else {
+        html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+      }
+      html += '</div>';
+      html += '</div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceTicket(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-mfr-received]"), function (btn) {
+      btn.addEventListener("click", function () { mfrReceived(btn.dataset.mfrReceived); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-escalate]"), function (btn) {
+      btn.addEventListener("click", function () { escalateTicket(btn.dataset.escalate); });
+    });
+  }
+
+  function pushNotification(j, text) {
+    j.notifications.push({ text: text, at: Date.now() });
+  }
+
+  function advanceTicket(id) {
+    var j = tickets.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGE_NAMES.length - 1) return;
+    j.stage += 1;
+    var msg = STAGE_MESSAGES[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveTickets(tickets);
+    renderShop();
+    renderThread();
+  }
+
+  function mfrReceived(id) {
+    var j = tickets.find(function (x) { return x.id === id; });
+    if (!j) return;
+    j.warrantyHold = false;
+    if (j.stage < 3) j.stage = 3;
+    pushNotification(j, "This is Recreational Concepts. The manufacturer has responded on your warranty claim for ticket " + j.id + ". Your ticket is now scheduled.");
+    saveTickets(tickets);
+    renderShop();
+    renderThread();
+  }
+
+  function escalateTicket(id) {
+    var j = tickets.find(function (x) { return x.id === id; });
+    if (!j) return;
+    j.escalations += 1;
+    pushNotification(j, "This is Recreational Concepts. We still haven't heard back from the manufacturer on your ticket " + j.id + ". We've followed up again on our end and will keep you posted, no need to call to check.");
+    saveTickets(tickets);
+    renderShop();
+    renderThread();
+  }
+
+  function populateDeptFilter() {
+    var sel = document.getElementById("dept-filter");
+    var html = '<option value="all">All departments</option>';
+    Object.keys(DEPTS).forEach(function (key) {
+      html += '<option value="' + key + '">' + DEPTS[key].label + '</option>';
+    });
+    sel.innerHTML = html;
+    sel.addEventListener("change", function () { filterDept = sel.value; renderShop(); });
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    sel.innerHTML = "";
+    tickets.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.customer;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = tickets.find(function (x) { return x.id === sel.value; }) || tickets[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this customer. Advance the ticket in the staff dashboard on the left.</p>';
+      return;
+    }
+    var html = "";
+    j.notifications.forEach(function (n) {
+      html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-time">Email to ' + escapeHtml(j.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+    });
+    root.innerHTML = html;
+    root.scrollTop = root.scrollHeight;
+  }
+
+  // ---- New request form ----
+  var formState = { job: "", dept: "service", name: "", contact: "", submitted: false };
+  var formRoot = document.getElementById("form-root");
+
+  function canSubmitForm() {
+    return formState.job.trim() && formState.name.trim() && formState.contact.trim();
+  }
+
+  function renderForm() {
+    if (formState.submitted) { renderFormConfirm(); return; }
+    var html = "";
+    html += '<div class="field"><div class="field-label">What do you need?</div><textarea id="f-job" placeholder="e.g. hot tub service call, liner question, billing question">' + escapeHtml(formState.job) + '</textarea></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Which department fits best?</div><select id="f-dept">';
+    Object.keys(DEPTS).forEach(function (key) {
+      html += '<option value="' + key + '"' + (formState.dept === key ? " selected" : "") + '>' + DEPTS[key].label + '</option>';
+    });
+    html += '</select></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Your name</div><input type="text" class="wide" id="f-name" value="' + escapeHtml(formState.name) + '" placeholder="First and last name"></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Email</div><input type="text" class="wide" id="f-contact" value="' + escapeHtml(formState.contact) + '" placeholder="How should we reach you?"></div>';
+    html += '<button class="fx-btn" id="f-submit" style="margin-top:1rem;"' + (canSubmitForm() ? "" : " disabled") + '>Submit request</button>';
+    formRoot.innerHTML = html;
+
+    document.getElementById("f-job").addEventListener("input", function (e) { formState.job = e.target.value; syncFormBtn(); });
+    document.getElementById("f-dept").addEventListener("change", function (e) { formState.dept = e.target.value; });
+    document.getElementById("f-name").addEventListener("input", function (e) { formState.name = e.target.value; syncFormBtn(); });
+    document.getElementById("f-contact").addEventListener("input", function (e) { formState.contact = e.target.value; syncFormBtn(); });
+    document.getElementById("f-submit").addEventListener("click", function () {
+      if (!canSubmitForm()) return;
+      var newId = "RCI-" + (2241 + tickets.length * 4 + tickets.length);
+      var ticket = {
+        id: newId,
+        customer: formState.name,
+        contact: formState.contact,
+        job: formState.job,
+        dept: formState.dept,
+        stage: 0,
+        warrantyHold: false,
+        openedAt: Date.now(),
+        escalations: 0,
+        notifications: []
+      };
+      pushNotification(ticket, ackMessage(ticket));
+      tickets.push(ticket);
+      saveTickets(tickets);
+      formState.submitted = true;
+      formState.lastId = newId;
+      formState.lastDept = DEPTS[ticket.dept].label;
+      renderForm();
+      renderShop();
+      populatePicker();
+    });
+  }
+
+  function syncFormBtn() {
+    var btn = document.getElementById("f-submit");
+    if (btn) btn.disabled = !canSubmitForm();
+  }
+
+  function renderFormConfirm() {
+    var html = '<div class="confirm">';
+    html += '<h3>Logged as ' + formState.lastId + ', routed to ' + formState.lastDept + '</h3>';
+    html += '<p style="font-size:0.9rem; color:var(--ink-2);">It now appears at "Request received" in the staff dashboard above, and the customer\'s thread already has the routing acknowledgment. A real version emails that the moment this is submitted, replacing the one-way estimate/contact forms.</p>';
+    html += '<button class="fx-btn-ghost" id="f-reset" style="align-self:flex-start;">Log another request</button>';
+    html += '</div>';
+    formRoot.innerHTML = html;
+    document.getElementById("f-reset").addEventListener("click", function () {
+      formState = { job: "", dept: "service", name: "", contact: "", submitted: false };
+      renderForm();
+    });
+  }
+
+  populateDeptFilter();
+  renderShop();
+  populatePicker();
+  renderThread();
+  renderForm();
+})();
+</script>
+</body>
+</html>
