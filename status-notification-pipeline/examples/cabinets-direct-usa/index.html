@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Cabinets Direct USA</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .issue-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: #f6dede; color: #9a2f2f; padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .lookup-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  input[type="text"].wide { flex: 1; min-width: 12rem; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus { outline: none; border-color: var(--brand); }
+  .lookup-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .lookup-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-top: 0.8rem; }
+
+  .order-summary { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+  .order-summary h4 { margin: 0; font-size: 1rem; font-family: var(--serif); }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.7rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 92%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+  .sample-tag { display:inline-block; background:var(--brand-soft); color:var(--brand); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:0.25rem 0.6rem; border-radius:5px; margin-bottom:0.9rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Cabinets Direct USA</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Cabinets Direct USA</span>
+  <h1 class="fx-h1">"Where's my kitchen?" answered without a phone call</h1>
+  <p class="fx-lede">On Yelp, David R. (Wayne) writes "The communication is sub par, requires regular follow ups." Adele P. (Orange) writes "I never heard back from him after that." On HomeAdvisor, Peter C. (Orange) describes an order that sat unplaced for a month because "new customers were coming in," then arrived four months after initial contact. The pattern across your showrooms is the same one: a customer only learns where a $3,000-$20,000 order stands by calling and asking.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the quotes above are from your own Yelp brand page and HomeAdvisor profile, re-fetched directly today. A direct fetch of cabinetsdirectusa.com (homepage, contact page, locations page) today found no consumer-facing order-status tracker and no customer login of any kind: the only online touchpoints are a multi-step lead-capture form and four mailto addresses. Your own site describes the order journey as showroom consultation, design retainer, measurement, final order, then manual "updates on shipping to the local warehouse," with no self-serve system behind any of it.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the four orders, customers, and messages below are fictional sample data, not real Cabinets Direct USA customers or orders. Nothing here sends a real text or email, this shows exactly what a customer would see and receive. A real build connects to whichever system your showroom staff already use to mark where an order stands, and sends through an actual SMS/email service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Showroom view: update an order</h3>
+      <span class="sample-tag">Sample orders, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the customer sees: "where's my kitchen?"</h3>
+      <div class="lookup-row">
+        <input type="text" class="wide" id="lookup-input" placeholder="Order number, phone, or email">
+        <button class="btn-sm" id="lookup-btn">Check status</button>
+      </div>
+      <p class="lookup-hint">Try CD-7718, (973) 555-0142, or jordan.m@example.com</p>
+      <div id="lookup-result"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top:1.4rem;">
+    <h3 class="panel-title">Flag an item issue: wrong size, wrong color, or damaged</h3>
+    <p style="font-size:0.88rem; color:var(--ink-2); margin-top:-0.3rem;">Available once an order reaches "Received at local warehouse," for either side to raise.</p>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real text or email.</b> This demo shows exactly what a customer would receive at each step. A real version needs an actual SMS/email service (for example Twilio or SendGrid) connected to whichever system your showroom and warehouse staff already use to mark an order's stage.</div>
+      <div class="lim"><b>The six-stage flow shown (consultation, measured, ordered from manufacturer, received at local warehouse, installation scheduled, installed/complete) follows the order journey described on your own site.</b> Worth a short conversation before this gets built for real since a multi-location, multi-generation business may track a signed-estimate or financing-approval step separately, and that would need its own stage.</div>
+      <div class="lim"><b>Lookup by order number, phone, or email, no account or password.</b> This answers "where's my kitchen" the moment a customer wants to know, without them having to remember a login or call a specific showroom.</div>
+      <div class="lim"><b>This does not fix a wrong-size or wrong-color cabinet, and I'm not claiming it does.</b> Two of your Yelp reviews (Gina S., Toms River: a wrong cabinet delivered twice, holding up the job 3+ weeks; U R., Toms River: a 30 inch cabinet shipped as 24 inches) describe a product/fulfillment problem a tracker alone can't prevent. What the "flag item issue" action above does is make that problem visible and tracked the moment it's found, with its own notification to the customer, instead of surfacing only when someone calls to chase it.</div>
+      <div class="lim"><b>A single showroom screen, not five separate logins.</b> Whichever employee at whichever of your showrooms last touched an order updates it in one place, so a status change doesn't depend on reaching the one person who originally took the order.</div>
+      <div class="lim"><b>The Yelp and HomeAdvisor reviews quoted above are real and independently re-fetched today, but the most detailed ones (David R., Adele P., Gina S., U R.) are several years old by Yelp's own relative dating.</b> More recent complaints exist but are less detailed, and no confirmed complaint from the last 12-24 months was found, disclosed honestly rather than presented as a current crisis.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Cabinets Direct USA. Yelp and HomeAdvisor reviews, and the absence of any online order-status system on your live site, verified by direct fetch today. Order, customer, and message data below is a fictional sample, not connected to any of your real orders.</p>
+</footer>
+
+<script>
+(function () {
+  var STAGE_NAMES = ["Consultation", "Measured", "Ordered from manufacturer", "Received at local warehouse", "Installation scheduled", "Installed/complete"];
+  var STORAGE_KEY = "cdusa-status-pipeline-orders-v1";
+
+  var STAGE_MESSAGES = [
+    null,
+    function (j) { return "This is Cabinets Direct USA. We've measured for your " + j.item + " and are finalizing your order. We'll text you again the moment there's an update, no need to call and check."; },
+    function (j) { return "Your " + j.item + " order has been placed with the manufacturer. We'll text you again the moment it arrives at our local warehouse."; },
+    function (j) { return "Your " + j.item + " has arrived at our local warehouse. We'll text you again once installation is scheduled."; },
+    function (j) { return "Installation for your " + j.item + " is now scheduled. We'll confirm the date and time directly."; },
+    function (j) { return "Your " + j.item + " installation is complete. Thank you for choosing Cabinets Direct USA."; }
+  ];
+
+  function ackMessage(j) {
+    return "This is Cabinets Direct USA. We've logged your " + j.item + " as order " + j.id + ", currently at consultation. We'll text you again the moment there's a status update, no need to call and check.";
+  }
+
+  function seedOrders() {
+    var now = 1755878400000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "CD-7731",
+        customer: "Jordan M.",
+        contact: "(973) 555-0142",
+        email: "jordan.m@example.com",
+        item: "custom kitchen cabinets and Caesarstone countertops",
+        stage: 2,
+        issue: null,
+        notifications: [
+          { text: "This is Cabinets Direct USA. We've logged your custom kitchen cabinets and Caesarstone countertops as order CD-7731, currently at consultation. We'll text you again the moment there's a status update, no need to call and check.", at: now },
+          { text: "This is Cabinets Direct USA. We've measured for your custom kitchen cabinets and Caesarstone countertops and are finalizing your order. We'll text you again the moment there's an update, no need to call and check.", at: now + 3600000 },
+          { text: "Your custom kitchen cabinets and Caesarstone countertops order has been placed with the manufacturer. We'll text you again the moment it arrives at our local warehouse.", at: now + 90000000 }
+        ]
+      },
+      {
+        id: "CD-7705",
+        customer: "Priya S.",
+        contact: "(732) 555-0198",
+        email: "priya.s@example.com",
+        item: "bathroom vanity and Silestone countertop",
+        stage: 5,
+        issue: null,
+        notifications: [
+          { text: "This is Cabinets Direct USA. We've logged your bathroom vanity and Silestone countertop as order CD-7705, currently at consultation. We'll text you again the moment there's a status update, no need to call and check.", at: now - 9000000000 },
+          { text: "This is Cabinets Direct USA. We've measured for your bathroom vanity and Silestone countertop and are finalizing your order. We'll text you again the moment there's an update, no need to call and check.", at: now - 8900000000 },
+          { text: "Your bathroom vanity and Silestone countertop order has been placed with the manufacturer. We'll text you again the moment it arrives at our local warehouse.", at: now - 8700000000 },
+          { text: "Your bathroom vanity and Silestone countertop has arrived at our local warehouse. We'll text you again once installation is scheduled.", at: now - 8400000000 },
+          { text: "Installation for your bathroom vanity and Silestone countertop is now scheduled. We'll confirm the date and time directly.", at: now - 8000000000 },
+          { text: "Your bathroom vanity and Silestone countertop installation is complete. Thank you for choosing Cabinets Direct USA.", at: now - 7000000000 }
+        ]
+      },
+      {
+        id: "CD-7718",
+        customer: "Marcus T.",
+        contact: "(201) 555-0177",
+        email: "marcus.t@example.com",
+        item: "Fabuwood kitchen cabinets",
+        stage: 3,
+        issue: { open: true, note: "Wrong size wall cabinet received, 30 inch ordered, 24 inch shipped." },
+        notifications: [
+          { text: "This is Cabinets Direct USA. We've logged your Fabuwood kitchen cabinets as order CD-7718, currently at consultation. We'll text you again the moment there's a status update, no need to call and check.", at: now - 4000000000 },
+          { text: "This is Cabinets Direct USA. We've measured for your Fabuwood kitchen cabinets and are finalizing your order. We'll text you again the moment there's an update, no need to call and check.", at: now - 3900000000 },
+          { text: "Your Fabuwood kitchen cabinets order has been placed with the manufacturer. We'll text you again the moment it arrives at our local warehouse.", at: now - 3700000000 },
+          { text: "Your Fabuwood kitchen cabinets has arrived at our local warehouse. We'll text you again once installation is scheduled.", at: now - 3500000000 },
+          { text: "We're sorry, we've found an item issue with your Fabuwood kitchen cabinets order: wrong size wall cabinet received, 30 inch ordered, 24 inch shipped. A team member will contact you directly about a correction.", at: now - 100000000 }
+        ]
+      },
+      {
+        id: "CD-7699",
+        customer: "Ava D.",
+        contact: "(908) 555-0133",
+        email: "ava.d@example.com",
+        item: "Diamond cabinets and Cambria countertops",
+        stage: 4,
+        issue: null,
+        notifications: [
+          { text: "This is Cabinets Direct USA. We've logged your Diamond cabinets and Cambria countertops as order CD-7699, currently at consultation. We'll text you again the moment there's a status update, no need to call and check.", at: now - 6000000000 },
+          { text: "This is Cabinets Direct USA. We've measured for your Diamond cabinets and Cambria countertops and are finalizing your order. We'll text you again the moment there's an update, no need to call and check.", at: now - 5900000000 },
+          { text: "Your Diamond cabinets and Cambria countertops order has been placed with the manufacturer. We'll text you again the moment it arrives at our local warehouse.", at: now - 5700000000 },
+          { text: "Your Diamond cabinets and Cambria countertops has arrived at our local warehouse. We'll text you again once installation is scheduled.", at: now - 5400000000 },
+          { text: "Installation for your Diamond cabinets and Cambria countertops is now scheduled. We'll confirm the date and time directly.", at: now - 5000000000 }
+        ]
+      }
+    ];
+  }
+
+  function loadOrders() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedOrders();
+    saveOrders(seeded);
+    return seeded;
+  }
+  function saveOrders(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var orders = loadOrders();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function digitsOnly(s) { return (s || "").replace(/\D/g, ""); }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    orders.forEach(function (j) {
+      var atLast = j.stage >= STAGE_NAMES.length - 1;
+      var canFlag = j.stage >= 3;
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.customer) + '</h4>';
+      html += j.issue && j.issue.open ? '<span class="issue-pill">Item issue flagged</span>' : '<span class="stage-pill">' + STAGE_NAMES[j.stage] + '</span>';
+      html += '</div>';
+      html += '<div class="job-meta">' + escapeHtml(j.item) + ' &middot; ' + escapeHtml(j.contact) + '</div>';
+      html += '<div class="job-actions">';
+      if (j.issue && j.issue.open) {
+        html += '<button class="btn-sm" data-resolve-issue="' + j.id + '">Mark item issue resolved</button>';
+      } else {
+        html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+        if (canFlag) {
+          html += '<button class="btn-sm" data-flag-issue="' + j.id + '">Flag item issue</button>';
+        }
+      }
+      html += '</div>';
+      html += '</div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceOrder(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-flag-issue]"), function (btn) {
+      btn.addEventListener("click", function () { flagIssue(btn.dataset.flagIssue); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-resolve-issue]"), function (btn) {
+      btn.addEventListener("click", function () { resolveIssue(btn.dataset.resolveIssue); });
+    });
+  }
+
+  function pushNotification(j, text) {
+    j.notifications.push({ text: text, at: Date.now() });
+  }
+
+  function advanceOrder(id) {
+    var j = orders.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGE_NAMES.length - 1) return;
+    j.stage += 1;
+    var msg = STAGE_MESSAGES[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveOrders(orders);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function flagIssue(id) {
+    var j = orders.find(function (x) { return x.id === id; });
+    if (!j) return;
+    var note = window.prompt("Describe the item issue (e.g. wrong size, wrong color, damaged):", "");
+    if (note === null) return;
+    note = note.trim() || "Item issue reported.";
+    j.issue = { open: true, note: note };
+    pushNotification(j, "We're sorry, we've found an item issue with your " + j.item + " order: " + note + " A team member will contact you directly about a correction.");
+    saveOrders(orders);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function resolveIssue(id) {
+    var j = orders.find(function (x) { return x.id === id; });
+    if (!j || !j.issue) return;
+    j.issue = { open: false, note: j.issue.note };
+    pushNotification(j, "The item issue on your " + j.item + " order has been resolved. Thank you for your patience.");
+    saveOrders(orders);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  var lastLookupId = null;
+
+  function findOrder(query) {
+    var q = (query || "").trim();
+    if (!q) return null;
+    var qLower = q.toLowerCase();
+    var qDigits = digitsOnly(q);
+    return orders.find(function (j) {
+      if (j.id.toLowerCase() === qLower) return true;
+      if (j.email && j.email.toLowerCase() === qLower) return true;
+      if (qDigits.length >= 7 && digitsOnly(j.contact) === qDigits) return true;
+      return false;
+    }) || null;
+  }
+
+  function renderLookupIfShowing(id) {
+    if (lastLookupId === id) renderLookupResult(findOrder(id));
+  }
+
+  function renderLookupResult(j) {
+    var root = document.getElementById("lookup-result");
+    if (!j) {
+      root.innerHTML = '<p class="lookup-empty">No order found for that order number, phone, or email. Double-check and try again, or call your showroom.</p>';
+      lastLookupId = null;
+      return;
+    }
+    lastLookupId = j.id;
+    var html = '<div class="order-summary"><h4>' + j.id + ' - ' + escapeHtml(j.item) + '</h4>';
+    html += j.issue && j.issue.open ? '<span class="issue-pill">Item issue flagged</span>' : '<span class="stage-pill">' + STAGE_NAMES[j.stage] + '</span>';
+    html += '</div>';
+    html += '<div class="thread">';
+    if (!j.notifications.length) {
+      html += '<p class="thread-empty">No messages yet.</p>';
+    } else {
+      j.notifications.forEach(function (n) {
+        html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-time">Text to ' + escapeHtml(j.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+      });
+    }
+    html += '</div>';
+    root.innerHTML = html;
+    var thread = root.querySelector(".thread");
+    if (thread) thread.scrollTop = thread.scrollHeight;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var q = document.getElementById("lookup-input").value;
+    renderLookupResult(findOrder(q));
+  });
+  document.getElementById("lookup-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      renderLookupResult(findOrder(this.value));
+    }
+  });
+
+  renderShop();
+})();
+</script>
+</body>
+</html>
