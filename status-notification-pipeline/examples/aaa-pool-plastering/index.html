@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for AAA Pool Plastering, Inc.</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .pill-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .flag-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: #f6dede; color: #9a2f2f; padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .picker-row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+  select { font: inherit; font-size: 0.92rem; padding: 0.6rem 0.8rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); flex: 1; min-width: 12rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.9rem; max-height: 20rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 92%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .customer-action { border-top: 1px solid var(--rule); margin-top: 0.9rem; padding-top: 0.9rem; }
+  .customer-note { font-size: 0.82rem; color: var(--ink-2); line-height: 1.5; }
+
+  .field { display: flex; flex-direction: column; gap: 0.45rem; }
+  .field-label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  input[type="text"].wide { width: 100%; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus, select:focus { outline: none; border-color: var(--brand); }
+  textarea { font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); width: 100%; resize: vertical; min-height: 4rem; }
+
+  .confirm { border-radius: var(--radius-md); background: var(--brand-soft); box-shadow: var(--shadow-inset); padding: 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .confirm h3 { margin: 0; font-size: 1.02rem; color: var(--brand); font-family: var(--serif); font-weight: 600; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+  .sample-tag { display:inline-block; background:var(--brand-soft); color:var(--brand); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:0.25rem 0.6rem; border-radius:5px; margin-bottom:0.9rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / AAA Pool Plastering</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for AAA Pool Plastering, Inc.</span>
+  <h1 class="fx-h1">The update that goes out before a customer has to call, email, or stand outside asking</h1>
+  <p class="fx-lede">A Birdeye review describes a replastering job where, after the contract was signed, no one picked up the phone, voicemails only got copy-and-paste email replies, and the crew would show up and leave without a word, leaving the customer saying "if I'm not physically outside asking questions, I have no clue what's happening." A separate review on another listing describes the opposite end of the same gap: the work itself was fine, but once it was done, the customer spent about two months emailing and leaving voicemails just to get a copy of the invoice for a home sale, with no callback.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> Birdeye (Rhoshana B., "a year ago" per the page, re-fetched directly today): "Communication is basically non-existent. Since signing the contract, no one has picked up the phone not once. I've left multiple voicemails and instead of a simple callback, I get copy-and-paste email replies from Julie... The crew shows up and leaves without a word... If I'm not physically outside asking questions, I have no clue what's happening." A separate review on a Yext-syndicated directory listing, dated August 6, 2025 (read via a search summary of the page after a direct re-fetch returned a 404, disclosed as a minor evidentiary gap rather than a clean direct quote): the reviewer says the finished replastering work was satisfactory, but they spent roughly two months emailing and leaving repeated voicemails just to get an invoice copy needed for a home sale, with no callback. A direct fetch of your own contact page today found only a phone number, the aaapoolplastering1@sbcglobal.net inbox, and a general inquiry form, no booking tool, job-status tracker, or customer portal anywhere on the page.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the jobs, customers, and stage history below are fictional, not your real job queue. The contact email shown in the acknowledgment message is the real address listed on your own contact page, used here only to show how a routing confirmation would read, not connected to any real message. Nothing here sends a real email; this shows exactly what a customer, and your staff, would see at each step.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Staff view: update a job</h3>
+      <span class="sample-tag">Sample jobs, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the customer sees</h3>
+      <div class="picker-row">
+        <select id="customer-picker"></select>
+      </div>
+      <div class="thread" id="thread-root"></div>
+      <div class="customer-action" id="customer-action-root"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top:1.4rem;">
+    <h3 class="panel-title">New request: replaces the contact-form-only intake</h3>
+    <div id="form-root"></div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email.</b> This demo shows exactly what a customer, and your staff view, would show at each step. A real version needs an actual email service connected to whatever you use to track a job today, even if that's just a shared spreadsheet or calendar right now.</div>
+      <div class="lim"><b>The six-stage flow (scheduled, crew on-site, drain and acid-wash complete, plaster/finish applied, curing, final walkthrough complete) is a reasonable read of how a replastering job actually proceeds, not copied from your internal process.</b> Worth a short conversation before this gets built for real; your team may track or stage a job differently, and retiling-only or renovation jobs that don't involve plaster at all aren't modeled here.</div>
+      <div class="lim"><b>The invoice is modeled separately from the stage flow, not as one more stage.</b> This directly answers the home-sale reviewer's story: the job itself was finished, the invoice was the thing left hanging for two months. Below, "Final walkthrough complete" and "invoice sent" are tracked independently, so a finished job with an unsent invoice stays visibly flagged on the staff view until someone clears it, instead of disappearing once the physical work is done.</div>
+      <div class="lim"><b>The customer can request their own invoice instead of calling and leaving a voicemail.</b> Once a job reaches "Final walkthrough complete," the customer's own view below shows a "Request my invoice" action. That request shows up as a flag on the staff view immediately, it does not depend on anyone picking up the phone.</div>
+      <div class="lim"><b>The "days since last update" flag uses a 14-day threshold chosen for this demo, not a number from your own process.</b> It is a generic staleness check on any job still in progress, a direct answer to the Birdeye review's description of a crew showing up and leaving without a word, with nothing told to the customer in between visits.</div>
+      <div class="lim"><b>Both reviews quoted above sit alongside otherwise mixed public ratings for your business (Yelp shows 2.4 stars from 8 reviews; the Yext-syndicated listing shows 3.9 from 33, with other reviews there describing fair pricing and one-day completion).</b> This is disclosed here rather than glossed over: the communication gap described is real and recurs across more than one customer and listing, but it is not the only kind of feedback your business has received.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for AAA Pool Plastering, Inc. The Birdeye review quoted above, the contact details, and the absence of any online booking/status/portal tool on your live site were all verified by direct fetch today. Job, customer, and stage data below is a fictional sample, not connected to any of your real jobs.</p>
+</footer>
+
+<script>
+(function () {
+  var STAGE_NAMES = ["Scheduled", "Crew on-site", "Drain & acid-wash complete", "Plaster/finish applied", "Curing", "Final walkthrough complete"];
+  var LAST_STAGE = STAGE_NAMES.length - 1;
+  var CONTACT_INBOX = "aaapoolplastering1@sbcglobal.net";
+  var STORAGE_KEY = "aaapp-status-pipeline-jobs-v1";
+  var NOW = 1792368000000; // fixed reference timestamp so the demo is deterministic
+  var STALE_DAYS = 14;
+
+  var STAGE_MESSAGES = [
+    null,
+    function (j) { return "This is AAA Pool Plastering. Our crew is on-site today for job " + j.id + ". We'll email you again the moment the drain and acid-wash step is done, no need to call to check."; },
+    function (j) { return "The drain and acid-wash is complete for job " + j.id + ". We'll email you again once your new finish has been applied."; },
+    function (j) { return "Your new plaster/finish has been applied for job " + j.id + ". The pool now needs to cure before it's ready to fill and use. We'll email you again to schedule your final walkthrough."; },
+    function (j) { return "Job " + j.id + " is curing on schedule. We'll email you again once the cure period is done to set up your final walkthrough."; },
+    function (j) { return "Job " + j.id + " passed its final walkthrough today. We'll follow up by email about your invoice, or you can request it any time below, no need to call."; }
+  ];
+
+  function ackMessage(j) {
+    return "This is AAA Pool Plastering. We've logged your request as job " + j.id + " (" + CONTACT_INBOX + "). We'll email you at every step, scheduled, crew on-site, drain and acid-wash complete, plaster applied, curing, and final walkthrough, so you're not left calling or waiting on a callback.";
+  }
+  function invoiceRequestedMessage(j) {
+    return "We've received your request for the invoice on job " + j.id + ". Our team has been notified and will email it to you directly, no need to call or leave a voicemail.";
+  }
+  function invoiceSentMessage(j) {
+    return "Your final invoice for job " + j.id + " has been emailed to " + j.contact + ". Thank you for your business.";
+  }
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function seedJobs() {
+    return [
+      {
+        id: "PP-3301",
+        customer: "D. Whitfield",
+        contact: "d.whitfield@example.com",
+        job: "Full replaster and coping, in-ground pool",
+        stage: 5,
+        invoiceRequested: true,
+        invoiceSent: false,
+        openedAt: NOW - 70 * 24 * 3600000,
+        notifications: [
+          { text: "This is AAA Pool Plastering. We've logged your request as job PP-3301 (" + CONTACT_INBOX + "). We'll email you at every step, scheduled, crew on-site, drain and acid-wash complete, plaster applied, curing, and final walkthrough, so you're not left calling or waiting on a callback.", at: NOW - 70 * 24 * 3600000 },
+          { text: "Job PP-3301 passed its final walkthrough today. We'll follow up by email about your invoice, or you can request it any time below, no need to call.", at: NOW - 58 * 24 * 3600000 },
+          { text: "We've received your request for the invoice on job PP-3301. Our team has been notified and will email it to you directly, no need to call or leave a voicemail.", at: NOW - 55 * 24 * 3600000 }
+        ]
+      },
+      {
+        id: "PP-3340",
+        customer: "N. Ferraro",
+        contact: "n.ferraro@example.com",
+        job: "Pool resurfacing, quartz finish upgrade",
+        stage: 1,
+        invoiceRequested: false,
+        invoiceSent: false,
+        openedAt: NOW - 2 * 24 * 3600000,
+        notifications: [
+          { text: "This is AAA Pool Plastering. We've logged your request as job PP-3340 (" + CONTACT_INBOX + "). We'll email you at every step, scheduled, crew on-site, drain and acid-wash complete, plaster applied, curing, and final walkthrough, so you're not left calling or waiting on a callback.", at: NOW - 2 * 24 * 3600000 },
+          { text: "This is AAA Pool Plastering. Our crew is on-site today for job PP-3340. We'll email you again the moment the drain and acid-wash step is done, no need to call to check.", at: NOW - 1 * 24 * 3600000 }
+        ]
+      },
+      {
+        id: "PP-3318",
+        customer: "V. Okonkwo",
+        contact: "v.okonkwo@example.com",
+        job: "Replaster, tile and coping repair",
+        stage: 2,
+        invoiceRequested: false,
+        invoiceSent: false,
+        openedAt: NOW - 25 * 24 * 3600000,
+        notifications: [
+          { text: "This is AAA Pool Plastering. We've logged your request as job PP-3318 (" + CONTACT_INBOX + "). We'll email you at every step, scheduled, crew on-site, drain and acid-wash complete, plaster applied, curing, and final walkthrough, so you're not left calling or waiting on a callback.", at: NOW - 25 * 24 * 3600000 },
+          { text: "This is AAA Pool Plastering. Our crew is on-site today for job PP-3318. We'll email you again the moment the drain and acid-wash step is done, no need to call to check.", at: NOW - 21 * 24 * 3600000 },
+          { text: "The drain and acid-wash is complete for job PP-3318. We'll email you again once your new finish has been applied.", at: NOW - 20 * 24 * 3600000 }
+        ]
+      },
+      {
+        id: "PP-3295",
+        customer: "L. Pham",
+        contact: "l.pham@example.com",
+        job: "Full replaster, commercial pool",
+        stage: 5,
+        invoiceRequested: true,
+        invoiceSent: true,
+        openedAt: NOW - 45 * 24 * 3600000,
+        notifications: [
+          { text: "This is AAA Pool Plastering. We've logged your request as job PP-3295 (" + CONTACT_INBOX + "). We'll email you at every step, scheduled, crew on-site, drain and acid-wash complete, plaster applied, curing, and final walkthrough, so you're not left calling or waiting on a callback.", at: NOW - 45 * 24 * 3600000 },
+          { text: "Job PP-3295 passed its final walkthrough today. We'll follow up by email about your invoice, or you can request it any time below, no need to call.", at: NOW - 33 * 24 * 3600000 },
+          { text: "We've received your request for the invoice on job PP-3295. Our team has been notified and will email it to you directly, no need to call or leave a voicemail.", at: NOW - 32 * 24 * 3600000 },
+          { text: "Your final invoice for job PP-3295 has been emailed to l.pham@example.com. Thank you for your business.", at: NOW - 31 * 24 * 3600000 }
+        ]
+      }
+    ];
+  }
+
+  function loadJobs() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedJobs();
+    saveJobs(seeded);
+    return seeded;
+  }
+  function saveJobs(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var jobs = loadJobs();
+
+  function daysSinceLastUpdate(j) {
+    var last = j.notifications.length ? j.notifications[j.notifications.length - 1].at : j.openedAt;
+    return Math.floor((NOW - last) / 86400000);
+  }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    jobs.forEach(function (j) {
+      var atLast = j.stage >= LAST_STAGE;
+      var stale = !atLast && daysSinceLastUpdate(j) > STALE_DAYS;
+      var invoiceOverdue = atLast && j.invoiceRequested && !j.invoiceSent;
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.customer) + '</h4>';
+      html += '<span class="stage-pill">' + STAGE_NAMES[j.stage] + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(j.job) + '</div>';
+      html += '<div class="pill-row">';
+      if (invoiceOverdue) html += '<span class="flag-pill">Invoice requested, not sent yet</span>';
+      if (stale) html += '<span class="flag-pill">' + daysSinceLastUpdate(j) + ' days since last update</span>';
+      html += '</div>';
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+      if (atLast && !j.invoiceSent) {
+        html += '<button class="btn-sm" data-send-invoice="' + j.id + '">Mark invoice sent</button>';
+      }
+      html += '</div>';
+      html += '</div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceJob(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-send-invoice]"), function (btn) {
+      btn.addEventListener("click", function () { sendInvoice(btn.dataset.sendInvoice); });
+    });
+  }
+
+  function pushNotification(j, text) {
+    j.notifications.push({ text: text, at: Date.now() });
+  }
+
+  function advanceJob(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= LAST_STAGE) return;
+    j.stage += 1;
+    var msg = STAGE_MESSAGES[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function sendInvoice(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || j.invoiceSent) return;
+    j.invoiceSent = true;
+    pushNotification(j, invoiceSentMessage(j));
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function requestInvoice(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || j.invoiceRequested || j.invoiceSent) return;
+    j.invoiceRequested = true;
+    pushNotification(j, invoiceRequestedMessage(j));
+    saveJobs(jobs);
+    renderShop();
+    renderThread();
+  }
+
+  function populatePicker() {
+    var sel = document.getElementById("customer-picker");
+    sel.innerHTML = "";
+    jobs.forEach(function (j) {
+      var opt = document.createElement("option");
+      opt.value = j.id;
+      opt.textContent = j.id + " - " + j.customer;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener("change", renderThread);
+  }
+
+  function renderThread() {
+    var sel = document.getElementById("customer-picker");
+    var j = jobs.find(function (x) { return x.id === sel.value; }) || jobs[0];
+    var root = document.getElementById("thread-root");
+    if (!j.notifications.length) {
+      root.innerHTML = '<p class="thread-empty">No messages yet for this customer. Advance the job in the staff view on the left.</p>';
+    } else {
+      var html = "";
+      j.notifications.forEach(function (n) {
+        html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-time">Email to ' + escapeHtml(j.contact) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+      });
+      root.innerHTML = html;
+      root.scrollTop = root.scrollHeight;
+    }
+    renderCustomerAction(j);
+  }
+
+  function renderCustomerAction(j) {
+    var root = document.getElementById("customer-action-root");
+    var atLast = j.stage >= LAST_STAGE;
+    if (!atLast) {
+      root.innerHTML = '<p class="customer-note">No action needed. You\'ll be emailed automatically as this job moves through each stage.</p>';
+      return;
+    }
+    if (j.invoiceSent) {
+      root.innerHTML = '<p class="customer-note">Your invoice has already been emailed to you for this job.</p>';
+      return;
+    }
+    if (j.invoiceRequested) {
+      root.innerHTML = '<p class="customer-note">You requested your invoice. Our team has been notified and hasn\'t marked it sent yet, no need to call.</p>';
+      return;
+    }
+    root.innerHTML = '<p class="customer-note">Job complete. Need your invoice?</p><button class="btn-sm" id="request-invoice-btn">Request my invoice</button>';
+    var btn = document.getElementById("request-invoice-btn");
+    if (btn) btn.addEventListener("click", function () { requestInvoice(j.id); });
+  }
+
+  // ---- New request form ----
+  var formState = { job: "", name: "", contact: "", submitted: false };
+  var formRoot = document.getElementById("form-root");
+
+  function canSubmitForm() {
+    return formState.job.trim() && formState.name.trim() && formState.contact.trim();
+  }
+
+  function renderForm() {
+    if (formState.submitted) { renderFormConfirm(); return; }
+    var html = "";
+    html += '<div class="field"><div class="field-label">What do you need?</div><textarea id="f-job" placeholder="e.g. replaster quote, retiling, warranty question">' + escapeHtml(formState.job) + '</textarea></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Your name</div><input type="text" class="wide" id="f-name" value="' + escapeHtml(formState.name) + '" placeholder="First and last name"></div>';
+    html += '<div class="field" style="margin-top:0.8rem;"><div class="field-label">Email</div><input type="text" class="wide" id="f-contact" value="' + escapeHtml(formState.contact) + '" placeholder="How should we reach you?"></div>';
+    html += '<button class="fx-btn" id="f-submit" style="margin-top:1rem;"' + (canSubmitForm() ? "" : " disabled") + '>Submit request</button>';
+    formRoot.innerHTML = html;
+
+    document.getElementById("f-job").addEventListener("input", function (e) { formState.job = e.target.value; syncFormBtn(); });
+    document.getElementById("f-name").addEventListener("input", function (e) { formState.name = e.target.value; syncFormBtn(); });
+    document.getElementById("f-contact").addEventListener("input", function (e) { formState.contact = e.target.value; syncFormBtn(); });
+    document.getElementById("f-submit").addEventListener("click", function () {
+      if (!canSubmitForm()) return;
+      var newId = "PP-" + (3301 + jobs.length * 7 + jobs.length);
+      var job = {
+        id: newId,
+        customer: formState.name,
+        contact: formState.contact,
+        job: formState.job,
+        stage: 0,
+        invoiceRequested: false,
+        invoiceSent: false,
+        openedAt: Date.now(),
+        notifications: []
+      };
+      pushNotification(job, ackMessage(job));
+      jobs.push(job);
+      saveJobs(jobs);
+      formState.submitted = true;
+      formState.lastId = newId;
+      renderForm();
+      renderShop();
+      populatePicker();
+    });
+  }
+
+  function syncFormBtn() {
+    var btn = document.getElementById("f-submit");
+    if (btn) btn.disabled = !canSubmitForm();
+  }
+
+  function renderFormConfirm() {
+    var html = '<div class="confirm">';
+    html += '<h3>Logged as ' + formState.lastId + '</h3>';
+    html += '<p style="font-size:0.9rem; color:var(--ink-2);">It now appears in the staff view above at "Scheduled," and the customer\'s thread already has the routing acknowledgment. A real version emails that the moment this is submitted, replacing the contact-form-only intake.</p>';
+    html += '<button class="fx-btn-ghost" id="f-reset" style="align-self:flex-start;">Log another request</button>';
+    html += '</div>';
+    formRoot.innerHTML = html;
+    document.getElementById("f-reset").addEventListener("click", function () {
+      formState = { job: "", name: "", contact: "", submitted: false };
+      renderForm();
+    });
+  }
+
+  renderShop();
+  populatePicker();
+  renderThread();
+  renderForm();
+})();
+</script>
+</body>
+</html>
