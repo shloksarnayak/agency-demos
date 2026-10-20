@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Bentley Photographic</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .batch-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.9rem; background: var(--surface-2); }
+  .batch-row:last-child { margin-bottom: 0; }
+  .batch-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .batch-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .batch-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .issue-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: #f6dede; color: #9a2f2f; padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .order-list { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.2rem; }
+  .order-item { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.4rem; border-top: 1px solid var(--rule); padding-top: 0.5rem; }
+  .order-item:first-child { border-top: none; padding-top: 0; }
+  .order-id { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); margin-right: 0.4rem; }
+
+  .lookup-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  input[type="text"].wide { flex: 1; min-width: 12rem; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus { outline: none; border-color: var(--brand); }
+  .lookup-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .lookup-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-top: 0.8rem; }
+
+  .order-summary { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; margin-top: 1.1rem; }
+  .order-summary h4 { margin: 0; font-size: 1rem; font-family: var(--serif); }
+  .order-summary-meta { font-size: 0.78rem; color: var(--muted); margin-top: -0.6rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.7rem; max-height: 18rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 92%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+  .sample-tag { display:inline-block; background:var(--brand-soft); color:var(--brand); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:0.25rem 0.6rem; border-radius:5px; margin-bottom:0.9rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Bentley Photographic</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Bentley Photographic Limited</span>
+  <h1 class="fx-h1">"Where are my child's school photos?" answered without chasing an email</h1>
+  <p class="fx-lede">On Trustpilot, one reviewer (Oct 2025) describes an order placed in July that still had not arrived by October, despite the company itself saying in September that it had been "Dispatched." Another (Apr 2026) writes: "They have ruined memories of my children's school years because of their utterly shambolic service. No reply to emails, no returned phone calls." A third (Jun 2026) writes: "They take at least two weeks to upload the photos to their clunky website." A parent who does get through still has no way to check where their own order actually stands in the meantime.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the quotes above are from Bentley Photographic's own Trustpilot profile (trustpilot.com/review/www.bentleypics.com), re-fetched directly today. A direct fetch of the order/gallery portal (orders.online.bentleypics.com) today found it is a client-side JavaScript app serving no server-rendered status or contact text at all, just a bare page shell and a chatbot widget loader. The one contact address on record, support@bentleyphoto.com, comes from the company's own written replies to two separate Trustpilot reviews and is confirmed to resolve to live mail servers; it is also the only path the company itself currently points customers to when something goes wrong, and reviewers describe it as going unanswered.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the three schools, parents, and messages below are fictional sample data, not real Bentley Photographic customers, children, or orders. Nothing here sends a real email or text, this shows exactly what a parent would see and receive. A real build connects to whichever system Bentley's own photographers and office staff already use to mark a school's batch, and sends through an actual email/SMS service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Office view: update a school's photo day</h3>
+      <span class="sample-tag">Sample schools and orders, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What a parent sees: "where are my child's photos?"</h3>
+      <div class="lookup-row">
+        <input type="text" class="wide" id="lookup-input" placeholder="Order number, child's name, or school and photo-day date">
+        <button class="btn-sm" id="lookup-btn">Check status</button>
+      </div>
+      <p class="lookup-hint">Try BP-40212, Isla Brennan, or Oakfield Primary School 2026-09-12</p>
+      <div id="lookup-result"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top:1.4rem;">
+    <h3 class="panel-title">Self-serve "report: order not received"</h3>
+    <p style="font-size:0.88rem; color:var(--ink-2); margin-top:-0.3rem;">Available to the parent directly in the lookup result above, once an order reaches "Dispatched to school." No need to email and wait. Try it on BP-40211 (Maya Thompson, Oakfield Primary), or look at BP-40212 (Jacob Whitfield), which already has one reported, to see the office-side resolve action.</p>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email or text.</b> This demo shows exactly what a parent would receive at each step. A real version needs an actual email/SMS service (for example SendGrid or Twilio) connected to whichever system your photographers and office staff already use to mark a school's batch.</div>
+      <div class="lim"><b>The six-stage flow shown (photographed, processing/quality check, proofs available online, printed, dispatched to school, delivered/ready for collection) is a reasonable school-photo order journey, built from the complaint pattern and from how direct competitors in this exact vertical (GotPhoto, Tempest, ClickFoto, ColorFoto) describe their own ordering flow, not confirmed against Bentley's own internal process.</b> Worth a short conversation before this gets built for real.</div>
+      <div class="lim"><b>Lookup by order number, child's name, or school and photo-day date, no account or password.</b> This directly fills the gap your own order portal doesn't: a direct fetch of orders.online.bentleypics.com today found no self-serve status check of any kind, client-side app shell only.</div>
+      <div class="lim"><b>A self-serve "report: order not received" action, not just a status display.</b> This is built directly from the Trustpilot pattern above: an order marked "Dispatched" with no way for a parent to flag non-arrival except an email that goes unanswered for weeks. Here the parent raises it the moment they notice, it is tracked immediately, and the office sees exactly which child's order needs a correction, no chasing required on either side.</div>
+      <div class="lim"><b>This does not fix photo quality or editing complaints, and I'm not claiming it does.</b> The same review set includes separate complaints about photo quality and about how long the gallery takes to populate; a status and non-arrival tracker addresses the "what's happening with my order" half of the pattern, not the editing side.</div>
+      <div class="lim"><b>Every quote above traces to one platform, Trustpilot, and I looked specifically for a second one.</b> A direct search across Google Business/Maps, Mumsnet/Netmums, Reddit, ReviewCentre, and Feefo, for Bentley and for a direct UK competitor (Braiswick Photographic Company), found nothing on any of them for either business. That looks like a feature of this niche (no BBB-equivalent registry, little parent-forum discussion) rather than under-researching, but it is still a real, disclosed gap worth weighing rather than treating six Trustpilot reviewers as the whole picture.</div>
+      <div class="lim"><b>A single office screen, not separate logins per photographer.</b> Whichever staff member last touched a school's batch updates it in one place, and every parent on that batch gets their own message, without needing IT help or deep integration into Bentley's existing ordering/gallery system.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Bentley Photographic Limited. Trustpilot reviews, the support@bentleyphoto.com contact address, and the absence of any self-serve status system on the live order portal, verified by direct fetch today. School, parent, child, and order data below is a fictional sample, not connected to any of Bentley Photographic's real customers or orders.</p>
+</footer>
+
+<script>
+(function () {
+  var STAGE_NAMES = ["Photographed", "Processing / quality check", "Proofs available online", "Printed", "Dispatched to school", "Delivered / ready for collection"];
+  var STORAGE_KEY = "bentley-status-pipeline-v1";
+
+  var STAGE_MESSAGES = [
+    null,
+    function (o, b) { return "This is Bentley Photo. " + o.child + "'s photos from " + b.school + "'s photo day are now in processing and quality check. We'll email you again the moment there's an update, no need to call and check."; },
+    function (o, b) { return o.child + "'s proofs from " + b.school + " are now available to view online. We'll email you again once they're printed."; },
+    function (o, b) { return o.child + "'s photos from " + b.school + " have been printed."; },
+    function (o, b) { return o.child + "'s photos from " + b.school + " have been dispatched to the school office. We'll email you again once they're ready for collection, or use the button below straight away if they don't turn up."; },
+    function (o, b) { return o.child + "'s photos from " + b.school + " are delivered and ready for collection at the school office. Thank you for your order."; }
+  ];
+
+  function ackMessage(o, b) {
+    return "This is Bentley Photo. We've logged " + o.child + "'s order " + o.id + " from " + b.school + "'s photo day (" + b.photoDate + ") as photographed. We'll email you again the moment there's a status update, no need to call and check.";
+  }
+
+  function seedBatches() {
+    var now = 1757678400000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        key: "oakfield-2026-09-12",
+        school: "Oakfield Primary School",
+        photoDate: "2026-09-12",
+        stage: 4,
+        orders: [
+          {
+            id: "BP-40211", child: "Maya Thompson", contact: "07700 900211", email: "maya.parent@example.com",
+            stage: 4, issue: null,
+            notifications: [
+              { text: "This is Bentley Photo. We've logged Maya Thompson's order BP-40211 from Oakfield Primary School's photo day (2026-09-12) as photographed. We'll email you again the moment there's a status update, no need to call and check.", at: now - 1400000 },
+              { text: "This is Bentley Photo. Maya Thompson's photos from Oakfield Primary School's photo day are now in processing and quality check. We'll email you again the moment there's an update, no need to call and check.", at: now - 1200000 },
+              { text: "Maya Thompson's proofs from Oakfield Primary School are now available to view online. We'll email you again once they're printed.", at: now - 900000 },
+              { text: "Maya Thompson's photos from Oakfield Primary School have been printed.", at: now - 600000 },
+              { text: "Maya Thompson's photos from Oakfield Primary School have been dispatched to the school office. We'll email you again once they're ready for collection, or use the button below straight away if they don't turn up.", at: now - 300000 }
+            ]
+          },
+          {
+            id: "BP-40212", child: "Jacob Whitfield", contact: "07700 900212", email: "jacob.parent@example.com",
+            stage: 4, issue: { open: true, note: "Marked dispatched to school over a week ago, not received at pickup and office could not locate it." },
+            notifications: [
+              { text: "This is Bentley Photo. We've logged Jacob Whitfield's order BP-40212 from Oakfield Primary School's photo day (2026-09-12) as photographed. We'll email you again the moment there's a status update, no need to call and check.", at: now - 1400000 },
+              { text: "This is Bentley Photo. Jacob Whitfield's photos from Oakfield Primary School's photo day are now in processing and quality check. We'll email you again the moment there's an update, no need to call and check.", at: now - 1200000 },
+              { text: "Jacob Whitfield's proofs from Oakfield Primary School are now available to view online. We'll email you again once they're printed.", at: now - 900000 },
+              { text: "Jacob Whitfield's photos from Oakfield Primary School have been printed.", at: now - 600000 },
+              { text: "Jacob Whitfield's photos from Oakfield Primary School have been dispatched to the school office. We'll email you again once they're ready for collection, or use the button below straight away if they don't turn up.", at: now - 300000 },
+              { text: "We're sorry, you've reported Jacob Whitfield's order not received: marked dispatched to school over a week ago, not received at pickup and office could not locate it. A team member will look into this directly.", at: now - 120000 }
+            ]
+          }
+        ]
+      },
+      {
+        key: "mill-lane-2026-09-19",
+        school: "Mill Lane Academy",
+        photoDate: "2026-09-19",
+        stage: 2,
+        orders: [
+          {
+            id: "BP-40250", child: "Isla Brennan", contact: "07700 900250", email: "isla.parent@example.com",
+            stage: 2, issue: null,
+            notifications: [
+              { text: "This is Bentley Photo. We've logged Isla Brennan's order BP-40250 from Mill Lane Academy's photo day (2026-09-19) as photographed. We'll email you again the moment there's a status update, no need to call and check.", at: now - 800000 },
+              { text: "This is Bentley Photo. Isla Brennan's photos from Mill Lane Academy's photo day are now in processing and quality check. We'll email you again the moment there's an update, no need to call and check.", at: now - 500000 },
+              { text: "Isla Brennan's proofs from Mill Lane Academy are now available to view online. We'll email you again once they're printed.", at: now - 200000 }
+            ]
+          }
+        ]
+      },
+      {
+        key: "st-andrews-2026-08-29",
+        school: "St Andrew's C of E Primary",
+        photoDate: "2026-08-29",
+        stage: 5,
+        orders: [
+          {
+            id: "BP-40188", child: "Oliver Kaczmarek", contact: "07700 900188", email: "oliver.parent@example.com",
+            stage: 5, issue: null,
+            notifications: [
+              { text: "This is Bentley Photo. We've logged Oliver Kaczmarek's order BP-40188 from St Andrew's C of E Primary's photo day (2026-08-29) as photographed. We'll email you again the moment there's a status update, no need to call and check.", at: now - 4000000 },
+              { text: "This is Bentley Photo. Oliver Kaczmarek's photos from St Andrew's C of E Primary's photo day are now in processing and quality check. We'll email you again the moment there's an update, no need to call and check.", at: now - 3700000 },
+              { text: "Oliver Kaczmarek's proofs from St Andrew's C of E Primary are now available to view online. We'll email you again once they're printed.", at: now - 3400000 },
+              { text: "Oliver Kaczmarek's photos from St Andrew's C of E Primary have been printed.", at: now - 3100000 },
+              { text: "Oliver Kaczmarek's photos from St Andrew's C of E Primary have been dispatched to the school office. We'll email you again once they're ready for collection, or use the button below straight away if they don't turn up.", at: now - 2800000 },
+              { text: "Oliver Kaczmarek's photos from St Andrew's C of E Primary are delivered and ready for collection at the school office. Thank you for your order.", at: now - 2500000 }
+            ]
+          },
+          {
+            id: "BP-40189", child: "Freya Nakamura", contact: "07700 900189", email: "freya.parent@example.com",
+            stage: 5, issue: { open: false, note: "Previously reported not received at first pickup window, located and redelivered to the school office." },
+            notifications: [
+              { text: "This is Bentley Photo. We've logged Freya Nakamura's order BP-40189 from St Andrew's C of E Primary's photo day (2026-08-29) as photographed. We'll email you again the moment there's a status update, no need to call and check.", at: now - 4000000 },
+              { text: "This is Bentley Photo. Freya Nakamura's photos from St Andrew's C of E Primary's photo day are now in processing and quality check. We'll email you again the moment there's an update, no need to call and check.", at: now - 3700000 },
+              { text: "Freya Nakamura's proofs from St Andrew's C of E Primary are now available to view online. We'll email you again once they're printed.", at: now - 3400000 },
+              { text: "Freya Nakamura's photos from St Andrew's C of E Primary have been printed.", at: now - 3100000 },
+              { text: "Freya Nakamura's photos from St Andrew's C of E Primary have been dispatched to the school office. We'll email you again once they're ready for collection, or use the button below straight away if they don't turn up.", at: now - 2800000 },
+              { text: "We're sorry, you've reported Freya Nakamura's order not received: previously reported not received at first pickup window, located and redelivered to the school office. A team member will look into this directly.", at: now - 2600000 },
+              { text: "Good news, we've located Freya Nakamura's photos from St Andrew's C of E Primary and confirmed delivery. Thank you for your patience.", at: now - 2500000 },
+              { text: "Freya Nakamura's photos from St Andrew's C of E Primary are delivered and ready for collection at the school office. Thank you for your order.", at: now - 2400000 }
+            ]
+          }
+        ]
+      }
+    ];
+  }
+
+  function loadBatches() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedBatches();
+    saveBatches(seeded);
+    return seeded;
+  }
+  function saveBatches(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var batches = loadBatches();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function findBatch(key) { return batches.find(function (b) { return b.key === key; }); }
+  function findOrderGlobal(id) {
+    for (var i = 0; i < batches.length; i++) {
+      var b = batches[i];
+      for (var j = 0; j < b.orders.length; j++) {
+        if (b.orders[j].id === id) return { order: b.orders[j], batch: b };
+      }
+    }
+    return null;
+  }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    batches.forEach(function (b) {
+      var atLast = b.stage >= STAGE_NAMES.length - 1;
+      html += '<div class="batch-row">';
+      html += '<div class="batch-head"><h4>' + escapeHtml(b.school) + '</h4><span class="stage-pill">' + STAGE_NAMES[b.stage] + '</span></div>';
+      html += '<div class="batch-meta">Photo day ' + escapeHtml(b.photoDate) + ' &middot; ' + b.orders.length + ' order(s)</div>';
+      html += '<button class="btn-sm" data-advance="' + b.key + '"' + (atLast ? " disabled" : "") + '>Advance batch to next stage</button>';
+      html += '<div class="order-list">';
+      b.orders.forEach(function (o) {
+        html += '<div class="order-item"><span><span class="order-id">' + o.id + '</span>' + escapeHtml(o.child) + '</span>';
+        if (o.issue && o.issue.open) {
+          html += '<span><span class="issue-pill">Not received, reported</span> <button class="btn-sm" data-resolve="' + o.id + '">Mark located, resolved</button></span>';
+        }
+        html += '</div>';
+      });
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceBatch(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-resolve]"), function (btn) {
+      btn.addEventListener("click", function () { resolveIssue(btn.dataset.resolve); });
+    });
+  }
+
+  function advanceBatch(key) {
+    var b = findBatch(key);
+    if (!b || b.stage >= STAGE_NAMES.length - 1) return;
+    b.stage += 1;
+    b.orders.forEach(function (o) {
+      o.stage = b.stage;
+      var msg = STAGE_MESSAGES[b.stage];
+      if (msg) o.notifications.push({ text: msg(o, b), at: Date.now() });
+    });
+    saveBatches(batches);
+    renderShop();
+    renderLastLookup();
+  }
+
+  function flagNotReceived(id) {
+    var found = findOrderGlobal(id);
+    if (!found) return;
+    var o = found.order, b = found.batch;
+    var note = window.prompt("Anything else to add about this order not arriving? (optional)", "");
+    if (note === null) return;
+    note = note.trim() || "Order marked dispatched but not received.";
+    o.issue = { open: true, note: note };
+    o.notifications.push({ text: "We're sorry, you've reported " + o.child + "'s order not received: " + note + " A team member will look into this directly.", at: Date.now() });
+    saveBatches(batches);
+    renderShop();
+    renderLastLookup();
+  }
+
+  function resolveIssue(id) {
+    var found = findOrderGlobal(id);
+    if (!found) return;
+    var o = found.order;
+    if (!o.issue) return;
+    o.issue = { open: false, note: o.issue.note };
+    o.notifications.push({ text: "Good news, we've located " + o.child + "'s photos from " + found.batch.school + " and confirmed delivery. Thank you for your patience.", at: Date.now() });
+    saveBatches(batches);
+    renderShop();
+    renderLastLookup();
+  }
+
+  var lastQuery = null;
+
+  function findMatches(query) {
+    var q = (query || "").trim();
+    if (!q) return [];
+    var qLower = q.toLowerCase();
+    var all = [];
+    batches.forEach(function (b) { b.orders.forEach(function (o) { all.push({ order: o, batch: b }); }); });
+
+    var exact = all.filter(function (x) { return x.order.id.toLowerCase() === qLower; });
+    if (exact.length) return exact;
+
+    var byName = all.filter(function (x) { return x.order.child.toLowerCase().indexOf(qLower) !== -1; });
+    if (byName.length) return byName;
+
+    var tokens = qLower.split(/\s+/).filter(Boolean);
+    var matchingBatches = batches.filter(function (b) {
+      var hay = (b.school + " " + b.photoDate).toLowerCase();
+      return tokens.every(function (t) { return hay.indexOf(t) !== -1; });
+    });
+    if (matchingBatches.length) {
+      var result = [];
+      matchingBatches.forEach(function (b) { b.orders.forEach(function (o) { result.push({ order: o, batch: b }); }); });
+      return result;
+    }
+    return [];
+  }
+
+  function renderLastLookup() {
+    if (lastQuery !== null) renderLookupResult(findMatches(lastQuery));
+  }
+
+  function renderLookupResult(matches) {
+    var root = document.getElementById("lookup-result");
+    if (!matches.length) {
+      root.innerHTML = '<p class="lookup-empty">No order found for that order number, child\'s name, or school and photo-day date. Double-check and try again, or email support@bentleyphoto.com.</p>';
+      return;
+    }
+    var html = "";
+    matches.forEach(function (m) {
+      var o = m.order, b = m.batch;
+      html += '<div class="order-summary"><h4>' + o.id + ' - ' + escapeHtml(o.child) + '</h4>';
+      html += o.issue && o.issue.open ? '<span class="issue-pill">Not received, reported</span>' : '<span class="stage-pill">' + STAGE_NAMES[o.stage] + '</span>';
+      html += '</div>';
+      html += '<div class="order-summary-meta">' + escapeHtml(b.school) + ' &middot; photo day ' + escapeHtml(b.photoDate) + '</div>';
+      if (o.stage >= 4 && !(o.issue && o.issue.open)) {
+        html += '<button class="btn-sm" data-report="' + o.id + '" style="margin-top:0.5rem;">Report: I haven\'t received this</button>';
+      }
+      html += '<div class="thread">';
+      if (!o.notifications.length) {
+        html += '<p class="thread-empty">No messages yet.</p>';
+      } else {
+        o.notifications.forEach(function (n) {
+          html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-time">Email to ' + escapeHtml(o.email) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+        });
+      }
+      html += '</div>';
+    });
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll("[data-report]"), function (btn) {
+      btn.addEventListener("click", function () { flagNotReceived(btn.dataset.report); });
+    });
+    var threads = root.querySelectorAll(".thread");
+    Array.prototype.forEach.call(threads, function (t) { t.scrollTop = t.scrollHeight; });
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var q = document.getElementById("lookup-input").value;
+    lastQuery = q;
+    renderLookupResult(findMatches(q));
+  });
+  document.getElementById("lookup-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      lastQuery = this.value;
+      renderLookupResult(findMatches(this.value));
+    }
+  });
+
+  renderShop();
+})();
+</script>
+</body>
+</html>
