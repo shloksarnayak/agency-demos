@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Men's Tuxedo USA</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .order-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.9rem; background: var(--surface-2); }
+  .order-row:last-child { margin-bottom: 0; }
+  .order-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .order-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .order-meta { font-size: 0.78rem; color: var(--muted); }
+  .pill-row { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .urgent-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: #f7e3c2; color: #8a4b06; padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .issue-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: #f6dede; color: #9a2f2f; padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  .tracking-line { font-size: 0.86rem; color: var(--ink); background: var(--surface-raised); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.55rem 0.75rem; margin-top: 0.3rem; }
+  .tracking-line b { font-family: var(--mono); }
+
+  .lookup-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  input[type="text"].wide { flex: 1; min-width: 12rem; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus, input[type="date"]:focus, textarea:focus { outline: none; border-color: var(--brand); }
+  .lookup-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .lookup-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-top: 0.8rem; }
+
+  .order-summary { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; margin-top: 1.1rem; }
+  .order-summary h4 { margin: 0; font-size: 1rem; font-family: var(--serif); }
+  .order-summary-meta { font-size: 0.78rem; color: var(--muted); margin-top: -0.6rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.7rem; max-height: 17rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 92%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-time { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .report-form { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-raised); padding: 0.8rem; display: flex; flex-direction: column; gap: 0.55rem; margin-top: 0.6rem; }
+  .report-form label { font-size: 0.78rem; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.03em; }
+  .report-form input[type="date"] { font: inherit; font-size: 0.9rem; padding: 0.5rem 0.7rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  .report-form textarea { font: inherit; font-size: 0.9rem; padding: 0.55rem 0.75rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); resize: vertical; min-height: 4.2rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+  .sample-tag { display:inline-block; background:var(--brand-soft); color:var(--brand); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:0.25rem 0.6rem; border-radius:5px; margin-bottom:0.9rem; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Men's Tuxedo USA</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Men's Tuxedo USA</span>
+  <h1 class="fx-h1">Knowing where your order stands, before the week of the event</h1>
+  <p class="fx-lede">On Trustpilot and US-Reviews, reviewers across five years describe the same pattern: once an order is placed, there is no way to find out what is actually happening with it, and the company becomes hard to reach to ask. "Oder not processed. Calls not answered. Chat not answered. Email not responded to." (Trustpilot, Oct 2026). "They do not ship what you order and then refuse to take the return." (Trustpilot, Jun 2026). "Paid for overnight shipping and shipped one week later." (Trustpilot, Jul 2026). The worst version of this shows up right before the event the order was for: "after four weeks no tuxedo for my event this weekend" and "nobody can answer phones." (US-Reviews, Sep 2022).</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the quotes above are drawn directly from this lead's own research record: Trustpilot (trustpilot.com/review/menstuxedousa.com, TrustScore 3.1/5 from 106 reviews, 79% one-star) and US-Reviews (us-reviews.com/online-shop/menstuxedousa-reviews, 54 reviews since 2021, Service score 3.6/10), both fetched directly during this lead's research, not re-fetched by this page. That research also found the company's own site already runs an AI chat widget whose greeting claims to answer order-status questions directly, but reviewers on both platforms describe chat and email responses as automated-only or going unanswered in practice, not a working per-order status check.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the five orders, customers, and messages below are fictional sample data, not real Men's Tuxedo USA customers or orders. Nothing here sends a real email, this shows exactly what a customer would see and receive. A real build connects to whichever system Men's Tuxedo USA's own team already uses to track an order, and sends through an actual email/SMS service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Shop view: update an order</h3>
+      <span class="sample-tag">Sample orders, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What a customer sees: "where is my order?"</h3>
+      <div class="lookup-row">
+        <input type="text" class="wide" id="lookup-input" placeholder="Order number or email">
+        <button class="btn-sm" id="lookup-btn">Check status</button>
+      </div>
+      <p class="lookup-hint">Try MTU-8841, MTU-8874, or marcus.reyes@example.com</p>
+      <div id="lookup-result"></div>
+    </div>
+  </div>
+
+  <div class="fx-card" style="margin-top:1.4rem;">
+    <h3 class="panel-title">Two things running underneath the lookup</h3>
+    <p style="font-size:0.88rem; color:var(--ink-2); margin-top:-0.3rem;">Every order already carries the wearer's event date from checkout. The system watches that date on its own: any order within 10 days of its event that has not shipped yet gets an automatic amber flag, in the shop view and in the customer's own lookup result, no one has to notice or call in. Look at MTU-8841 (event in 5 days, not yet shipped) or MTU-8874 (event in 3 days) to see it. On top of that, the customer can file a structured "report an issue" form directly from their lookup result, confirming or correcting the event date and describing the problem, which puts a dated, flagged entry in front of the shop instead of an email that waits in a queue. MTU-8874 already has one filed, resolvable from the shop view on the left.</p>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email or text.</b> This demo shows exactly what a customer would receive at each step. A real version needs an actual email/SMS service (for example SendGrid or Twilio) connected to whichever system your team already uses to track an order.</div>
+      <div class="lim"><b>The six-stage flow shown (order received, measurements confirmed, pulled and prepared, quality checked, shipped, delivered) is a reasonable formalwear order journey, built from how a rental/order business like this typically operates and from how a direct competitor in this exact market (Generation Tux, which reportedly lets a bride or groom check what stage their groomsmen's orders are at) frames the same idea, not confirmed against Men's Tuxedo USA's own internal process.</b> Worth a short conversation before this gets built for real.</div>
+      <div class="lim"><b>Lookup by order number or email, no account or password.</b> This directly fills the gap the research record found: an existing chat widget that claims to answer order-status questions, sitting next to phone, chat, and email support reviewers across both platforms describe as unanswered.</div>
+      <div class="lim"><b>Automatic event-date monitoring, not just a status display.</b> This is the core of the build: the review record describes the problem being discovered only the week of the event, with no time left to react. Watching every open order against its own event date, continuously, surfaces that risk days earlier, before the customer has to notice and call.</div>
+      <div class="lim"><b>A structured "report an issue" form, separate from a generic inbox.</b> The customer confirms or corrects the event date and describes the problem in one place, and the same urgency check applies the moment they submit, so a report tied to a near-term event lands flagged in front of the shop rather than sitting in the same queue as everything else, built directly against the "anonymous names," automated-only-reply pattern reviewers describe.</div>
+      <div class="lim"><b>The carrier and tracking number are surfaced directly once an order ships.</b> No guesswork, no digging through an email thread, built directly against the "paid for overnight shipping and shipped one week later" pattern in the review record.</div>
+      <div class="lim"><b>This does not fix how fast an order is picked, packed, or shipped, and I'm not claiming it does.</b> It tracks and surfaces status and risk, it does not change the underlying fulfillment speed the review record separately describes.</div>
+      <div class="lim"><b>Two independent platforms corroborate the complaint pattern (Trustpilot and US-Reviews), but no BBB profile could be found for this business under this name.</b> A real, disclosed gap in the research record, not hidden here.</div>
+      <div class="lim"><b>No verified employee count, business registry filing, or physical address could be found for this specific entity anywhere.</b> Also disclosed in the research record. Sizing and scale here rest on review volume and persistence, not a hard headcount.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Men's Tuxedo USA. Trustpilot and US-Reviews quotes drawn from this lead's own research record, not re-fetched by this page. Customer, order, and event data below is a fictional sample, not connected to any of Men's Tuxedo USA's real customers or orders.</p>
+</footer>
+
+<script>
+(function () {
+  var STAGE_NAMES = ["Order received", "Measurements confirmed", "Pulled & prepared", "Quality checked", "Shipped", "Delivered"];
+  var SHIPPED_STAGE = 4;
+  var STORAGE_KEY = "mens-tuxedo-usa-status-pipeline-v1";
+  var TODAY = new Date(2026, 9, 21); // fixed reference date so the demo is deterministic: Oct 21, 2026
+
+  function parseDate(s) {
+    var p = s.split("-");
+    return new Date(+p[0], +p[1] - 1, +p[2]);
+  }
+  function fmtDate(s) {
+    return parseDate(s).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  }
+  function daysUntil(s) {
+    return Math.round((parseDate(s) - TODAY) / 86400000);
+  }
+  function isAutoUrgent(o) {
+    if (o.stage >= SHIPPED_STAGE) return false;
+    var d = daysUntil(o.eventDate);
+    return d >= 0 && d <= 10;
+  }
+
+  var STAGE_MESSAGES = [
+    null,
+    function (o) { return "Your measurements for order " + o.id + " are confirmed. We're pulling your order next. We'll email you again the moment there's an update, no need to call and check."; },
+    function (o) { return "Your order " + o.id + " has been pulled and is being prepared."; },
+    function (o) { return "Your order " + o.id + " has passed quality check."; },
+    function (o) { return "Your order " + o.id + " has shipped. Carrier: " + o.tracking.carrier + ", tracking number: " + o.tracking.number + ". We'll email you again once it's delivered, or use the button below straight away if something doesn't look right."; },
+    function (o) { return "Your order " + o.id + " has been delivered. Thank you for your order."; }
+  ];
+
+  function ackMessage(o) {
+    return "This is Men's Tuxedo USA. We've received your order " + o.id + " for your " + o.eventType + " on " + fmtDate(o.eventDate) + ". We'll email you again the moment there's a status update, no need to call and check.";
+  }
+
+  function seedOrders() {
+    var now = TODAY.getTime();
+    return [
+      {
+        id: "MTU-8841", customer: "Marcus Reyes", email: "marcus.reyes@example.com", phone: "(555) 040-8841",
+        eventType: "Wedding (groom)", eventDate: "2026-10-26", stage: 2, tracking: null, issue: null,
+        notifications: [
+          { text: "This is Men's Tuxedo USA. We've received your order MTU-8841 for your Wedding (groom) on Oct 26, 2026. We'll email you again the moment there's a status update, no need to call and check.", at: now - 900000 },
+          { text: "Your measurements for order MTU-8841 are confirmed. We're pulling your order next. We'll email you again the moment there's an update, no need to call and check.", at: now - 600000 },
+          { text: "Your order MTU-8841 has been pulled and is being prepared.", at: now - 300000 }
+        ]
+      },
+      {
+        id: "MTU-8852", customer: "Daniel Kowalski", email: "daniel.kowalski@example.com", phone: "(555) 040-8852",
+        eventType: "Wedding (groomsman)", eventDate: "2026-12-05", stage: 1, tracking: null, issue: null,
+        notifications: [
+          { text: "This is Men's Tuxedo USA. We've received your order MTU-8852 for your Wedding (groomsman) on Dec 5, 2026. We'll email you again the moment there's a status update, no need to call and check.", at: now - 500000 },
+          { text: "Your measurements for order MTU-8852 are confirmed. We're pulling your order next. We'll email you again the moment there's an update, no need to call and check.", at: now - 200000 }
+        ]
+      },
+      {
+        id: "MTU-8863", customer: "James Okafor", email: "james.okafor@example.com", phone: "(555) 040-8863",
+        eventType: "Prom", eventDate: "2026-11-10", stage: 4, tracking: { carrier: "USPS", number: "9405511899223197428" }, issue: null,
+        notifications: [
+          { text: "This is Men's Tuxedo USA. We've received your order MTU-8863 for your Prom on Nov 10, 2026. We'll email you again the moment there's a status update, no need to call and check.", at: now - 1400000 },
+          { text: "Your measurements for order MTU-8863 are confirmed. We're pulling your order next. We'll email you again the moment there's an update, no need to call and check.", at: now - 1100000 },
+          { text: "Your order MTU-8863 has been pulled and is being prepared.", at: now - 800000 },
+          { text: "Your order MTU-8863 has passed quality check.", at: now - 500000 },
+          { text: "Your order MTU-8863 has shipped. Carrier: USPS, tracking number: 9405511899223197428. We'll email you again once it's delivered, or use the button below straight away if something doesn't look right.", at: now - 200000 }
+        ]
+      },
+      {
+        id: "MTU-8874", customer: "Anthony Diaz", email: "anthony.diaz@example.com", phone: "(555) 040-8874",
+        eventType: "Wedding (groom)", eventDate: "2026-10-24", stage: 3,
+        tracking: null,
+        issue: { open: true, note: "Confirmed my measurements two weeks ago but haven't heard anything since, and my wedding is in 3 days.", urgent: true },
+        notifications: [
+          { text: "This is Men's Tuxedo USA. We've received your order MTU-8874 for your Wedding (groom) on Oct 24, 2026. We'll email you again the moment there's a status update, no need to call and check.", at: now - 1700000 },
+          { text: "Your measurements for order MTU-8874 are confirmed. We're pulling your order next. We'll email you again the moment there's an update, no need to call and check.", at: now - 1400000 },
+          { text: "Your order MTU-8874 has been pulled and is being prepared.", at: now - 1000000 },
+          { text: "Your order MTU-8874 has passed quality check.", at: now - 600000 },
+          { text: "We've logged your report on order MTU-8874: \"Confirmed my measurements two weeks ago but haven't heard anything since, and my wedding is in 3 days.\" Flagged as time-critical, a team member will look into this directly.", at: now - 100000 }
+        ]
+      },
+      {
+        id: "MTU-8885", customer: "Victor Chen", email: "victor.chen@example.com", phone: "(555) 040-8885",
+        eventType: "Wedding (best man)", eventDate: "2026-09-12", stage: 5, tracking: { carrier: "UPS", number: "1Z999AA10123456784" }, issue: null,
+        notifications: [
+          { text: "This is Men's Tuxedo USA. We've received your order MTU-8885 for your Wedding (best man) on Sep 12, 2026. We'll email you again the moment there's a status update, no need to call and check.", at: now - 4200000 },
+          { text: "Your measurements for order MTU-8885 are confirmed. We're pulling your order next. We'll email you again the moment there's an update, no need to call and check.", at: now - 3900000 },
+          { text: "Your order MTU-8885 has been pulled and is being prepared.", at: now - 3600000 },
+          { text: "Your order MTU-8885 has passed quality check.", at: now - 3300000 },
+          { text: "Your order MTU-8885 has shipped. Carrier: UPS, tracking number: 1Z999AA10123456784. We'll email you again once it's delivered, or use the button below straight away if something doesn't look right.", at: now - 3000000 },
+          { text: "Your order MTU-8885 has been delivered. Thank you for your order.", at: now - 2700000 }
+        ]
+      }
+    ];
+  }
+
+  function loadOrders() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedOrders();
+    saveOrders(seeded);
+    return seeded;
+  }
+  function saveOrders(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var orders = loadOrders();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function findOrder(id) { return orders.find(function (o) { return o.id === id; }); }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    orders.forEach(function (o) {
+      var atLast = o.stage >= STAGE_NAMES.length - 1;
+      var auto = isAutoUrgent(o);
+      html += '<div class="order-row">';
+      html += '<div class="order-head"><h4>' + o.id + ' - ' + escapeHtml(o.customer) + '</h4>';
+      html += '<div class="pill-row"><span class="stage-pill">' + STAGE_NAMES[o.stage] + '</span>';
+      if (auto) html += '<span class="urgent-pill">Event in ' + daysUntil(o.eventDate) + 'd, not shipped</span>';
+      if (o.issue && o.issue.open) html += '<span class="issue-pill">Reported issue' + (o.issue.urgent ? ', time-critical' : '') + '</span>';
+      html += '</div></div>';
+      html += '<div class="order-meta">' + escapeHtml(o.eventType) + ' on ' + fmtDate(o.eventDate) + '</div>';
+      if (o.tracking) html += '<div class="order-meta">Tracking: ' + escapeHtml(o.tracking.carrier) + ' ' + escapeHtml(o.tracking.number) + '</div>';
+      html += '<div class="btn-row">';
+      html += '<button class="btn-sm" data-advance="' + o.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+      if (o.issue && o.issue.open) html += '<button class="btn-sm" data-resolve="' + o.id + '">Mark issue resolved</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceOrder(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-resolve]"), function (btn) {
+      btn.addEventListener("click", function () { resolveIssue(btn.dataset.resolve); });
+    });
+  }
+
+  function advanceOrder(id) {
+    var o = findOrder(id);
+    if (!o || o.stage >= STAGE_NAMES.length - 1) return;
+    var nextStage = o.stage + 1;
+    if (nextStage === SHIPPED_STAGE) {
+      var raw = window.prompt('Carrier and tracking number for this shipment, e.g. "USPS 9405511899223197428":', "");
+      if (raw === null) return;
+      raw = raw.trim();
+      if (!raw) { window.alert("Enter a carrier and tracking number before marking this order shipped."); return; }
+      var parts = raw.split(/\s+/);
+      o.tracking = { carrier: parts.shift(), number: parts.join(" ") || "(not provided)" };
+    }
+    o.stage = nextStage;
+    var msg = STAGE_MESSAGES[o.stage];
+    if (msg) o.notifications.push({ text: msg(o), at: Date.now() });
+    saveOrders(orders);
+    renderShop();
+    renderLastLookup();
+  }
+
+  function resolveIssue(id) {
+    var o = findOrder(id);
+    if (!o || !o.issue) return;
+    o.issue = { open: false, note: o.issue.note, urgent: false };
+    o.notifications.push({ text: "Good news, we've looked into your report on order " + o.id + " and resolved it. Thank you for your patience.", at: Date.now() });
+    saveOrders(orders);
+    renderShop();
+    renderLastLookup();
+  }
+
+  function fileReport(id, dateVal, note) {
+    var o = findOrder(id);
+    if (!o) return;
+    var date = dateVal && /^\d{4}-\d{2}-\d{2}$/.test(dateVal) ? dateVal : o.eventDate;
+    o.eventDate = date;
+    var urgent = isAutoUrgent(o);
+    o.issue = { open: true, note: note, urgent: urgent };
+    o.notifications.push({ text: "We've logged your report on order " + o.id + ": \"" + note + "\"" + (urgent ? " Flagged as time-critical, a team member will look into this directly." : " A team member will look into this directly."), at: Date.now() });
+    saveOrders(orders);
+    renderShop();
+    renderLastLookup();
+  }
+
+  var lastQuery = null;
+
+  function findMatches(query) {
+    var q = (query || "").trim();
+    if (!q) return [];
+    var qLower = q.toLowerCase();
+    var exact = orders.filter(function (o) { return o.id.toLowerCase() === qLower; });
+    if (exact.length) return exact;
+    var byEmail = orders.filter(function (o) { return o.email.toLowerCase() === qLower; });
+    if (byEmail.length) return byEmail;
+    var byName = orders.filter(function (o) { return o.customer.toLowerCase().indexOf(qLower) !== -1; });
+    return byName;
+  }
+
+  function renderLastLookup() {
+    if (lastQuery !== null) renderLookupResult(findMatches(lastQuery));
+  }
+
+  function renderLookupResult(matches) {
+    var root = document.getElementById("lookup-result");
+    if (!matches.length) {
+      root.innerHTML = '<p class="lookup-empty">No order found for that order number or email. Double-check and try again, or email info@menstuxedousa.com.</p>';
+      return;
+    }
+    var html = "";
+    matches.forEach(function (o) {
+      var auto = isAutoUrgent(o);
+      html += '<div class="order-summary"><h4>' + o.id + ' - ' + escapeHtml(o.customer) + '</h4>';
+      html += o.issue && o.issue.open ? ('<span class="issue-pill">Reported issue' + (o.issue.urgent ? ', time-critical' : '') + '</span>') : ('<span class="stage-pill">' + STAGE_NAMES[o.stage] + '</span>');
+      html += '</div>';
+      html += '<div class="order-summary-meta">' + escapeHtml(o.eventType) + ' on ' + fmtDate(o.eventDate) + '</div>';
+      if (auto) html += '<div class="tracking-line"><b>Heads up:</b> your event is ' + daysUntil(o.eventDate) + ' day(s) away and this order has not shipped yet. Our team sees this flag too.</div>';
+      if (o.tracking && o.stage >= SHIPPED_STAGE) html += '<div class="tracking-line">Shipped via <b>' + escapeHtml(o.tracking.carrier) + '</b>, tracking number <b>' + escapeHtml(o.tracking.number) + '</b></div>';
+      if (!(o.issue && o.issue.open)) {
+        html += '<button class="btn-sm" data-report-toggle="' + o.id + '" style="margin-top:0.6rem;">Report an issue</button>';
+        html += '<div class="report-form" id="report-form-' + o.id + '" style="display:none;">';
+        html += '<label for="report-date-' + o.id + '">Event date (confirm or correct)</label>';
+        html += '<input type="date" id="report-date-' + o.id + '" value="' + o.eventDate + '">';
+        html += '<label for="report-note-' + o.id + '">What\'s going on?</label>';
+        html += '<textarea id="report-note-' + o.id + '" placeholder="Describe the issue"></textarea>';
+        html += '<div class="btn-row"><button class="btn-sm" data-report-submit="' + o.id + '">Submit report</button></div>';
+        html += '</div>';
+      }
+      html += '<div class="thread">';
+      if (!o.notifications.length) {
+        html += '<p class="thread-empty">No messages yet.</p>';
+      } else {
+        o.notifications.forEach(function (n) {
+          html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-time">Email to ' + escapeHtml(o.email) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+        });
+      }
+      html += '</div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-report-toggle]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var form = document.getElementById("report-form-" + btn.dataset.reportToggle);
+        if (form) form.style.display = form.style.display === "none" ? "flex" : "none";
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-report-submit]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.dataset.reportSubmit;
+        var dateVal = document.getElementById("report-date-" + id).value;
+        var note = document.getElementById("report-note-" + id).value.trim();
+        if (!note) { window.alert("Describe what's going on before submitting."); return; }
+        fileReport(id, dateVal, note);
+      });
+    });
+    var threads = root.querySelectorAll(".thread");
+    Array.prototype.forEach.call(threads, function (t) { t.scrollTop = t.scrollHeight; });
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var q = document.getElementById("lookup-input").value;
+    lastQuery = q;
+    renderLookupResult(findMatches(q));
+  });
+  document.getElementById("lookup-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      lastQuery = this.value;
+      renderLookupResult(findMatches(this.value));
+    }
+  });
+
+  renderShop();
+})();
+</script>
+</body>
+</html>
