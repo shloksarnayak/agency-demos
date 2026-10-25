@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for My Law Matters</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .escalation-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: #f6dede; color: #9a2f2f; padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .also-line { font-size: 0.8rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .lookup-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  input[type="text"].wide { flex: 1; min-width: 12rem; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus { outline: none; border-color: var(--brand); }
+  .lookup-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .lookup-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-top: 0.8rem; }
+
+  .matter-summary { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+  .matter-summary h4 { margin: 0; font-size: 1rem; font-family: var(--serif); }
+  .track-tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 5px; margin-left: 0.4rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.7rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 94%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .escalate-row { margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed var(--rule); }
+  .escalate-note { font-size: 0.8rem; color: var(--ink-2); margin: 0 0 0.5rem; }
+
+  .sample-tag { display: inline-block; background: var(--brand-soft); color: var(--brand); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 5px; margin-bottom: 0.9rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / My Law Matters</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for My Law Matters</span>
+  <h1 class="fx-h1">Checking in on a matter without calling and waiting</h1>
+  <p class="fx-lede">A Trustpilot reviewer, Omer Mohammed, wrote about a cash house sale: "Poor communication. No response to any of my queries," with the other side's solicitors having to push for progress. Another reviewer described chasing daily on an expiring mortgage offer and being given repeated "5-7 more days" answers. A third described the firm handling an estate matter going quiet for days at a time with duplicate enquiries needed just to get a reply. A fourth put it most directly: the firm "will not return calls or emails even when I ask for senior management." All four describe the same gap: nothing tells a client where their matter stands unless they call and wait, or call again.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> the quotes above are drawn directly from My Law Matters' own public Trustpilot page (716 reviews, TrustScore 4.2, 221 posted in the last 12 months; roughly 120+ of the 716 are one-star, about 17% of the total, even though 72% are five-star overall). A second, independent panel on solicitors.com aggregates 746 reviews at a 4.1 average across Google, Trustpilot, and Reviews.co.uk. A direct fetch of mylawmatters.co.uk today found a WordPress site with a "Call us now" link, an "Enquire now" contact form, and a linked Tawk.to live-chat widget, which is customer-support chat, not a case-status tool, so no client portal or matter-status lookup exists anywhere on the site today. Nationally, competitor Bird & Co already markets "a dedicated conveyancer and case-tracking software" as a selling point, confirming clients in this exact market expect this kind of visibility.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the matters, client names, and solicitor/agent names below are a fictional sample, not real My Law Matters clients or matters. Nothing here sends a real email or text. This shows exactly what a client, and anyone else named on the matter, would receive automatically, and what a self-serve status check would show without them having to call in. A real build connects to whatever field a fee earner already updates and sends through an actual email/SMS service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Fee earner view: update a matter's status</h3>
+      <span class="sample-tag">Sample matters, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the client sees: check a matter without calling</h3>
+      <div class="lookup-row">
+        <input type="text" class="wide" id="lookup-input" placeholder="Matter reference or email on file">
+        <button class="btn-sm" id="lookup-btn">Check status</button>
+      </div>
+      <p class="lookup-hint">Try MLM-5201, MLM-5203, or sample.clientb@example.com</p>
+      <div id="lookup-result"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email or text.</b> This demo only shows what a client and anyone else named on the matter would receive. A real version needs an actual email/SMS service (for example SendGrid or Twilio) wired to whatever field your fee earners already update to mark a matter's stage.</div>
+      <div class="lim"><b>This introduces visibility your site doesn't have today, it doesn't sit beside an existing tool.</b> Your Tawk.to widget is support chat, a live conversation, not a self-serve status lookup, and today's only options are calling or using the contact form and waiting. Lookup by matter reference or email answers "where does my matter stand" the moment a client wants to know, without a login or a call.</div>
+      <div class="lim"><b>The escalation action below directly answers the specific complaint about senior management not calling back.</b> When a client requests a callback from the lookup screen, it creates a flagged item in the fee earner view with a committed response-by time, instead of a request that can go unanswered with no record anyone made it. This doesn't guarantee a faster resolution, only that the request itself is visible and timestamped rather than invisible until someone happens to notice a missed call.</div>
+      <div class="lim"><b>The milestone stages shown for a conveyancing matter and for an estate matter are typical stages for that kind of work, not copied from your firm's internal case-management process.</b> A real build should confirm the exact stages your team already tracks and the field they update to move a matter between them.</div>
+      <div class="lim"><b>Worth a specific conversation before this goes live: what a status update can safely say.</b> Since this touches active legal matters, a real build should keep the message content to a status label and a plain next step, as shown below, not matter substance, so nothing privileged or confidential goes out over an unencrypted text or email.</div>
+      <div class="lim"><b>The Trustpilot and solicitors.com figures above are real and cited directly, but the overall picture is a real, partial communication gap on an otherwise-functioning firm, not a universal breakdown.</b> 72% of Trustpilot reviews are five-star, and several reviewers praise specific named staff for being responsive once reached. What this changes is whether a client has to call and wait to find that out, not whether every matter moves instantly.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for My Law Matters. The Trustpilot and solicitors.com figures, the quoted reviews, and the absence of any client-facing case-status tool on mylawmatters.co.uk are drawn from direct verification of public sources. Matter, client, and solicitor/agent data below is a fictional sample, not connected to any real matter.</p>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "mlm-status-pipeline-matters-v1";
+
+  var TRACKS = {
+    conveyancing: {
+      label: "Residential conveyancing",
+      stages: ["Instructions received, file opened", "Searches ordered", "Enquiries raised, mortgage offer awaited", "Exchange of contracts", "Completion"],
+      messages: [
+        function (j) { return "This is My Law Matters. Your file for " + j.property + " has been opened following receipt of instructions. We'll update you automatically at each stage, you can also check status any time without calling."; },
+        function (j) { return "Searches have been ordered for " + j.property + ". We'll notify you again once enquiries are raised."; },
+        function (j) { return "Enquiries have been raised with the other side's solicitor for " + j.property + ". We're now working toward exchange of contracts."; },
+        function (j) { return "Contracts have been exchanged for " + j.property + ". " + j.detail + "."; },
+        function (j) { return "Completion has taken place on " + j.property + ". Thank you for instructing My Law Matters."; }
+      ]
+    },
+    probate: {
+      label: "Probate & estate administration",
+      stages: ["Instructions received, estate information gathered", "Grant of Probate application submitted", "Grant of Probate received", "Estate assets collected, liabilities settled", "Administration complete"],
+      messages: [
+        function (j) { return "This is My Law Matters. We've opened the file for " + j.property + " and are gathering the initial estate information. We'll update you automatically as the matter progresses."; },
+        function (j) { return "The application for the Grant of Probate in the matter of " + j.property + " has been submitted to the Probate Registry. We'll notify you again once it's granted."; },
+        function (j) { return "The Grant of Probate for " + j.property + " has been received. We're now working to collect the estate's assets and settle its liabilities."; },
+        function (j) { return "The estate's assets have been collected and liabilities settled for " + j.property + ". " + j.detail + "."; },
+        function (j) { return "Administration of " + j.property + " is complete. Thank you for trusting My Law Matters with this matter."; }
+      ]
+    }
+  };
+
+  function seedMatters() {
+    var now = 1761350400000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "MLM-5201",
+        client: "Sample Client A (Cash buyer)",
+        contact: "sample.clienta@example.com",
+        track: "conveyancing",
+        property: "9 Darlington Street, Wolverhampton (Purchase, cash)",
+        detail: "",
+        alsoNotified: [],
+        stage: 1,
+        escalation: null,
+        notifications: [
+          { text: "This is My Law Matters. Your file for 9 Darlington Street, Wolverhampton (Purchase, cash) has been opened following receipt of instructions. We'll update you automatically at each stage, you can also check status any time without calling.", at: now },
+          { text: "Searches have been ordered for 9 Darlington Street, Wolverhampton (Purchase, cash). We'll notify you again once enquiries are raised.", at: now + 3600000 }
+        ]
+      },
+      {
+        id: "MLM-5202",
+        client: "Sample Client B (Seller, mortgage dependent buyer)",
+        contact: "sample.clientb@example.com",
+        track: "conveyancing",
+        property: "61 Lode Lane, Solihull (Sale)",
+        detail: "Completion set for 14 November",
+        alsoNotified: ["Sample Mortgage Broker, F. Idowu"],
+        stage: 3,
+        escalation: { status: "requested", requestedAt: now + 32400000, note: "" },
+        notifications: [
+          { text: "This is My Law Matters. Your file for 61 Lode Lane, Solihull (Sale) has been opened following receipt of instructions. We'll update you automatically at each stage, you can also check status any time without calling.", at: now },
+          { text: "Searches have been ordered for 61 Lode Lane, Solihull (Sale). We'll notify you again once enquiries are raised.", at: now + 7200000 },
+          { text: "Enquiries have been raised with the other side's solicitor for 61 Lode Lane, Solihull (Sale). We're now working toward exchange of contracts.", at: now + 14400000 },
+          { text: "Contracts have been exchanged for 61 Lode Lane, Solihull (Sale). Completion set for 14 November.", at: now + 21600000 },
+          { text: "We've received your request for a callback from a senior solicitor on this matter. Someone will respond by the end of the next working day, you do not need to keep calling to check.", at: now + 32400000 }
+        ]
+      },
+      {
+        id: "MLM-5203",
+        client: "Sample Client C (Executor)",
+        contact: "sample.clientc@example.com",
+        track: "probate",
+        property: "Estate of Sample Decedent",
+        detail: "",
+        alsoNotified: ["Sample Co-Executor, R. Bhatti"],
+        stage: 2,
+        escalation: null,
+        notifications: [
+          { text: "This is My Law Matters. We've opened the file for Estate of Sample Decedent and are gathering the initial estate information. We'll update you automatically as the matter progresses.", at: now },
+          { text: "The application for the Grant of Probate in the matter of Estate of Sample Decedent has been submitted to the Probate Registry. We'll notify you again once it's granted.", at: now + 3600000 },
+          { text: "The Grant of Probate for Estate of Sample Decedent has been received. We're now working to collect the estate's assets and settle its liabilities.", at: now + 7200000 }
+        ]
+      },
+      {
+        id: "MLM-5204",
+        client: "Sample Client D (Purchaser)",
+        contact: "sample.clientd@example.com",
+        track: "conveyancing",
+        property: "Flat 3, Chapel Street, Urmston (Purchase)",
+        detail: "",
+        alsoNotified: ["Sample Estate Agent, J. Whitehouse"],
+        stage: 0,
+        escalation: null,
+        notifications: [
+          { text: "This is My Law Matters. Your file for Flat 3, Chapel Street, Urmston (Purchase) has been opened following receipt of instructions. We'll update you automatically at each stage, you can also check status any time without calling.", at: now }
+        ]
+      }
+    ];
+  }
+
+  function loadMatters() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedMatters();
+    saveMatters(seeded);
+    return seeded;
+  }
+  function saveMatters(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var matters = loadMatters();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    matters.forEach(function (j) {
+      var track = TRACKS[j.track];
+      var atLast = j.stage >= track.stages.length - 1;
+      var escalated = j.escalation && j.escalation.status === "requested";
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.client) + '</h4>';
+      html += escalated ? '<span class="escalation-pill">Callback requested</span>' : '<span class="stage-pill">' + track.stages[j.stage] + '</span>';
+      html += '</div>';
+      html += '<div class="job-meta">' + escapeHtml(j.property) + '<span class="track-tag">' + track.label + '</span></div>';
+      if (j.alsoNotified.length) {
+        html += '<div class="also-line">Also on this file: ' + escapeHtml(j.alsoNotified.join(", ")) + '</div>';
+      }
+      html += '<div class="job-actions">';
+      if (escalated) {
+        html += '<button class="btn-sm" data-ack-escalation="' + j.id + '">Mark callback acknowledged</button>';
+      } else {
+        html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next milestone</button>';
+      }
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceMatter(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-ack-escalation]"), function (btn) {
+      btn.addEventListener("click", function () { ackEscalation(btn.dataset.ackEscalation); });
+    });
+  }
+
+  function pushNotification(j, text) {
+    j.notifications.push({ text: text, at: Date.now() });
+  }
+
+  function advanceMatter(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    var track = TRACKS[j.track];
+    if (!j || j.stage >= track.stages.length - 1) return;
+    j.stage += 1;
+    var msg = track.messages[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function ackEscalation(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || !j.escalation) return;
+    j.escalation = { status: "acknowledged", requestedAt: j.escalation.requestedAt, note: j.escalation.note };
+    var track = TRACKS[j.track];
+    pushNotification(j, "A senior solicitor has been notified of your request and will contact you directly. In the meantime, here's where your matter stands: " + track.stages[j.stage] + ".");
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  var lastLookupId = null;
+
+  function findMatter(query) {
+    var q = (query || "").trim().toLowerCase();
+    if (!q) return null;
+    return matters.find(function (j) {
+      if (j.id.toLowerCase() === q) return true;
+      if (j.contact && j.contact.toLowerCase() === q) return true;
+      return false;
+    }) || null;
+  }
+
+  function renderLookupIfShowing(id) {
+    if (lastLookupId === id) renderLookupResult(findMatter(id));
+  }
+
+  function renderLookupResult(j) {
+    var root = document.getElementById("lookup-result");
+    if (!j) {
+      root.innerHTML = '<p class="lookup-empty">No matter found for that reference or email. Double-check and try again, or call your fee earner.</p>';
+      lastLookupId = null;
+      return;
+    }
+    lastLookupId = j.id;
+    var track = TRACKS[j.track];
+    var escalated = j.escalation && j.escalation.status === "requested";
+    var html = '<div class="matter-summary"><h4>' + j.id + ' - ' + escapeHtml(j.property) + '</h4>';
+    html += escalated ? '<span class="escalation-pill">Callback requested</span>' : '<span class="stage-pill">' + track.stages[j.stage] + '</span>';
+    html += '</div>';
+    html += '<div class="thread">';
+    if (!j.notifications.length) {
+      html += '<p class="thread-empty">No messages yet for this matter.</p>';
+    } else {
+      var recipients = "Email to " + j.contact + (j.alsoNotified.length ? "; also sent to " + j.alsoNotified.join(", ") : "");
+      j.notifications.forEach(function (n) {
+        html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-meta">' + escapeHtml(recipients) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+      });
+    }
+    html += '</div>';
+    var atLast = j.stage >= track.stages.length - 1;
+    html += '<div class="escalate-row">';
+    if (escalated) {
+      html += '<p class="escalate-note">A callback request is already open on this matter. You do not need to call to check, a senior solicitor has been notified.</p>';
+    } else if (atLast) {
+      html += '<p class="escalate-note">This matter is complete. No callback action is available.</p>';
+    } else {
+      html += '<p class="escalate-note">Still waiting on an update, or need to speak to someone senior about this matter?</p>';
+      html += '<button class="btn-sm" id="escalate-btn" data-id="' + j.id + '">Request a callback from a senior solicitor</button>';
+    }
+    html += '</div>';
+    root.innerHTML = html;
+    var thread = root.querySelector(".thread");
+    if (thread) thread.scrollTop = thread.scrollHeight;
+    var escBtn = document.getElementById("escalate-btn");
+    if (escBtn) {
+      escBtn.addEventListener("click", function () { requestEscalation(escBtn.dataset.id); });
+    }
+  }
+
+  function requestEscalation(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || (j.escalation && j.escalation.status === "requested")) return;
+    j.escalation = { status: "requested", requestedAt: Date.now(), note: "" };
+    pushNotification(j, "We've received your request for a callback from a senior solicitor on this matter. Someone will respond by the end of the next working day, you do not need to keep calling to check.");
+    saveMatters(matters);
+    renderShop();
+    renderLookupResult(j);
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var q = document.getElementById("lookup-input").value;
+    renderLookupResult(findMatter(q));
+  });
+  document.getElementById("lookup-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      renderLookupResult(findMatter(this.value));
+    }
+  });
+
+  renderShop();
+})();
+</script>
+</body>
+</html>
