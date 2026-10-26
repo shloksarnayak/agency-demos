@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for SM Lawson Solicitors</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .complaint-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: #f6dede; color: #9a2f2f; padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .resolved-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: #e3f0e4; color: #2f6b3a; padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .office-tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 5px; margin-left: 0.4rem; }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .lookup-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  input[type="text"].wide { flex: 1; min-width: 12rem; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus { outline: none; border-color: var(--brand); }
+  .lookup-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .lookup-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-top: 0.8rem; }
+
+  .matter-summary { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+  .matter-summary h4 { margin: 0; font-size: 1rem; font-family: var(--serif); }
+  .track-tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 5px; margin-left: 0.4rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.7rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 94%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .complaint-row { margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed var(--rule); }
+  .complaint-note { font-size: 0.8rem; color: var(--ink-2); margin: 0 0 0.5rem; }
+
+  .sample-tag { display: inline-block; background: var(--brand-soft); color: var(--brand); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 5px; margin-bottom: 0.9rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / SM Lawson Solicitors</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for SM Lawson Solicitors</span>
+  <h1 class="fx-h1">A matter update that goes out on its own, and a concern that can't quietly disappear</h1>
+  <p class="fx-lede">SM Lawson Solicitors' own Trustpilot page carries six reviews, all one star, five of them naming slow or absent communication directly: a time-sensitive conveyancing matter where important emails went unanswered and a subsequent complaint was dismissed rather than properly investigated, a client told someone would call back who never did, no follow-through on timelines given, and weeks of silence over a disputed bill. This example shows what a client sees instead: a self-serve status check by matter reference, across all three of the firm's offices, and a concern that is logged, dated, and stays visibly open until a fee earner formally closes it.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> SM Lawson Solicitors is a recognised sole practice (SRA no. 618617) since 01/11/2015, authorised for all legal services, with three SRA-regulated solicitors (Julian Peter William Fallows, Kathryn Ann Price, and Principal Shazu Miah) across three offices: Kidderminster (head office), Tipton, and Worcester. A direct fetch of the firm's own Trustpilot page found a 2.3 out of 5 TrustScore from six reviews, all one star and organic (the page itself notes the firm has not invited customer reviews). Five of the six name poor or slow communication specifically: Masood Saeed (10 Dec 2025) describes a time-sensitive conveyancing matter where important emails went unanswered, and says a subsequent complaint was dismissed rather than properly investigated; Andrew Downes (14 Feb 2024) describes zero communication and being told someone would call back, which never happened; R M (11 Oct 2023) describes no follow-through on the timelines given; James (5 Oct 2021) describes weeks of no progress and a disputed bill; Philip Robinson (30 Jul 2025) gives no further detail. A second, independent panel on solicitors.com shows 17 reviews averaging 2.8 out of 5, consistent with the Trustpilot pattern, though that page doesn't break out individual review text. A third platform, ReviewSolicitors, was reported via search at 2.0 out of 5 from four reviews, directionally consistent but not independently re-fetched this session, so it's flagged here as the weaker, secondary source. A direct fetch of smlawson.co.uk found no client portal, case tracker, or matter-status lookup of any kind, only phone, email, a general contact form, and live chat. No SRA or Solicitors Disciplinary Tribunal record exists for the firm or for Shazu Miah. UK legal-tech products such as Clio (from roughly &pound;49-59/user/month) and The Access Group's Legal client portal already market exactly this kind of case-tracking and client-portal capability to firms of this size.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the matters, client names, and contact details below are a fictional sample, not real SM Lawson clients or files. Nothing here sends a real email, text, or letter. This shows what a client would receive automatically, and what a self-serve status and concern check would show without a phone call. A real build connects to whatever field a fee earner already updates and sends through an actual email/SMS service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Fee earner view: update a matter, log a response</h3>
+      <span class="sample-tag">Sample matters, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the client sees: check a matter, raise a concern</h3>
+      <div class="lookup-row">
+        <input type="text" class="wide" id="lookup-input" placeholder="Matter reference or email on file">
+        <button class="btn-sm" id="lookup-btn">Check status</button>
+      </div>
+      <p class="lookup-hint">Try SML-2401, SML-2403, SML-2404, or sample.clientb@example.com</p>
+      <div id="lookup-result"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email, text, or letter.</b> This demo only shows what a client would receive. A real version needs an actual email/SMS service, for example SendGrid or Twilio, wired to whatever field your fee earners already update across the three offices to mark a matter's stage.</div>
+      <div class="lim"><b>The concern channel directly answers the Trustpilot review describing a complaint that was "dismissed rather than properly investigated."</b> When a client raises a concern from the lookup screen, it is timestamped and logged immediately as a visible item in the fee earner view, and it stays open until a fee earner takes the explicit "log response sent" action below. It cannot quietly disappear or close itself. I deliberately did not attach a specific promised response time to this: no SM Lawson-specific complaints-handling target turned up in research, so a real build should use your actual written complaints procedure and real target dates, not a guessed one.</div>
+      <div class="lim"><b>Matters are tagged by office, Kidderminster, Tipton, or Worcester,</b> so a client or the firm can see at a glance which of the three sites is handling a file. Nothing on smlawson.co.uk today, phone, email, the contact form, or live chat, surfaces that.</div>
+      <div class="lim"><b>The stages shown for conveyancing and for wills and probate are typical for that kind of work, they are not copied from SM Lawson's actual case-management process.</b> A real build should confirm the exact stages used across all six of the firm's practice areas (conveyancing, wills and probate, family law, child proceedings, personal injury, litigation, and immigration) directly with Shazu Miah.</div>
+      <div class="lim"><b>The 2.3 out of 5 Trustpilot score (six reviews) and the solicitors.com figure (2.8 out of 5, 17 reviews) are both real and convergent, and the firm has not solicited reviews on either platform, but both are small samples, and the firm carries no SRA or Solicitors Disciplinary Tribunal record.</b> This reads as a real but fixable communication and complaints-handling gap on a decade-old, actively regulated small practice, not a sign of fraud or total failure. The ReviewSolicitors figure (2.0 out of 5, four reviews) is reported, not independently re-verified this session, and is the weakest of the three sources above.</div>
+      <div class="lim"><b>This introduces visibility your site doesn't have today, it doesn't replace or sit beside an existing tool.</b> A direct review of smlawson.co.uk found no client portal, case-status login, or tracking feature of any kind, only phone, email, a contact form, and live chat, plus a free 30-minute initial consultation offer.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for SM Lawson Solicitors. The Trustpilot and solicitors.com figures, the named reviewers' complaint patterns, the SRA register details, and the absence of any client-facing case-status or concern-tracking tool on smlawson.co.uk are drawn from direct verification of public sources. Matter, client, and contact data below is a fictional sample, not connected to any real file.</p>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "sml-status-pipeline-matters-v1";
+
+  var TRACKS = {
+    conveyancing: {
+      label: "Residential conveyancing",
+      stages: ["Instructions received, file opened", "Searches ordered", "Enquiries raised, mortgage offer awaited", "Exchange of contracts", "Completion"],
+      messages: [null,
+        function (j) { return "Searches have been ordered for " + j.property + ". We'll notify you again once enquiries are raised."; },
+        function (j) { return "Enquiries have been raised with the other side's solicitor for " + j.property + ". We're now working toward exchange of contracts."; },
+        function (j) { return "Contracts have been exchanged for " + j.property + ". " + j.detail + "."; },
+        function (j) { return "Completion has taken place on " + j.property + ". Thank you for instructing SM Lawson."; }
+      ]
+    },
+    wills_probate: {
+      label: "Wills and probate",
+      stages: ["Instructions received", "Draft will prepared", "Signing appointment arranged", "Will executed and stored"],
+      messages: [null,
+        function (j) { return "A draft of your will for " + j.property + " has been prepared. We'll be in touch to arrange a signing appointment."; },
+        function (j) { return "A signing appointment has been arranged for your will, " + j.property + ". " + j.detail + "."; },
+        function (j) { return "Your will, " + j.property + ", has been executed and is now stored with our records. Thank you for instructing SM Lawson."; }
+      ]
+    }
+  };
+
+  function seedMatters() {
+    var now = 1761350400000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "SML-2401",
+        client: "Sample Client A (Purchaser)",
+        contact: "sample.clienta@example.com",
+        office: "Kidderminster",
+        track: "conveyancing",
+        property: "47 Spennells Valley Road, Kidderminster (Purchase)",
+        detail: "",
+        stage: 3,
+        complaint: null,
+        notifications: [
+          { text: "Searches have been ordered for 47 Spennells Valley Road, Kidderminster (Purchase). We'll notify you again once enquiries are raised.", at: now },
+          { text: "Enquiries have been raised with the other side's solicitor for 47 Spennells Valley Road, Kidderminster (Purchase). We're now working toward exchange of contracts.", at: now + 3600000 },
+          { text: "Contracts have been exchanged for 47 Spennells Valley Road, Kidderminster (Purchase). Completion is set for the agreed date.", at: now + 7200000 }
+        ]
+      },
+      {
+        id: "SML-2402",
+        client: "Sample Client B (Seller)",
+        contact: "sample.clientb@example.com",
+        office: "Worcester",
+        track: "conveyancing",
+        property: "11 Lowesmoor, Worcester (Sale)",
+        detail: "",
+        stage: 4,
+        complaint: null,
+        notifications: [
+          { text: "Searches have been ordered for 11 Lowesmoor, Worcester (Sale). We'll notify you again once enquiries are raised.", at: now },
+          { text: "Enquiries have been raised with the other side's solicitor for 11 Lowesmoor, Worcester (Sale). We're now working toward exchange of contracts.", at: now + 3600000 },
+          { text: "Contracts have been exchanged for 11 Lowesmoor, Worcester (Sale). Completion is set for the agreed date.", at: now + 7200000 },
+          { text: "Completion has taken place on 11 Lowesmoor, Worcester (Sale). Thank you for instructing SM Lawson.", at: now + 10800000 }
+        ]
+      },
+      {
+        id: "SML-2403",
+        client: "Sample Client C (Purchaser)",
+        contact: "sample.clientc@example.com",
+        office: "Tipton",
+        track: "conveyancing",
+        property: "6 Great Bridge Street, Tipton (Purchase)",
+        detail: "",
+        stage: 1,
+        complaint: { status: "open", raisedAt: now + 3600000, note: "" },
+        notifications: [
+          { text: "Searches have been ordered for 6 Great Bridge Street, Tipton (Purchase). We'll notify you again once enquiries are raised.", at: now },
+          { text: "We've logged your concern about this matter today. It stays open and visible here until a fee earner records a response, you do not need to call to check.", at: now + 3600000 }
+        ]
+      },
+      {
+        id: "SML-2404",
+        client: "Sample Client D",
+        contact: "sample.clientd@example.com",
+        office: "Kidderminster",
+        track: "wills_probate",
+        property: "single will instruction",
+        detail: "A signing appointment is being arranged for next week",
+        stage: 2,
+        complaint: { status: "resolved", raisedAt: now, resolvedAt: now + 3600000, note: "" },
+        notifications: [
+          { text: "A draft of your will for single will instruction has been prepared. We'll be in touch to arrange a signing appointment.", at: now },
+          { text: "We've logged your concern about this matter today. It stays open and visible here until a fee earner records a response, you do not need to call to check.", at: now + 1800000 },
+          { text: "A partner has reviewed your concern and sent a substantive response. Here's where this matter stands: Signing appointment arranged.", at: now + 3600000 },
+          { text: "A signing appointment has been arranged for your will, single will instruction. A signing appointment is being arranged for next week.", at: now + 3660000 }
+        ]
+      }
+    ];
+  }
+
+  function loadMatters() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedMatters();
+    saveMatters(seeded);
+    return seeded;
+  }
+  function saveMatters(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var matters = loadMatters();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString(); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    matters.forEach(function (j) {
+      var track = TRACKS[j.track];
+      var atLast = j.stage >= track.stages.length - 1;
+      var complaintOpen = j.complaint && j.complaint.status === "open";
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.client) + '</h4>';
+      if (complaintOpen) {
+        html += '<span class="complaint-pill">Concern open since ' + fmtDate(j.complaint.raisedAt) + '</span>';
+      } else if (j.complaint && j.complaint.status === "resolved") {
+        html += '<span class="resolved-pill">Concern resolved</span>';
+      } else {
+        html += '<span class="stage-pill">' + track.stages[j.stage] + '</span>';
+      }
+      html += '</div>';
+      html += '<div class="job-meta">' + escapeHtml(j.property) + '<span class="track-tag">' + track.label + '</span><span class="office-tag">' + escapeHtml(j.office) + '</span></div>';
+      html += '<div class="job-actions">';
+      if (complaintOpen) {
+        html += '<button class="btn-sm" data-resolve="' + j.id + '">Log response sent</button>';
+      }
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next milestone</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceMatter(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-resolve]"), function (btn) {
+      btn.addEventListener("click", function () { resolveComplaint(btn.dataset.resolve); });
+    });
+  }
+
+  function pushNotification(j, text) {
+    j.notifications.push({ text: text, at: Date.now() });
+  }
+
+  function advanceMatter(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    var track = TRACKS[j.track];
+    if (!j || j.stage >= track.stages.length - 1) return;
+    j.stage += 1;
+    var msg = track.messages[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function resolveComplaint(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || !j.complaint || j.complaint.status !== "open") return;
+    j.complaint = { status: "resolved", raisedAt: j.complaint.raisedAt, resolvedAt: Date.now(), note: "" };
+    pushNotification(j, "A partner has reviewed your concern and sent a substantive response. Here's where this matter stands: " + TRACKS[j.track].stages[j.stage] + ".");
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  var lastLookupId = null;
+
+  function findMatter(query) {
+    var q = (query || "").trim().toLowerCase();
+    if (!q) return null;
+    return matters.find(function (j) {
+      if (j.id.toLowerCase() === q) return true;
+      if (j.contact && j.contact.toLowerCase() === q) return true;
+      return false;
+    }) || null;
+  }
+
+  function renderLookupIfShowing(id) {
+    if (lastLookupId === id) renderLookupResult(findMatter(id));
+  }
+
+  function renderLookupResult(j) {
+    var root = document.getElementById("lookup-result");
+    if (!j) {
+      root.innerHTML = '<p class="lookup-empty">No matter found for that reference or email. Double-check and try again, or call your fee earner.</p>';
+      lastLookupId = null;
+      return;
+    }
+    lastLookupId = j.id;
+    var track = TRACKS[j.track];
+    var complaintOpen = j.complaint && j.complaint.status === "open";
+    var complaintResolved = j.complaint && j.complaint.status === "resolved";
+    var html = '<div class="matter-summary"><h4>' + j.id + ' - ' + escapeHtml(j.property) + '</h4>';
+    if (complaintOpen) {
+      html += '<span class="complaint-pill">Concern open since ' + fmtDate(j.complaint.raisedAt) + '</span>';
+    } else if (complaintResolved) {
+      html += '<span class="resolved-pill">Concern resolved</span>';
+    } else {
+      html += '<span class="stage-pill">' + track.stages[j.stage] + '</span>';
+    }
+    html += '<span class="office-tag">' + escapeHtml(j.office) + ' office</span>';
+    html += '</div>';
+    html += '<div class="thread">';
+    if (!j.notifications.length) {
+      html += '<p class="thread-empty">No messages yet for this matter.</p>';
+    } else {
+      var recipients = "Email to " + j.contact;
+      j.notifications.forEach(function (n) {
+        html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-meta">' + escapeHtml(recipients) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+      });
+    }
+    html += '</div>';
+    html += '<div class="complaint-row">';
+    if (complaintOpen) {
+      html += '<p class="complaint-note">A concern on this matter is already open, logged on ' + fmtDate(j.complaint.raisedAt) + '. It stays visible here until a fee earner records a response. You do not need to call to check.</p>';
+    } else {
+      html += '<p class="complaint-note">Not happy with how this matter is being handled, or waiting longer than expected?</p>';
+      html += '<button class="btn-sm" id="complaint-btn" data-id="' + j.id + '">Raise a concern about this matter</button>';
+    }
+    html += '</div>';
+    root.innerHTML = html;
+    var thread = root.querySelector(".thread");
+    if (thread) thread.scrollTop = thread.scrollHeight;
+    var cBtn = document.getElementById("complaint-btn");
+    if (cBtn) {
+      cBtn.addEventListener("click", function () { raiseComplaint(cBtn.dataset.id); });
+    }
+  }
+
+  function raiseComplaint(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || (j.complaint && j.complaint.status === "open")) return;
+    var raisedAt = Date.now();
+    j.complaint = { status: "open", raisedAt: raisedAt, note: "" };
+    pushNotification(j, "We've logged your concern about this matter today. It stays open and visible here until a fee earner records a response, you do not need to call to check.");
+    saveMatters(matters);
+    renderShop();
+    renderLookupResult(j);
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var q = document.getElementById("lookup-input").value;
+    renderLookupResult(findMatter(q));
+  });
+  document.getElementById("lookup-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      renderLookupResult(findMatter(this.value));
+    }
+  });
+
+  renderShop();
+})();
+</script>
+</body>
+</html>
