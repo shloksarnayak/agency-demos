@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Wainwright &amp; Cummins</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .complaint-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: #f6dede; color: #9a2f2f; padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .resolved-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: #e3f0e4; color: #2f6b3a; padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .also-line { font-size: 0.8rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .lookup-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  input[type="text"].wide { flex: 1; min-width: 12rem; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus { outline: none; border-color: var(--brand); }
+  .lookup-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .lookup-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-top: 0.8rem; }
+
+  .matter-summary { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+  .matter-summary h4 { margin: 0; font-size: 1rem; font-family: var(--serif); }
+  .track-tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 5px; margin-left: 0.4rem; }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.7rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 94%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .complaint-row { margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed var(--rule); }
+  .complaint-note { font-size: 0.8rem; color: var(--ink-2); margin: 0 0 0.5rem; }
+
+  .sample-tag { display: inline-block; background: var(--brand-soft); color: var(--brand); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 5px; margin-bottom: 0.9rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Wainwright &amp; Cummins</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Wainwright &amp; Cummins</span>
+  <h1 class="fx-h1">Where a chaser or a complaint actually goes, instead of going quiet</h1>
+  <p class="fx-lede">Wainwright &amp; Cummins' own Trustpilot page records at least seven separately dated reviews, spanning 2021 to 2025, describing the same pattern across different practice areas: chasers that go unanswered, a will that was paid for and never completed, a conveyancing transfer still unregistered more than a year after completion, and two formal complaints, one that took fifteen months to get a reply, one from a legal aid client that was never answered at all. This example shows what a client sees instead: a self-serve status check by matter reference, and a complaint channel that logs an acknowledgment and a committed response date the moment it is used.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> Wainwright &amp; Cummins LLP is an SRA-regulated recognised body (SRA no. 548743) with two Brixton offices, founded 1985, covering criminal defence, family law, housing, immigration, conveyancing, wills and probate, commercial work and mediation. A direct fetch of the firm's own Trustpilot page found a 3.3 out of 5 TrustScore across 38 reviews, with named reviewers Sara Bowden, Minh, F Biscuit, Ian, Lorraine, Corcuera and Allan Peter FraserKeston each describing an unanswered chaser, a stalled matter, or a complaint that went unacknowledged for months. F Biscuit's review specifically states the firm's own complaints process did not resolve the matter within eight weeks, leading the reviewer to escalate to the Legal Ombudsman. A direct fetch of wainwrightcummins.co.uk (About and Pricing pages) found no client portal, case tracker, or matter-status lookup anywhere on the site; fee quotes are handled by downloadable Word and Excel documents, phone, or email. A second, independent panel on solicitors.com shows a very different 4.9 out of 5 across 120 reviews for the same firm, a real divergence disclosed honestly below rather than picked around. Competitors Access Group, Clio, and Osprey Approach already market exactly this kind of client portal and case-tracking capability to firms of this size.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the matters, client names, and contact details below are a fictional sample, not real Wainwright &amp; Cummins clients or files. Nothing here sends a real email, text, or letter. This shows what a client would receive automatically, and what a self-serve status and complaint check would show without a phone call. A real build connects to whatever field a fee earner already updates and sends through an actual email/SMS service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Fee earner view: update a matter, log a response</h3>
+      <span class="sample-tag">Sample matters, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the client sees: check a matter, raise a concern</h3>
+      <div class="lookup-row">
+        <input type="text" class="wide" id="lookup-input" placeholder="Matter reference or email on file">
+        <button class="btn-sm" id="lookup-btn">Check status</button>
+      </div>
+      <p class="lookup-hint">Try WC-2201, WC-2203, WC-2204, or sample.clientc@example.com</p>
+      <div id="lookup-result"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email, text, or letter.</b> This demo only shows what a client would receive. A real version needs an actual email/SMS service, for example SendGrid or Twilio, wired to whatever field your fee earners already update to mark a matter's stage.</div>
+      <div class="lim"><b>The complaint channel directly answers the two specific reviews about complaints going unacknowledged for fifteen months, and never being answered at all.</b> When a client raises a concern from the lookup screen, it is timestamped and logged immediately as a visible item in the fee earner view, with a committed response date shown to the client, rather than a call or email that can sit unrecorded until someone happens to notice it. The eight-week response window shown below is modelled on the complaints-handling target referenced in one of your own Trustpilot reviews, it is not confirmed as your firm's actual written complaints procedure, and a real build should use your real policy and real target dates.</div>
+      <div class="lim"><b>The Land Registry registration stage on the conveyancing track is built directly from a specific complaint:</b> a reviewer describing a property transfer still unregistered more than a year after completion, with emails unanswered in the meantime. Tracking registration as its own stage, separate from completion, means a client can see it is still outstanding instead of assuming the matter is finished once completion happens.</div>
+      <div class="lim"><b>This introduces visibility your site doesn't have today, it doesn't replace or sit beside an existing tool.</b> Your own site directs clients to leave feedback on Trustpilot, Review Solicitors, or Google, but has nowhere for a client to check a live matter status or log a concern. A real build should confirm the exact stages each practice area (conveyancing, wills, family, criminal, housing, immigration) already uses internally; the stages shown here for conveyancing, wills, and legal aid family matters are typical for that kind of work, not copied from your firm's case-management system.</div>
+      <div class="lim"><b>Worth a specific conversation before this goes live: what a status update or complaint acknowledgment can safely say.</b> Several of your practice areas, including legal aid family and criminal matters, involve sensitive and sometimes safeguarding-relevant content. A real build should keep message content to a status label, a plain next step, and a response date, as shown below, never case substance, so nothing privileged or sensitive goes out over an unencrypted text or email.</div>
+      <div class="lim"><b>The Trustpilot score and the solicitors.com figure above are both real and cited directly, but they diverge sharply (3.3 out of 5 from 38 reviews versus 4.9 out of 5 from 120), and I could not independently verify the source platforms behind the solicitors.com aggregate.</b> Twenty-six of the 38 Trustpilot reviews are four or five stars, several reviewers praise specific staff by name once reached, and the firm has no published SRA or Solicitors Disciplinary Tribunal decision against it. This reads as a real but partial communication and complaints-handling gap on an otherwise functioning, 40-year-old firm, not a universal breakdown, and what this changes is whether a chaser or a complaint is recorded and dated, not whether every matter moves instantly.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Wainwright &amp; Cummins. The Trustpilot and solicitors.com figures, the named reviewers' complaint patterns, and the absence of any client-facing case-status or complaint-tracking tool on wainwrightcummins.co.uk are drawn from direct verification of public sources. Matter, client, and contact data below is a fictional sample, not connected to any real file.</p>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "wc-status-pipeline-matters-v1";
+  var EIGHT_WEEKS_MS = 56 * 24 * 60 * 60 * 1000;
+
+  var TRACKS = {
+    conveyancing: {
+      label: "Residential conveyancing",
+      stages: ["Instructions received, file opened", "Searches ordered", "Enquiries raised, mortgage offer awaited", "Exchange of contracts", "Completion", "Land Registry registration confirmed"],
+      messages: [null,
+        function (j) { return "Searches have been ordered for " + j.property + ". We'll notify you again once enquiries are raised."; },
+        function (j) { return "Enquiries have been raised with the other side's solicitor for " + j.property + ". We're now working toward exchange of contracts."; },
+        function (j) { return "Contracts have been exchanged for " + j.property + ". " + j.detail + "."; },
+        function (j) { return "Completion has taken place on " + j.property + ". We've submitted the application to register this with HM Land Registry and will confirm once it's through."; },
+        function (j) { return "HM Land Registry has confirmed registration for " + j.property + ". This matter is now complete."; }
+      ]
+    },
+    wills: {
+      label: "Wills",
+      stages: ["Instructions received", "Draft will prepared", "Signing appointment arranged", "Will executed and stored"],
+      messages: [null,
+        function (j) { return "A draft of your will for " + j.property + " has been prepared. We'll be in touch to arrange a signing appointment."; },
+        function (j) { return "A signing appointment has been arranged for your will, " + j.property + ". " + j.detail + "."; },
+        function (j) { return "Your will, " + j.property + ", has been executed and is now stored with our records. Thank you for instructing Wainwright & Cummins."; }
+      ]
+    },
+    family_legal_aid: {
+      label: "Family law (legal aid)",
+      stages: ["Legal aid application submitted", "Legal aid granted", "Case progressing", "Hearing or consent order", "Case concluded"],
+      messages: [null,
+        function (j) { return "Legal aid has been granted for " + j.property + ". We can now proceed with the next steps on your case."; },
+        function (j) { return "Your case, " + j.property + ", is progressing. " + j.detail + "."; },
+        function (j) { return "A hearing or consent order has taken place for " + j.property + ". We'll update you once we have the outcome."; },
+        function (j) { return "Your case, " + j.property + ", has now concluded. Thank you for instructing Wainwright & Cummins."; }
+      ]
+    }
+  };
+
+  function seedMatters() {
+    var now = 1761350400000; // fixed reference timestamp so the demo is deterministic
+    return [
+      {
+        id: "WC-2201",
+        client: "Sample Client A (Purchaser)",
+        contact: "sample.clienta@example.com",
+        track: "conveyancing",
+        property: "14 Barnwell Road, Brixton (Purchase)",
+        detail: "",
+        alsoNotified: [],
+        stage: 4,
+        complaint: null,
+        notifications: [
+          { text: "Searches have been ordered for 14 Barnwell Road, Brixton (Purchase). We'll notify you again once enquiries are raised.", at: now },
+          { text: "Enquiries have been raised with the other side's solicitor for 14 Barnwell Road, Brixton (Purchase). We're now working toward exchange of contracts.", at: now + 3600000 },
+          { text: "Contracts have been exchanged for 14 Barnwell Road, Brixton (Purchase). Completion is set for the agreed date.", at: now + 7200000 },
+          { text: "Completion has taken place on 14 Barnwell Road, Brixton (Purchase). We've submitted the application to register this with HM Land Registry and will confirm once it's through.", at: now + 10800000 }
+        ]
+      },
+      {
+        id: "WC-2202",
+        client: "Sample Client B (Seller)",
+        contact: "sample.clientb@example.com",
+        track: "conveyancing",
+        property: "22 Blenheim Gardens, Brixton (Sale)",
+        detail: "",
+        alsoNotified: ["Sample Estate Agent, R. Okafor"],
+        stage: 5,
+        complaint: null,
+        notifications: [
+          { text: "Searches have been ordered for 22 Blenheim Gardens, Brixton (Sale). We'll notify you again once enquiries are raised.", at: now },
+          { text: "Enquiries have been raised with the other side's solicitor for 22 Blenheim Gardens, Brixton (Sale). We're now working toward exchange of contracts.", at: now + 3600000 },
+          { text: "Contracts have been exchanged for 22 Blenheim Gardens, Brixton (Sale). Completion is set for the agreed date.", at: now + 7200000 },
+          { text: "Completion has taken place on 22 Blenheim Gardens, Brixton (Sale). We've submitted the application to register this with HM Land Registry and will confirm once it's through.", at: now + 10800000 },
+          { text: "HM Land Registry has confirmed registration for 22 Blenheim Gardens, Brixton (Sale). This matter is now complete.", at: now + 14400000 }
+        ]
+      },
+      {
+        id: "WC-2203",
+        client: "Sample Client C",
+        contact: "sample.clientc@example.com",
+        track: "wills",
+        property: "single will instruction",
+        detail: "",
+        alsoNotified: [],
+        stage: 1,
+        complaint: { status: "open", raisedAt: now + 3600000, responseDueAt: now + 3600000 + EIGHT_WEEKS_MS, note: "" },
+        notifications: [
+          { text: "A draft of your will for single will instruction has been prepared. We'll be in touch to arrange a signing appointment.", at: now },
+          { text: "We've logged your concern about this matter today. You'll receive an initial acknowledgment within 2 working days and a substantive response by the date shown, in line with our complaints-handling target. You do not need to call to check, this page also shows the live status.", at: now + 3600000 }
+        ]
+      },
+      {
+        id: "WC-2204",
+        client: "Sample Client D (Parent, legal aid)",
+        contact: "sample.clientd@example.com",
+        track: "family_legal_aid",
+        property: "Re: C (child arrangements)",
+        detail: "A review hearing is listed for next month",
+        alsoNotified: [],
+        stage: 2,
+        complaint: { status: "open", raisedAt: now + 7200000, responseDueAt: now + 7200000 + EIGHT_WEEKS_MS, note: "" },
+        notifications: [
+          { text: "Legal aid has been granted for Re: C (child arrangements). We can now proceed with the next steps on your case.", at: now },
+          { text: "Your case, Re: C (child arrangements), is progressing. A review hearing is listed for next month.", at: now + 3600000 },
+          { text: "We've logged your concern about this matter today. You'll receive an initial acknowledgment within 2 working days and a substantive response by the date shown, in line with our complaints-handling target. You do not need to call to check, this page also shows the live status.", at: now + 7200000 }
+        ]
+      }
+    ];
+  }
+
+  function loadMatters() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedMatters();
+    saveMatters(seeded);
+    return seeded;
+  }
+  function saveMatters(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var matters = loadMatters();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString(); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    matters.forEach(function (j) {
+      var track = TRACKS[j.track];
+      var atLast = j.stage >= track.stages.length - 1;
+      var complaintOpen = j.complaint && j.complaint.status === "open";
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.client) + '</h4>';
+      if (complaintOpen) {
+        html += '<span class="complaint-pill">Concern open, due by ' + fmtDate(j.complaint.responseDueAt) + '</span>';
+      } else if (j.complaint && j.complaint.status === "resolved") {
+        html += '<span class="resolved-pill">Concern resolved</span>';
+      } else {
+        html += '<span class="stage-pill">' + track.stages[j.stage] + '</span>';
+      }
+      html += '</div>';
+      html += '<div class="job-meta">' + escapeHtml(j.property) + '<span class="track-tag">' + track.label + '</span></div>';
+      if (j.alsoNotified.length) {
+        html += '<div class="also-line">Also on this file: ' + escapeHtml(j.alsoNotified.join(", ")) + '</div>';
+      }
+      html += '<div class="job-actions">';
+      if (complaintOpen) {
+        html += '<button class="btn-sm" data-resolve="' + j.id + '">Log response sent</button>';
+      }
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next milestone</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceMatter(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-resolve]"), function (btn) {
+      btn.addEventListener("click", function () { resolveComplaint(btn.dataset.resolve); });
+    });
+  }
+
+  function pushNotification(j, text) {
+    j.notifications.push({ text: text, at: Date.now() });
+  }
+
+  function advanceMatter(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    var track = TRACKS[j.track];
+    if (!j || j.stage >= track.stages.length - 1) return;
+    j.stage += 1;
+    var msg = track.messages[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function resolveComplaint(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || !j.complaint || j.complaint.status !== "open") return;
+    j.complaint = { status: "resolved", raisedAt: j.complaint.raisedAt, responseDueAt: j.complaint.responseDueAt, resolvedAt: Date.now(), note: "" };
+    pushNotification(j, "A partner has reviewed your concern and sent a substantive response. Here's where this matter stands: " + TRACKS[j.track].stages[j.stage] + ".");
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  var lastLookupId = null;
+
+  function findMatter(query) {
+    var q = (query || "").trim().toLowerCase();
+    if (!q) return null;
+    return matters.find(function (j) {
+      if (j.id.toLowerCase() === q) return true;
+      if (j.contact && j.contact.toLowerCase() === q) return true;
+      return false;
+    }) || null;
+  }
+
+  function renderLookupIfShowing(id) {
+    if (lastLookupId === id) renderLookupResult(findMatter(id));
+  }
+
+  function renderLookupResult(j) {
+    var root = document.getElementById("lookup-result");
+    if (!j) {
+      root.innerHTML = '<p class="lookup-empty">No matter found for that reference or email. Double-check and try again, or call your fee earner.</p>';
+      lastLookupId = null;
+      return;
+    }
+    lastLookupId = j.id;
+    var track = TRACKS[j.track];
+    var complaintOpen = j.complaint && j.complaint.status === "open";
+    var complaintResolved = j.complaint && j.complaint.status === "resolved";
+    var html = '<div class="matter-summary"><h4>' + j.id + ' - ' + escapeHtml(j.property) + '</h4>';
+    if (complaintOpen) {
+      html += '<span class="complaint-pill">Concern open, due by ' + fmtDate(j.complaint.responseDueAt) + '</span>';
+    } else if (complaintResolved) {
+      html += '<span class="resolved-pill">Concern resolved</span>';
+    } else {
+      html += '<span class="stage-pill">' + track.stages[j.stage] + '</span>';
+    }
+    html += '</div>';
+    html += '<div class="thread">';
+    if (!j.notifications.length) {
+      html += '<p class="thread-empty">No messages yet for this matter.</p>';
+    } else {
+      var recipients = "Email to " + j.contact + (j.alsoNotified.length ? "; also sent to " + j.alsoNotified.join(", ") : "");
+      j.notifications.forEach(function (n) {
+        html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-meta">' + escapeHtml(recipients) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+      });
+    }
+    html += '</div>';
+    html += '<div class="complaint-row">';
+    if (complaintOpen) {
+      html += '<p class="complaint-note">A concern on this matter is already open, logged on ' + fmtDate(j.complaint.raisedAt) + ' with a response due by ' + fmtDate(j.complaint.responseDueAt) + '. You do not need to call to check.</p>';
+    } else {
+      html += '<p class="complaint-note">Not happy with how this matter is being handled, or waiting longer than expected?</p>';
+      html += '<button class="btn-sm" id="complaint-btn" data-id="' + j.id + '">Raise a concern about this matter</button>';
+    }
+    html += '</div>';
+    root.innerHTML = html;
+    var thread = root.querySelector(".thread");
+    if (thread) thread.scrollTop = thread.scrollHeight;
+    var cBtn = document.getElementById("complaint-btn");
+    if (cBtn) {
+      cBtn.addEventListener("click", function () { raiseComplaint(cBtn.dataset.id); });
+    }
+  }
+
+  function raiseComplaint(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || (j.complaint && j.complaint.status === "open")) return;
+    var raisedAt = Date.now();
+    j.complaint = { status: "open", raisedAt: raisedAt, responseDueAt: raisedAt + EIGHT_WEEKS_MS, note: "" };
+    pushNotification(j, "We've logged your concern about this matter today. You'll receive an initial acknowledgment within 2 working days and a substantive response by " + fmtDate(raisedAt + EIGHT_WEEKS_MS) + ", in line with our complaints-handling target. You do not need to call to check, this page also shows the live status.");
+    saveMatters(matters);
+    renderShop();
+    renderLookupResult(j);
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var q = document.getElementById("lookup-input").value;
+    renderLookupResult(findMatter(q));
+  });
+  document.getElementById("lookup-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      renderLookupResult(findMatter(this.value));
+    }
+  });
+
+  renderShop();
+})();
+</script>
+</body>
+</html>
