@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Staploe Solicitors LLP</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .overdue-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--warn-bg); color: var(--warn); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .practice-tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 5px; margin-left: 0.4rem; }
+  .last-update { font-size: 0.78rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-sm.primary { border-color: var(--brand); color: var(--brand); }
+
+  .lookup-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  input[type="text"].wide { flex: 1; min-width: 12rem; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus { outline: none; border-color: var(--brand); }
+  .lookup-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .lookup-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-top: 0.8rem; }
+
+  .matter-summary { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+  .matter-summary h4 { margin: 0; font-size: 1rem; font-family: var(--serif); }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.7rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 94%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .sample-tag { display: inline-block; background: var(--brand-soft); color: var(--brand); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 5px; margin-bottom: 0.9rem; }
+
+  .request-row { margin-top: 0.8rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Staploe Solicitors LLP</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Staploe Solicitors LLP</span>
+  <h1 class="fx-h1">The progress update that doesn't wait for a client to call</h1>
+  <p class="fx-lede">Staploe Solicitors LLP's own Trustpilot page shows a "Poor" TrustScore (2.6 out of 5 across 28 reviews); six independent reviewers, spread across thirteen months and as recent as six weeks ago, describe the same thing: emails and phone calls going unanswered, promised callbacks that never arrive, and having to repeatedly chase for any progress update, including one reviewer who had to chase separately just to get documents released after the matter had already completed. This example shows what that looks like fixed: every matter carries a visible "last updated" marker, a matter that goes quiet past a set number of days is automatically flagged for the fee earner, and a client can check a matter's status, or request their post-completion documents once a matter is concluded, without needing anyone to pick up the phone.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> Staploe Solicitors LLP is an SRA-regulated recognised body (SRA no. 515336, authorised for all legal services since 1 November 2011) operating from a single office, Geneva House, 3 Park Road, Peterborough, Cambridgeshire, PE1 2UX. Per the firm's own site, it handles wills and probate, powers of attorney, residential and commercial property, business and personal debt recovery, estate planning and trusts, enforcement proceedings, employment, and litigation for both individuals and businesses. A direct fetch of the firm's Trustpilot page found a 2.6 out of 5 TrustScore across 28 reviews, with six reviewers, Lotusdreamer (17 June 2026), Chris T. (12 April 2026), Jo B. (5 February 2026), Lucy M. (31 July 2025), David and Julie (17 June 2025), and Michael D. (30 June 2025), each independently describing the same pattern: unanswered emails and calls, promised callbacks that never happened, and having to chase repeatedly for any progress update. Lotusdreamer's review additionally describes having to chase separately just to get documents released after the matter had already completed. A direct fetch of staploesolicitors.com found a WordPress brochure site with no client portal, case-status login, or automated update mechanism of any kind; the only way a client can check a matter today is by calling or emailing and waiting for a reply, which is exactly the gap the reviews describe. The same "unanswered emails and calls, broken callback promises" pattern was independently found at several other UK solicitor and conveyancing firms checked for comparison, so this reads as a real, structural, industry-wide gap, not an unfair singling-out of this one firm.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the matters, client names, and contact details below are a fictional sample, not real Staploe clients or files. Nothing here sends a real email or text. The 14-day no-update threshold and the 5-working-day document turnaround used below are illustrative placeholders; a real build should use whatever targets Staploe actually wants to commit to. This shows what a client would see and what would get flagged internally; a real build connects to whatever field a fee earner already updates and sends through an actual email/SMS service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Fee earner view: update a matter, send a check-in</h3>
+      <span class="sample-tag">Sample matters, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the client sees: check a matter</h3>
+      <div class="lookup-row">
+        <input type="text" class="wide" id="lookup-input" placeholder="Matter reference or email on file">
+        <button class="btn-sm" id="lookup-btn">Check status</button>
+      </div>
+      <p class="lookup-hint">Try ST-5201, ST-5202, ST-5203, ST-5204, or sample.clientc@example.com</p>
+      <div id="lookup-result"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email or text.</b> This demo only shows what a client would receive. A real version needs an actual email/SMS service, for example SendGrid or Twilio, wired to whatever field your fee earners already update to mark a matter's stage.</div>
+      <div class="lim"><b>The feature this firm specifically needs is the quiet-matter flag, not just a stage-change notice.</b> Six of your own Trustpilot reviews describe unanswered emails and calls and broken callback promises, not a matter that simply moved slowly. Below, every matter shows when it was last updated, and once a matter passes the no-update threshold without any contact, an "overdue for an update" flag appears automatically in the fee earner view, before a client has to call and ask. A fee earner can clear it by advancing the matter or by sending a plain check-in, even when nothing has actually changed yet, which a basic stage-advance notice alone cannot do.</div>
+      <div class="lim"><b>The post-completion document request closes a specific, separate gap one of your reviewers described.</b> Lotusdreamer's review describes having to chase again, after the matter had already completed, just to get documents released. Below, once a matter reaches "Concluded," the client view shows a "Request my post-completion documents" button; using it logs an immediate acknowledgment with a committed turnaround and surfaces a dedicated "Issue post-completion documents" action in the fee earner view, so that request can't quietly sit unanswered the way the review describes.</div>
+      <div class="lim"><b>This introduces visibility your site doesn't have today, it doesn't sit beside an existing tool.</b> A direct fetch of staploesolicitors.com found no client portal, case tracker, or matter-status lookup anywhere on the site; fee queries and case questions are handled entirely by phone, email, or a contact form. This closes the exact gap the reviews describe rather than adding a second way to do the same thing.</div>
+      <div class="lim"><b>The matter types shown span your actual mixed practice, not just conveyancing.</b> The sample below includes a wills and probate matter, a residential property purchase, a business debt recovery matter, and an employment matter, reflecting the practice areas listed on your own site, rather than assuming this is a single-practice firm the way a pure conveyancing tracker would.</div>
+      <div class="lim"><b>Worth a specific conversation before this goes live: what a status update or check-in can safely say.</b> A real build should keep message content to a status label and a plain next step, as shown below, never matter substance, so nothing privileged goes out over an unencrypted text or email.</div>
+      <div class="lim"><b>The Trustpilot score above is real and cited directly, and it is one unclaimed, self-selecting sample, not Staploe's full client base.</b> A separate review platform, ReviewSolicitors, shows a more favourable 4.2 out of 5 across roughly 60 reviews for this same firm, a genuine, disclosed mixed signal rather than a uniformly poor record. What a quiet-matter flag and a self-serve document request change is whether a gap in communication gets caught and fixed automatically, not whether every file is currently being mishandled.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Staploe Solicitors LLP. The Trustpilot figures, the named reviewers' complaint pattern, and the absence of any client-facing case-status tool on staploesolicitors.com are drawn from direct verification of public sources. Matter, client, and contact data below is a fictional sample, not connected to any real file.</p>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "staploe-status-pipeline-matters-v1";
+  var OVERDUE_MS = 14 * 24 * 60 * 60 * 1000; // 14 days, illustrative threshold
+  var DOC_TURNAROUND_DAYS = 5; // illustrative
+
+  var STAGES = [
+    "Instructions received, matter opened",
+    "Documents / information requested",
+    "Matter in progress",
+    "Concluded",
+    "Post-completion documents issued"
+  ];
+  var STAGE_MESSAGES = [null,
+    function (j) { return "We've requested the documents/information we need for " + j.matter + ". We'll notify you again once we have them and the matter is moving forward."; },
+    function (j) { return "" + j.matter + " is now in progress. We'll update you again at the next milestone."; },
+    function (j) { return j.matter + " has now concluded. " + j.detail; },
+    function (j) { return "Your post-completion documents for " + j.matter + " have been issued. This matter is now complete."; }
+  ];
+
+  function seedMatters() {
+    var seedNow = Date.now(); // relative to page-load time, so the overdue flag stays correct however long after build this is viewed
+    var DAY = 24 * 60 * 60 * 1000;
+    return [
+      {
+        id: "ST-5201",
+        client: "Sample Client A",
+        contact: "sample.clienta@example.com",
+        practiceArea: "Wills & Probate",
+        matter: "the estate of Sample Client A's late mother",
+        detail: "",
+        stage: 2,
+        documentsRequested: false,
+        lastUpdateAt: seedNow - 20 * DAY,
+        notifications: [
+          { text: "We've requested the documents/information we need for the estate of Sample Client A's late mother. We'll notify you again once we have them and the matter is moving forward.", at: seedNow - 26 * DAY },
+          { text: "The estate of Sample Client A's late mother is now in progress. We'll update you again at the next milestone.", at: seedNow - 20 * DAY }
+        ]
+      },
+      {
+        id: "ST-5202",
+        client: "Sample Client B",
+        contact: "sample.clientb@example.com",
+        practiceArea: "Residential Property",
+        matter: "32 Thistlemoor Road, Peterborough (Purchase)",
+        detail: "",
+        stage: 1,
+        documentsRequested: false,
+        lastUpdateAt: seedNow - 3 * DAY,
+        notifications: [
+          { text: "We've requested the documents/information we need for 32 Thistlemoor Road, Peterborough (Purchase). We'll notify you again once we have them and the matter is moving forward.", at: seedNow - 3 * DAY }
+        ]
+      },
+      {
+        id: "ST-5203",
+        client: "Sample Client C Ltd",
+        contact: "sample.clientc@example.com",
+        practiceArea: "Business Debt Recovery",
+        matter: "recovery of the outstanding invoice from Sample Debtor Ltd",
+        detail: "Payment in full was received prior to any hearing date.",
+        stage: 3,
+        documentsRequested: false,
+        lastUpdateAt: seedNow - 9 * DAY,
+        notifications: [
+          { text: "We've requested the documents/information we need for recovery of the outstanding invoice from Sample Debtor Ltd. We'll notify you again once we have them and the matter is moving forward.", at: seedNow - 16 * DAY },
+          { text: "Recovery of the outstanding invoice from Sample Debtor Ltd is now in progress. We'll update you again at the next milestone.", at: seedNow - 12 * DAY },
+          { text: "Recovery of the outstanding invoice from Sample Debtor Ltd has now concluded. Payment in full was received prior to any hearing date.", at: seedNow - 9 * DAY }
+        ]
+      },
+      {
+        id: "ST-5204",
+        client: "Sample Client D",
+        contact: "sample.clientd@example.com",
+        practiceArea: "Employment",
+        matter: "the settlement negotiation on Sample Client D's unfair dismissal claim",
+        detail: "A settlement was agreed with the respondent.",
+        stage: 4,
+        documentsRequested: true,
+        lastUpdateAt: seedNow - 30 * DAY,
+        notifications: [
+          { text: "We've requested the documents/information we need for the settlement negotiation on Sample Client D's unfair dismissal claim. We'll notify you again once we have them and the matter is moving forward.", at: seedNow - 48 * DAY },
+          { text: "The settlement negotiation on Sample Client D's unfair dismissal claim is now in progress. We'll update you again at the next milestone.", at: seedNow - 40 * DAY },
+          { text: "The settlement negotiation on Sample Client D's unfair dismissal claim has now concluded. A settlement was agreed with the respondent.", at: seedNow - 33 * DAY },
+          { text: "Your post-completion documents for the settlement negotiation on Sample Client D's unfair dismissal claim have been issued. This matter is now complete.", at: seedNow - 30 * DAY }
+        ]
+      }
+    ];
+  }
+
+  function loadMatters() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedMatters();
+    saveMatters(seeded);
+    return seeded;
+  }
+  function saveMatters(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var matters = loadMatters();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString(); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function isOverdue(j) { return j.stage < STAGES.length - 1 && (Date.now() - j.lastUpdateAt) > OVERDUE_MS; }
+  function isConcluded(j) { return j.stage === 3; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    matters.forEach(function (j) {
+      var atLast = j.stage >= STAGES.length - 1;
+      var overdue = isOverdue(j);
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.client) + '</h4>';
+      html += '<span class="stage-pill">' + STAGES[j.stage] + '</span>';
+      html += '</div>';
+      html += '<div class="job-meta">' + escapeHtml(j.matter) + '<span class="practice-tag">' + escapeHtml(j.practiceArea) + '</span></div>';
+      html += '<div class="last-update">Last updated: ' + fmtDate(j.lastUpdateAt) + (overdue ? ' <span class="overdue-pill">Overdue for an update</span>' : '') + '</div>';
+      html += '<div class="job-actions">';
+      if (isConcluded(j) && j.documentsRequested) {
+        html += '<button class="btn-sm primary" data-issue="' + j.id + '">Issue post-completion documents</button>';
+      } else {
+        html += '<button class="btn-sm" data-checkin="' + j.id + '"' + (atLast ? " disabled" : "") + '>Send a check-in update</button>';
+        html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+      }
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceMatter(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-checkin]"), function (btn) {
+      btn.addEventListener("click", function () { sendCheckin(btn.dataset.checkin); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-issue]"), function (btn) {
+      btn.addEventListener("click", function () { issueDocuments(btn.dataset.issue); });
+    });
+  }
+
+  function pushNotification(j, text) {
+    j.notifications.push({ text: text, at: Date.now() });
+    j.lastUpdateAt = Date.now();
+  }
+
+  function advanceMatter(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGES.length - 1) return;
+    j.stage += 1;
+    var msg = STAGE_MESSAGES[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function sendCheckin(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGES.length - 1) return;
+    pushNotification(j, "Checking in on " + j.matter + ": this matter is still at the \"" + STAGES[j.stage] + "\" stage. We'll let you know as soon as it moves, you don't need to call to check.");
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function requestDocuments(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || !isConcluded(j) || j.documentsRequested) return;
+    j.documentsRequested = true;
+    pushNotification(j, "We've received your request for your post-completion documents for " + j.matter + ". These will be issued within " + DOC_TURNAROUND_DAYS + " working days.");
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function issueDocuments(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || !isConcluded(j) || !j.documentsRequested) return;
+    advanceMatter(id);
+  }
+
+  var lastLookupId = null;
+
+  function findMatter(query) {
+    var q = (query || "").trim().toLowerCase();
+    if (!q) return null;
+    return matters.find(function (j) {
+      if (j.id.toLowerCase() === q) return true;
+      if (j.contact && j.contact.toLowerCase() === q) return true;
+      return false;
+    }) || null;
+  }
+
+  function renderLookupIfShowing(id) {
+    if (lastLookupId === id) renderLookupResult(findMatter(id));
+  }
+
+  function renderLookupResult(j) {
+    var root = document.getElementById("lookup-result");
+    if (!j) {
+      root.innerHTML = '<p class="lookup-empty">No matter found for that reference or email. Double-check and try again, or call your fee earner.</p>';
+      lastLookupId = null;
+      return;
+    }
+    lastLookupId = j.id;
+    var overdue = isOverdue(j);
+    var html = '<div class="matter-summary"><h4>' + j.id + ' - ' + escapeHtml(j.matter) + '</h4>';
+    html += '<span class="stage-pill">' + STAGES[j.stage] + '</span>';
+    html += '</div>';
+    html += '<div class="last-update">Last updated: ' + fmtDate(j.lastUpdateAt) + (overdue ? ' <span class="overdue-pill">Overdue for an update</span>' : '') + '</div>';
+    if (isConcluded(j) && !j.documentsRequested) {
+      html += '<div class="request-row"><button class="btn-sm primary" data-request-docs="' + j.id + '">Request my post-completion documents</button></div>';
+    }
+    html += '<div class="thread">';
+    if (!j.notifications.length) {
+      html += '<p class="thread-empty">No messages yet for this matter.</p>';
+    } else {
+      var recipient = "Email to " + j.contact;
+      j.notifications.forEach(function (n) {
+        html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-meta">' + escapeHtml(recipient) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+      });
+    }
+    html += '</div>';
+    root.innerHTML = html;
+    var requestBtn = root.querySelector("[data-request-docs]");
+    if (requestBtn) requestBtn.addEventListener("click", function () { requestDocuments(requestBtn.dataset.requestDocs); });
+    var thread = root.querySelector(".thread");
+    if (thread) thread.scrollTop = thread.scrollHeight;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var q = document.getElementById("lookup-input").value;
+    renderLookupResult(findMatter(q));
+  });
+  document.getElementById("lookup-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      renderLookupResult(findMatter(this.value));
+    }
+  });
+
+  renderShop();
+})();
+</script>
+</body>
+</html>
