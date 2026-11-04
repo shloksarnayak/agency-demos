@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Sydney Mitchell LLP</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .overdue-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--warn-bg); color: var(--warn); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .cost-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--warn-bg); color: var(--warn); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .office-tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 5px; margin-left: 0.4rem; }
+  .practice-tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 5px; margin-left: 0.4rem; }
+  .last-update { font-size: 0.78rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-sm.primary { border-color: var(--brand); color: var(--brand); }
+
+  .lookup-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  input[type="text"].wide { flex: 1; min-width: 12rem; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus { outline: none; border-color: var(--brand); }
+  .lookup-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .lookup-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-top: 0.8rem; }
+
+  .matter-summary { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+  .matter-summary h4 { margin: 0; font-size: 1rem; font-family: var(--serif); }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.7rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 94%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .sample-tag { display: inline-block; background: var(--brand-soft); color: var(--brand); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 5px; margin-bottom: 0.9rem; }
+
+  .request-row { margin-top: 0.8rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Sydney Mitchell LLP</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Sydney Mitchell LLP</span>
+  <h1 class="fx-h1">The progress update, and the revised quote, that don't wait for a client to call</h1>
+  <p class="fx-lede">Sydney Mitchell LLP's own Trustpilot page shows a "Poor" TrustScore (2.0 out of 5 across 17 reviews, 41 percent one star). Reviewers across nearly six years, four of them in the last seven months, describe the same thing: calls and emails that go unanswered and no proactive update on a live matter, including one reviewer left waiting six weeks for a revised cost estimate he had specifically asked for. This example shows what that looks like fixed: every matter carries a visible "last updated" marker, a matter that goes quiet past a set number of days is automatically flagged for the fee earner, and a client can check a matter's status, or request a revised cost estimate, without needing anyone to pick up the phone.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> Sydney Mitchell LLP is an SRA-regulated licensed body (SRA no. 513895, authorised for all legal services since 24 May 2013) operating from four offices: Chattock House, Shirley, Solihull (head office); Cavendish House, Birmingham city centre; the Shakespeare Building, Sheldon, Birmingham; and a second Shirley, Solihull office on Stratford Road. Per the firm's own site, it handles commercial dispute resolution, corporate and commercial law, employment law, business immigration, commercial property law, and restructuring and insolvency for businesses, and care funding, dispute resolution, employment law, family law, immigration, personal insolvency, personal injury, private client, and residential property for individuals. A direct fetch of the firm's Trustpilot page found a 2.0 out of 5 TrustScore across 17 reviews, with Richard Leek (22 August 2026) describing unclear billing and a six week wait for a revised quote, Jane Allen (20 June 2026) describing will errors and phone calls not returned, Glenn Simmons (11 April 2026) describing a probate matter where "they don't return calls," and Aws (10 February 2026) describing an urgent email sent 3 February that was never answered, alongside two older reviews, Tyler Kelly (11 April 2021, Sheldon office, 16 days with no callback) and Jon Jones (7 November 2023, Solihull office, around 28 months of chasing on a probate matter), describing the same pattern over several years. The Legal Ombudsman's own per firm decision register separately records one decided complaint against this firm, reference D012390, Family Law, decided 5 March 2026, finding "poor service: yes" with a remedy for the client's distress and inconvenience alongside a finding of excessive cost; its complaint reason is recorded as cost rather than communication specifically, so it corroborates poor service at this firm generally rather than the communication gap precisely, disclosed as a partial rather than an exact match. A direct fetch of sydneymitchell.co.uk found a WordPress brochure site with no client portal, case-status login, or automated update mechanism of any kind; the only way a client can check a matter today is by phone, email, or the site's contact form, and wait for a reply, which is exactly the gap the reviews describe. The same "unanswered calls and emails, no proactive update" pattern was independently found at several other UK solicitor firms checked for comparison, so this reads as a real, structural, industry-wide gap, not an unfair singling-out of this one firm.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the matters, client names, and contact details below are a fictional sample, not real Sydney Mitchell clients or files. Nothing here sends a real email or text. The 14-day no-update threshold and the 5-working-day cost-estimate turnaround used below are illustrative placeholders; a real build should use whatever targets Sydney Mitchell actually wants to commit to. This shows what a client would see and what would get flagged internally; a real build connects to whatever field a fee earner already updates and sends through an actual email/SMS service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Fee earner view: update a matter, send a check-in</h3>
+      <span class="sample-tag">Sample matters, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the client sees: check a matter</h3>
+      <div class="lookup-row">
+        <input type="text" class="wide" id="lookup-input" placeholder="Matter reference or email on file">
+        <button class="btn-sm" id="lookup-btn">Check status</button>
+      </div>
+      <p class="lookup-hint">Try SM-9101, SM-9102, SM-9103, SM-9104, or sample.clienta@example.com</p>
+      <div id="lookup-result"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email or text.</b> This demo only shows what a client would receive. A real version needs an actual email/SMS service, for example SendGrid or Twilio, wired to whatever field your fee earners already update to mark a matter's stage.</div>
+      <div class="lim"><b>The feature this firm specifically needs is the quiet-matter flag, not just a stage-change notice.</b> Four of your own Trustpilot reviews from the last seven months describe calls and emails going unanswered and no proactive update, not a matter that simply moved slowly. Below, every matter shows when it was last updated, and once a matter passes the no-update threshold without any contact, an "overdue for an update" flag appears automatically in the fee earner view, before a client has to call and ask. A fee earner can clear it by advancing the matter or by sending a plain check-in, even when nothing has actually changed yet, which a basic stage-advance notice alone cannot do.</div>
+      <div class="lim"><b>The revised cost estimate request closes a specific, separate gap one of your reviewers described.</b> Richard Leek's review describes unclear billing and a six week wait for a revised quote he had specifically asked for, and the Legal Ombudsman's own decision against this firm (D012390) separately found excessive cost. Below, a client can use a "Request a revised cost estimate" action on any open matter; using it logs an immediate acknowledgment with a committed turnaround and surfaces a dedicated "Issue revised cost estimate" action in the fee earner view, so that request can't quietly sit unanswered for six weeks the way the review describes.</div>
+      <div class="lim"><b>This introduces visibility your site doesn't have today, it doesn't sit beside an existing tool.</b> A direct fetch of sydneymitchell.co.uk found no client portal, case tracker, or matter-status lookup anywhere on the site; fee queries and case questions are handled entirely by phone, email, or a contact form. This closes the exact gap the reviews describe rather than adding a second way to do the same thing.</div>
+      <div class="lim"><b>The matters shown span all four of your offices and your actual mixed practice, not just conveyancing.</b> The sample below tags each matter by the office handling it, Solihull head office, Birmingham city centre, Sheldon, and the second Solihull office, and spans private client/probate, commercial dispute resolution, family law, and employment, reflecting the practice areas and office footprint listed on your own site.</div>
+      <div class="lim"><b>Worth a specific conversation before this goes live: what a status update or cost-estimate acknowledgment can safely say.</b> A real build should keep message content to a status label, a plain next step, or an acknowledgment that a request was received, as shown below, never matter substance or figures, so nothing privileged or commercially sensitive goes out over an unencrypted text or email.</div>
+      <div class="lim"><b>The Trustpilot score above is real and cited directly, and it is a genuinely bimodal, self-selecting sample, not a uniform record.</b> Of the same 17 reviews, 53 percent are 5-star, several from 2024 praising fast, communicative service (Filip Gronkiewicz, Aga Gronkiewicz, Anna, Borislav Bozhanov, Jamie Bristoll), alongside the 41 percent that are 1-star. One of the negative reviews used above, from 2020, was directly disputed by the firm's own reply stating it had no record of that person as a client, a genuine factual dispute, disclosed rather than hidden. What a quiet-matter flag and a self-serve cost-estimate request change is whether a gap in communication or billing clarity gets caught and fixed automatically, not whether every file is currently being mishandled.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Sydney Mitchell LLP. The Trustpilot figures, the named reviewers' complaint pattern, the Legal Ombudsman decision reference, and the absence of any client-facing case-status tool on sydneymitchell.co.uk are drawn from direct verification of public sources. Matter, client, and contact data below is a fictional sample, not connected to any real file.</p>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "sydney-mitchell-status-pipeline-matters-v1";
+  var OVERDUE_MS = 14 * 24 * 60 * 60 * 1000; // 14 days, illustrative threshold
+  var COST_ESTIMATE_TURNAROUND_DAYS = 5; // illustrative
+
+  var STAGES = [
+    "Instructions received, matter opened",
+    "Documents / information requested",
+    "Matter in progress",
+    "Concluded"
+  ];
+  var STAGE_MESSAGES = [null,
+    function (j) { return "We've requested the documents/information we need for " + j.matter + ". We'll notify you again once we have them and the matter is moving forward."; },
+    function (j) { return "" + j.matter + " is now in progress. We'll update you again at the next milestone."; },
+    function (j) { return j.matter + " has now concluded. " + j.detail; }
+  ];
+
+  function seedMatters() {
+    var seedNow = Date.now(); // relative to page-load time, so the overdue flag stays correct however long after build this is viewed
+    var DAY = 24 * 60 * 60 * 1000;
+    return [
+      {
+        id: "SM-9101",
+        client: "Sample Client A",
+        contact: "sample.clienta@example.com",
+        office: "Solihull (Chattock House, head office)",
+        practiceArea: "Private Client / Probate",
+        matter: "the estate of Sample Client A's late father",
+        detail: "",
+        stage: 2,
+        costEstimateRequested: false,
+        lastUpdateAt: seedNow - 19 * DAY,
+        notifications: [
+          { text: "We've requested the documents/information we need for the estate of Sample Client A's late father. We'll notify you again once we have them and the matter is moving forward.", at: seedNow - 27 * DAY },
+          { text: "The estate of Sample Client A's late father is now in progress. We'll update you again at the next milestone.", at: seedNow - 19 * DAY }
+        ]
+      },
+      {
+        id: "SM-9102",
+        client: "Sample Client B Ltd",
+        contact: "sample.clientb@example.com",
+        office: "Birmingham (Cavendish House)",
+        practiceArea: "Commercial Dispute Resolution",
+        matter: "the commercial dispute between Sample Client B Ltd and a former supplier",
+        detail: "",
+        stage: 2,
+        costEstimateRequested: false,
+        lastUpdateAt: seedNow - 4 * DAY,
+        notifications: [
+          { text: "We've requested the documents/information we need for the commercial dispute between Sample Client B Ltd and a former supplier. We'll notify you again once we have them and the matter is moving forward.", at: seedNow - 11 * DAY },
+          { text: "The commercial dispute between Sample Client B Ltd and a former supplier is now in progress. We'll update you again at the next milestone.", at: seedNow - 4 * DAY }
+        ]
+      },
+      {
+        id: "SM-9103",
+        client: "Sample Client C",
+        contact: "sample.clientc@example.com",
+        office: "Sheldon (Shakespeare Building)",
+        practiceArea: "Family Law",
+        matter: "Sample Client C's family law matter",
+        detail: "A settlement was agreed between the parties.",
+        stage: 3,
+        costEstimateRequested: true,
+        lastUpdateAt: seedNow - 7 * DAY,
+        notifications: [
+          { text: "We've requested the documents/information we need for Sample Client C's family law matter. We'll notify you again once we have them and the matter is moving forward.", at: seedNow - 29 * DAY },
+          { text: "Sample Client C's family law matter is now in progress. We'll update you again at the next milestone.", at: seedNow - 21 * DAY },
+          { text: "We've received your request for a revised cost estimate on Sample Client C's family law matter. A revised estimate will be issued within " + COST_ESTIMATE_TURNAROUND_DAYS + " working days.", at: seedNow - 15 * DAY },
+          { text: "Sample Client C's family law matter has now concluded. A settlement was agreed between the parties.", at: seedNow - 7 * DAY }
+        ]
+      },
+      {
+        id: "SM-9104",
+        client: "Sample Client D",
+        contact: "sample.clientd@example.com",
+        office: "Solihull (Stratford Road)",
+        practiceArea: "Employment",
+        matter: "Sample Client D's employment dispute with a former employer",
+        detail: "",
+        stage: 1,
+        costEstimateRequested: false,
+        lastUpdateAt: seedNow - 2 * DAY,
+        notifications: [
+          { text: "We've requested the documents/information we need for Sample Client D's employment dispute with a former employer. We'll notify you again once we have them and the matter is moving forward.", at: seedNow - 2 * DAY }
+        ]
+      }
+    ];
+  }
+
+  function loadMatters() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedMatters();
+    saveMatters(seeded);
+    return seeded;
+  }
+  function saveMatters(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var matters = loadMatters();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString(); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function isOverdue(j) { return j.stage < STAGES.length - 1 && (Date.now() - j.lastUpdateAt) > OVERDUE_MS; }
+  function isConcluded(j) { return j.stage === STAGES.length - 1; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    matters.forEach(function (j) {
+      var atLast = j.stage >= STAGES.length - 1;
+      var overdue = isOverdue(j);
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.client) + '</h4>';
+      html += '<span class="stage-pill">' + STAGES[j.stage] + '</span>';
+      html += '</div>';
+      html += '<div class="job-meta">' + escapeHtml(j.matter) + '<span class="office-tag">' + escapeHtml(j.office) + '</span><span class="practice-tag">' + escapeHtml(j.practiceArea) + '</span></div>';
+      html += '<div class="last-update">Last updated: ' + fmtDate(j.lastUpdateAt) + (overdue ? ' <span class="overdue-pill">Overdue for an update</span>' : '') + (j.costEstimateRequested && !j.costEstimateIssued ? ' <span class="cost-pill">Cost estimate requested</span>' : '') + '</div>';
+      html += '<div class="job-actions">';
+      if (j.costEstimateRequested && !j.costEstimateIssued) {
+        html += '<button class="btn-sm primary" data-issue-estimate="' + j.id + '">Issue revised cost estimate</button>';
+      }
+      html += '<button class="btn-sm" data-checkin="' + j.id + '"' + (atLast ? " disabled" : "") + '>Send a check-in update</button>';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceMatter(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-checkin]"), function (btn) {
+      btn.addEventListener("click", function () { sendCheckin(btn.dataset.checkin); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-issue-estimate]"), function (btn) {
+      btn.addEventListener("click", function () { issueCostEstimate(btn.dataset.issueEstimate); });
+    });
+  }
+
+  function pushNotification(j, text) {
+    j.notifications.push({ text: text, at: Date.now() });
+    j.lastUpdateAt = Date.now();
+  }
+
+  function advanceMatter(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGES.length - 1) return;
+    j.stage += 1;
+    var msg = STAGE_MESSAGES[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function sendCheckin(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGES.length - 1) return;
+    pushNotification(j, "Checking in on " + j.matter + ": this matter is still at the \"" + STAGES[j.stage] + "\" stage. We'll let you know as soon as it moves, you don't need to call to check.");
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function requestCostEstimate(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || j.costEstimateRequested) return;
+    j.costEstimateRequested = true;
+    j.costEstimateIssued = false;
+    pushNotification(j, "We've received your request for a revised cost estimate on " + j.matter + ". A revised estimate will be issued within " + COST_ESTIMATE_TURNAROUND_DAYS + " working days.");
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function issueCostEstimate(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || !j.costEstimateRequested || j.costEstimateIssued) return;
+    j.costEstimateIssued = true;
+    pushNotification(j, "Your revised cost estimate for " + j.matter + " has been issued. If you have any questions about it, reply to this message.");
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  var lastLookupId = null;
+
+  function findMatter(query) {
+    var q = (query || "").trim().toLowerCase();
+    if (!q) return null;
+    return matters.find(function (j) {
+      if (j.id.toLowerCase() === q) return true;
+      if (j.contact && j.contact.toLowerCase() === q) return true;
+      return false;
+    }) || null;
+  }
+
+  function renderLookupIfShowing(id) {
+    if (lastLookupId === id) renderLookupResult(findMatter(id));
+  }
+
+  function renderLookupResult(j) {
+    var root = document.getElementById("lookup-result");
+    if (!j) {
+      root.innerHTML = '<p class="lookup-empty">No matter found for that reference or email. Double-check and try again, or call your fee earner.</p>';
+      lastLookupId = null;
+      return;
+    }
+    lastLookupId = j.id;
+    var overdue = isOverdue(j);
+    var html = '<div class="matter-summary"><h4>' + j.id + ' - ' + escapeHtml(j.matter) + '</h4>';
+    html += '<span class="stage-pill">' + STAGES[j.stage] + '</span>';
+    html += '</div>';
+    html += '<div class="last-update">Last updated: ' + fmtDate(j.lastUpdateAt) + (overdue ? ' <span class="overdue-pill">Overdue for an update</span>' : '') + '</div>';
+    if (!j.costEstimateRequested) {
+      html += '<div class="request-row"><button class="btn-sm primary" data-request-estimate="' + j.id + '">Request a revised cost estimate</button></div>';
+    }
+    html += '<div class="thread">';
+    if (!j.notifications.length) {
+      html += '<p class="thread-empty">No messages yet for this matter.</p>';
+    } else {
+      var recipient = "Email to " + j.contact;
+      j.notifications.forEach(function (n) {
+        html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-meta">' + escapeHtml(recipient) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+      });
+    }
+    html += '</div>';
+    root.innerHTML = html;
+    var requestBtn = root.querySelector("[data-request-estimate]");
+    if (requestBtn) requestBtn.addEventListener("click", function () { requestCostEstimate(requestBtn.dataset.requestEstimate); });
+    var thread = root.querySelector(".thread");
+    if (thread) thread.scrollTop = thread.scrollHeight;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var q = document.getElementById("lookup-input").value;
+    renderLookupResult(findMatter(q));
+  });
+  document.getElementById("lookup-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      renderLookupResult(findMatter(this.value));
+    }
+  });
+
+  renderShop();
+})();
+</script>
+</body>
+</html>
