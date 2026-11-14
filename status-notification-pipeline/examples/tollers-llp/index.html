@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Tollers LLP</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .overdue-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--warn-bg); color: var(--warn); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .concern-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: #f6dede; color: #9a2f2f; padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .resolved-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: #e3f0e4; color: #2f6b3a; padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .office-tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 5px; margin-left: 0.4rem; }
+  .practice-tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 5px; margin-left: 0.4rem; }
+  .last-update { font-size: 0.78rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-sm.primary { border-color: var(--brand); color: var(--brand); }
+
+  .lookup-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  input[type="text"].wide { flex: 1; min-width: 12rem; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus { outline: none; border-color: var(--brand); }
+  .lookup-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .lookup-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-top: 0.8rem; }
+
+  .matter-summary { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+  .matter-summary h4 { margin: 0; font-size: 1rem; font-family: var(--serif); }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.7rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 94%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .concern-row { margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed var(--rule); }
+  .concern-note { font-size: 0.8rem; color: var(--ink-2); margin: 0 0 0.5rem; }
+
+  .sample-tag { display: inline-block; background: var(--brand-soft); color: var(--brand); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 5px; margin-bottom: 0.9rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Tollers LLP</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Tollers LLP</span>
+  <h1 class="fx-h1">Four clients described one gap. A regulator later confirmed a second.</h1>
+  <p class="fx-lede">Four separate, named, dated Trustpilot reviews, spanning Tollers' Corby and Northampton offices and three different matter types, each describe the same thing: calls and emails going unanswered and no proactive word from the firm while a live matter sits waiting. Separately, a published Legal Ombudsman decision against Tollers LLP found both that the underlying service was poor and that the firm's own complaint handling was not reasonable. This example closes both gaps at once: every matter carries a visible "last updated" marker that flags itself once it has gone quiet too long, and a client who raises a concern gets it logged immediately with a committed response date, across all five offices and every department, not just one case type.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> Tollers LLP (SRA no. 472589, recognised body, founded 1877, Lexcel-accredited) operates five offices: the head office at 1 Waterside Way, Bedford Road, Northampton NN4 7XD; 148 Bedford Road, Kempston, Bedford MK42 8BH; 2 Exchange Court, Cottingham Road, Corby NN17 1TY; Simmonds Grant (Tollers trading under that name), 4 Mill Street, Oakham, Rutland LE15 6EA; and 6 Arlington Court, Whittle Way, Arlington Business Park, Stevenage SG1 2FS, covering private client &amp; trusts, residential conveyancing, property litigation, employment, and personal injury. A direct check of the firm's Trustpilot page found a mixed TrustScore (roughly 3.5-3.7 out of 5 across 46-50 reviews), including four named, dated one- or two-star reviews describing the same pattern: David Turney (3 June 2026, Corby, conveyancing, "unacceptable delay and lack of customer service" on a 12-property chain that went unanswered until he left for another firm); Sam Love (17 April 2025, Northampton, "constantly chasing them for updates"); Chris Coleman (14 November 2025, a power of attorney promised in a week still not done after two, "more and more obstacles put in front of us"); and Alan (10 August 2023, a cash purchase waiting five months with no progress). Separately, a published Legal Ombudsman decision against Tollers LLP (found via the ombudsman's own decision-data table) recorded a compensation award in the GBP 1,000-4,999 band, "Poor service: Yes," and "Complaint handling reasonable: No." Honestly flagged: the firm's own website could not be directly fetched this run (502 responses and empty content across several attempts on different pages, while a genuinely nonexistent page on the same domain correctly returned 404), so no client portal or case-tracking feature was found advertised anywhere searched, including job postings and directory listings, but that is the best available signal, not a confirmed absence. A comparable Northamptonshire firm, Bird &amp; Co Solicitors, explicitly rejects online case tracking in its own marketing ("there isn't really any such thing as online conveyancing"), suggesting this gap is real across the traditional high-street tier Tollers sits in, not something a direct competitor already offers and beats Tollers on.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the matters, client names, offices and contact details below are a fictional sample, not real Tollers clients or files. Nothing here sends a real email or letter. The 14-day no-update threshold and the 10-working-day concern-response window used below are illustrative placeholders, not Tollers' actual complaints-handling policy or target dates, which a real build should use instead. This shows what a client would see and what would get flagged internally; a real build connects to whatever field a fee earner already updates and sends through an actual email service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Fee earner view: update a matter, log a response</h3>
+      <span class="sample-tag">Sample matters, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the client sees: check a matter, raise a concern</h3>
+      <div class="lookup-row">
+        <input type="text" class="wide" id="lookup-input" placeholder="Matter reference or email on file">
+        <button class="btn-sm" id="lookup-btn">Check status</button>
+      </div>
+      <p class="lookup-hint">Try TL-6001, TL-6002, TL-6003, TL-6004, TL-6005, or sample.clientb@example.com</p>
+      <div id="lookup-result"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email or letter.</b> This demo only shows what a client would receive. A real version needs an actual email service, for example SendGrid, wired to whatever field your fee earners already update to mark a matter's stage.</div>
+      <div class="lim"><b>The "raise a concern" channel directly answers the Legal Ombudsman's specific finding, that Tollers' own complaint handling "was not reasonable."</b> When a client raises a concern from the lookup screen, it is timestamped and logged immediately as a visible item in the fee earner view, with a committed response date shown back to the client, rather than a call or email that can sit unrecorded until someone happens to notice it. The 10-working-day window shown below is an illustrative placeholder, not a confirmed written complaints-handling target for your firm.</div>
+      <div class="lim"><b>The quiet-matter flag answers Sam Love's, David Turney's, and Alan's reviews specifically.</b> All three describe being left to chase for updates across different offices and different matter types, not a matter that simply moved slowly. Below, every matter shows when it was last updated, and once a matter passes the no-update threshold without any contact, an "overdue for an update" flag appears automatically in the fee earner view, before a client has to call and ask.</div>
+      <div class="lim"><b>This closes a visibility and acknowledgment gap, it doesn't resolve a case outcome, legal advice, or a fee dispute.</b> A concern tracker makes it impossible for a complaint or a stalled matter to go unacknowledged or undated, but deciding what actually happened and what, if anything, is owed is still entirely the firm's own call, exactly as it was in the Legal Ombudsman's decision.</div>
+      <div class="lim"><b>Your own website could not be directly verified this run.</b> Direct fetch attempts against tollers.co.uk returned 502 responses or empty content across several pages, while a nonexistent page on the same domain correctly returned 404, so the domain is reachable but these specific pages did not render through this session's tools. No portal or case-tracking feature was found advertised anywhere else searched either, but that is an absence-of-evidence signal, not a confirmed absence; a real build should re-check tollers.co.uk directly before finalizing any site-specific claim.</div>
+      <div class="lim"><b>The Legal Ombudsman decision's underlying matter type was not stated in the data captured this run.</b> The stages and messages shown below stay generic ("your matter"), not tied to conveyancing or any one practice area, and the sample matters deliberately span all five of your departments, private client &amp; trusts, residential conveyancing, property litigation, employment, and personal injury, so nothing here implies the complaint came from one particular department.</div>
+      <div class="lim"><b>The Trustpilot pattern is real and multi-source, and it is a minority of the firm's total review volume, not a uniformly poor record.</b> Four or five negative reviews sit among 46-50 total, and other reviews praise individual conveyancers by name, for example Kirsten Blaikie, for being responsive. What a quiet-matter flag and a dated concern log change is whether a future gap gets caught and fixed automatically, not a claim that every file at Tollers is currently being mishandled.</div>
+      <div class="lim"><b>No named individual contact was found for this firm; the published contact point on the SRA register is a shared departmental inbox (enquiries@tollers.co.uk).</b> A real build should confirm who specifically monitors incoming concerns day to day at each office, so a raised concern cannot itself sit unseen in a general inbox, which is close to the exact pattern the Legal Ombudsman decision describes.</div>
+      <div class="lim"><b>One tracker, usable across every office and department.</b> The sample below tags each matter by office, Northampton (head office), Bedford/Kempston, Corby, Oakham (Simmonds Grant), and Stevenage, and by department, matching the scale of a five-office LLP rather than a single-office practice.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Tollers LLP. The Legal Ombudsman decision details, the SRA register entry, and the Trustpilot review figures above are drawn from direct verification of public sources. Matter, client, and contact data below is a fictional sample, not connected to any real file.</p>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "tollers-status-pipeline-matters-v1";
+  var OVERDUE_MS = 14 * 24 * 60 * 60 * 1000; // 14 days, illustrative threshold
+  var CONCERN_RESPONSE_MS = 10 * 24 * 60 * 60 * 1000; // 10 working days, illustrative placeholder
+
+  var STAGES = [
+    "Instructed, matter opened",
+    "In progress",
+    "Awaiting third party",
+    "Ready for review",
+    "Complete"
+  ];
+  var STAGE_MESSAGES = [null,
+    function (j) { return "Your matter, " + j.matter + ", is now in progress. We'll update you again at the next milestone."; },
+    function (j) { return "We're currently awaiting a response from a third party on " + j.matter + ". We'll let you know as soon as we hear back."; },
+    function (j) { return "" + j.matter + " is ready for your review. We'll be in touch with next steps."; },
+    function (j) { return j.matter + " has now concluded. Thank you for instructing Tollers."; }
+  ];
+
+  function seedMatters() {
+    var seedNow = Date.now(); // relative to page-load time, so the overdue flag stays correct however long after build this is viewed
+    var DAY = 24 * 60 * 60 * 1000;
+    return [
+      {
+        id: "TL-6001",
+        client: "Sample Client A",
+        contact: "sample.clienta@example.com",
+        office: "Northampton (head office)",
+        practiceArea: "Private Client & Trusts",
+        matter: "Sample Client A's Lasting Power of Attorney",
+        stage: 1,
+        concern: null,
+        lastUpdateAt: seedNow - 21 * DAY,
+        notifications: [
+          { text: "Your matter, Sample Client A's Lasting Power of Attorney, is now in progress. We'll update you again at the next milestone.", at: seedNow - 21 * DAY }
+        ]
+      },
+      {
+        id: "TL-6002",
+        client: "Sample Client B (Purchaser)",
+        contact: "sample.clientb@example.com",
+        office: "Corby",
+        practiceArea: "Residential Conveyancing",
+        matter: "Sample Client B's residential purchase",
+        stage: 2,
+        concern: { status: "open", raisedAt: seedNow - 3 * DAY, responseDueAt: seedNow - 3 * DAY + CONCERN_RESPONSE_MS },
+        lastUpdateAt: seedNow - 3 * DAY,
+        notifications: [
+          { text: "Your matter, Sample Client B's residential purchase, is now in progress. We'll update you again at the next milestone.", at: seedNow - 19 * DAY },
+          { text: "We're currently awaiting a response from a third party on Sample Client B's residential purchase. We'll let you know as soon as we hear back.", at: seedNow - 10 * DAY },
+          { text: "We've logged your concern about this matter today. You'll receive a substantive response by the date shown, in line with our complaints-handling target. You do not need to call to check, this page also shows the live status.", at: seedNow - 3 * DAY }
+        ]
+      },
+      {
+        id: "TL-6003",
+        client: "Sample Client C",
+        contact: "sample.clientc@example.com",
+        office: "Bedford / Kempston",
+        practiceArea: "Property Litigation",
+        matter: "Sample Client C's boundary dispute matter",
+        stage: 4,
+        concern: null,
+        lastUpdateAt: seedNow - 1 * DAY,
+        notifications: [
+          { text: "Your matter, Sample Client C's boundary dispute matter, is now in progress. We'll update you again at the next milestone.", at: seedNow - 35 * DAY },
+          { text: "We're currently awaiting a response from a third party on Sample Client C's boundary dispute matter. We'll let you know as soon as we hear back.", at: seedNow - 16 * DAY },
+          { text: "Sample Client C's boundary dispute matter is ready for your review. We'll be in touch with next steps.", at: seedNow - 4 * DAY },
+          { text: "Sample Client C's boundary dispute matter has now concluded. Thank you for instructing Tollers.", at: seedNow - 1 * DAY }
+        ]
+      },
+      {
+        id: "TL-6004",
+        client: "Sample Client D",
+        contact: "sample.clientd@example.com",
+        office: "Oakham (Simmonds Grant)",
+        practiceArea: "Employment",
+        matter: "Sample Client D's unfair dismissal claim",
+        stage: 0,
+        concern: null,
+        lastUpdateAt: seedNow - 1 * DAY,
+        notifications: []
+      },
+      {
+        id: "TL-6005",
+        client: "Sample Client E",
+        contact: "sample.cliente@example.com",
+        office: "Stevenage",
+        practiceArea: "Personal Injury",
+        matter: "Sample Client E's road traffic injury claim",
+        stage: 3,
+        concern: { status: "resolved", raisedAt: seedNow - 12 * DAY, responseDueAt: seedNow - 12 * DAY + CONCERN_RESPONSE_MS, resolvedAt: seedNow - 6 * DAY },
+        lastUpdateAt: seedNow - 6 * DAY,
+        notifications: [
+          { text: "Your matter, Sample Client E's road traffic injury claim, is now in progress. We'll update you again at the next milestone.", at: seedNow - 28 * DAY },
+          { text: "We're currently awaiting a response from a third party on Sample Client E's road traffic injury claim. We'll let you know as soon as we hear back.", at: seedNow - 18 * DAY },
+          { text: "We've logged your concern about this matter today. You'll receive a substantive response by the date shown, in line with our complaints-handling target. You do not need to call to check, this page also shows the live status.", at: seedNow - 12 * DAY },
+          { text: "A partner has reviewed your concern and sent a substantive response. Here's where this matter stands: Ready for review.", at: seedNow - 6 * DAY }
+        ]
+      }
+    ];
+  }
+
+  function loadMatters() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedMatters();
+    saveMatters(seeded);
+    return seeded;
+  }
+  function saveMatters(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var matters = loadMatters();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString(); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function isOverdue(j) { return j.stage < STAGES.length - 1 && (Date.now() - j.lastUpdateAt) > OVERDUE_MS; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    matters.forEach(function (j) {
+      var atLast = j.stage >= STAGES.length - 1;
+      var overdue = isOverdue(j);
+      var concernOpen = j.concern && j.concern.status === "open";
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.client) + '</h4>';
+      if (concernOpen) {
+        html += '<span class="concern-pill">Concern open, due by ' + fmtDate(j.concern.responseDueAt) + '</span>';
+      } else if (j.concern && j.concern.status === "resolved") {
+        html += '<span class="resolved-pill">Concern resolved</span>';
+      } else {
+        html += '<span class="stage-pill">' + STAGES[j.stage] + '</span>';
+      }
+      html += '</div>';
+      html += '<div class="job-meta">' + escapeHtml(j.matter) + '<span class="office-tag">' + escapeHtml(j.office) + '</span><span class="practice-tag">' + escapeHtml(j.practiceArea) + '</span></div>';
+      html += '<div class="last-update">Last updated: ' + fmtDate(j.lastUpdateAt) + (overdue ? ' <span class="overdue-pill">Overdue for an update</span>' : '') + '</div>';
+      html += '<div class="job-actions">';
+      if (concernOpen) {
+        html += '<button class="btn-sm primary" data-resolve="' + j.id + '">Log response sent</button>';
+      }
+      html += '<button class="btn-sm" data-checkin="' + j.id + '"' + (atLast ? " disabled" : "") + '>Send a check-in update</button>';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceMatter(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-checkin]"), function (btn) {
+      btn.addEventListener("click", function () { sendCheckin(btn.dataset.checkin); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-resolve]"), function (btn) {
+      btn.addEventListener("click", function () { resolveConcern(btn.dataset.resolve); });
+    });
+  }
+
+  function pushNotification(j, text) {
+    j.notifications.push({ text: text, at: Date.now() });
+    j.lastUpdateAt = Date.now();
+  }
+
+  function advanceMatter(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGES.length - 1) return;
+    j.stage += 1;
+    var msg = STAGE_MESSAGES[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function sendCheckin(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGES.length - 1) return;
+    pushNotification(j, "Checking in on " + j.matter + ": this matter is still at the \"" + STAGES[j.stage] + "\" stage. We'll let you know as soon as it moves, you don't need to call to check.");
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function resolveConcern(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || !j.concern || j.concern.status !== "open") return;
+    j.concern = { status: "resolved", raisedAt: j.concern.raisedAt, responseDueAt: j.concern.responseDueAt, resolvedAt: Date.now() };
+    pushNotification(j, "A partner has reviewed your concern and sent a substantive response. Here's where this matter stands: " + STAGES[j.stage] + ".");
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  var lastLookupId = null;
+
+  function findMatter(query) {
+    var q = (query || "").trim().toLowerCase();
+    if (!q) return null;
+    return matters.find(function (j) {
+      if (j.id.toLowerCase() === q) return true;
+      if (j.contact && j.contact.toLowerCase() === q) return true;
+      return false;
+    }) || null;
+  }
+
+  function renderLookupIfShowing(id) {
+    if (lastLookupId === id) renderLookupResult(findMatter(id));
+  }
+
+  function renderLookupResult(j) {
+    var root = document.getElementById("lookup-result");
+    if (!j) {
+      root.innerHTML = '<p class="lookup-empty">No matter found for that reference or email. Double-check and try again, or call your fee earner.</p>';
+      lastLookupId = null;
+      return;
+    }
+    lastLookupId = j.id;
+    var overdue = isOverdue(j);
+    var concernOpen = j.concern && j.concern.status === "open";
+    var concernResolved = j.concern && j.concern.status === "resolved";
+    var html = '<div class="matter-summary"><h4>' + j.id + ' - ' + escapeHtml(j.matter) + '</h4>';
+    if (concernOpen) {
+      html += '<span class="concern-pill">Concern open, due by ' + fmtDate(j.concern.responseDueAt) + '</span>';
+    } else if (concernResolved) {
+      html += '<span class="resolved-pill">Concern resolved</span>';
+    } else {
+      html += '<span class="stage-pill">' + STAGES[j.stage] + '</span>';
+    }
+    html += '</div>';
+    html += '<div class="last-update">Last updated: ' + fmtDate(j.lastUpdateAt) + (overdue ? ' <span class="overdue-pill">Overdue for an update</span>' : '') + '</div>';
+    html += '<div class="thread">';
+    if (!j.notifications.length) {
+      html += '<p class="thread-empty">No messages yet for this matter.</p>';
+    } else {
+      var recipient = "Email to " + j.contact;
+      j.notifications.forEach(function (n) {
+        html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-meta">' + escapeHtml(recipient) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+      });
+    }
+    html += '</div>';
+    html += '<div class="concern-row">';
+    if (concernOpen) {
+      html += '<p class="concern-note">A concern on this matter is already open, logged on ' + fmtDate(j.concern.raisedAt) + ' with a response due by ' + fmtDate(j.concern.responseDueAt) + '. You do not need to call to check.</p>';
+    } else {
+      html += '<p class="concern-note">Not happy with how this matter is being handled, or waiting longer than expected?</p>';
+      html += '<button class="btn-sm" id="concern-btn" data-id="' + j.id + '">Raise a concern about this matter</button>';
+    }
+    html += '</div>';
+    root.innerHTML = html;
+    var thread = root.querySelector(".thread");
+    if (thread) thread.scrollTop = thread.scrollHeight;
+    var cBtn = document.getElementById("concern-btn");
+    if (cBtn) {
+      cBtn.addEventListener("click", function () { raiseConcern(cBtn.dataset.id); });
+    }
+  }
+
+  function raiseConcern(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || (j.concern && j.concern.status === "open")) return;
+    var raisedAt = Date.now();
+    j.concern = { status: "open", raisedAt: raisedAt, responseDueAt: raisedAt + CONCERN_RESPONSE_MS };
+    pushNotification(j, "We've logged your concern about this matter today. You'll receive a substantive response by " + fmtDate(raisedAt + CONCERN_RESPONSE_MS) + ", in line with our complaints-handling target. You do not need to call to check, this page also shows the live status.");
+    saveMatters(matters);
+    renderShop();
+    renderLookupResult(j);
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var q = document.getElementById("lookup-input").value;
+    renderLookupResult(findMatter(q));
+  });
+  document.getElementById("lookup-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      renderLookupResult(findMatter(this.value));
+    }
+  });
+
+  renderShop();
+})();
+</script>
+</body>
+</html>
