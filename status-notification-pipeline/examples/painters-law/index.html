@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Painters Law LLP</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .overdue-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--warn-bg); color: var(--warn); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .office-tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 5px; margin-left: 0.4rem; }
+  .practice-tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 5px; margin-left: 0.4rem; }
+  .last-update { font-size: 0.78rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-sm.primary { border-color: var(--brand); color: var(--brand); }
+
+  .enquiry-list { display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.3rem; }
+  .enquiry-item { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; font-size: 0.82rem; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.4rem 0.6rem; }
+  .enquiry-text { color: var(--ink); }
+  .enquiry-pill-open { display: inline-block; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.03em; text-transform: uppercase; background: var(--warn-bg); color: var(--warn); padding: 0.18rem 0.5rem; border-radius: 999px; white-space: nowrap; }
+  .enquiry-pill-answered { display: inline-block; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.03em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.18rem 0.5rem; border-radius: 999px; white-space: nowrap; }
+  .enquiry-empty { font-size: 0.8rem; color: var(--muted); font-style: italic; }
+  .enquiry-heading { font-size: 0.78rem; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.3rem; }
+
+  .lookup-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  input[type="text"].wide { flex: 1; min-width: 12rem; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus { outline: none; border-color: var(--brand); }
+  .lookup-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .lookup-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-top: 0.8rem; }
+
+  .matter-summary { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+  .matter-summary h4 { margin: 0; font-size: 1rem; font-family: var(--serif); }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.7rem; max-height: 18rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 94%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .sample-tag { display: inline-block; background: var(--brand-soft); color: var(--brand); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 5px; margin-bottom: 0.9rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Painters Law LLP</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Painters Law LLP</span>
+  <h1 class="fx-h1">Twenty outstanding enquiries, and no way to see which ones are still waiting</h1>
+  <p class="fx-lede">Painters Law's own Trustpilot page carries a 3.6 TrustScore across 53 reviews, sitting right on the line between "Average" and "Great," and within that record five independently named and dated reviewers, spanning roughly 16 months from March 2025 to July 2026, describe the same shape of problem: enquiries and emails that sit unanswered until the client chases. Grace (4 Oct 2025) described around 20 outstanding enquiries left with no progress, no explanations and no apologies. This example shows what that looks like fixed: every outstanding enquiry is logged and tracked on its own, not folded into one vague "in progress" label, a matter that goes quiet past a set number of days is flagged automatically, and a client can check exactly which of their questions have been answered without picking up the phone.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> Painters Law LLP (company number OC425661) is a general-practice solicitors' firm established in 1951, now an SRA-recognised body (SRA number 824364, recognised since 20 September 2021), with two offices in Worcestershire: Wyre Forest House, Finepoint Way, Kidderminster DY11 7WG (head office) and 1 New Street, Stourport-on-Severn. Per the firm's own site, painterslaw.co.uk, it covers family law (including divorce and finances), wills and probate, estate administration, residential and commercial property, and dispute resolution. A direct fetch of that site's page source found no client portal, case-status page, or tracking login of any kind, and three current live job vacancies across both offices. A direct fetch of the firm's Trustpilot page found a 3.6 TrustScore across 53 reviews and five reviewers describing the same communication gap: Grace (4 Oct 2025, around 20 outstanding enquiries with no progress, no explanations, no apologies), Martin Wall (25 Mar 2025, weeks on end waiting, responses only ever on a Friday, during a conveyancing matter), Carl-Darren Marx (20 Aug 2025, replies routinely taking two or three days), a "Website User" review (1 Jun 2026, "never respond to emails"), and Paul (23 Jul 2026, "can't even reply to questions without multiple attempts").</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the matters, client names, and enquiries below are a fictional sample, not real Painters Law clients or files. Nothing here sends a real email or text. The 14-day no-update threshold used below is an illustrative placeholder; a real build should use whatever target Painters Law actually wants to commit to. This shows what a client would see and what would get flagged internally; a real build connects to whatever system a fee earner already updates and sends through an actual email/SMS service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Fee earner view: log an enquiry, mark one answered</h3>
+      <span class="sample-tag">Sample matters, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the client sees: check a matter</h3>
+      <div class="lookup-row">
+        <input type="text" class="wide" id="lookup-input" placeholder="Matter reference or email on file">
+        <button class="btn-sm" id="lookup-btn">Check status</button>
+      </div>
+      <p class="lookup-hint">Try PL-4401, PL-4402, PL-4403, PL-4404, PL-4405, or sample.clienta@example.com</p>
+      <div id="lookup-result"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email or text.</b> This demo only shows what a client would receive. A real version needs an actual email/SMS service, for example SendGrid or Twilio, wired to whatever system your fee earners already update to mark a matter's stage.</div>
+      <div class="lim"><b>Each outstanding enquiry now gets its own visible record, not just a generic stage label.</b> Below, a fee earner can log an enquiry the moment a client raises one, and mark the oldest open enquiry answered the moment a reply goes out. The client sees each one listed by name with its own open-or-answered state. Built directly from Grace's review describing around 20 outstanding enquiries left with no progress, no explanations and no apologies, and from Paul's review describing not being able to get a reply to questions without multiple attempts.</div>
+      <div class="lim"><b>The quiet-matter flag answers Martin Wall's and Carl-Darren Marx's reviews specifically.</b> Martin Wall described waiting weeks on end during a conveyancing matter and only ever getting a response on a Friday; Carl-Darren Marx described replies routinely taking two or three days. Every matter below shows when it was last updated, and once a matter passes the no-update threshold without contact, an "overdue for an update" flag appears automatically in the fee earner view, before a client has to call and ask. A fee earner can clear it by logging progress or by sending a plain check-in, even when nothing has actually changed yet.</div>
+      <div class="lim"><b>This closes a visibility gap, it doesn't resolve a quality-of-service complaint.</b> Martin Wall's review also raises a separate point about "petty enquiries" slowing his conveyancing down, a substantive handling question a tracker can't fix. Scoped honestly: this fixes "we never heard anything about where things stand," not whether the underlying enquiries themselves were reasonable.</div>
+      <div class="lim"><b>This introduces visibility the firm's site doesn't have today, it doesn't sit beside an existing tool.</b> A direct fetch of painterslaw.co.uk found no client portal, case tracker, or matter-status lookup anywhere on the site; the only way a client can reach the firm today is by phone or email, and wait for a reply, which is exactly the gap the reviews describe.</div>
+      <div class="lim"><b>The matters shown span both offices and the firm's full practice mix, not one case type.</b> The sample below tags each matter by office, Kidderminster (head office) and Stourport-on-Severn, and spans family law, wills and probate, residential property, commercial property, and dispute resolution, the five practice areas listed on the firm's own site.</div>
+      <div class="lim"><b>The Trustpilot score above is real and cited directly, and it sits right on the "Average/Great" boundary, not a uniformly poor record.</b> This is grounded in one review platform, and within it, the figure is genuinely mixed: 3.6 across 53 reviews, not a one-sided complaint pattern. What a logged-enquiry list and a quiet-matter flag change is whether a specific chase-worthy gap gets caught automatically, not whether every file is currently being mishandled.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Painters Law LLP. The Trustpilot figures, the named reviewers' complaint pattern, and the absence of any client-facing case-status tool on painterslaw.co.uk are drawn from direct verification of public sources. Matter, client, and enquiry data below is a fictional sample, not connected to any real file.</p>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "painters-law-status-pipeline-matters-v1";
+  var OVERDUE_MS = 14 * 24 * 60 * 60 * 1000; // 14 days, illustrative threshold
+
+  var STAGES = [
+    "Instructed, matter opened",
+    "Awaiting third party / outstanding enquiries",
+    "Action required from you",
+    "Matter completed"
+  ];
+  var STAGE_MESSAGES = [null,
+    function (j) { return "We're now awaiting a response from a third party on " + j.matter + ". We'll notify you again the moment we hear back."; },
+    function (j) { return "" + j.matter + " now needs something from you before we can move forward. We'll be in touch with the detail separately."; },
+    function (j) { return j.matter + " has now completed. " + j.detail; }
+  ];
+
+  function seedMatters() {
+    var seedNow = Date.now(); // relative to page-load time, so the overdue flag stays correct however long after build this is viewed
+    var DAY = 24 * 60 * 60 * 1000;
+    return [
+      {
+        id: "PL-4401",
+        client: "Sample Client A",
+        contact: "sample.clienta@example.com",
+        office: "Kidderminster (head office)",
+        practiceArea: "Family Law",
+        matter: "Sample Client A's financial settlement matter",
+        detail: "",
+        stage: 1,
+        lastUpdateAt: seedNow - 19 * DAY,
+        enquiries: [
+          { text: "Query about the proposed financial settlement figures", answered: true, loggedAt: seedNow - 19 * DAY, answeredAt: seedNow - 14 * DAY },
+          { text: "Chasing a response on the revised child arrangements schedule", answered: false, loggedAt: seedNow - 10 * DAY, answeredAt: null }
+        ],
+        pendingEnquiries: ["Follow-up query about the next hearing date"],
+        notifications: [
+          { text: "We've noted your enquiry: \"Query about the proposed financial settlement figures.\" We'll come back to you as soon as we can.", at: seedNow - 19 * DAY },
+          { text: "We've now responded to your enquiry about \"Query about the proposed financial settlement figures.\"", at: seedNow - 14 * DAY },
+          { text: "We've noted your enquiry: \"Chasing a response on the revised child arrangements schedule.\" We'll come back to you as soon as we can.", at: seedNow - 10 * DAY }
+        ]
+      },
+      {
+        id: "PL-4402",
+        client: "Sample Client B",
+        contact: "sample.clientb@example.com",
+        office: "Kidderminster (head office)",
+        practiceArea: "Residential Property",
+        matter: "Sample Client B's house purchase",
+        detail: "",
+        stage: 1,
+        lastUpdateAt: seedNow - 16 * DAY,
+        enquiries: [
+          { text: "Chasing local authority search results", answered: false, loggedAt: seedNow - 16 * DAY, answeredAt: null }
+        ],
+        pendingEnquiries: ["Query about mortgage offer conditions"],
+        notifications: [
+          { text: "We've noted your enquiry: \"Chasing local authority search results.\" We'll come back to you as soon as we can.", at: seedNow - 16 * DAY }
+        ]
+      },
+      {
+        id: "PL-4403",
+        client: "Sample Client C",
+        contact: "sample.clientc@example.com",
+        office: "Stourport-on-Severn",
+        practiceArea: "Wills & Probate",
+        matter: "the estate of Sample Client C's late father",
+        detail: "",
+        stage: 2,
+        lastUpdateAt: seedNow - 2 * DAY,
+        enquiries: [],
+        pendingEnquiries: ["Question about the executor's year timeline"],
+        notifications: [
+          { text: "We're now awaiting a response from a third party on the estate of Sample Client C's late father. We'll notify you again the moment we hear back.", at: seedNow - 6 * DAY },
+          { text: "The estate of Sample Client C's late father now needs something from you before we can move forward. We'll be in touch with the detail separately.", at: seedNow - 2 * DAY }
+        ]
+      },
+      {
+        id: "PL-4404",
+        client: "Sample Client D",
+        contact: "sample.clientd@example.com",
+        office: "Stourport-on-Severn",
+        practiceArea: "Commercial Property",
+        matter: "Sample Client D's lease renewal",
+        detail: "",
+        stage: 0,
+        lastUpdateAt: seedNow - 1 * DAY,
+        enquiries: [],
+        pendingEnquiries: ["Query about the lease break clause"],
+        notifications: []
+      },
+      {
+        id: "PL-4405",
+        client: "Sample Client E",
+        contact: "sample.cliente@example.com",
+        office: "Kidderminster (head office)",
+        practiceArea: "Dispute Resolution",
+        matter: "Sample Client E's contract dispute",
+        detail: "The matter concluded with the settlement terms agreed by both parties.",
+        stage: 3,
+        lastUpdateAt: seedNow - 27 * DAY,
+        enquiries: [
+          { text: "Query about the settlement offer terms", answered: true, loggedAt: seedNow - 30 * DAY, answeredAt: seedNow - 27 * DAY }
+        ],
+        pendingEnquiries: [],
+        notifications: [
+          { text: "We've noted your enquiry: \"Query about the settlement offer terms.\" We'll come back to you as soon as we can.", at: seedNow - 30 * DAY },
+          { text: "We've now responded to your enquiry about \"Query about the settlement offer terms.\"", at: seedNow - 27 * DAY },
+          { text: "Sample Client E's contract dispute has now completed. The matter concluded with the settlement terms agreed by both parties.", at: seedNow - 27 * DAY }
+        ]
+      }
+    ];
+  }
+
+  function loadMatters() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedMatters();
+    saveMatters(seeded);
+    return seeded;
+  }
+  function saveMatters(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var matters = loadMatters();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString(); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function isOverdue(j) { return j.stage < STAGES.length - 1 && (Date.now() - j.lastUpdateAt) > OVERDUE_MS; }
+  function openEnquiryCount(j) { return j.enquiries.filter(function (e) { return !e.answered; }).length; }
+
+  function renderEnquiryList(j) {
+    if (!j.enquiries.length) return '<p class="enquiry-empty">No enquiries logged yet.</p>';
+    var html = '<div class="enquiry-list">';
+    j.enquiries.forEach(function (e) {
+      html += '<div class="enquiry-item"><span class="enquiry-text">' + escapeHtml(e.text) + '</span>';
+      html += e.answered ? '<span class="enquiry-pill-answered">Answered</span>' : '<span class="enquiry-pill-open">Open</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    matters.forEach(function (j) {
+      var atLast = j.stage >= STAGES.length - 1;
+      var overdue = isOverdue(j);
+      var openCount = openEnquiryCount(j);
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.client) + '</h4>';
+      html += '<span class="stage-pill">' + STAGES[j.stage] + '</span>';
+      html += '</div>';
+      html += '<div class="job-meta">' + escapeHtml(j.matter) + '<span class="office-tag">' + escapeHtml(j.office) + '</span><span class="practice-tag">' + escapeHtml(j.practiceArea) + '</span></div>';
+      html += '<div class="last-update">Last updated: ' + fmtDate(j.lastUpdateAt) + (overdue ? ' <span class="overdue-pill">Overdue for an update</span>' : '') + (openCount ? ' <span class="enquiry-pill-open">' + openCount + ' open enquir' + (openCount === 1 ? 'y' : 'ies') + '</span>' : '') + '</div>';
+      html += '<div class="enquiry-heading">Outstanding enquiries</div>';
+      html += renderEnquiryList(j);
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm primary" data-log-enquiry="' + j.id + '"' + (atLast || !j.pendingEnquiries.length ? " disabled" : "") + '>Log an outstanding enquiry</button>';
+      html += '<button class="btn-sm" data-answer-enquiry="' + j.id + '"' + (atLast || !openCount ? " disabled" : "") + '>Mark oldest enquiry answered</button>';
+      html += '<button class="btn-sm" data-checkin="' + j.id + '"' + (atLast ? " disabled" : "") + '>Send a check-in update</button>';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceMatter(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-checkin]"), function (btn) {
+      btn.addEventListener("click", function () { sendCheckin(btn.dataset.checkin); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-log-enquiry]"), function (btn) {
+      btn.addEventListener("click", function () { logEnquiry(btn.dataset.logEnquiry); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-answer-enquiry]"), function (btn) {
+      btn.addEventListener("click", function () { answerOldestEnquiry(btn.dataset.answerEnquiry); });
+    });
+  }
+
+  function pushNotification(j, text) {
+    j.notifications.push({ text: text, at: Date.now() });
+    j.lastUpdateAt = Date.now();
+  }
+
+  function advanceMatter(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGES.length - 1) return;
+    j.stage += 1;
+    var msg = STAGE_MESSAGES[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function sendCheckin(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGES.length - 1) return;
+    pushNotification(j, "Checking in on " + j.matter + ": this matter is still at the \"" + STAGES[j.stage] + "\" stage. We'll let you know as soon as it moves, you don't need to call to check.");
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function logEnquiry(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGES.length - 1 || !j.pendingEnquiries.length) return;
+    var text = j.pendingEnquiries.shift();
+    j.enquiries.push({ text: text, answered: false, loggedAt: Date.now(), answeredAt: null });
+    pushNotification(j, "We've noted your enquiry: \"" + text + "\". We'll come back to you as soon as we can.");
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function answerOldestEnquiry(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGES.length - 1) return;
+    var open = j.enquiries.find(function (e) { return !e.answered; });
+    if (!open) return;
+    open.answered = true;
+    open.answeredAt = Date.now();
+    pushNotification(j, "We've now responded to your enquiry about \"" + open.text + "\".");
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  var lastLookupId = null;
+
+  function findMatter(query) {
+    var q = (query || "").trim().toLowerCase();
+    if (!q) return null;
+    return matters.find(function (j) {
+      if (j.id.toLowerCase() === q) return true;
+      if (j.contact && j.contact.toLowerCase() === q) return true;
+      return false;
+    }) || null;
+  }
+
+  function renderLookupIfShowing(id) {
+    if (lastLookupId === id) renderLookupResult(findMatter(id));
+  }
+
+  function renderLookupResult(j) {
+    var root = document.getElementById("lookup-result");
+    if (!j) {
+      root.innerHTML = '<p class="lookup-empty">No matter found for that reference or email. Double-check and try again, or call your fee earner.</p>';
+      lastLookupId = null;
+      return;
+    }
+    lastLookupId = j.id;
+    var overdue = isOverdue(j);
+    var html = '<div class="matter-summary"><h4>' + j.id + ' - ' + escapeHtml(j.matter) + '</h4>';
+    html += '<span class="stage-pill">' + STAGES[j.stage] + '</span>';
+    html += '</div>';
+    html += '<div class="last-update">Last updated: ' + fmtDate(j.lastUpdateAt) + (overdue ? ' <span class="overdue-pill">Overdue for an update</span>' : '') + '</div>';
+    html += '<div class="enquiry-heading">Outstanding enquiries</div>';
+    html += renderEnquiryList(j);
+    html += '<div class="thread">';
+    if (!j.notifications.length) {
+      html += '<p class="thread-empty">No messages yet for this matter.</p>';
+    } else {
+      var recipient = "Email to " + j.contact;
+      j.notifications.forEach(function (n) {
+        html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-meta">' + escapeHtml(recipient) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+      });
+    }
+    html += '</div>';
+    root.innerHTML = html;
+    var thread = root.querySelector(".thread");
+    if (thread) thread.scrollTop = thread.scrollHeight;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var q = document.getElementById("lookup-input").value;
+    renderLookupResult(findMatter(q));
+  });
+  document.getElementById("lookup-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      renderLookupResult(findMatter(this.value));
+    }
+  });
+
+  renderShop();
+})();
+</script>
+</body>
+</html>
