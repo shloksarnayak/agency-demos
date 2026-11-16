@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Roll Right Garage Doors</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .overdue-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--warn-bg); color: var(--warn); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .resched-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--hot-bg); color: var(--hot); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .install-line { font-size: 0.82rem; color: var(--ink-2); }
+  .last-update { font-size: 0.78rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+  .resched-row { display: none; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.3rem; }
+  .resched-row.open { display: flex; }
+  .resched-row input[type="text"] { font: inherit; font-size: 0.82rem; padding: 0.45rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-raised); width: 15rem; }
+
+  .lookup-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  input[type="text"].wide { flex: 1; min-width: 12rem; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus { outline: none; border-color: var(--brand); }
+  .lookup-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .lookup-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-top: 0.8rem; }
+
+  .job-summary { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+  .job-summary h4 { margin: 0; font-size: 1rem; font-family: var(--serif); }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.7rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 94%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .sample-tag { display: inline-block; background: var(--brand-soft); color: var(--brand); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 5px; margin-bottom: 0.9rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Roll Right Garage Doors</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Roll Right Garage Doors</span>
+  <h1 class="fx-h1">The email that goes out the moment an installation date moves, not after a customer calls to ask</h1>
+  <p class="fx-lede">Roll Right Garage Doors' own Trustpilot page carries a strongly positive 4.3 to 4.5 TrustScore across 342 to 345 reviews, but six separate named reviewers spanning March to August 2026 describe the same gap: installation dates moving without being told, and long waits with no courtesy call to say what is happening. This example shows what that looks like fixed: every job carries a visible stage and installation date, a reschedule sends its own dated notice stating exactly how many times the date has changed, and a job that goes quiet past a set number of days is automatically flagged for the office before a customer has to chase.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> Roll Right Garage Doors Limited (company number 14706315, trading as Roll Right Garage Doors from Unit 22, Becklands Park Industrial Estate, Market Weighton) manufactures and installs electric roller shutter garage doors across North, West and South Yorkshire, East Riding of Yorkshire, Northumberland, Tyne and Wear, Lincolnshire, Greater Manchester, Durham, Merseyside, Lancashire, Cheshire, Staffordshire, Derbyshire and Nottinghamshire/Leicestershire. A direct fetch of its Trustpilot page found named, dated reviews describing exactly the same pattern: Brian Mckenzie (17 Apr 2026) had to chase for updates and work out whether his install was actually going ahead; Michael O'Callaghan (26 Aug 2026) waited eight weeks and only got an update after repeatedly chasing; Michael Hopkins (4 Jun 2026) got no courtesy call to keep him posted; Leanne K (21 May 2026) waited 10 days and had to chase them just to come out and quote; Shane (15 Mar 2026) says they made appointments and never turned up or let him know; and Janet (8 Jul 2026), while happy with the finished door, still called the communication shocking. A direct fetch of rollrightltd.co.uk found no customer-facing order or installation status page anywhere on the site, only a warranty-registration form.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the jobs, customers and contact details below are a fictional sample, not real Roll Right customers or open jobs. Nothing here sends a real email. The 14-day no-update threshold used to flag a quiet job is illustrative, a real build should use whatever target Roll Right actually wants to commit to. This shows exactly what a customer would receive at each step; a real build connects to whatever system the office already uses to track a job and sends through an actual email service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Office view: update a job, reschedule, send a check-in</h3>
+      <span class="sample-tag">Sample jobs, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the customer sees: check a job</h3>
+      <div class="lookup-row">
+        <input type="text" class="wide" id="lookup-input" placeholder="Job reference, postcode, or email on file">
+        <button class="btn-sm" id="lookup-btn">Check status</button>
+      </div>
+      <p class="lookup-hint">Try RRGD-5097, RRGD-5071, YO43 3AB, or sample.garthwaite@example.com</p>
+      <div id="lookup-result"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before this goes further</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email.</b> This demo only shows what a customer would receive. A real version needs an actual email service, for example SendGrid or Postmark, wired to whatever the office already uses to mark a job's stage and installation date.</div>
+      <div class="lim"><b>The feature this business specifically needs is a dated reschedule notice, not just a stage-change notice.</b> The reviews above describe installation dates slipping without explanation, more than once on the same job, until the customer cannot tell whether the install is still happening at all. Below, rescheduling a job's installation date sends its own notice stating the new date and exactly how many times that job's date has changed, separate from the stage-advance message, so a customer never has to work it out themselves.</div>
+      <div class="lim"><b>The quiet-job flag answers the other half of the pattern: long waits with no proactive word.</b> Every job shows when it was last updated, and once a job passes the no-update threshold without any contact, an "overdue for an update" flag appears automatically in the office view, before a customer has to call and ask. The office can clear it by advancing the job, rescheduling it, or sending a plain check-in even when nothing has actually changed yet.</div>
+      <div class="lim"><b>The four stages shown (survey booked, door manufactured, installation scheduled, installed and complete) match the research's own description of this business's process, they are not copied from Roll Right's actual internal system.</b> A real build should confirm the exact stages the office tracks and whatever field marks a job's progress today.</div>
+      <div class="lim"><b>This introduces visibility the site doesn't have today, it doesn't replace an existing tool.</b> A direct fetch of rollrightltd.co.uk found no customer-facing order or installation status page anywhere on the site; the only account-adjacent feature is a warranty-registration form. This closes the exact gap the reviews describe rather than adding a second way to do the same thing.</div>
+      <div class="lim"><b>The Trustpilot score above is real and cited directly, and it is a strongly positive 4.3 to 4.5 across 342 to 345 reviews, not a struggling business.</b> The six reviews quoted are a real minority thread within a mostly positive record, including one reviewer (Janet) who was happy with the finished door despite the communication complaint. This tool addresses visibility during the process, it is not a claim about the quality of Roll Right's finished installations.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by Roll Right Garage Doors Limited.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Roll Right Garage Doors. The Trustpilot figures, the named reviewers' complaint pattern, and the absence of any customer-facing order or installation status tool on rollrightltd.co.uk are drawn from direct verification of public sources. Job, customer and contact data below is a fictional sample, not connected to any real Roll Right job or customer.</p>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "rrgd-status-pipeline-jobs-v1";
+  var OVERDUE_MS = 14 * 24 * 60 * 60 * 1000; // 14 days, illustrative threshold
+
+  var STAGES = ["Survey booked", "Door manufactured", "Installation scheduled", "Installed / complete"];
+  var NOT_SCHEDULED = "To be confirmed";
+
+  var STAGE_MESSAGES = [null,
+    function (j) { return "Your " + j.jobType + " has been manufactured and is ready for installation. We'll be in touch to confirm your installation date."; },
+    function (j) { return "Your installation is now confirmed for " + j.installDate + ". We'll email you again the moment this changes, you don't need to call to check."; },
+    function (j) { return "Your " + j.jobType + " at " + j.postcode + " is installed and complete. Thanks for choosing Roll Right Garage Doors."; }
+  ];
+
+  function ordinal(n) {
+    var s = ["th", "st", "nd", "rd"], v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  }
+
+  function seedJobs() {
+    var seedNow = Date.now(); // relative to page-load time, so the overdue flag stays correct however long after build this is viewed
+    var DAY = 24 * 60 * 60 * 1000;
+    return [
+      {
+        id: "RRGD-5110",
+        customer: "D. Okonkwo",
+        contact: "sample.okonkwo@example.com",
+        postcode: "HU1 3DX",
+        jobType: "insulated electric roller shutter door (replacement)",
+        stage: 0,
+        installDate: NOT_SCHEDULED,
+        dateChangedCount: 0,
+        lastUpdateAt: seedNow - 2 * DAY,
+        notifications: [
+          { text: "Thanks for booking your free survey. We'll be in touch once it's complete to confirm your door and installation timeline.", at: seedNow - 2 * DAY }
+        ]
+      },
+      {
+        id: "RRGD-5097",
+        customer: "L. Hartside",
+        contact: "sample.hartside@example.com",
+        postcode: "YO43 3AB",
+        jobType: "electric roller shutter door (new installation)",
+        stage: 0,
+        installDate: NOT_SCHEDULED,
+        dateChangedCount: 0,
+        lastUpdateAt: seedNow - 16 * DAY,
+        notifications: [
+          { text: "Thanks for booking your free survey. We'll be in touch once it's complete to confirm your door and installation timeline.", at: seedNow - 16 * DAY }
+        ]
+      },
+      {
+        id: "RRGD-5083",
+        customer: "P. Sissons",
+        contact: "sample.sissons@example.com",
+        postcode: "YO8 4NE",
+        jobType: "electric roller shutter door (double garage)",
+        stage: 1,
+        installDate: NOT_SCHEDULED,
+        dateChangedCount: 0,
+        lastUpdateAt: seedNow - 3 * DAY,
+        notifications: [
+          { text: "Thanks for booking your free survey. We'll be in touch once it's complete to confirm your door and installation timeline.", at: seedNow - 20 * DAY },
+          { text: "Your electric roller shutter door (double garage) has been manufactured and is ready for installation. We'll be in touch to confirm your installation date.", at: seedNow - 3 * DAY }
+        ]
+      },
+      {
+        id: "RRGD-5071",
+        customer: "M. Garthwaite",
+        contact: "sample.garthwaite@example.com",
+        postcode: "NE66 1LZ",
+        jobType: "electric roller shutter door (single garage replacement)",
+        stage: 2,
+        installDate: "Mon 24 Nov",
+        dateChangedCount: 2,
+        lastUpdateAt: seedNow - 19 * DAY,
+        notifications: [
+          { text: "Thanks for booking your free survey. We'll be in touch once it's complete to confirm your door and installation timeline.", at: seedNow - 40 * DAY },
+          { text: "Your electric roller shutter door (single garage replacement) has been manufactured and is ready for installation. We'll be in touch to confirm your installation date.", at: seedNow - 33 * DAY },
+          { text: "Your installation is now confirmed for Mon 3 Nov. We'll email you again the moment this changes, you don't need to call to check.", at: seedNow - 27 * DAY },
+          { text: "Your installation date has changed. It is now scheduled for Mon 17 Nov. This is the 1st time this job's installation date has changed; we send this the moment it changes, so you always know whether the installation is still going ahead, no need to call and check.", at: seedNow - 25 * DAY },
+          { text: "Your installation date has changed. It is now scheduled for Mon 24 Nov. This is the 2nd time this job's installation date has changed; we send this the moment it changes, so you always know whether the installation is still going ahead, no need to call and check.", at: seedNow - 19 * DAY }
+        ]
+      },
+      {
+        id: "RRGD-5058",
+        customer: "S. Iqbal",
+        contact: "sample.iqbal@example.com",
+        postcode: "DH1 2RH",
+        jobType: "electric roller shutter door (commercial unit)",
+        stage: 3,
+        installDate: "Wed 5 Nov",
+        dateChangedCount: 0,
+        lastUpdateAt: seedNow - 5 * DAY,
+        notifications: [
+          { text: "Thanks for booking your free survey. We'll be in touch once it's complete to confirm your door and installation timeline.", at: seedNow - 29 * DAY },
+          { text: "Your electric roller shutter door (commercial unit) has been manufactured and is ready for installation. We'll be in touch to confirm your installation date.", at: seedNow - 19 * DAY },
+          { text: "Your installation is now confirmed for Wed 5 Nov. We'll email you again the moment this changes, you don't need to call to check.", at: seedNow - 12 * DAY },
+          { text: "Your electric roller shutter door (commercial unit) at DH1 2RH is installed and complete. Thanks for choosing Roll Right Garage Doors.", at: seedNow - 5 * DAY }
+        ]
+      }
+    ];
+  }
+
+  function loadJobs() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedJobs();
+    saveJobs(seeded);
+    return seeded;
+  }
+  function saveJobs(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var jobs = loadJobs();
+  var reschedOpenFor = null;
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString(); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function isOverdue(j) { return j.stage < STAGES.length - 1 && (Date.now() - j.lastUpdateAt) > OVERDUE_MS; }
+
+  function pushNotification(j, text) {
+    j.notifications.push({ text: text, at: Date.now() });
+    j.lastUpdateAt = Date.now();
+  }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    jobs.forEach(function (j) {
+      var atLast = j.stage >= STAGES.length - 1;
+      var canResched = j.stage === 2;
+      var overdue = isOverdue(j);
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.customer) + '</h4><span class="stage-pill">' + STAGES[j.stage] + '</span></div>';
+      html += '<div class="job-meta">' + escapeHtml(j.jobType) + ' &middot; ' + escapeHtml(j.postcode) + ' &middot; ' + escapeHtml(j.contact) + '</div>';
+      html += '<div class="install-line">Installation date: ' + escapeHtml(j.installDate) + (j.dateChangedCount > 0 ? ' <span class="resched-pill">Changed ' + j.dateChangedCount + 'x</span>' : '') + '</div>';
+      html += '<div class="last-update">Last updated: ' + fmtDate(j.lastUpdateAt) + (overdue ? ' <span class="overdue-pill">Overdue for an update</span>' : '') + '</div>';
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next stage</button>';
+      html += '<button class="btn-sm" data-resched-toggle="' + j.id + '"' + (canResched ? "" : " disabled") + '>Reschedule installation</button>';
+      html += '<button class="btn-sm" data-checkin="' + j.id + '"' + (atLast ? " disabled" : "") + '>Send a check-in update</button>';
+      html += '</div>';
+      html += '<div class="resched-row' + (reschedOpenFor === j.id ? " open" : "") + '" id="resched-' + j.id + '">';
+      html += '<input type="text" id="resched-input-' + j.id + '" placeholder="e.g. Mon 1 Dec">';
+      html += '<button class="btn-sm" data-resched-submit="' + j.id + '">Send date notice</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+    root.innerHTML = html;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceJob(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-resched-toggle]"), function (btn) {
+      btn.addEventListener("click", function () {
+        reschedOpenFor = reschedOpenFor === btn.dataset.reschedToggle ? null : btn.dataset.reschedToggle;
+        renderShop();
+      });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-resched-submit]"), function (btn) {
+      btn.addEventListener("click", function () { submitResched(btn.dataset.reschedSubmit); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-checkin]"), function (btn) {
+      btn.addEventListener("click", function () { sendCheckin(btn.dataset.checkin); });
+    });
+  }
+
+  function advanceJob(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGES.length - 1) return;
+    j.stage += 1;
+    var msg = STAGE_MESSAGES[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveJobs(jobs);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function submitResched(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    var input = document.getElementById("resched-input-" + id);
+    var val = (input.value || "").trim();
+    if (!j || !val) return;
+    var wasSet = j.installDate && j.installDate !== NOT_SCHEDULED;
+    j.installDate = val;
+    if (wasSet) {
+      j.dateChangedCount += 1;
+      pushNotification(j, "Your installation date has changed. It is now scheduled for " + val + ". This is the " + ordinal(j.dateChangedCount) + " time this job's installation date has changed; we send this the moment it changes, so you always know whether the installation is still going ahead, no need to call and check.");
+    } else {
+      pushNotification(j, "Your installation is now confirmed for " + val + ". We'll email you again the moment this changes, you don't need to call to check.");
+    }
+    reschedOpenFor = null;
+    saveJobs(jobs);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function sendCheckin(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGES.length - 1) return;
+    pushNotification(j, "Checking in on your " + j.jobType + " at " + j.postcode + ": this job is still at the \"" + STAGES[j.stage] + "\" stage. We'll email you again as soon as it moves, you don't need to call to check.");
+    saveJobs(jobs);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  var lastLookupId = null;
+
+  function findJob(query) {
+    var q = (query || "").trim().toLowerCase().replace(/\s+/g, "");
+    if (!q) return null;
+    return jobs.find(function (j) {
+      if (j.id.toLowerCase().replace(/\s+/g, "") === q) return true;
+      if (j.postcode.toLowerCase().replace(/\s+/g, "") === q) return true;
+      if (j.contact.toLowerCase() === q) return true;
+      return false;
+    }) || null;
+  }
+
+  function renderLookupIfShowing(id) {
+    if (lastLookupId === id) renderLookupResult(findJob(id));
+  }
+
+  function renderLookupResult(j) {
+    var root = document.getElementById("lookup-result");
+    if (!j) {
+      root.innerHTML = '<p class="lookup-empty">No job found for that reference, postcode, or email. Double-check and try again, or call the office.</p>';
+      lastLookupId = null;
+      return;
+    }
+    lastLookupId = j.id;
+    var overdue = isOverdue(j);
+    var html = '<div class="job-summary"><h4>' + j.id + ' - ' + escapeHtml(j.jobType) + '</h4>';
+    html += '<span class="stage-pill">' + STAGES[j.stage] + '</span>';
+    html += '</div>';
+    html += '<div class="install-line">Installation date: ' + escapeHtml(j.installDate) + (j.dateChangedCount > 0 ? ' <span class="resched-pill">Changed ' + j.dateChangedCount + 'x</span>' : '') + '</div>';
+    html += '<div class="last-update">Last updated: ' + fmtDate(j.lastUpdateAt) + (overdue ? ' <span class="overdue-pill">Overdue for an update</span>' : '') + '</div>';
+    html += '<div class="thread">';
+    if (!j.notifications.length) {
+      html += '<p class="thread-empty">No messages yet for this job.</p>';
+    } else {
+      var recipient = "Email to " + j.contact;
+      j.notifications.forEach(function (n) {
+        html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-meta">' + escapeHtml(recipient) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+      });
+    }
+    html += '</div>';
+    root.innerHTML = html;
+    var thread = root.querySelector(".thread");
+    if (thread) thread.scrollTop = thread.scrollHeight;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var q = document.getElementById("lookup-input").value;
+    renderLookupResult(findJob(q));
+  });
+  document.getElementById("lookup-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      renderLookupResult(findJob(this.value));
+    }
+  });
+
+  renderShop();
+})();
+</script>
+</body>
+</html>
