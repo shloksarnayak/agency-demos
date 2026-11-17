@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Status notification pipeline: working example for Law and Lawyers Solicitors</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.4rem; align-items: start; }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+  .job-row { border: 1px solid var(--rule); border-radius: var(--radius-sm); padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 0.8rem; background: var(--surface-2); }
+  .job-row:last-child { margin-bottom: 0; }
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; }
+  .job-head h4 { margin: 0; font-size: 0.98rem; font-family: var(--serif); }
+  .job-meta { font-size: 0.78rem; color: var(--muted); }
+  .stage-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--brand-soft); color: var(--brand); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .overdue-pill { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; background: var(--warn-bg); color: var(--warn); padding: 0.22rem 0.6rem; border-radius: 999px; }
+  .office-tag { display: inline-block; background: var(--surface-2); border: 1px solid var(--rule); color: var(--ink-2); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.2rem 0.55rem; border-radius: 5px; margin-left: 0.4rem; }
+  .last-update { font-size: 0.78rem; color: var(--ink-2); }
+  .job-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.15rem; }
+  .btn-sm { font: inherit; font-size: 0.78rem; padding: 0.4rem 0.7rem; border-radius: var(--radius-sm); border: 1px solid var(--rule); background: var(--surface-raised); color: var(--ink); cursor: pointer; }
+  .btn-sm:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .lookup-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  input[type="text"].wide { flex: 1; min-width: 12rem; font: inherit; font-size: 0.92rem; padding: 0.65rem 0.85rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--ink); }
+  input[type="text"].wide:focus { outline: none; border-color: var(--brand); }
+  .lookup-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem; }
+  .lookup-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-top: 0.8rem; }
+
+  .matter-summary { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+  .matter-summary h4 { margin: 0; font-size: 1rem; font-family: var(--serif); }
+
+  .thread { border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--surface-2); padding: 0.9rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.7rem; max-height: 22rem; overflow-y: auto; }
+  .bubble { align-self: flex-start; max-width: 94%; background: var(--surface-raised); border: 1px solid var(--rule); border-radius: 0.9rem 0.9rem 0.9rem 0.2rem; padding: 0.65rem 0.85rem; }
+  .bubble-text { font-size: 0.88rem; line-height: 1.5; color: var(--ink); }
+  .bubble-meta { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; font-family: var(--mono); }
+  .thread-empty { font-size: 0.88rem; color: var(--muted); font-style: italic; }
+
+  .sample-tag { display: inline-block; background: var(--brand-soft); color: var(--brand); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.25rem 0.6rem; border-radius: 5px; margin-bottom: 0.9rem; }
+
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .panel-title { font-size: 1rem; margin: 0 0 0.9rem; font-family: var(--serif); }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../index.html">Status notification pipeline</a> / Law and Lawyers Solicitors</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Working example, built for Law and Lawyers Solicitors</span>
+  <h1 class="fx-h1">A conveyancing update shouldn't only arrive after a client has already chased twice</h1>
+  <p class="fx-lede">Law and Lawyers' own Trustpilot page carries a 4.0 TrustScore, "Great," across 366 reviews, 31 of them in the last 12 months. Within that record, several reviewers from earlier in 2026 describe the same shape of problem on live residential conveyancing matters: months going by with essentially no proactive word from the firm, calls and emails left unanswered, and in one case a case handler changing three times with an eventual escalation to the Legal Ombudsman. That sits alongside an equally real set of reviewers from the same period describing fast, well communicated completions, so this looks like a gap affecting a meaningful minority of matters, not every file. This example shows what closes that specific gap: every matter carries a visible "last updated" marker, a matter that has gone quiet past a set number of days is flagged automatically for the fee earner, and a client can check status by matter reference or email without needing anyone to pick up the phone.</p>
+</header>
+<main class="fx-main">
+  <div class="fx-notice">
+    <p><strong>What's real:</strong> Law and Lawyers Ltd, trading as Law and Lawyers Solicitors, is an SRA-recognised body (SRA number 613159, recognised for all legal services since 15 June 2014) with two offices: Second Floor, 31-41 Worship Street, London EC2A 2DX (head office) and First and Second Floor, 33-35 Austhorpe Road, Crossgates, Leeds LS15 8BA. A direct fetch of the firm's Trustpilot page found a 4.0 TrustScore across 366 reviews (31 in the last 12 months), and within the 2026 reviews, four independently named and dated reviewers describe the same communication gap on live matters: Yorkshire Mover (9 October 2026, a sale running from May to September with repeated chasing), Ka (19 August 2026, the first four months with no response), Simon Morgan (14 July 2026, poor communication and missed deadlines) and AL GIXER AL (10 July 2026, a case handler changed three times, documents re-requested, escalated to the Legal Ombudsman). The same period also carries genuinely positive, named reviews (among them Sruthi, Paul Livesley and Donna) describing fast replies and regular updates, so this reads as a real but partial gap, not every file at the firm. The firm's own website, lawandlawyers.co.uk, returned almost no readable content to the available fetch tool, a genuine access gap rather than a confirmed absence, but no client portal, case-status page or tracking login is mentioned anywhere in the firm's own Trustpilot profile, which is the evidence this is grounded in.</p>
+  </div>
+  <div class="fx-notice">
+    <p><strong>What's illustrative:</strong> the matters, client names, offices and contact details below are a fictional sample, not real Law and Lawyers clients or files. Nothing here sends a real email or text. The 14-day no-update threshold used to flag a quiet matter below is illustrative; a real build should use whatever target Law and Lawyers actually wants to commit to. This shows what a client would see and what would get flagged internally, a real build connects to whatever field a fee earner already updates and sends through an actual email/SMS service.</p>
+  </div>
+
+  <div class="split">
+    <div class="fx-card">
+      <h3 class="panel-title">Fee earner view: update a matter, send a check-in</h3>
+      <span class="sample-tag">Sample matters, fictional</span>
+      <div id="shop-root"></div>
+    </div>
+
+    <div class="fx-card">
+      <h3 class="panel-title">What the client sees: check a matter</h3>
+      <div class="lookup-row">
+        <input type="text" class="wide" id="lookup-input" placeholder="Matter reference or email on file">
+        <button class="btn-sm" id="lookup-btn">Check status</button>
+      </div>
+      <p class="lookup-hint">Try LL-6101, LL-6102, LL-6103, LL-6104, LL-6105, or sample.clientb@example.com</p>
+      <div id="lookup-result"></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">What I'd flag before you roll this out anywhere else</h2>
+    <div class="limits">
+      <div class="lim"><b>Nothing here sends a real email or text.</b> This demo only shows what a client would receive. A real version needs an actual email/SMS service, for example SendGrid or Twilio, wired to whatever field your fee earners already update to mark a matter's stage.</div>
+      <div class="lim"><b>The feature this firm specifically needs is the quiet-matter flag, not just a stage-change notice.</b> The named 2026 reviews above describe going quiet for months with no proactive update, not a matter that simply moved slowly. Below, every matter shows when it was last updated, and once a matter passes the no-update threshold without any contact, an "overdue for an update" flag appears automatically in the fee earner view, before a client has to call and ask. A fee earner can clear it by advancing the matter or by sending a plain check-in, even when nothing has actually changed yet, which the base stage-advance mechanic alone cannot do.</div>
+      <div class="lim"><b>The absence of an existing client portal is a disclosed access gap, not a confirmed negative.</b> A direct fetch of lawandlawyers.co.uk returned almost no readable content to the available tool, so the site itself could not be fully checked. No client portal, case tracker or status login is mentioned anywhere in the firm's own Trustpilot profile, which is the strongest available evidence and what this is grounded in, but a real engagement should confirm directly with the firm whether anything exists today.</div>
+      <div class="lim"><b>The conveyancing stages shown are typical stages for a UK residential sale or purchase, not copied from Law and Lawyers' own case-management system.</b> A real build should confirm the exact stages your fee earners already track and the field they update to move a matter between them, office by office if that differs between London and Leeds.</div>
+      <div class="lim"><b>Worth a specific conversation before this goes live: what a status update or check-in can safely say.</b> A real build should keep message content to a status label and a plain next step, as shown below, never matter substance, so nothing privileged goes out over an unencrypted text or email.</div>
+      <div class="lim"><b>The Trustpilot score above is real and cited directly, and it is a strong, mostly positive record, not a one-sided complaint pattern.</b> 4.0 out of 5 across 366 reviews means the communication gap described above affects a minority of matters, several of them in the same period as clearly positive, named reviews praising fast replies. What a quiet-matter flag changes is whether that minority gets caught and fixed automatically, not whether every file is currently being mishandled.</div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer">
+  <p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by any business referenced.</strong></p>
+  <p>Prepared by Shlok Sarnayak for Law and Lawyers Solicitors. The Trustpilot figures, the named reviewers' complaint pattern, and the SRA registration details are drawn from direct verification of public sources. Matter, client and contact data below is a fictional sample, not connected to any real file.</p>
+</footer>
+
+<script>
+(function () {
+  var STORAGE_KEY = "law-and-lawyers-status-pipeline-matters-v1";
+  var OVERDUE_MS = 14 * 24 * 60 * 60 * 1000; // 14 days, illustrative threshold
+
+  var STAGES = [
+    "Instructions received, file opened",
+    "Searches ordered",
+    "Enquiries raised with the other side's solicitors",
+    "Exchange of contracts",
+    "Completion",
+    "Land Registry registration confirmed"
+  ];
+  var STAGE_MESSAGES = [null,
+    function (j) { return "Searches have been ordered for " + j.property + ". We'll notify you again once enquiries are raised."; },
+    function (j) { return "Enquiries have been raised with the other side's solicitors for " + j.property + ". We're now working toward exchange of contracts."; },
+    function (j) { return "Contracts have been exchanged for " + j.property + ". " + j.detail + "."; },
+    function (j) { return "Completion has taken place on " + j.property + ". We've submitted the application to register this with HM Land Registry and will confirm once it's through."; },
+    function (j) { return "HM Land Registry has confirmed registration for " + j.property + ". This matter is now complete."; }
+  ];
+
+  function seedMatters() {
+    var seedNow = Date.now(); // relative to page-load time, so the overdue flag stays correct however long after build this is viewed
+    var DAY = 24 * 60 * 60 * 1000;
+    return [
+      {
+        id: "LL-6101",
+        client: "Sample Client A (Purchaser)",
+        contact: "sample.clienta@example.com",
+        office: "London (head office)",
+        property: "3 Thornbury Close, Islington (Purchase)",
+        detail: "Completion is set for the agreed date",
+        stage: 2,
+        lastUpdateAt: seedNow - 24 * DAY,
+        notifications: [
+          { text: "Searches have been ordered for 3 Thornbury Close, Islington (Purchase). We'll notify you again once enquiries are raised.", at: seedNow - 28 * DAY },
+          { text: "Enquiries have been raised with the other side's solicitors for 3 Thornbury Close, Islington (Purchase). We're now working toward exchange of contracts.", at: seedNow - 24 * DAY }
+        ]
+      },
+      {
+        id: "LL-6102",
+        client: "Sample Client B (Seller)",
+        contact: "sample.clientb@example.com",
+        office: "Leeds",
+        property: "22 Oakwood Lane, Roundhay, Leeds (Sale)",
+        detail: "Completion is set for the agreed date",
+        stage: 3,
+        lastUpdateAt: seedNow - 2 * DAY,
+        notifications: [
+          { text: "Searches have been ordered for 22 Oakwood Lane, Roundhay, Leeds (Sale). We'll notify you again once enquiries are raised.", at: seedNow - 9 * DAY },
+          { text: "Enquiries have been raised with the other side's solicitors for 22 Oakwood Lane, Roundhay, Leeds (Sale). We're now working toward exchange of contracts.", at: seedNow - 5 * DAY },
+          { text: "Contracts have been exchanged for 22 Oakwood Lane, Roundhay, Leeds (Sale). Completion is set for the agreed date.", at: seedNow - 2 * DAY }
+        ]
+      },
+      {
+        id: "LL-6103",
+        client: "Sample Client C (Purchaser)",
+        contact: "sample.clientc@example.com",
+        office: "London (head office)",
+        property: "Flat 4, Elm Court, Walthamstow (Purchase)",
+        detail: "Completion is set for the agreed date",
+        stage: 5,
+        lastUpdateAt: seedNow - 3 * DAY,
+        notifications: [
+          { text: "Searches have been ordered for Flat 4, Elm Court, Walthamstow (Purchase). We'll notify you again once enquiries are raised.", at: seedNow - 19 * DAY },
+          { text: "Enquiries have been raised with the other side's solicitors for Flat 4, Elm Court, Walthamstow (Purchase). We're now working toward exchange of contracts.", at: seedNow - 13 * DAY },
+          { text: "Contracts have been exchanged for Flat 4, Elm Court, Walthamstow (Purchase). Completion is set for the agreed date.", at: seedNow - 8 * DAY },
+          { text: "Completion has taken place on Flat 4, Elm Court, Walthamstow (Purchase). We've submitted the application to register this with HM Land Registry and will confirm once it's through.", at: seedNow - 4 * DAY },
+          { text: "HM Land Registry has confirmed registration for Flat 4, Elm Court, Walthamstow (Purchase). This matter is now complete.", at: seedNow - 3 * DAY }
+        ]
+      },
+      {
+        id: "LL-6104",
+        client: "Sample Client D (Seller)",
+        contact: "sample.clientd@example.com",
+        office: "Leeds",
+        property: "9 Birchfield Road, Chapel Allerton, Leeds (Sale)",
+        detail: "Completion is set for the agreed date",
+        stage: 1,
+        lastUpdateAt: seedNow - 18 * DAY,
+        notifications: [
+          { text: "Searches have been ordered for 9 Birchfield Road, Chapel Allerton, Leeds (Sale). We'll notify you again once enquiries are raised.", at: seedNow - 18 * DAY }
+        ]
+      },
+      {
+        id: "LL-6105",
+        client: "Sample Client E (Purchaser)",
+        contact: "sample.cliente@example.com",
+        office: "London (head office)",
+        property: "17 Maple Grove, Hackney (Purchase)",
+        detail: "Completion is set for the agreed date",
+        stage: 0,
+        lastUpdateAt: seedNow - 1 * DAY,
+        notifications: []
+      }
+    ];
+  }
+
+  function loadMatters() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    var seeded = seedMatters();
+    saveMatters(seeded);
+    return seeded;
+  }
+  function saveMatters(list) { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
+
+  var matters = loadMatters();
+
+  function fmtTime(ts) {
+    var d = new Date(ts);
+    return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+  function fmtDate(ts) { return new Date(ts).toLocaleDateString(); }
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function isOverdue(j) { return j.stage < STAGES.length - 1 && (Date.now() - j.lastUpdateAt) > OVERDUE_MS; }
+
+  function renderShop() {
+    var root = document.getElementById("shop-root");
+    var html = "";
+    matters.forEach(function (j) {
+      var atLast = j.stage >= STAGES.length - 1;
+      var overdue = isOverdue(j);
+      html += '<div class="job-row">';
+      html += '<div class="job-head"><h4>' + j.id + ' - ' + escapeHtml(j.client) + '</h4>';
+      html += '<span class="stage-pill">' + STAGES[j.stage] + '</span>';
+      html += '</div>';
+      html += '<div class="job-meta">' + escapeHtml(j.property) + '<span class="office-tag">' + escapeHtml(j.office) + '</span></div>';
+      html += '<div class="last-update">Last updated: ' + fmtDate(j.lastUpdateAt) + (overdue ? ' <span class="overdue-pill">Overdue for an update</span>' : '') + '</div>';
+      html += '<div class="job-actions">';
+      html += '<button class="btn-sm" data-checkin="' + j.id + '"' + (atLast ? " disabled" : "") + '>Send a check-in update</button>';
+      html += '<button class="btn-sm" data-advance="' + j.id + '"' + (atLast ? " disabled" : "") + '>Advance to next milestone</button>';
+      html += '</div></div>';
+    });
+    root.innerHTML = html;
+    Array.prototype.forEach.call(root.querySelectorAll("[data-advance]"), function (btn) {
+      btn.addEventListener("click", function () { advanceMatter(btn.dataset.advance); });
+    });
+    Array.prototype.forEach.call(root.querySelectorAll("[data-checkin]"), function (btn) {
+      btn.addEventListener("click", function () { sendCheckin(btn.dataset.checkin); });
+    });
+  }
+
+  function pushNotification(j, text) {
+    j.notifications.push({ text: text, at: Date.now() });
+    j.lastUpdateAt = Date.now();
+  }
+
+  function advanceMatter(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGES.length - 1) return;
+    j.stage += 1;
+    var msg = STAGE_MESSAGES[j.stage];
+    if (msg) pushNotification(j, msg(j));
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  function sendCheckin(id) {
+    var j = matters.find(function (x) { return x.id === id; });
+    if (!j || j.stage >= STAGES.length - 1) return;
+    pushNotification(j, "Checking in on " + j.property + ": this matter is still at the \"" + STAGES[j.stage] + "\" stage. We'll let you know as soon as it moves, you don't need to call to check.");
+    saveMatters(matters);
+    renderShop();
+    renderLookupIfShowing(id);
+  }
+
+  var lastLookupId = null;
+
+  function findMatter(query) {
+    var q = (query || "").trim().toLowerCase();
+    if (!q) return null;
+    return matters.find(function (j) {
+      if (j.id.toLowerCase() === q) return true;
+      if (j.contact && j.contact.toLowerCase() === q) return true;
+      return false;
+    }) || null;
+  }
+
+  function renderLookupIfShowing(id) {
+    if (lastLookupId === id) renderLookupResult(findMatter(id));
+  }
+
+  function renderLookupResult(j) {
+    var root = document.getElementById("lookup-result");
+    if (!j) {
+      root.innerHTML = '<p class="lookup-empty">No matter found for that reference or email. Double-check and try again, or call your fee earner.</p>';
+      lastLookupId = null;
+      return;
+    }
+    lastLookupId = j.id;
+    var overdue = isOverdue(j);
+    var html = '<div class="matter-summary"><h4>' + j.id + ' - ' + escapeHtml(j.property) + '</h4>';
+    html += '<span class="stage-pill">' + STAGES[j.stage] + '</span>';
+    html += '</div>';
+    html += '<div class="last-update">Last updated: ' + fmtDate(j.lastUpdateAt) + (overdue ? ' <span class="overdue-pill">Overdue for an update</span>' : '') + '</div>';
+    html += '<div class="thread">';
+    if (!j.notifications.length) {
+      html += '<p class="thread-empty">No messages yet for this matter.</p>';
+    } else {
+      var recipient = "Email to " + j.contact;
+      j.notifications.forEach(function (n) {
+        html += '<div class="bubble"><div class="bubble-text">' + escapeHtml(n.text) + '</div><div class="bubble-meta">' + escapeHtml(recipient) + ' &middot; ' + fmtTime(n.at) + '</div></div>';
+      });
+    }
+    html += '</div>';
+    root.innerHTML = html;
+    var thread = root.querySelector(".thread");
+    if (thread) thread.scrollTop = thread.scrollHeight;
+  }
+
+  document.getElementById("lookup-btn").addEventListener("click", function () {
+    var q = document.getElementById("lookup-input").value;
+    renderLookupResult(findMatter(q));
+  });
+  document.getElementById("lookup-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      renderLookupResult(findMatter(this.value));
+    }
+  });
+
+  renderShop();
+})();
+</script>
+</body>
+</html>
