@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f7f2e8">
+<title>The RV Shop, scope &amp; insurance-claim authorization (sample)</title>
+<link rel="stylesheet" href="../../../assets/theme.css">
+<style>
+  .sct-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 980px) { .sct-cols { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field label { font-size: 0.78rem; font-weight: 700; color: var(--ink-2); }
+  .field input[type="text"], .field input[type="number"], .field select, .field textarea {
+    font: inherit; font-size: 0.9rem; padding: 0.55rem 0.7rem; border: 2px solid var(--ink);
+    border-radius: var(--radius-sm); background: #fff; color: var(--ink);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .form-grid .span2 { grid-column: 1 / -1; }
+  .rate-note { font-size: 0.74rem; color: var(--muted); margin-top: -0.35rem; }
+  .fee-box { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1rem 1.15rem; background: var(--warn-bg); box-shadow: var(--shadow-sm); margin-bottom: 1rem; }
+  .fee-box h3 { margin: 0 0 0.4rem; font-family: var(--serif); font-size: 1.02rem; }
+  .fee-amounts { display: flex; gap: 1.4rem; flex-wrap: wrap; margin: 0.5rem 0 0.7rem; }
+  .fee-amount { font-family: var(--mono); }
+  .fee-amount b { display: block; font-size: 1.15rem; }
+  .fee-amount span { font-size: 0.7rem; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.05em; }
+  .ack-row { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.86rem; margin-top: 0.3rem; }
+  .ack-fact { font-family: var(--mono); font-size: 0.68rem; color: var(--ink-2); margin-top: 0.5rem; }
+  fieldset.gated { border: 0; padding: 0; margin: 0; }
+  fieldset.gated[disabled] { opacity: 0.45; }
+  .line-list { display: flex; flex-direction: column; gap: 1px; background: var(--rule-soft); border-radius: var(--radius-sm); overflow: hidden; margin: 0.8rem 0; }
+  .line-row { background: #fff; padding: 0.5rem 0.7rem; display: flex; justify-content: space-between; gap: 0.6rem; font-size: 0.85rem; align-items: center; }
+  .line-row .li-desc { flex: 1; }
+  .line-row .li-meta { color: var(--muted); font-size: 0.74rem; }
+  .line-row button { background: none; border: 0; color: var(--hot); font-weight: 700; cursor: pointer; font-size: 0.78rem; }
+  .empty { color: var(--muted); font-style: italic; font-size: 0.88rem; }
+  .estimate-doc { border: 2px solid var(--ink); border-radius: var(--radius-md); padding: 1.2rem; background: #fff; box-shadow: var(--shadow-sm); margin-top: 0.9rem; }
+  .estimate-doc h4 { font-family: var(--serif); font-size: 1.15rem; margin: 0 0 0.15rem; }
+  .estimate-doc .sub { font-size: 0.76rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .estimate-total { display: flex; justify-content: space-between; font-weight: 750; font-size: 0.98rem; padding-top: 0.6rem; border-top: 2px solid var(--ink); }
+  .job-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 1rem 1.15rem; box-shadow: var(--shadow-sm); margin-bottom: 0.85rem; }
+  .job-head { display: flex; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; align-items: baseline; }
+  .job-title { font-weight: 660; }
+  .job-meta { font-size: 0.76rem; color: var(--muted); margin-top: 0.15rem; }
+  .badge { font-family: var(--mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.26rem 0.55rem; border-radius: 999px; white-space: nowrap; font-weight: 750; }
+  .badge.draft { color: var(--muted); background: var(--surface-2); }
+  .badge.ready { color: var(--brand); background: var(--brand-soft); }
+  .badge.signed { color: var(--good); background: var(--good-bg); }
+  .badge.complete { color: var(--ink); background: var(--lime); }
+  .sig-block { margin-top: 0.7rem; padding-top: 0.7rem; border-top: 1px dashed var(--rule); }
+  .sig-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-top: 0.5rem; }
+  .sig-row input[type="text"] { flex: 1; min-width: 160px; font: inherit; font-size: 0.82rem; padding: 0.4rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); }
+  .consent-line { font-size: 0.8rem; color: var(--ink-2); display: flex; gap: 0.4rem; align-items: flex-start; }
+  .sig-fact { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin-top: 0.4rem; }
+  .gate-card { margin-top: 0.75rem; padding: 0.8rem 0.9rem; border-radius: var(--radius-sm); border: 2px solid var(--ink); }
+  .gate-card.pending { background: var(--warn-bg); }
+  .gate-card.approved { background: var(--good-bg); }
+  .gate-card.declined { background: var(--hot-bg); }
+  .gate-card h5 { margin: 0 0 0.3rem; font-size: 0.86rem; }
+  .gate-card .gate-meta { font-size: 0.78rem; color: var(--ink-2); margin-bottom: 0.5rem; }
+  .gate-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .gate-actions button { font: inherit; font-size: 0.8rem; font-weight: 700; padding: 0.4rem 0.8rem; border-radius: 999px; cursor: pointer; border: 2px solid var(--ink); }
+  .btn-approve { background: var(--good-bg); }
+  .btn-decline { background: var(--hot-bg); }
+  .mini-form { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
+  .mini-form input[type="text"], .mini-form input[type="number"] { font: inherit; font-size: 0.82rem; padding: 0.4rem 0.6rem; border: 1px solid var(--rule); border-radius: var(--radius-sm); flex: 1; min-width: 120px; }
+  .job-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; flex-wrap: wrap; align-items: center; }
+  .job-actions button { font-size: 0.8rem; }
+  .log-wrap { margin-top: 0.75rem; padding-top: 0.6rem; border-top: 1px dashed var(--rule); }
+  .log-wrap summary { cursor: pointer; font-size: 0.8rem; font-weight: 700; color: var(--brand); }
+  .log-entry { font-size: 0.78rem; color: var(--ink-2); padding: 0.25rem 0; border-bottom: 1px solid var(--rule-soft); }
+  .log-entry:last-child { border-bottom: none; }
+  .log-entry .lt { font-family: var(--mono); font-size: 0.66rem; color: var(--muted); display: block; }
+  .reset-row { margin-top: 1.3rem; }
+  .limits { display: flex; flex-direction: column; gap: 1.1rem; }
+  .lim { border-left: 2px solid var(--rule); padding-left: 1rem; font-size: 0.92rem; line-height: 1.62; color: var(--ink-2); max-width: 78ch; }
+  .lim b { color: var(--ink); font-weight: 640; }
+  .lim a { color: var(--brand); }
+  .fact-strip { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.1rem 0 0; }
+  .fact { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.02em; padding: 0.4rem 0.7rem; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
+  .case-box { margin: 1.4rem 0; padding: 1rem 1.2rem; border-left: 3px solid var(--hot); background: var(--hot-bg); font-size: 0.9rem; color: var(--ink-2); max-width: 82ch; }
+</style>
+</head>
+<body>
+<nav class="fx-nav">
+  <div class="fx-nav-row">
+    <a class="fx-brand" href="../../../index.html"><span class="fx-mark">F</span><span class="fx-brand-name">Fixpoint Studio</span></a>
+    <span class="fx-crumb"><a href="../../../index.html">Templates</a> / <a href="../../">Scope, consent &amp; documentation packet</a> / The RV Shop</span>
+  </div>
+</nav>
+<header class="fx-hero">
+  <span class="fx-kicker">Independent work sample &middot; built for The RV Shop (thervshop.com)</span>
+  <h1 class="fx-h1">A fee you see before the truck rolls, and an insurance claim that never goes out without a yes first</h1>
+  <p class="fx-lede">The RV Shop's own site has a request-an-appointment form and nothing else customer-facing: no scope sign-off, no claim-authorization step, no record of what a customer agreed to. This page shows a small tool that adds exactly those two gates to an existing repair ticket: the trip fee and hourly rate disclosed and acknowledged before diagnosis starts, and any insurance claim held until the customer explicitly approves it, with a timestamped record for every one of those decisions.</p>
+  <div class="fact-strip">
+    <span class="fact">The RV Shop / DTR Fleet Inc.</span>
+    <span class="fact">New Castle, DE &amp; Laurel, DE, two locations</span>
+    <span class="fact">34 years in operation &middot; BBB A+ accredited</span>
+  </div>
+</header>
+<main class="fx-main">
+  <div class="fx-notice"><p><strong>Independent work sample, not affiliated with or endorsed by The RV Shop or DTR Fleet Inc.</strong> Every customer, RV, job, dollar amount, and insurer name below is fictional and for illustration only. The business description, locations, and complaint pattern are drawn from public review sites and the company's own published site.</p></div>
+
+  <div class="case-box">
+    Public reviews for The RV Shop describe a recurring pattern around cost and insurance transparency, not a single isolated dispute: one account describes a claim being filed with the customer's insurer without getting approval first, and the claim then coming back denied. Separate reviews describe a $99 trip fee plus a $350-per-hour rate that one reviewer says was not made clear upfront, and being billed for evaluations the reviewer says were never performed. A direct check of the company's own site (homepage, /about/, /schedule/) found a static appointment-request form and nothing else customer-facing: no scope sign-off, login, case number, or claim-authorization step anywhere. This is shown here as the documented gap the tool below is built to close, not as a claim about any specific job.
+  </div>
+
+  <div class="sct-cols">
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Start a repair ticket</h2>
+      <div class="fee-box">
+        <h3>Step 1: trip &amp; diagnostic fee, disclosed before dispatch</h3>
+        <div class="fee-amounts">
+          <div class="fee-amount"><b>$99</b><span>Trip / call-out fee</span></div>
+          <div class="fee-amount"><b>$350&nbsp;/&nbsp;hr</b><span>Diagnostic &amp; labor rate</span></div>
+        </div>
+        <div class="field span2"><label for="f-custname">Customer name</label><input type="text" id="f-custname" placeholder="e.g. Sample RV Owner"></div>
+        <div class="field span2" style="margin-top:0.5rem;"><label for="f-rvinfo">RV / unit</label><input type="text" id="f-rvinfo" placeholder="e.g. 2019 Class C motorhome"></div>
+        <div class="ack-row" style="margin-top:0.7rem;"><input type="checkbox" id="fee-ack-box"> <label for="fee-ack-box">Customer has been shown the trip fee and hourly rate above and acknowledges them before the technician begins any diagnosis.</label></div>
+        <div style="margin-top:0.6rem;"><button id="fee-ack-btn" class="fx-btn-ghost" type="button">Acknowledge fee &amp; unlock diagnosis form</button></div>
+        <div class="ack-fact" id="fee-ack-fact"></div>
+      </div>
+
+      <fieldset class="gated" id="diag-fieldset" disabled>
+        <h2 class="fx-h2">Step 2: diagnosis line items</h2>
+        <form id="line-form" class="form-grid">
+          <div class="field span2"><label for="f-cat">Repair category</label>
+            <select id="f-cat"></select>
+          </div>
+          <div class="field span2"><label for="f-desc">What the technician found</label><input type="text" id="f-desc" placeholder="e.g. Rear slide motor drawing high current"></div>
+          <div class="field"><label for="f-qty">Hours (or qty for parts)</label><input type="number" id="f-qty" min="0" step="0.5" value="1"></div>
+          <div class="field"><label for="f-rate">Rate ($)</label><input type="number" id="f-rate" min="0" step="0.01"></div>
+          <div class="rate-note span2">Sample rates, editable. These illustrate the workflow, not The RV Shop's actual price list.</div>
+          <div class="field span2"><button type="submit" class="fx-btn-ghost">Add line item</button></div>
+        </form>
+        <div id="lines-root"></div>
+        <div class="field span2" style="margin-top:0.6rem;"><button id="gen-btn" class="fx-btn" type="button">Generate written diagnosis estimate</button></div>
+      </fieldset>
+      <div id="doc-root"></div>
+    </div>
+    <div>
+      <h2 class="fx-h2" style="margin-top:0;">Repair tickets &amp; authorization record</h2>
+      <div id="jobs-root"></div>
+      <div class="reset-row"><button class="fx-btn-ghost" id="reset-btn">Reset to sample data</button></div>
+    </div>
+  </div>
+
+  <section>
+    <h2 class="fx-h2">How this gets built for real</h2>
+    <div class="limits">
+      <div class="lim"><b>Two separate gates, on purpose.</b> The initial diagnosis estimate (signed up front) and anything found after the job starts are tracked as different events with different timestamps, so "the invoice grew" and "the customer never agreed to that" are no longer the same question.</div>
+      <div class="lim"><b>The insurance-claim gate blocks the action, it does not just log it.</b> In this demo a claim cannot be marked submitted until the customer approves it here; declining routes the job to self-pay instead. A real build ties this to whatever claim-filing step the shop's own insurance workflow already uses.</div>
+      <div class="lim"><b>"Approved" here is a click and a timestamp.</b> A real build can require a typed name or an e-signature provider on the insurance-claim gate specifically, since that is the higher-stakes decision; this demo shows the workflow, not a specific vendor.</div>
+      <div class="lim"><b>The repair categories mirror what The RV Shop itself advertises</b> (mechanical, electrical, plumbing, appliance, AC, generator, awning, roof, slide-out/weather-seam, and body-and-collision repair), taken from the company's own site; the sample rates above illustrate the $350/hr figure found in public reviews, not a confirmed internal price list.</div>
+      <div class="lim"><b>See the generic version of this template: <a href="../../">scope, consent &amp; documentation packet</a>.</b></div>
+    </div>
+  </section>
+</main>
+<footer class="fx-footer"><p class="fx-safety"><strong>Independent work sample. Not affiliated with or endorsed by The RV Shop or DTR Fleet Inc.</strong></p><p>Prepared by Shlok Sarnayak. Fictional customer, RV, job, and claim data on this page, not connected to any live system or to The RV Shop's actual records.</p></footer>
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "sct_rvshop_v1";
+  var TRIP_FEE = 99;
+  var DEFAULT_RATE = 350;
+
+  var CATEGORIES = [
+    { name: "Mechanical / Drivetrain Repair", unit: "hour", rate: DEFAULT_RATE },
+    { name: "Electrical System Repair", unit: "hour", rate: DEFAULT_RATE },
+    { name: "Plumbing Repair", unit: "hour", rate: DEFAULT_RATE },
+    { name: "Appliance Repair (fridge / stove / water heater)", unit: "hour", rate: DEFAULT_RATE },
+    { name: "AC / Climate System Repair", unit: "hour", rate: DEFAULT_RATE },
+    { name: "Generator Repair", unit: "hour", rate: DEFAULT_RATE },
+    { name: "Awning Repair / Replacement", unit: "hour", rate: DEFAULT_RATE },
+    { name: "Roof Repair / Reseal", unit: "hour", rate: DEFAULT_RATE },
+    { name: "Slide-Out & Weather-Seam Repair", unit: "hour", rate: DEFAULT_RATE },
+    { name: "RV Body & Collision Repair", unit: "hour", rate: DEFAULT_RATE },
+    { name: "Parts", unit: "flat", rate: 0 }
+  ];
+
+  function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+  function fmtMoney(n) { return "$" + n.toFixed(2).replace(/\.00$/, ""); }
+  function fmtDate(ts) { return ts ? new Date(ts).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : ""; }
+  function daysAgo(n, h) { var d = new Date(); d.setDate(d.getDate() - n); d.setHours(h || 9, 0, 0, 0); return d.getTime(); }
+
+  function lineTotal(l) { return l.qty * l.rate; }
+  function sumLines(lines) { return lines.reduce(function (s, l) { return s + lineTotal(l); }, 0); }
+  function approvedExtrasTotal(job) {
+    return job.extraItems.filter(function (x) { return x.status === "approved"; })
+      .reduce(function (s, x) { return s + x.rate; }, 0);
+  }
+  function jobTotal(job) { return sumLines(job.lines) + approvedExtrasTotal(job) + (job.feeAckAt ? TRIP_FEE : 0); }
+
+  function makeJob(customer, rvInfo, lineDefs, feeAckName, feeAckAt) {
+    return {
+      id: "RV-" + Math.floor(1000 + Math.random() * 1),
+      customer: customer,
+      rvInfo: rvInfo || "",
+      lines: lineDefs.map(function (l) { return { desc: l.desc, cat: l.cat, qty: l.qty, rate: l.rate }; }),
+      extraItems: [],
+      insurance: null,
+      feeAckName: feeAckName || "",
+      feeAckAt: feeAckAt || null,
+      status: "draft",
+      createdAt: Date.now(),
+      signerName: null,
+      signedAt: null,
+      log: []
+    };
+  }
+  function pushLog(job, text, at) { job.log.push({ at: at || Date.now(), text: text }); }
+
+  function defaultData() {
+    // Job A: completed. Full happy path, plus one declined add-on for honest contrast.
+    var jobA = makeJob("Sample RV Owner A", "2017 travel trailer", [
+      { desc: "Replace corroded battery terminals, diagnose no-start", cat: "Electrical System Repair", qty: 2, rate: 350 },
+      { desc: "Replacement terminal hardware", cat: "Parts", qty: 1, rate: 38 }
+    ], "Sample RV Owner A", daysAgo(9, 9));
+    jobA.status = "completed";
+    jobA.signerName = "Sample RV Owner A";
+    jobA.signedAt = daysAgo(9, 10);
+    pushLog(jobA, "Trip fee ($99) and $350/hr rate disclosed and acknowledged by Sample RV Owner A.", daysAgo(9, 9));
+    pushLog(jobA, "Diagnosis estimate generated: 2 line items, " + fmtMoney(sumLines(jobA.lines) + TRIP_FEE) + " including trip fee.", daysAgo(9, 9, 30));
+    pushLog(jobA, "Initial diagnosis estimate signed, work authorized by Sample RV Owner A.", daysAgo(9, 10));
+    jobA.extraItems.push({ id: 1, desc: "Upgrade to lithium battery bank (optional, not required for the repair)", rate: 1200, status: "declined", requestedAt: daysAgo(8, 11), decidedAt: daysAgo(8, 14) });
+    pushLog(jobA, "Additional item reported: \"Upgrade to lithium battery bank (optional, not required for the repair)\" ($1200), awaiting customer decision.", daysAgo(8, 11));
+    pushLog(jobA, "Additional item declined by customer: lithium battery upgrade. Not billed, not performed.", daysAgo(8, 14));
+    jobA.insurance = { insurer: "Sample Statewide Mutual", claimAmount: 2400, status: "approved", requestedAt: daysAgo(7, 9), decidedAt: daysAgo(7, 10), submittedAt: daysAgo(7, 10) };
+    pushLog(jobA, "Insurance claim authorization requested: Sample Statewide Mutual, " + fmtMoney(2400) + " for collision-related body repair, awaiting customer decision.", daysAgo(7, 9));
+    pushLog(jobA, "Customer approved filing a claim with Sample Statewide Mutual for " + fmtMoney(2400) + ". Claim submitted to insurer.", daysAgo(7, 10));
+    pushLog(jobA, "Repair marked complete. Final total " + fmtMoney(jobTotal(jobA)) + ".", daysAgo(6, 15));
+
+    // Job B: signed / in repair, with a LIVE pending added-scope decision.
+    var jobB = makeJob("Sample RV Owner B", "2021 fifth wheel", [
+      { desc: "Diagnose slow kitchen drain, water heater anode check", cat: "Plumbing Repair", qty: 1.5, rate: 350 }
+    ], "Sample RV Owner B", daysAgo(2, 10));
+    jobB.status = "signed";
+    jobB.signerName = "Sample RV Owner B";
+    jobB.signedAt = daysAgo(2, 10, 20);
+    pushLog(jobB, "Trip fee ($99) and $350/hr rate disclosed and acknowledged by Sample RV Owner B.", daysAgo(2, 10));
+    pushLog(jobB, "Diagnosis estimate generated: 1 line item, " + fmtMoney(sumLines(jobB.lines) + TRIP_FEE) + " including trip fee.", daysAgo(2, 10, 10));
+    pushLog(jobB, "Initial diagnosis estimate signed, work authorized by Sample RV Owner B.", daysAgo(2, 10, 20));
+    jobB.extraItems.push({ id: 1, desc: "Water heater anode rod also corroded, recommend replacement", rate: 95, status: "pending", requestedAt: daysAgo(0, 9), decidedAt: null });
+    pushLog(jobB, "Additional item reported: \"Water heater anode rod also corroded, recommend replacement\" ($95), awaiting customer decision.", daysAgo(0, 9));
+
+    // Job C: signed / in repair, with a LIVE pending insurance-claim decision (the headline gate).
+    var jobC = makeJob("Sample RV Owner C", "2015 Class A motorhome", [
+      { desc: "Collision damage assessment, rear cap and bumper", cat: "RV Body & Collision Repair", qty: 4, rate: 350 }
+    ], "Sample RV Owner C", daysAgo(1, 9));
+    jobC.status = "signed";
+    jobC.signerName = "Sample RV Owner C";
+    jobC.signedAt = daysAgo(1, 9, 30);
+    pushLog(jobC, "Trip fee ($99) and $350/hr rate disclosed and acknowledged by Sample RV Owner C.", daysAgo(1, 9));
+    pushLog(jobC, "Diagnosis estimate generated: 1 line item, " + fmtMoney(sumLines(jobC.lines) + TRIP_FEE) + " including trip fee.", daysAgo(1, 9, 15));
+    pushLog(jobC, "Initial diagnosis estimate signed, work authorized by Sample RV Owner C.", daysAgo(1, 9, 30));
+    jobC.insurance = { insurer: "Sample Auto & RV Insurance", claimAmount: 3650, status: "pending", requestedAt: daysAgo(0, 11), decidedAt: null, submittedAt: null };
+    pushLog(jobC, "Insurance claim authorization requested: Sample Auto & RV Insurance, " + fmtMoney(3650) + " for the collision repair above, awaiting customer decision.", daysAgo(0, 11));
+
+    // Job D: ready, awaiting the initial signature.
+    var jobD = makeJob("Sample RV Owner D", "2020 toy hauler", [
+      { desc: "Rooftop AC not cooling, diagnose compressor", cat: "AC / Climate System Repair", qty: 1, rate: 350 }
+    ], "Sample RV Owner D", daysAgo(0, 8));
+    jobD.status = "ready";
+    pushLog(jobD, "Trip fee ($99) and $350/hr rate disclosed and acknowledged by Sample RV Owner D.", daysAgo(0, 8));
+    pushLog(jobD, "Diagnosis estimate generated: 1 line item, " + fmtMoney(sumLines(jobD.lines) + TRIP_FEE) + " including trip fee. Awaiting signature.", daysAgo(0, 8, 10));
+
+    return { seq: 4, jobs: [jobA, jobB, jobC, jobD] };
+  }
+
+  var data = load();
+  function load() {
+    try { var raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return defaultData();
+  }
+  function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch (e) {} }
+
+  var draftLines = [];
+  var feeAcked = false;
+
+  function populateCategorySelect() {
+    var sel = document.getElementById("f-cat");
+    sel.innerHTML = CATEGORIES.map(function (c) { return '<option value="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + " (" + c.unit + ")</option>"; }).join("");
+    sel.addEventListener("change", fillRate);
+    fillRate();
+  }
+  function fillRate() {
+    var sel = document.getElementById("f-cat");
+    var cat = CATEGORIES.filter(function (c) { return c.name === sel.value; })[0];
+    if (cat) document.getElementById("f-rate").value = cat.rate;
+  }
+
+  function renderDraftLines() {
+    var root = document.getElementById("lines-root");
+    if (!draftLines.length) { root.innerHTML = '<p class="empty">No line items added yet.</p>'; return; }
+    var html = '<div class="line-list">';
+    draftLines.forEach(function (l, i) {
+      html += '<div class="line-row"><span class="li-desc">' + escapeHtml(l.cat) + (l.desc ? " &middot; " + escapeHtml(l.desc) : "") + '<br><span class="li-meta">' + l.qty + " &times; " + fmtMoney(l.rate) + " = " + fmtMoney(l.qty * l.rate) + '</span></span><button type="button" onclick="__rv.removeLine(' + i + ')">Remove</button></div>';
+    });
+    html += "</div>";
+    root.innerHTML = html;
+  }
+
+  function renderEstimateDoc(job) {
+    var root = document.getElementById("doc-root");
+    var total = sumLines(job.lines) + TRIP_FEE;
+    var html = '<div class="estimate-doc">' +
+      "<h4>Written Diagnosis Estimate</h4>" +
+      '<div class="sub">' + job.id + " &middot; " + escapeHtml(job.customer) + (job.rvInfo ? " &middot; " + escapeHtml(job.rvInfo) : "") + " &middot; generated " + fmtDate(job.createdAt) + "</div>" +
+      '<div class="line-list"><div class="line-row"><span class="li-desc">Trip / call-out fee</span><span>' + fmtMoney(TRIP_FEE) + "</span></div>" +
+      job.lines.map(function (l) { return '<div class="line-row"><span class="li-desc">' + escapeHtml(l.cat) + (l.desc ? " &middot; " + escapeHtml(l.desc) : "") + '</span><span>' + fmtMoney(lineTotal(l)) + "</span></div>"; }).join("") +
+      "</div>" +
+      '<div class="estimate-total"><span>Total, agreed before work begins</span><span>' + fmtMoney(total) + "</span></div>" +
+      '<div style="margin-top:0.9rem;"><button class="fx-btn-ghost" onclick="window.print()">Print / save as PDF</button></div>' +
+      "</div>";
+    root.innerHTML = html;
+  }
+
+  var STATUS_LABEL = { draft: "Draft", ready: "Estimate ready", signed: "Signed, in repair", completed: "Repair complete" };
+  var STATUS_CLASS = { draft: "draft", ready: "ready", signed: "signed", completed: "complete" };
+
+  function renderJobs() {
+    var root = document.getElementById("jobs-root");
+    if (!data.jobs.length) { root.innerHTML = '<p class="empty">No tickets yet. Acknowledge the fee and generate a diagnosis estimate to start one.</p>'; return; }
+    var html = "";
+    data.jobs.slice().sort(function (a, b) { return b.createdAt - a.createdAt; }).forEach(function (job) {
+      var idx = data.jobs.indexOf(job);
+      html += '<div class="job-card"><div class="job-head"><div><div class="job-title">' + escapeHtml(job.customer) + (job.rvInfo ? ' <span class="job-meta">(' + escapeHtml(job.rvInfo) + ")</span>" : "") + '</div><div class="job-meta">' + job.id + " &middot; running total " + fmtMoney(jobTotal(job)) + '</div></div><span class="badge ' + STATUS_CLASS[job.status] + '">' + STATUS_LABEL[job.status] + "</span></div>";
+
+      if (job.status === "ready") {
+        html += '<div class="sig-block"><div class="consent-line"><input type="checkbox" id="consent-' + idx + '"> <label for="consent-' + idx + '">Customer has reviewed the diagnosis estimate above (including the trip fee) and authorizes work to begin at this price.</label></div>' +
+          '<div class="sig-row"><input type="text" id="signer-' + idx + '" placeholder="Customer typed full name"><button class="fx-btn-ghost" onclick="__rv.sign(' + idx + ')">Capture signature</button></div></div>';
+      }
+      if (job.signerName) {
+        html += '<div class="sig-fact">Signed by ' + escapeHtml(job.signerName) + " at " + fmtDate(job.signedAt) + "</div>";
+      }
+
+      job.extraItems.forEach(function (x, xi) {
+        var cls = x.status === "pending" ? "pending" : x.status;
+        html += '<div class="gate-card ' + cls + '"><h5>Found during repair: ' + escapeHtml(x.desc) + '</h5><div class="gate-meta">' + fmtMoney(x.rate) + " &middot; reported " + fmtDate(x.requestedAt) + "</div>";
+        if (x.status === "pending") {
+          html += '<div class="gate-actions"><button class="btn-approve" onclick="__rv.decideExtra(' + idx + "," + xi + ',true)">Customer approves</button><button class="btn-decline" onclick="__rv.decideExtra(' + idx + "," + xi + ',false)">Customer declines</button></div>';
+        } else {
+          html += '<div class="gate-meta">' + (x.status === "approved" ? "Approved and added to the bill" : "Declined, not billed, not performed") + " at " + fmtDate(x.decidedAt) + "</div>";
+        }
+        html += "</div>";
+      });
+
+      if (job.insurance) {
+        var ins = job.insurance;
+        var icls = ins.status === "pending" ? "pending" : ins.status;
+        html += '<div class="gate-card ' + icls + '"><h5>Insurance claim: ' + escapeHtml(ins.insurer) + '</h5><div class="gate-meta">Claim amount ' + fmtMoney(ins.claimAmount) + " &middot; requested " + fmtDate(ins.requestedAt) + "</div>";
+        if (ins.status === "pending") {
+          html += '<div class="gate-actions"><button class="btn-approve" onclick="__rv.decideInsurance(' + idx + ',true)">Customer approves filing</button><button class="btn-decline" onclick="__rv.decideInsurance(' + idx + ',false)">Customer declines</button></div>';
+        } else if (ins.status === "approved") {
+          html += '<div class="gate-meta">Approved at ' + fmtDate(ins.decidedAt) + ". Claim submitted to insurer at " + fmtDate(ins.submittedAt) + ".</div>";
+        } else {
+          html += '<div class="gate-meta">Declined by customer at ' + fmtDate(ins.decidedAt) + ". No claim was submitted; job proceeds as self-pay.</div>";
+        }
+        html += "</div>";
+      }
+
+      if (job.status === "signed") {
+        html += '<div class="job-actions">';
+        if (!job.extraItems.some(function (x) { return x.status === "pending"; })) {
+          html += '<button class="fx-btn-ghost" onclick="__rv.openExtraForm(' + idx + ')">Report item found during repair</button>';
+        }
+        if (!job.insurance) {
+          html += '<button class="fx-btn-ghost" onclick="__rv.openInsuranceForm(' + idx + ')">Request insurance claim authorization</button>';
+        }
+        var blocked = job.extraItems.some(function (x) { return x.status === "pending"; }) || (job.insurance && job.insurance.status === "pending");
+        html += '<button class="fx-btn-ghost" ' + (blocked ? "disabled" : "") + ' onclick="__rv.complete(' + idx + ')">Mark repair complete</button>';
+        html += "</div>";
+        html += '<div id="extra-form-' + idx + '"></div><div id="ins-form-' + idx + '"></div>';
+        if (blocked) html += '<div class="rate-note" style="margin-top:0.4rem;">Cannot complete this ticket while a decision above is pending.</div>';
+      }
+
+      html += '<details class="log-wrap"><summary>Authorization record (' + job.log.length + ' entries)</summary>';
+      job.log.slice().reverse().forEach(function (l) {
+        html += '<div class="log-entry"><span class="lt">' + fmtDate(l.at) + '</span>' + escapeHtml(l.text) + "</div>";
+      });
+      html += "</details>";
+
+      html += "</div>";
+    });
+    root.innerHTML = html;
+  }
+
+  window.__rv = {
+    removeLine: function (i) { draftLines.splice(i, 1); renderDraftLines(); },
+    sign: function (idx) {
+      var job = data.jobs[idx];
+      var box = document.getElementById("consent-" + idx);
+      var name = document.getElementById("signer-" + idx).value.trim();
+      if (!box.checked) { alert("Check the consent box before capturing a signature."); return; }
+      if (!name) { alert("Enter the customer's typed name."); return; }
+      job.signerName = name;
+      job.signedAt = Date.now();
+      job.status = "signed";
+      pushLog(job, "Initial diagnosis estimate signed, work authorized by " + name + ".");
+      save(); renderJobs();
+    },
+    openExtraForm: function (idx) {
+      var root = document.getElementById("extra-form-" + idx);
+      if (root.innerHTML) { root.innerHTML = ""; return; }
+      root.innerHTML = '<div class="mini-form"><input type="text" id="extra-desc-' + idx + '" placeholder="What was found"><input type="number" id="extra-rate-' + idx + '" placeholder="$"><button class="fx-btn-ghost" onclick="__rv.submitExtra(' + idx + ')">Submit to customer</button></div>';
+    },
+    submitExtra: function (idx) {
+      var job = data.jobs[idx];
+      var desc = document.getElementById("extra-desc-" + idx).value.trim();
+      var rate = parseFloat(document.getElementById("extra-rate-" + idx).value) || 0;
+      if (!desc || rate <= 0) { alert("Describe the item and enter an amount greater than zero."); return; }
+      job.extraItems.push({ id: job.extraItems.length + 1, desc: desc, rate: rate, status: "pending", requestedAt: Date.now(), decidedAt: null });
+      pushLog(job, "Additional item reported: \"" + desc + "\" (" + fmtMoney(rate) + "), awaiting customer decision.");
+      document.getElementById("extra-form-" + idx).innerHTML = "";
+      save(); renderJobs();
+    },
+    decideExtra: function (idx, xi, approve) {
+      var job = data.jobs[idx];
+      var x = job.extraItems[xi];
+      x.status = approve ? "approved" : "declined";
+      x.decidedAt = Date.now();
+      pushLog(job, "Additional item " + (approve ? "approved by customer" : "declined by customer") + ": " + x.desc + " (" + fmtMoney(x.rate) + ")" + (approve ? ", added to the bill." : ", not billed, not performed."));
+      save(); renderJobs();
+    },
+    openInsuranceForm: function (idx) {
+      var root = document.getElementById("ins-form-" + idx);
+      if (root.innerHTML) { root.innerHTML = ""; return; }
+      root.innerHTML = '<div class="mini-form"><input type="text" id="ins-name-' + idx + '" placeholder="Customer\'s insurer"><input type="number" id="ins-amt-' + idx + '" placeholder="Claim amount $"><button class="fx-btn-ghost" onclick="__rv.submitInsurance(' + idx + ')">Submit to customer</button></div>';
+    },
+    submitInsurance: function (idx) {
+      var job = data.jobs[idx];
+      var insurer = document.getElementById("ins-name-" + idx).value.trim();
+      var amt = parseFloat(document.getElementById("ins-amt-" + idx).value) || 0;
+      if (!insurer || amt <= 0) { alert("Enter the insurer name and a claim amount greater than zero."); return; }
+      job.insurance = { insurer: insurer, claimAmount: amt, status: "pending", requestedAt: Date.now(), decidedAt: null, submittedAt: null };
+      pushLog(job, "Insurance claim authorization requested: " + insurer + ", " + fmtMoney(amt) + ", awaiting customer decision.");
+      document.getElementById("ins-form-" + idx).innerHTML = "";
+      save(); renderJobs();
+    },
+    decideInsurance: function (idx, approve) {
+      var job = data.jobs[idx];
+      var ins = job.insurance;
+      ins.status = approve ? "approved" : "declined";
+      ins.decidedAt = Date.now();
+      if (approve) {
+        ins.submittedAt = Date.now();
+        pushLog(job, "Customer approved filing a claim with " + ins.insurer + " for " + fmtMoney(ins.claimAmount) + ". Claim submitted to insurer.");
+      } else {
+        pushLog(job, "Customer declined filing an insurance claim. No claim was submitted; job proceeds as self-pay.");
+      }
+      save(); renderJobs();
+    },
+    complete: function (idx) {
+      var job = data.jobs[idx];
+      if (job.extraItems.some(function (x) { return x.status === "pending"; }) || (job.insurance && job.insurance.status === "pending")) {
+        alert("A decision is still pending on this ticket.");
+        return;
+      }
+      job.status = "completed";
+      pushLog(job, "Repair marked complete. Final total " + fmtMoney(jobTotal(job)) + ".");
+      save(); renderJobs();
+    }
+  };
+
+  document.getElementById("fee-ack-btn").addEventListener("click", function () {
+    var box = document.getElementById("fee-ack-box");
+    var name = document.getElementById("f-custname").value.trim();
+    if (!box.checked) { alert("Check the acknowledgment box before unlocking the diagnosis form."); return; }
+    if (!name) { alert("Enter the customer's name first."); return; }
+    feeAcked = true;
+    document.getElementById("diag-fieldset").disabled = false;
+    document.getElementById("fee-ack-fact").textContent = "Acknowledged by " + name + " at " + fmtDate(Date.now()) + ".";
+  });
+
+  document.getElementById("line-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var cat = document.getElementById("f-cat").value;
+    var desc = document.getElementById("f-desc").value.trim();
+    var qty = parseFloat(document.getElementById("f-qty").value) || 0;
+    var rate = parseFloat(document.getElementById("f-rate").value) || 0;
+    if (qty <= 0) { alert("Enter an hours/quantity value greater than zero."); return; }
+    draftLines.push({ cat: cat, desc: desc, qty: qty, rate: rate });
+    document.getElementById("f-desc").value = "";
+    renderDraftLines();
+  });
+
+  document.getElementById("gen-btn").addEventListener("click", function () {
+    if (!feeAcked) { alert("Acknowledge the trip fee and rate first."); return; }
+    var customer = document.getElementById("f-custname").value.trim();
+    var rvInfo = document.getElementById("f-rvinfo").value.trim();
+    if (!customer) { alert("Enter a customer name."); return; }
+    if (!draftLines.length) { alert("Add at least one diagnosis line item first."); return; }
+    var ackName = document.getElementById("f-custname").value.trim();
+    var job = makeJob(customer, rvInfo, draftLines, ackName, Date.now());
+    pushLog(job, "Trip fee ($99) and $350/hr rate disclosed and acknowledged by " + ackName + ".", job.feeAckAt);
+    job.status = "ready";
+    pushLog(job, "Diagnosis estimate generated: " + job.lines.length + " line item(s), " + fmtMoney(jobTotal(job)) + " including trip fee. Awaiting signature.");
+    data.jobs.unshift(job);
+    save();
+    renderEstimateDoc(job);
+    renderJobs();
+    draftLines = [];
+    renderDraftLines();
+    document.getElementById("f-custname").value = "";
+    document.getElementById("f-rvinfo").value = "";
+    document.getElementById("fee-ack-box").checked = false;
+    document.getElementById("diag-fieldset").disabled = true;
+    document.getElementById("fee-ack-fact").textContent = "";
+    feeAcked = false;
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    if (!confirm("Reset all tickets back to the original sample data?")) return;
+    data = defaultData(); save(); renderJobs();
+    document.getElementById("doc-root").innerHTML = "";
+  });
+
+  populateCategorySelect();
+  renderDraftLines();
+  renderJobs();
+})();
+</script>
+</body>
+</html>
